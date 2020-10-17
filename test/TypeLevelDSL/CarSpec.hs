@@ -1,6 +1,12 @@
-{-# LANGUAGE DataKinds          #-}
-{-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE PolyKinds          #-}
+{-# LANGUAGE DataKinds                #-}
+{-# LANGUAGE TypeOperators            #-}
+{-# LANGUAGE FunctionalDependencies   #-}
+{-# LANGUAGE TypeFamilies             #-}
+{-# LANGUAGE PolyKinds                #-}
+{-# LANGUAGE KindSignatures           #-}
+{-# LANGUAGE FlexibleContexts         #-}
+{-# LANGUAGE FlexibleInstances        #-}
+{-# LANGUAGE ScopedTypeVariables      #-}
 
 module TypeLevelDSL.CarSpec where
 

@@ -8,26 +8,13 @@ copyright:           "Granin A.S. 2020"
 
 
 default-extensions:
-# - NoImplicitPrelude
-- GADTs
-- RankNTypes
 - DeriveFunctor
 - DeriveGeneric
 - OverloadedStrings
 - LambdaCase
 - MultiParamTypeClasses
-- ExplicitNamespaces
-- TypeApplications
 - ScopedTypeVariables
-- TypeOperators
-- TypeFamilies
-- DataKinds
-- FlexibleContexts
-- FlexibleInstances
-- PatternSynonyms
-- PolyKinds
-- DefaultSignatures
-- ConstraintKinds
+- ExplicitNamespaces
 - NamedFieldPuns
 - TupleSections
 - ViewPatterns

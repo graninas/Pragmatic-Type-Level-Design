@@ -1,10 +1,18 @@
--- {-# LANGUAGE DataKinds          #-}
--- {-# LANGUAGE DeriveDataTypeable #-}
--- {-# LANGUAGE PolyKinds          #-}
--- {-# LANGUAGE TypeInType         #-}
--- {-# LANGUAGE UndecidableInstances #-}
--- {-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE FunctionalDependencies          #-}
+{-# LANGUAGE DataKinds                #-}
+{-# LANGUAGE TypeOperators            #-}
+{-# LANGUAGE FunctionalDependencies   #-}
+{-# LANGUAGE TypeFamilies             #-}
+{-# LANGUAGE FlexibleContexts         #-}
+{-# LANGUAGE FlexibleInstances        #-}
+{-# LANGUAGE ScopedTypeVariables      #-}
+
+-- type family Lots (a :: [*]) :: LotsTag a
+--                                        ^
+{-# LANGUAGE PolyKinds                #-}
+
+-- data D (name :: Symbol) (ps :: [Country])
+--                 ^              ^
+{-# LANGUAGE KindSignatures           #-}
 
 module TypeLevelDSL.Auction where
 

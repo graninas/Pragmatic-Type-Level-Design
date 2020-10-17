@@ -1,10 +1,18 @@
--- {-# LANGUAGE DataKinds          #-}
--- {-# LANGUAGE DeriveDataTypeable #-}
--- {-# LANGUAGE PolyKinds          #-}
--- {-# LANGUAGE TypeInType         #-}
--- {-# LANGUAGE UndecidableInstances #-}
--- {-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE FunctionalDependencies          #-}
+{-# LANGUAGE DataKinds                #-}
+{-# LANGUAGE TypeOperators            #-}
+{-# LANGUAGE FunctionalDependencies   #-}
+{-# LANGUAGE TypeFamilies             #-}
+{-# LANGUAGE PolyKinds                #-}
+{-# LANGUAGE KindSignatures           #-}
+{-# LANGUAGE ScopedTypeVariables      #-}
+
+-- instance (Eval AsEngine engine (), Eval AsPart parts ()) =>
+--          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+{-# LANGUAGE FlexibleContexts         #-}
+
+-- instance (b ~ Parts a, Eval AsPart a ()) => Eval AsPart b ()
+--                                             ^^^^^^^^^^^^^^^^
+{-# LANGUAGE FlexibleInstances        #-}
 
 module TypeLevelDSL.Car where
 

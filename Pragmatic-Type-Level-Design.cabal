@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 02d5bfc56a2346a08ec5099610824ffe0388f0cc93574717b99b93c6c660b582
+-- hash: 2934e166290cecda0d2d9c71711d3fbef6dddfac1750f795596ff9c29397d070
 
 name:           Pragmatic-Type-Level-Design
 version:        0.0.0.1
@@ -23,12 +23,13 @@ source-repository head
 
 library
   exposed-modules:
+      TypeLevelDSL.Auction
       TypeLevelDSL.Car
   other-modules:
       Paths_Pragmatic_Type_Level_Design
   hs-source-dirs:
       src
-  default-extensions: GADTs RankNTypes DeriveFunctor DeriveGeneric OverloadedStrings LambdaCase MultiParamTypeClasses ExplicitNamespaces TypeApplications ScopedTypeVariables TypeOperators TypeFamilies DataKinds FlexibleContexts FlexibleInstances PatternSynonyms PolyKinds DefaultSignatures ConstraintKinds NamedFieldPuns TupleSections ViewPatterns MultiWayIf RecordWildCards
+  default-extensions: DeriveFunctor DeriveGeneric OverloadedStrings LambdaCase MultiParamTypeClasses ScopedTypeVariables ExplicitNamespaces NamedFieldPuns TupleSections ViewPatterns MultiWayIf RecordWildCards
   ghc-options: -Wall
   build-depends:
       base >=4.7 && <5
@@ -53,7 +54,7 @@ test-suite functional-tests
       Paths_Pragmatic_Type_Level_Design
   hs-source-dirs:
       test/
-  default-extensions: GADTs RankNTypes DeriveFunctor DeriveGeneric OverloadedStrings LambdaCase MultiParamTypeClasses ExplicitNamespaces TypeApplications ScopedTypeVariables TypeOperators TypeFamilies DataKinds FlexibleContexts FlexibleInstances PatternSynonyms PolyKinds DefaultSignatures ConstraintKinds NamedFieldPuns TupleSections ViewPatterns MultiWayIf RecordWildCards
+  default-extensions: DeriveFunctor DeriveGeneric OverloadedStrings LambdaCase MultiParamTypeClasses ScopedTypeVariables ExplicitNamespaces NamedFieldPuns TupleSections ViewPatterns MultiWayIf RecordWildCards
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       Pragmatic-Type-Level-Design

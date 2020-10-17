@@ -1,0 +1,73 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 02d5bfc56a2346a08ec5099610824ffe0388f0cc93574717b99b93c6c660b582
+
+name:           Pragmatic-Type-Level-Design
+version:        0.0.0.1
+homepage:       https://github.com/graninas/Pragmatic-Type-Level-Design#readme
+bug-reports:    https://github.com/graninas/Pragmatic-Type-Level-Design/issues
+author:         Alexander Granin
+maintainer:     graninas@gmail.com
+copyright:      Granin A.S. 2020
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: https://github.com/graninas/Pragmatic-Type-Level-Design
+
+library
+  exposed-modules:
+      TypeLevelDSL.Car
+  other-modules:
+      Paths_Pragmatic_Type_Level_Design
+  hs-source-dirs:
+      src
+  default-extensions: GADTs RankNTypes DeriveFunctor DeriveGeneric OverloadedStrings LambdaCase MultiParamTypeClasses ExplicitNamespaces TypeApplications ScopedTypeVariables TypeOperators TypeFamilies DataKinds FlexibleContexts FlexibleInstances PatternSynonyms PolyKinds DefaultSignatures ConstraintKinds NamedFieldPuns TupleSections ViewPatterns MultiWayIf RecordWildCards
+  ghc-options: -Wall
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , containers
+    , free
+    , mtl
+    , newtype-generics
+    , scientific
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , uuid
+  default-language: Haskell2010
+
+test-suite functional-tests
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      TypeLevelDSL.CarSpec
+      Paths_Pragmatic_Type_Level_Design
+  hs-source-dirs:
+      test/
+  default-extensions: GADTs RankNTypes DeriveFunctor DeriveGeneric OverloadedStrings LambdaCase MultiParamTypeClasses ExplicitNamespaces TypeApplications ScopedTypeVariables TypeOperators TypeFamilies DataKinds FlexibleContexts FlexibleInstances PatternSynonyms PolyKinds DefaultSignatures ConstraintKinds NamedFieldPuns TupleSections ViewPatterns MultiWayIf RecordWildCards
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      Pragmatic-Type-Level-Design
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , free
+    , hspec
+    , mtl
+    , newtype-generics
+    , scientific
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , uuid
+  default-language: Haskell2010

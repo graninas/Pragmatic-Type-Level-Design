@@ -51,9 +51,12 @@ instance (Eval AsInfo info (), Eval AsLots lots ()) =>
 
 -- Interpreting of the auction info (auctionInfo :: AuctionInfoTag)
 
-instance (b ~ Info name aType holder, Eval AsType aType String,
-          KnownSymbol name, KnownSymbol holder) =>
-  Eval AsInfo b () where
+instance (ai ~ AuctionInfo i, Eval AsInfo i ()) =>
+  Eval AsInfo ai () where
+  eval _ _ = eval AsInfo (Proxy :: Proxy i)
+
+instance (Eval AsType aType String, KnownSymbol name, KnownSymbol holder) =>
+  Eval AsInfo (Info name aType holder) () where
   eval _ _ = do
     typeName <- eval AsType (Proxy :: Proxy aType)
     putStrLn $ "Name: " <> symbolVal (Proxy :: Proxy name)
@@ -115,6 +118,5 @@ instance (b ~ Censorship a, Eval AsCensorship a ()) =>
 
 -- Interpretation of the NoCensorship
 
-instance (b ~ NoCensorship) =>
-  Eval AsCensorship b () where
+instance Eval AsCensorship NoCensorship' () where
   eval _ _ = pure ()

@@ -34,26 +34,31 @@ data AuctionType
 
 -- eDSL
 
-data Auction (auctionInfo :: AuctionInfoTag) (lots :: LotsTag ls)
+data Auction (auctionInfo :: AuctionInfoTag i) (lots :: LotsTag ls)
 
 data Info (name :: Symbol) (aType :: AuctionType) (holder :: Symbol)
 
 data Lot (name :: Symbol) (descr :: Symbol) (currency :: CurrencyTag a) (censorship :: CensorshipTag c)
 
-data AuctionInfoTag
-
 -- Extension points:
+
+data AuctionInfoTag a
 data LotsTag a
 data CurrencyTag a
 data CensorshipTag a
 
 -- Construction
 
-type family AuctionInfo (a :: *) :: AuctionInfoTag
+type family AuctionInfo (a :: *) :: AuctionInfoTag a
 
 type family Currency (a :: *) :: CurrencyTag a
 
 type family Censorship (a :: *) :: CensorshipTag a
-type family NoCensorship :: CensorshipTag a
 
 type family Lots (a :: [*]) :: LotsTag a
+
+-- Helpers
+
+data NoCensorship'
+
+type NoCensorship = Censorship NoCensorship'

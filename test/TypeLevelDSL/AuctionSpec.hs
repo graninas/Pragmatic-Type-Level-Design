@@ -74,8 +74,14 @@ instance (Eval AsParticipants participants String) =>
 
 -- Interpreting of the specific currency
 
-instance (CurrencyInfo c) => Eval AsCurrency c () where
-  eval _ _ = putStrLn $ "Currency: " <> showCurrency (Proxy :: Proxy c)
+instance Eval AsCurrency GBP () where
+  eval _ _ = putStrLn $ "Currency: " <> showCurrency (Proxy :: Proxy GBP)
+
+instance Eval AsCurrency USD () where
+  eval _ _ = putStrLn $ "Currency: " <> showCurrency (Proxy :: Proxy GBP)
+
+instance Eval AsCurrency EUR () where
+  eval _ _ = putStrLn $ "Currency: " <> showCurrency (Proxy :: Proxy GBP)
 
 
 -- Interpreting of the specific

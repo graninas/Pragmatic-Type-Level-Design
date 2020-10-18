@@ -14,8 +14,9 @@ import TypeLevelDSL.Auction.Language
 import TypeLevelDSL.Auction.Implementation
 import TypeLevelDSL.Eval
 
-import           Test.Hspec
+import Test.Hspec
 
+import Data.List (intercalate)
 import Data.Proxy (Proxy(..))
 import GHC.TypeLits (KnownSymbol, Symbol, symbolVal)
 
@@ -66,22 +67,22 @@ instance (ParticipantInfo p, Eval AsParticipants (x ': xs) String) =>
 -- Interpreting of the AllowedCountries censorship
 
 instance (Eval AsParticipants participants String) =>
-  Eval AsCensorship (AllowedCountries name participants) () where
+  Eval AsCensorship (AllowedCountries name participants) Ret where
   eval _ _ = do
     participants <- eval AsParticipants (Proxy :: Proxy participants)
-    putStrLn $ "Eligible participants: " <> participants
+    pure [ "Eligible participants: " <> participants ]
 
 
 -- Interpreting of the specific currency
 
-instance Eval AsCurrency GBP () where
-  eval _ _ = putStrLn $ "Currency: " <> showCurrency (Proxy :: Proxy GBP)
+instance Eval AsCurrency GBP Ret where
+  eval _ _ = pure [ "Currency: " <> showCurrency (Proxy :: Proxy GBP) ]
 
-instance Eval AsCurrency USD () where
-  eval _ _ = putStrLn $ "Currency: " <> showCurrency (Proxy :: Proxy GBP)
+instance Eval AsCurrency USD Ret where
+  eval _ _ = pure [ "Currency: " <> showCurrency (Proxy :: Proxy GBP) ]
 
-instance Eval AsCurrency EUR () where
-  eval _ _ = putStrLn $ "Currency: " <> showCurrency (Proxy :: Proxy GBP)
+instance Eval AsCurrency EUR Ret where
+  eval _ _ = pure [ "Currency: " <> showCurrency (Proxy :: Proxy GBP) ]
 
 
 -- Interpreting of the specific
@@ -90,21 +91,48 @@ instance Eval AsCurrency EUR () where
 
 -- Test sample
 
-type UKOnly = Censorship (AllowedCountries "UK only" '[UK])
-type UKAndUS = Censorship (AllowedCountries "UK only" '[UK, US])
-type Info1 = AuctionInfo (Info "UK Art" EnglishAuction "UK Bank")
+type UKOnly  = Censorship (AllowedCountries "UK only" '[UK])
+type UKAndUS = Censorship (AllowedCountries "UK & US" '[UK, US])
+
+type WorldArtsAuction = Auction
+  (AuctionInfo (Info "World arts" EnglishAuction "UK Bank"))
+  (Lots '[ Lot "101" "Dali artwork" (Currency GBP) UKOnly
+         , Lot "202" "Chinese vase" (Currency USD) UKAndUS
+         , Lot "303" "Ancient mechanism" (Currency USD) NoCensorship
+         ]
+  )
+
+
+type Info1 = AuctionInfo (Info "World arts" EnglishAuction "UK Bank")
 type Lot1 = Lot "101" "Dali artwork" (Currency GBP) UKOnly
-type Lot2 = Lot "202" "Chinesse vase" (Currency USD) UKAndUS
+type Lot2 = Lot "202" "Chinese vase" (Currency USD) UKAndUS
 type Lot3 = Lot "303" "Ancient mechanism" (Currency USD) NoCensorship
-type Auction1 = Auction Info1 (Lots '[Lot1, Lot2, Lot3])
+type Auction2 = Auction Info1 (Lots '[Lot1, Lot2, Lot3])
 
-
-runner :: IO ()
-runner = eval AsAuction (Proxy :: Proxy Auction1)
+runner :: IO [String]
+runner = eval AsAuction (Proxy :: Proxy WorldArtsAuction)
 
 
 spec :: Spec
 spec =
   describe "Type level Servant-like eDSL Auction" $ do
-    it "Run Auction script" $ do
-      runner
+    it "Run WorldArtsAuction script" $ do
+      strs <- runner
+      -- putStrLn $ intercalate "\n" strs
+      strs `shouldBe`
+        [ "==> Auction! <=="
+        , "Name: World arts"
+        , "Holder: UK Bank"
+        , "Type: EnglishAuction"
+        , "Lot: 101"
+        , "Description: Dali artwork"
+        , "Currency: GBP"
+        , "Eligible participants: UK"
+        , "Lot: 202"
+        , "Description: Chinese vase"
+        , "Currency: GBP"
+        , "Eligible participants: UK, US"
+        , "Lot: 303"
+        , "Description: Ancient mechanism"
+        , "Currency: GBP"
+        ]

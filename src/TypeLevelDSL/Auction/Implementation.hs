@@ -41,27 +41,30 @@ data AsCurrency = AsCurrency
 
 -- Interpreting of the Auction
 
-instance (Eval AsInfo info (), Eval AsLots lots ()) =>
-  Eval AsAuction (Auction info lots) () where
+type Ret = [String]
+
+instance (Eval AsInfo info Ret, Eval AsLots lots Ret) =>
+  Eval AsAuction (Auction info lots) Ret where
   eval _ _ = do
-    putStrLn "This is an auction."
-    eval AsInfo (Proxy :: Proxy info)
-    eval AsLots (Proxy :: Proxy lots)
+    strs1 <- eval AsInfo (Proxy :: Proxy info)
+    strs2 <- eval AsLots (Proxy :: Proxy lots)
+    pure $ "==> Auction! <==" : (strs1 <> strs2)
 
 
 -- Interpreting of the auction info (auctionInfo :: AuctionInfoTag)
 
-instance (ai ~ AuctionInfo i, Eval AsInfo i ()) =>
-  Eval AsInfo ai () where
+instance (ai ~ AuctionInfo i, Eval AsInfo i Ret) =>
+  Eval AsInfo ai Ret where
   eval _ _ = eval AsInfo (Proxy :: Proxy i)
 
 instance (Eval AsType aType String, KnownSymbol name, KnownSymbol holder) =>
-  Eval AsInfo (Info name aType holder) () where
+  Eval AsInfo (Info name aType holder) Ret where
   eval _ _ = do
     typeName <- eval AsType (Proxy :: Proxy aType)
-    putStrLn $ "Name: " <> symbolVal (Proxy :: Proxy name)
-    putStrLn $ "Holder: " <> symbolVal (Proxy :: Proxy holder)
-    putStrLn $ "Type: " <> typeName
+    pure $ ( "Name: " <> symbolVal (Proxy :: Proxy name) )
+         : ( "Holder: " <> symbolVal (Proxy :: Proxy holder) )
+         : ( "Type: " <> typeName )
+         : []
 
 -- Interpreting of the AuctionType
 
@@ -72,51 +75,53 @@ instance Eval AsType EnglishAuction String where
 -- Interpreting of the list of lots (lots :: LotsTag a)
 
 -- No instance for an empty list. Empty lists are prohibited.
--- instance Eval AsLots '[] () where
---   eval _ _ = pure ()
+-- instance Eval AsLots '[] Ret where
+--   eval _ _ = pure []
 
 -- N.B., item is interpreted AsLot
-instance Eval AsLot p () => Eval AsLots (p ': '[]) () where
+instance Eval AsLot p Ret => Eval AsLots (p ': '[]) Ret where
   eval _ _ = eval AsLot (Proxy :: Proxy p)
 
 -- N.B., item is interpreted AsLot
-instance (Eval AsLot p (), Eval AsLots (x ': ps) ()) =>
-  Eval AsLots (p ': x ': ps) () where
+instance (Eval AsLot p Ret, Eval AsLots (x ': ps) Ret) =>
+  Eval AsLots (p ': x ': ps) Ret where
   eval _ _ = do
-    eval AsLot (Proxy :: Proxy p)
-    eval AsLots (Proxy :: Proxy (x ': ps))
+    strs1 <- eval AsLot (Proxy :: Proxy p)
+    strs2 <- eval AsLots (Proxy :: Proxy (x ': ps))
+    pure $ strs1 <> strs2
 
-instance (b ~ Lots a, Eval AsLots a ()) => Eval AsLots b () where
+instance (b ~ Lots a, Eval AsLots a Ret) => Eval AsLots b Ret where
   eval _ _ = eval AsLots (Proxy :: Proxy a)
 
 
 -- Interpreting of a Lot
 
-instance (Eval AsCurrency currency (), Eval AsCensorship censorship (),
+instance (Eval AsCurrency currency Ret, Eval AsCensorship censorship Ret,
   KnownSymbol name, KnownSymbol descr) =>
-  Eval AsLot (Lot name descr currency censorship) () where
+  Eval AsLot (Lot name descr currency censorship) Ret where
   eval _ _ = do
     censorship <- eval AsCensorship (Proxy :: Proxy censorship)
     currency   <- eval AsCurrency (Proxy :: Proxy currency)
-    putStrLn $ "Lot: " <> symbolVal (Proxy :: Proxy name)
-    putStrLn $ "Description: " <> symbolVal (Proxy :: Proxy descr)
+    pure $ ( "Lot: " <> symbolVal (Proxy :: Proxy name) )
+         : ( "Description: " <> symbolVal (Proxy :: Proxy descr) )
+         : ( currency <> censorship )
 
 
 -- Interpreting of the Currency extension
 
-instance (b ~ Currency a, Eval AsCurrency a ()) =>
-  Eval AsCurrency b () where
+instance (b ~ Currency a, Eval AsCurrency a Ret) =>
+  Eval AsCurrency b Ret where
   eval _ _ = eval AsCurrency (Proxy :: Proxy a)
 
 
 -- Interpreting of the Censorship extension
 
-instance (b ~ Censorship a, Eval AsCensorship a ()) =>
-  Eval AsCensorship b () where
+instance (b ~ Censorship a, Eval AsCensorship a Ret) =>
+  Eval AsCensorship b Ret where
   eval _ _ = eval AsCensorship (Proxy :: Proxy a)
 
 
 -- Interpretation of the NoCensorship
 
-instance Eval AsCensorship NoCensorship' () where
-  eval _ _ = pure ()
+instance Eval AsCensorship NoCensorship' Ret where
+  eval _ _ = pure []

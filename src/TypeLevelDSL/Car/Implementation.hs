@@ -14,30 +14,13 @@
 --                                             ^^^^^^^^^^^^^^^^
 {-# LANGUAGE FlexibleInstances        #-}
 
-module TypeLevelDSL.Car where
+module TypeLevelDSL.Car.Implementation where
 
-import           Data.Proxy (Proxy(..))
-import           GHC.TypeLits (Symbol)
+import Data.Proxy (Proxy(..))
+import GHC.TypeLits (Symbol)
 
--- eDSL
-
-data Car (name :: Symbol) (engine :: EngineTag x) (parts :: PartsTag a)
-
-data EngineTag a
-
-data PartsTag a
-
--- Construction of extensions
-
-type family Engine (a :: *) :: EngineTag a
-
-type family Parts (p :: [*]) :: PartsTag p
-
--- Implementation
-
--- This FunDep is needed to simplify the return type inference.
-class Eval tag payload ret | tag payload -> ret where
-  eval :: tag -> Proxy payload -> IO ret
+import TypeLevelDSL.Car.Language
+import TypeLevelDSL.Eval
 
 -- Interpreting of the (engine :: EngineTag x)
 data AsEngine = AsEngine
@@ -63,6 +46,7 @@ instance (Eval AsPart p (), Eval AsPart (x ': ps) ()) => Eval AsPart (p ': x ': 
 
 instance (b ~ Parts a, Eval AsPart a ()) => Eval AsPart b () where
   eval _ _ = eval AsPart (Proxy :: Proxy a)
+
 
 -- Interpreting of the Car
 

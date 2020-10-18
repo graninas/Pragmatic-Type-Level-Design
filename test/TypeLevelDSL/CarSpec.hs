@@ -10,10 +10,11 @@
 
 module TypeLevelDSL.CarSpec where
 
-import TypeLevelDSL.Car
+import TypeLevelDSL.Car.Language
+import TypeLevelDSL.Car.Implementation
+import TypeLevelDSL.Eval
 
 import           Test.Hspec
-
 import           Data.Proxy (Proxy(..))
 
 -- Extensions

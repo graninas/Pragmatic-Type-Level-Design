@@ -11,11 +11,11 @@
         -- than in the instance head ‘Eval AsInfo b ()’
 {-# LANGUAGE UndecidableInstances     #-}
 
--- instance (Eval AsEngine engine (), Eval AsPart parts ()) =>
+-- instance (Eval AsEngine engine (), Eval AsLots parts ()) =>
 --          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 {-# LANGUAGE FlexibleContexts         #-}
 
--- instance (b ~ Parts a, Eval AsPart a ()) => Eval AsPart b ()
+-- instance (b ~ Parts a, Eval AsLots a ()) => Eval AsLots b ()
 --                                             ^^^^^^^^^^^^^^^^
 {-# LANGUAGE FlexibleInstances        #-}
 
@@ -31,12 +31,12 @@ import TypeLevelDSL.Eval
 
 data AsAuction = AsAuction
 
-instance (Eval AsInfo info (), Eval AsLot lots ()) =>
+instance (Eval AsInfo info (), Eval AsLots lots ()) =>
   Eval AsAuction (Auction info lots) () where
   eval _ _ = do
     putStrLn "This is an auction."
     eval AsInfo (Proxy :: Proxy info)
-    eval AsLot (Proxy :: Proxy lots)
+    eval AsLots (Proxy :: Proxy lots)
 
 
 -- Interpreting of the (auctionInfo :: AuctionInfoTag)
@@ -61,19 +61,20 @@ instance Eval AsType EnglishAuction String where
 
 -- Interpreting of the (lots :: LotsTag a)
 
-data AsLot = AsLot
+data AsLots = AsLots
 
---
--- instance Eval AsPart '[] () where
---   eval _ _ = pure ()
---
--- instance Eval AsPart p () => Eval AsPart (p ': '[]) () where
---   eval _ _ = eval AsPart (Proxy :: Proxy p)
---
--- instance (Eval AsPart p (), Eval AsPart (x ': ps) ()) => Eval AsPart (p ': x ': ps) () where
---   eval _ _ = do
---     eval AsPart (Proxy :: Proxy p)
---     eval AsPart (Proxy :: Proxy (x ': ps))
---
--- instance (b ~ Parts a, Eval AsPart a ()) => Eval AsPart b () where
---   eval _ _ = eval AsPart (Proxy :: Proxy a)
+-- No instance for an empty list. Empty lists are prohibited.
+-- instance Eval AsLots '[] () where
+  -- eval _ _ = pure ()
+
+instance Eval AsLots p () => Eval AsLots (p ': '[]) () where
+  eval _ _ = eval AsLots (Proxy :: Proxy p)
+
+instance (Eval AsLots p (), Eval AsLots (x ': ps) ()) =>
+  Eval AsLots (p ': x ': ps) () where
+  eval _ _ = do
+    eval AsLots (Proxy :: Proxy p)
+    eval AsLots (Proxy :: Proxy (x ': ps))
+
+instance (b ~ Lots a, Eval AsLots a ()) => Eval AsLots b () where
+  eval _ _ = eval AsLots (Proxy :: Proxy a)

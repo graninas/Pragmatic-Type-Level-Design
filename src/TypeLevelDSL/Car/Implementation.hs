@@ -29,23 +29,24 @@ instance (b ~ Engine a, Eval AsEngine a ()) => Eval AsEngine b () where
   eval _ _ = eval AsEngine (Proxy :: Proxy a)
 
 
--- Interpreting of the (parts :: PartsTag a)
+-- Interpreting of the list (parts :: PartsTag a)
 
-data AsPart = AsPart
+data AsParts = AsParts
 
-instance Eval AsPart '[] () where
+-- Empty list of parts is allowed.
+instance Eval AsParts '[] () where
   eval _ _ = pure ()
 
-instance Eval AsPart p () => Eval AsPart (p ': '[]) () where
-  eval _ _ = eval AsPart (Proxy :: Proxy p)
+instance Eval AsParts p () => Eval AsParts (p ': '[]) () where
+  eval _ _ = eval AsParts (Proxy :: Proxy p)
 
-instance (Eval AsPart p (), Eval AsPart (x ': ps) ()) => Eval AsPart (p ': x ': ps) () where
+instance (Eval AsParts p (), Eval AsParts (x ': ps) ()) => Eval AsParts (p ': x ': ps) () where
   eval _ _ = do
-    eval AsPart (Proxy :: Proxy p)
-    eval AsPart (Proxy :: Proxy (x ': ps))
+    eval AsParts (Proxy :: Proxy p)
+    eval AsParts (Proxy :: Proxy (x ': ps))
 
-instance (b ~ Parts a, Eval AsPart a ()) => Eval AsPart b () where
-  eval _ _ = eval AsPart (Proxy :: Proxy a)
+instance (b ~ Parts a, Eval AsParts a ()) => Eval AsParts b () where
+  eval _ _ = eval AsParts (Proxy :: Proxy a)
 
 
 -- Interpreting of the Car
@@ -57,4 +58,4 @@ instance (Eval AsEngine engine (), Eval AsPart parts ()) =>
   eval _ _ = do
     putStrLn "This is a car."
     eval AsEngine (Proxy :: Proxy engine)
-    eval AsPart (Proxy :: Proxy parts)
+    eval AsParts (Proxy :: Proxy parts)

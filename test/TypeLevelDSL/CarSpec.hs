@@ -24,6 +24,8 @@ data BrokenEngine
 
 -- Implementation
 
+data AsPart
+
 instance Eval AsEngine FusionMkI () where
   eval _ _ = putStrLn "Engine: FusionMkI"
 

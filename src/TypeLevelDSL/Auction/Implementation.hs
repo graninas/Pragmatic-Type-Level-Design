@@ -97,3 +97,24 @@ instance (Eval AsCurrency currency (), Eval AsCensorship censorship (),
     currency   <- eval AsCurrency (Proxy :: Proxy currency)
     putStrLn $ "Lot: " <> symbolVal (Proxy :: Proxy name)
     putStrLn $ "Description: " <> symbolVal (Proxy :: Proxy descr)
+
+
+-- Interpreting of the Currency extension
+
+instance (b ~ Currency a, Eval AsCurrency a ()) =>
+  Eval AsCurrency b () where
+  eval _ _ = eval AsCurrency (Proxy :: Proxy a)
+
+
+-- Interpreting of the Censorship extension
+
+instance (b ~ Censorship a, Eval AsCensorship a ()) =>
+  Eval AsCensorship b () where
+  eval _ _ = eval AsCensorship (Proxy :: Proxy a)
+
+
+-- Interpretation of the NoCensorship
+
+instance (b ~ NoCensorship) =>
+  Eval AsCensorship b () where
+  eval _ _ = pure ()

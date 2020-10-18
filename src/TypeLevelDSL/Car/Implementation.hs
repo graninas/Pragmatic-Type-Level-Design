@@ -31,9 +31,10 @@ data AsPart = AsPart
 data AsCar = AsCar
 
 
--- Interpreting of the (engine :: EngineTag x)
+-- Interpreting of the Engine extension (engine :: EngineTag x)
 
-instance (b ~ Engine a, Eval AsEngine a ()) => Eval AsEngine b () where
+instance (b ~ Engine a, Eval AsEngine a ()) =>
+  Eval AsEngine b () where
   eval _ _ = eval AsEngine (Proxy :: Proxy a)
 
 
@@ -44,16 +45,22 @@ instance Eval AsParts '[] () where
   eval _ _ = pure ()
 
 -- N.B., item is interpreted AsPart
-instance Eval AsPart p () => Eval AsParts (p ': '[]) () where
+instance Eval AsPart p () =>
+  Eval AsParts (p ': '[]) () where
   eval _ _ = eval AsPart (Proxy :: Proxy p)
 
 -- N.B., item is interpreted AsPart
-instance (Eval AsPart p (), Eval AsParts (x ': ps) ()) => Eval AsParts (p ': x ': ps) () where
+instance (Eval AsPart p (), Eval AsParts (x ': ps) ()) =>
+  Eval AsParts (p ': x ': ps) () where
   eval _ _ = do
     eval AsPart (Proxy :: Proxy p)
     eval AsParts (Proxy :: Proxy (x ': ps))
 
-instance (b ~ Parts a, Eval AsParts a ()) => Eval AsParts b () where
+
+-- Interpreting of the Parts extension
+
+instance (b ~ Parts a, Eval AsParts a ()) =>
+  Eval AsParts b () where
   eval _ _ = eval AsParts (Proxy :: Proxy a)
 
 

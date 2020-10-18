@@ -28,12 +28,19 @@ data GBP
 data AllowedCountries (name :: Symbol) (participants :: [ Country ])
 
 class CurrencyInfo a where
-  toString :: Proxy a -> String
+  showCurrency :: Proxy a -> String
 
-instance CurrencyInfo USD where toString _ = "USD"
-instance CurrencyInfo EUR where toString _ = "EUR"
-instance CurrencyInfo GBP where toString _ = "GBP"
+instance CurrencyInfo USD where showCurrency _ = "USD"
+instance CurrencyInfo EUR where showCurrency _ = "EUR"
+instance CurrencyInfo GBP where showCurrency _ = "GBP"
 
+
+class ParticipantInfo a where
+  showParticipant :: Proxy a -> String
+
+instance ParticipantInfo US where showParticipant _ = "US"
+instance ParticipantInfo UK where showParticipant _ = "UK"
+instance ParticipantInfo UA where showParticipant _ = "UA"
 
 -- Implementation
 
@@ -42,18 +49,18 @@ instance CurrencyInfo GBP where toString _ = "GBP"
 data AsParticipants = AsParticipants
 
 -- Empty list of participants is not allowed.
--- instance Currency p => Eval AsParticipants '[] [String] where
+-- instance ParticipantInfo p => Eval AsParticipants '[] [String] where
 --   eval _ _ = pure []
 
-instance CurrencyInfo p => Eval AsParticipants (p ': '[]) [String] where
-  eval _ _ = pure [toString (Proxy :: Proxy p)]
+instance ParticipantInfo p => Eval AsParticipants (p ': '[]) String where
+  eval _ _ = pure $ showParticipant (Proxy :: Proxy p)
 
-instance (CurrencyInfo p, Eval AsParticipants (x ': xs) [String]) =>
-  Eval AsParticipants (p ': x ': xs) [String] where
+instance (ParticipantInfo p, Eval AsParticipants (x ': xs) String) =>
+  Eval AsParticipants (p ': x ': xs) String where
   eval _ _ = do
     ps <- eval AsParticipants (Proxy :: Proxy (x ': xs))
-    let p = toString (Proxy :: Proxy p)
-    pure $ p : ps
+    let p = showParticipant (Proxy :: Proxy p)
+    pure $ p <> ", " <> ps
 
 
 -- Interpreting of the AllowedCountries censorship
@@ -65,7 +72,14 @@ instance (Eval AsParticipants participants String) =>
     putStrLn $ "Eligible participants: " <> participants
 
 
--- Interpreting of the currency (currency :: CurrencyTag a)
+-- Interpreting of the specific currency
+
+instance (CurrencyInfo c) => Eval AsCurrency c () where
+  eval _ _ = putStrLn $ "Currency: " <> showCurrency (Proxy :: Proxy c)
+
+
+-- Interpreting of the specific
+
 
 
 -- Test sample
@@ -80,7 +94,7 @@ type Auction1 = Auction Info1 (Lots '[Lot1, Lot2, Lot3])
 
 
 runner :: IO ()
-runner = pure ()
+runner = eval AsAuction (Proxy :: Proxy Auction1)
 
 
 spec :: Spec

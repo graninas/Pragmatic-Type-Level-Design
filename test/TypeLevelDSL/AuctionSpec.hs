@@ -79,10 +79,10 @@ instance Eval AsCurrency GBP Ret where
   eval _ _ = pure [ "Currency: " <> showCurrency (Proxy :: Proxy GBP) ]
 
 instance Eval AsCurrency USD Ret where
-  eval _ _ = pure [ "Currency: " <> showCurrency (Proxy :: Proxy GBP) ]
+  eval _ _ = pure [ "Currency: " <> showCurrency (Proxy :: Proxy USD) ]
 
 instance Eval AsCurrency EUR Ret where
-  eval _ _ = pure [ "Currency: " <> showCurrency (Proxy :: Proxy GBP) ]
+  eval _ _ = pure [ "Currency: " <> showCurrency (Proxy :: Proxy EUR) ]
 
 
 -- Interpreting of the specific

@@ -41,6 +41,8 @@ data Info (name :: Symbol) (aType :: AuctionType) (holder :: Symbol)
 data Lot (name :: Symbol) (descr :: Symbol) (currency :: CurrencyTag a) (censorship :: CensorshipTag c)
 
 data AuctionInfoTag
+
+-- Extension points:
 data LotsTag a
 data CurrencyTag a
 data CensorshipTag a

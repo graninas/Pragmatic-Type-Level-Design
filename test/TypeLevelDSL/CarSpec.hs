@@ -24,8 +24,6 @@ data BrokenEngine
 
 -- Implementation
 
-data AsPart
-
 instance Eval AsEngine FusionMkI () where
   eval _ _ = putStrLn "Engine: FusionMkI"
 
@@ -48,9 +46,9 @@ runner :: IO ()
 runner = do
   eval AsEngine (Proxy :: Proxy (Engine FusionMkI))
   eval AsEngine (Proxy :: Proxy (Engine BrokenEngine))
-  eval AsPart (Proxy :: Proxy (Parts '[]))
-  eval AsPart (Proxy :: Proxy (Parts '[FusionMkI]))
-  eval AsPart (Proxy :: Proxy (Parts '[FusionMkI, BrokenEngine]))
+  eval AsParts (Proxy :: Proxy (Parts '[]))
+  eval AsParts (Proxy :: Proxy (Parts '[FusionMkI]))
+  eval AsParts (Proxy :: Proxy (Parts '[FusionMkI, BrokenEngine]))
   eval AsCar (Proxy :: Proxy MyCar3)
 
 -- Output:

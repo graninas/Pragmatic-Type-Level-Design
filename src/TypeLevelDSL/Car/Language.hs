@@ -22,12 +22,14 @@ import GHC.TypeLits (Symbol)
 
 data Car (name :: Symbol) (engine :: EngineTag x) (parts :: PartsTag a)
 
+-- Extension points:
 data EngineTag a
-
 data PartsTag a
 
 -- Construction of extensions
 
+-- Single type construction
 type family Engine (a :: *) :: EngineTag a
 
+-- List of types construction
 type family Parts (p :: [*]) :: PartsTag p

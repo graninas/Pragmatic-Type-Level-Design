@@ -17,13 +17,21 @@
 module TypeLevelDSL.Car.Implementation where
 
 import Data.Proxy (Proxy(..))
-import GHC.TypeLits (Symbol)
+import GHC.TypeLits (KnownSymbol, symbolVal)
 
 import TypeLevelDSL.Car.Language
 import TypeLevelDSL.Eval
 
--- Interpreting of the (engine :: EngineTag x)
+
+-- Interpretation tags
+
 data AsEngine = AsEngine
+data AsParts = AsParts
+data AsPart = AsPart
+data AsCar = AsCar
+
+
+-- Interpreting of the (engine :: EngineTag x)
 
 instance (b ~ Engine a, Eval AsEngine a ()) => Eval AsEngine b () where
   eval _ _ = eval AsEngine (Proxy :: Proxy a)
@@ -31,18 +39,18 @@ instance (b ~ Engine a, Eval AsEngine a ()) => Eval AsEngine b () where
 
 -- Interpreting of the list (parts :: PartsTag a)
 
-data AsParts = AsParts
-
 -- Empty list of parts is allowed.
 instance Eval AsParts '[] () where
   eval _ _ = pure ()
 
-instance Eval AsParts p () => Eval AsParts (p ': '[]) () where
-  eval _ _ = eval AsParts (Proxy :: Proxy p)
+-- N.B., item is interpreted AsPart
+instance Eval AsPart p () => Eval AsParts (p ': '[]) () where
+  eval _ _ = eval AsPart (Proxy :: Proxy p)
 
-instance (Eval AsParts p (), Eval AsParts (x ': ps) ()) => Eval AsParts (p ': x ': ps) () where
+-- N.B., item is interpreted AsPart
+instance (Eval AsPart p (), Eval AsParts (x ': ps) ()) => Eval AsParts (p ': x ': ps) () where
   eval _ _ = do
-    eval AsParts (Proxy :: Proxy p)
+    eval AsPart (Proxy :: Proxy p)
     eval AsParts (Proxy :: Proxy (x ': ps))
 
 instance (b ~ Parts a, Eval AsParts a ()) => Eval AsParts b () where
@@ -51,11 +59,9 @@ instance (b ~ Parts a, Eval AsParts a ()) => Eval AsParts b () where
 
 -- Interpreting of the Car
 
-data AsCar = AsCar
-
-instance (Eval AsEngine engine (), Eval AsPart parts ()) =>
+instance (KnownSymbol name, Eval AsEngine engine (), Eval AsParts parts ()) =>
   Eval AsCar (Car name engine parts) () where
   eval _ _ = do
-    putStrLn "This is a car."
+    putStrLn $ "This is a car: " <> symbolVal (Proxy :: Proxy name)
     eval AsEngine (Proxy :: Proxy engine)
     eval AsParts (Proxy :: Proxy parts)

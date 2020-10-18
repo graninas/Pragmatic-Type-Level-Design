@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 86c22bb81043901e3a585f14f8da940b33c6270a082cbc9909dfa5301c4c7ff0
+-- hash: 635a8939beb8ce1243959610d5f5c13213041e01a4240a0d845624ce191cf4a5
 
 name:           Pragmatic-Type-Level-Design
 version:        0.0.0.1
@@ -47,6 +47,7 @@ library
     , time
     , transformers
     , uuid
+    , void
   default-language: Haskell2010
 
 test-suite functional-tests
@@ -75,4 +76,5 @@ test-suite functional-tests
     , time
     , transformers
     , uuid
+    , void
   default-language: Haskell2010

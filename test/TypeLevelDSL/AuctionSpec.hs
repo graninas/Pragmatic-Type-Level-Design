@@ -16,15 +16,56 @@ import TypeLevelDSL.Eval
 
 import           Test.Hspec
 
-import           Data.Proxy (Proxy(..))
-import           GHC.TypeLits (Symbol)
+import Data.Proxy (Proxy(..))
+import GHC.TypeLits (KnownSymbol, Symbol, symbolVal)
 
+-- User space
 
 data USD
 data EUR
 data GBP
 
 data AllowedCountries (name :: Symbol) (participants :: [ Country ])
+
+class CurrencyInfo a where
+  toString :: Proxy a -> String
+
+instance CurrencyInfo USD where toString _ = "USD"
+instance CurrencyInfo EUR where toString _ = "EUR"
+instance CurrencyInfo GBP where toString _ = "GBP"
+
+
+-- Implementation
+
+-- Interpreting of the participants list
+
+data AsParticipants = AsParticipants
+
+-- Empty list of participants is not allowed.
+-- instance Currency p => Eval AsParticipants '[] [String] where
+--   eval _ _ = pure []
+
+instance CurrencyInfo p => Eval AsParticipants (p ': '[]) [String] where
+  eval _ _ = pure [toString (Proxy :: Proxy p)]
+
+instance (CurrencyInfo p, Eval AsParticipants (x ': xs) [String]) =>
+  Eval AsParticipants (p ': x ': xs) [String] where
+  eval _ _ = do
+    ps <- eval AsParticipants (Proxy :: Proxy (x ': xs))
+    let p = toString (Proxy :: Proxy p)
+    pure $ p : ps
+
+
+-- Interpreting of the AllowedCountries censorship
+
+instance (Eval AsParticipants participants String) =>
+  Eval AsCensorship (AllowedCountries name participants) () where
+  eval _ _ = do
+    participants <- eval AsParticipants (Proxy :: Proxy participants)
+    putStrLn $ "Eligible participants: " <> participants
+
+
+-- Interpreting of the currency (currency :: CurrencyTag a)
 
 
 -- Test sample

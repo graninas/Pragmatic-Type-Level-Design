@@ -130,9 +130,9 @@ spec =
         , "Eligible participants: UK"
         , "Lot: 202"
         , "Description: Chinese vase"
-        , "Currency: GBP"
+        , "Currency: USD"
         , "Eligible participants: UK, US"
         , "Lot: 303"
         , "Description: Ancient mechanism"
-        , "Currency: GBP"
+        , "Currency: USD"
         ]

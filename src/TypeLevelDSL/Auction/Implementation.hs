@@ -32,11 +32,12 @@ import TypeLevelDSL.Eval
 
 data AsInfo = AsInfo
 data AsAuction = AsAuction
-data AsType = AsType
+data AsAuctionType = AsAuctionType
 data AsLots = AsLots
 data AsLot = AsLot
 data AsCensorship = AsCensorship
 data AsCurrency = AsCurrency
+data AsMoneyConst = AsMoneyConst
 
 
 -- Interpreting of the Auction
@@ -57,10 +58,10 @@ instance (ai ~ AuctionInfo i, Eval AsInfo i Ret) =>
   Eval AsInfo ai Ret where
   eval _ _ = eval AsInfo (Proxy :: Proxy i)
 
-instance (Eval AsType aType String, KnownSymbol name, KnownSymbol holder) =>
-  Eval AsInfo (Info name aType holder) Ret where
+instance (Eval AsAuctionType aType String, KnownSymbol name, KnownSymbol holder) =>
+  Eval AsInfo (Info' name aType holder) Ret where
   eval _ _ = do
-    typeName <- eval AsType (Proxy :: Proxy aType)
+    typeName <- eval AsAuctionType (Proxy :: Proxy aType)
     pure $ ( "Name: " <> symbolVal (Proxy :: Proxy name) )
          : ( "Holder: " <> symbolVal (Proxy :: Proxy holder) )
          : ( "Type: " <> typeName )
@@ -68,7 +69,7 @@ instance (Eval AsType aType String, KnownSymbol name, KnownSymbol holder) =>
 
 -- Interpreting of the AuctionType
 
-instance Eval AsType EnglishAuction String where
+instance Eval AsAuctionType EnglishAuction String where
   eval _ _ = pure "EnglishAuction"
 
 
@@ -97,13 +98,16 @@ instance (b ~ Lots a, Eval AsLots a Ret) => Eval AsLots b Ret where
 -- Interpreting of a Lot
 
 instance (Eval AsCurrency currency Ret, Eval AsCensorship censorship Ret,
+  Eval AsMoneyConst minBid String,
   KnownSymbol name, KnownSymbol descr) =>
-  Eval AsLot (Lot name descr currency censorship) Ret where
+  Eval AsLot (Lot name descr minBid currency censorship) Ret where
   eval _ _ = do
+    minBid <- eval AsMoneyConst (Proxy :: Proxy minBid)
     censorship <- eval AsCensorship (Proxy :: Proxy censorship)
     currency   <- eval AsCurrency (Proxy :: Proxy currency)
     pure $ ( "Lot: " <> symbolVal (Proxy :: Proxy name) )
          : ( "Description: " <> symbolVal (Proxy :: Proxy descr) )
+         : ( "Minimum bid: " <> minBid )
          : ( currency <> censorship )
 
 
@@ -121,7 +125,17 @@ instance (b ~ Censorship a, Eval AsCensorship a Ret) =>
   eval _ _ = eval AsCensorship (Proxy :: Proxy a)
 
 
--- Interpretation of the NoCensorship
+-- Interpretating of the NoCensorship
 
 instance Eval AsCensorship NoCensorship' Ret where
   eval _ _ = pure []
+
+
+-- Interpreting a MoneyConst value
+instance (b ~ MoneyConst a, Eval AsMoneyConst a String) =>
+  Eval AsMoneyConst b String where
+  eval _ _ = eval AsMoneyConst (Proxy :: Proxy a)
+
+
+instance KnownSymbol val => Eval AsMoneyConst (MoneyVal' val) String where
+  eval _ _ = pure $ symbolVal (Proxy :: Proxy val)

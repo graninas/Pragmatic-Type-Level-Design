@@ -95,19 +95,12 @@ type UKOnly  = Censorship (AllowedCountries "UK only" '[UK])
 type UKAndUS = Censorship (AllowedCountries "UK & US" '[UK, US])
 
 type WorldArtsAuction = Auction
-  (AuctionInfo (Info "World arts" EnglishAuction "UK Bank"))
-  (Lots '[ Lot "101" "Dali artwork" (Currency GBP) UKOnly
-         , Lot "202" "Chinese vase" (Currency USD) UKAndUS
-         , Lot "303" "Ancient mechanism" (Currency USD) NoCensorship
+  (Info "World arts" EnglishAuction "UK Bank")
+  (Lots '[ Lot "101" "Dali artwork" (MoneyVal "1000.0") (Currency GBP) UKOnly
+         , Lot "202" "Chinese vase" (MoneyVal "20000.0") (Currency USD) UKAndUS
+         , Lot "303" "Ancient mechanism" (MoneyVal "40000.0") (Currency USD) NoCensorship
          ]
   )
-
-
-type Info1 = AuctionInfo (Info "World arts" EnglishAuction "UK Bank")
-type Lot1 = Lot "101" "Dali artwork" (Currency GBP) UKOnly
-type Lot2 = Lot "202" "Chinese vase" (Currency USD) UKAndUS
-type Lot3 = Lot "303" "Ancient mechanism" (Currency USD) NoCensorship
-type Auction2 = Auction Info1 (Lots '[Lot1, Lot2, Lot3])
 
 runner :: IO [String]
 runner = eval AsAuction (Proxy :: Proxy WorldArtsAuction)
@@ -126,13 +119,16 @@ spec =
         , "Type: EnglishAuction"
         , "Lot: 101"
         , "Description: Dali artwork"
+        , "Minimum bid: 1000.0"
         , "Currency: GBP"
         , "Eligible participants: UK"
         , "Lot: 202"
         , "Description: Chinese vase"
+        , "Minimum bid: 20000.0"
         , "Currency: USD"
         , "Eligible participants: UK, US"
         , "Lot: 303"
         , "Description: Ancient mechanism"
+        , "Minimum bid: 40000.0"
         , "Currency: USD"
         ]

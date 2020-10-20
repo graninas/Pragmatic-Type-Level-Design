@@ -33,6 +33,8 @@ data AuctionType
 
 -- eDSL
 
+data DynVal (name :: Symbol)
+
 data MoneyVal' (val :: Symbol)
 
 data Auction (auctionInfo :: AuctionInfoTag i) (lots :: LotsTag ls)
@@ -69,4 +71,5 @@ type NoCensorship = Censorship NoCensorship'
 
 type Info name aType holder = AuctionInfo (Info' name aType holder)
 
-type MoneyVal (val :: Symbol) = MoneyConst (MoneyVal' val)
+type MoneyVal (val :: Symbol)     = MoneyConst (MoneyVal' val)
+type MoneyDynVal (name :: Symbol) = MoneyConst (DynVal name)

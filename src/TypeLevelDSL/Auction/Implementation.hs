@@ -132,10 +132,10 @@ instance Eval AsCensorship NoCensorship' Ret where
 
 
 -- Interpreting a MoneyConst value
+
 instance (b ~ MoneyConst a, Eval AsMoneyConst a String) =>
   Eval AsMoneyConst b String where
   eval _ _ = eval AsMoneyConst (Proxy :: Proxy a)
-
 
 instance KnownSymbol val => Eval AsMoneyConst (MoneyVal' val) String where
   eval _ _ = pure $ symbolVal (Proxy :: Proxy val)

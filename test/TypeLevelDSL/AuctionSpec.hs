@@ -84,20 +84,22 @@ instance Eval AsCurrency USD Ret where
 instance Eval AsCurrency EUR Ret where
   eval _ _ = pure [ "Currency: " <> showCurrency (Proxy :: Proxy EUR) ]
 
-
--- Interpreting of the specific
-
-
+-- Dynamic (runtime) value.
+-- N.B., this sample does not check for type safety of the money value.
+instance Eval AsMoneyConst (DynVal "202 min bid") String where
+  eval _ _ = pure "20000.0"
 
 -- Test sample
 
 type UKOnly  = Censorship (AllowedCountries "UK only" '[UK])
 type UKAndUS = Censorship (AllowedCountries "UK & US" '[UK, US])
 
+type Lot202MinBid = MoneyDynVal "202 min bid"
+
 type WorldArtsAuction = Auction
   (Info "World arts" EnglishAuction "UK Bank")
   (Lots '[ Lot "101" "Dali artwork" (MoneyVal "1000.0") (Currency GBP) UKOnly
-         , Lot "202" "Chinese vase" (MoneyVal "20000.0") (Currency USD) UKAndUS
+         , Lot "202" "Chinese vase" Lot202MinBid (Currency USD) UKAndUS
          , Lot "303" "Ancient mechanism" (MoneyVal "40000.0") (Currency USD) NoCensorship
          ]
   )

@@ -41,15 +41,19 @@ data Auction (auctionInfo :: AuctionInfoTag i) (lots :: LotsTag ls)
 
 data Info' (name :: Symbol) (aType :: AuctionType) (holder :: Symbol)
 
-data Lot (name :: Symbol) (descr :: Symbol) (minBid :: MoneyConstTag m) (currency :: CurrencyTag a) (censorship :: CensorshipTag c)
+data Lot (name :: Symbol) (descr :: Symbol) (payload :: LotPayloadTag a) (currency :: CurrencyTag a) (censorship :: CensorshipTag c)
+
+data LotBid (val :: MoneyConstTag a)
 
 -- Extension points:
 
 data MoneyConstTag a
 data AuctionInfoTag a
 data LotsTag a
+data LotPayloadTag a
 data CurrencyTag a
 data CensorshipTag a
+data BidTag a
 
 -- Construction
 
@@ -62,6 +66,10 @@ type family Currency (a :: *) :: CurrencyTag a
 type family Censorship (a :: *) :: CensorshipTag a
 
 type family Lots (a :: [*]) :: LotsTag a
+
+type family LotPayload (a :: *) :: LotPayloadTag a
+
+type family Bid (a :: *) :: BidTag a
 
 -- Helpers
 

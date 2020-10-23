@@ -28,13 +28,14 @@ data GBP
 
 data AllowedCountries (name :: Symbol) (participants :: [ Country ])
 
+data Payload (minBid :: BidTag a)
+
 class CurrencyInfo a where
   showCurrency :: Proxy a -> String
 
 instance CurrencyInfo USD where showCurrency _ = "USD"
 instance CurrencyInfo EUR where showCurrency _ = "EUR"
 instance CurrencyInfo GBP where showCurrency _ = "GBP"
-
 
 class ParticipantInfo a where
   showParticipant :: Proxy a -> String
@@ -94,15 +95,35 @@ instance Eval AsMoneyConst (DynVal "202 min bid") String where
 type UKOnly  = Censorship (AllowedCountries "UK only" '[UK])
 type UKAndUS = Censorship (AllowedCountries "UK & US" '[UK, US])
 
-type Lot202MinBid = MoneyDynVal "202 min bid"
+type PayloadLot1 = Payload (Bid (MoneyVal "1000.0"))
+type PayloadLot2 = Payload (Bid (MoneyDynVal "202 min bid"))
+type PayloadLot3 = Payload (Bid (MoneyVal "40000.0"))
 
 type WorldArtsAuction = Auction
   (Info "World arts" EnglishAuction "UK Bank")
-  (Lots '[ Lot "101" "Dali artwork" (MoneyVal "1000.0") (Currency GBP) UKOnly
-         , Lot "202" "Chinese vase" Lot202MinBid (Currency USD) UKAndUS
-         , Lot "303" "Ancient mechanism" (MoneyVal "40000.0") (Currency USD) NoCensorship
+  (Lots '[ Lot "101" "Dali artwork"      PayloadLot1 (Currency GBP) UKOnly
+         , Lot "202" "Chinese vase"      PayloadLot2 (Currency USD) UKAndUS
+         , Lot "303" "Ancient mechanism" PayloadLot3 (Currency USD) NoCensorship
          ]
   )
+
+-- English Auction Flow
+
+-- Greeting
+-- Iterations
+-- Bid
+-- Lot
+-- Notification
+-- Final condition
+-- Round
+
+-- type EnglishAuctionFlow = AuctionFlow
+--   ( LotProcess (StartFrom
+--       [
+--       ]
+--       )
+--   )
+
 
 runner :: IO [String]
 runner = eval AsAuction (Proxy :: Proxy WorldArtsAuction)

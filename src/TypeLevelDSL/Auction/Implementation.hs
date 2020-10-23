@@ -38,6 +38,10 @@ data AsLot = AsLot
 data AsCensorship = AsCensorship
 data AsCurrency = AsCurrency
 data AsMoneyConst = AsMoneyConst
+data AsPayload = AsPayload
+
+data AsBid = AsBid
+data AsMinBid = AsMinBid
 
 
 -- Interpreting of the Auction
@@ -69,7 +73,7 @@ instance (Eval AsAuctionType aType String, KnownSymbol name, KnownSymbol holder)
 
 -- Interpreting of the AuctionType
 
-instance Eval AsAuctionType EnglishAuction String where
+instance Eval AsAuctionType 'EnglishAuction String where
   eval _ _ = pure "EnglishAuction"
 
 
@@ -98,16 +102,16 @@ instance (b ~ Lots a, Eval AsLots a Ret) => Eval AsLots b Ret where
 -- Interpreting of a Lot
 
 instance (Eval AsCurrency currency Ret, Eval AsCensorship censorship Ret,
-  Eval AsMoneyConst minBid String,
+  Eval AsPayload payload String,
   KnownSymbol name, KnownSymbol descr) =>
-  Eval AsLot (Lot name descr minBid currency censorship) Ret where
+  Eval AsLot (Lot name descr payload currency censorship) Ret where
   eval _ _ = do
-    minBid <- eval AsMoneyConst (Proxy :: Proxy minBid)
+    payload    <- eval AsPayload (Proxy :: Proxy payload)
     censorship <- eval AsCensorship (Proxy :: Proxy censorship)
     currency   <- eval AsCurrency (Proxy :: Proxy currency)
     pure $ ( "Lot: " <> symbolVal (Proxy :: Proxy name) )
          : ( "Description: " <> symbolVal (Proxy :: Proxy descr) )
-         : ( "Minimum bid: " <> minBid )
+         :   payload
          : ( currency <> censorship )
 
 

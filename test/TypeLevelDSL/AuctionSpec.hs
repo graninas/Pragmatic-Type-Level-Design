@@ -28,7 +28,7 @@ data GBP
 
 data AllowedCountries (name :: Symbol) (participants :: [ Country ])
 
-data Payload (minBid :: BidTag a)
+data Payload (minBid :: MoneyConstTag a)
 
 class CurrencyInfo a where
   showCurrency :: Proxy a -> String
@@ -85,19 +85,28 @@ instance Eval AsCurrency USD Ret where
 instance Eval AsCurrency EUR Ret where
   eval _ _ = pure [ "Currency: " <> showCurrency (Proxy :: Proxy EUR) ]
 
+-- Interpreting other extensions
+
 -- Dynamic (runtime) value.
 -- N.B., this sample does not check for type safety of the money value.
 instance Eval AsMoneyConst (DynVal "202 min bid") String where
   eval _ _ = pure "20000.0"
+
+-- Payload
+instance Eval AsMoneyConst minBid String =>
+  Eval AsLotPayload (Payload minBid) String where
+  eval _ _ = do
+    v <- eval AsMoneyConst (Proxy :: Proxy minBid)
+    pure $ "Minimum bid: " <> v
 
 -- Test sample
 
 type UKOnly  = Censorship (AllowedCountries "UK only" '[UK])
 type UKAndUS = Censorship (AllowedCountries "UK & US" '[UK, US])
 
-type PayloadLot1 = Payload (Bid (MoneyVal "1000.0"))
-type PayloadLot2 = Payload (Bid (MoneyDynVal "202 min bid"))
-type PayloadLot3 = Payload (Bid (MoneyVal "40000.0"))
+type PayloadLot1 = LotPayload (Payload (MoneyVal "1000.0"))
+type PayloadLot2 = LotPayload (Payload (MoneyDynVal "202 min bid"))
+type PayloadLot3 = LotPayload (Payload (MoneyVal "40000.0"))
 
 type WorldArtsAuction = Auction
   (Info "World arts" EnglishAuction "UK Bank")

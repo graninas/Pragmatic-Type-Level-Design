@@ -38,7 +38,7 @@ data AsLot = AsLot
 data AsCensorship = AsCensorship
 data AsCurrency = AsCurrency
 data AsMoneyConst = AsMoneyConst
-data AsPayload = AsPayload
+data AsLotPayload = AsLotPayload
 
 data AsBid = AsBid
 data AsMinBid = AsMinBid
@@ -102,11 +102,11 @@ instance (b ~ Lots a, Eval AsLots a Ret) => Eval AsLots b Ret where
 -- Interpreting of a Lot
 
 instance (Eval AsCurrency currency Ret, Eval AsCensorship censorship Ret,
-  Eval AsPayload payload String,
+  Eval AsLotPayload payload String,
   KnownSymbol name, KnownSymbol descr) =>
   Eval AsLot (Lot name descr payload currency censorship) Ret where
   eval _ _ = do
-    payload    <- eval AsPayload (Proxy :: Proxy payload)
+    payload    <- eval AsLotPayload (Proxy :: Proxy payload)
     censorship <- eval AsCensorship (Proxy :: Proxy censorship)
     currency   <- eval AsCurrency (Proxy :: Proxy currency)
     pure $ ( "Lot: " <> symbolVal (Proxy :: Proxy name) )
@@ -143,3 +143,9 @@ instance (b ~ MoneyConst a, Eval AsMoneyConst a String) =>
 
 instance KnownSymbol val => Eval AsMoneyConst (MoneyVal' val) String where
   eval _ _ = pure $ symbolVal (Proxy :: Proxy val)
+
+-- Interpreting a LotPayload value
+
+instance (b ~ LotPayload a, Eval AsLotPayload a String) =>
+  Eval AsLotPayload b String where
+  eval _ _ = eval AsLotPayload (Proxy :: Proxy a)

@@ -126,12 +126,45 @@ type WorldArtsAuction = Auction
 -- Final condition
 -- Round
 
--- type EnglishAuctionFlow = AuctionFlow
---   ( LotProcess (StartFrom
---       [
---       ]
---       )
---   )
+-- Lenses?
+-- data LotPayloadGetter
+-- data MinBidGetter
+-- data Get l r
+
+data LotProcessTag a
+data LotRoundTag a
+data WinnerTag a
+data StartFromTag a
+data EndOnTag a
+data RoundDefTag a
+data NoActionRoundsTag a
+
+
+type family Winner (a :: *) :: WinnerTag a
+type family EndOn (a :: *) :: EndOnTag a
+type family Startfrom (a :: *) :: StartFromTag a
+type family LotProcess (a :: *) :: LotProcessTag a
+type family LotRound (a :: [*]) :: LotRoundTag a
+
+
+data NoWinner'
+type NoWinner = Winner NoWinner'
+
+data NoActionRounds (cnt :: Nat)
+
+data StartFrom' (bidQuery :: BidTag a) (curWinner :: WinnerTag b)
+data EndOn' (endOn :: EndOnTag a)
+
+data LotProcess (startFrom :: StartFromTag a) (endOn :: EndOnTag b) (lotRound :: LotRoundTag c)
+
+data AuctionFlow (lotProcess :: LotProcessTag a)
+
+type EnglishAuctionFlow = AuctionFlow
+  (LotProcess
+      (StartFrom (Bid "minBid") NoWinner)
+      (EndOn (NoActionRounds 3))
+      (LotRound '[])
+  )
 
 
 runner :: IO [String]

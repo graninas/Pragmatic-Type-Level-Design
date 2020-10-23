@@ -40,7 +40,11 @@ data Auction (auctionInfo :: AuctionInfoTag i) (lots :: LotsTag ls)
 
 data Info' (name :: Symbol) (aType :: AuctionType) (holder :: Symbol)
 
-data Lot (name :: Symbol) (descr :: Symbol) (payload :: LotPayloadTag p) (currency :: CurrencyTag a) (censorship :: CensorshipTag c)
+data Lot (name :: Symbol)
+         (descr :: Symbol)
+         (payload :: LotPayloadTag p)
+         (currency :: CurrencyTag a)
+         (censorship :: CensorshipTag c)
 
 -- Extension points:
 
@@ -70,8 +74,7 @@ type family Bid (a :: *) :: BidTag a
 
 -- Helpers
 
-data NoCensorship'
-
+data NoCensorship'    -- This can be pattern matched esier than something like ()
 type NoCensorship = Censorship NoCensorship'
 
 type Info name aType holder = AuctionInfo (Info' name aType holder)

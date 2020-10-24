@@ -134,7 +134,7 @@ type WorldArtsAuction = Auction
 data LotProcessTag a
 data LotRoundTag a
 data WinnerTag a
-data StartFromTag a
+data StartActionTag a
 data EndOnTag a
 data RoundDefTag a
 data NoActionRoundsTag a
@@ -142,9 +142,12 @@ data NoActionRoundsTag a
 
 type family Winner (a :: *) :: WinnerTag a
 type family EndOn (a :: *) :: EndOnTag a
-type family Startfrom (a :: *) :: StartFromTag a
+type family StartAction (a :: *) :: StartActionTag a
 type family LotProcess (a :: *) :: LotProcessTag a
 type family LotRound (a :: [*]) :: LotRoundTag a
+
+
+type StartFrom bidQuery winner = StartAction (StartAction' bidQuery winner)
 
 
 data NoWinner'
@@ -152,10 +155,10 @@ type NoWinner = Winner NoWinner'
 
 data NoActionRounds (cnt :: Nat)
 
-data StartFrom' (bidQuery :: BidTag a) (curWinner :: WinnerTag b)
-data EndOn' (endOn :: EndOnTag a)
+data StartAction' (bidQuery :: BidTag a) (winner :: WinnerTag b)
+data EndCondition' (endOn :: EndOnTag a)
 
-data LotProcess (startFrom :: StartFromTag a) (endOn :: EndOnTag b) (lotRound :: LotRoundTag c)
+data LotProcess' (startFrom :: StartFromTag a) (endOn :: EndOnTag b) (lotRound :: LotRoundTag c)
 
 data AuctionFlow (lotProcess :: LotProcessTag a)
 
@@ -165,6 +168,8 @@ type EnglishAuctionFlow = AuctionFlow
       (EndOn (NoActionRounds 3))
       (LotRound '[])
   )
+
+
 
 
 runner :: IO [String]

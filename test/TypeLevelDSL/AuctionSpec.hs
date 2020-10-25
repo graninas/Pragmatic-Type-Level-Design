@@ -18,7 +18,7 @@ import Test.Hspec
 
 import Data.List (intercalate)
 import Data.Proxy (Proxy(..))
-import GHC.TypeLits (KnownSymbol, Symbol, symbolVal)
+import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 
 -- User space
 
@@ -131,42 +131,44 @@ type WorldArtsAuction = Auction
 -- data MinBidGetter
 -- data Get l r
 
+data ActionsTag a
+data ActionTag a
+data GetPayloadValueTag a
 data LotProcessTag a
-data LotRoundTag a
-data WinnerTag a
-data StartActionTag a
-data EndOnTag a
-data RoundDefTag a
-data NoActionRoundsTag a
+data FunctionTag a
 
+type family Actions (a :: [*]) :: ActionsTag a
+type family MkSetRef (a :: *) :: ActionTag a
+type family MkGetPayloadValue (a :: *) :: GetPayloadValueTag a
+type family MkLotProcess (a :: *) :: LotProcessTag a
+type family MkFunction (a :: *) :: FunctionTag a
 
-type family Winner (a :: *) :: WinnerTag a
-type family EndOn (a :: *) :: EndOnTag a
-type family StartAction (a :: *) :: StartActionTag a
-type family LotProcess (a :: *) :: LotProcessTag a
-type family LotRound (a :: [*]) :: LotRoundTag a
-
-
-type StartFrom bidQuery winner = StartAction (StartAction' bidQuery winner)
-
-
-data NoWinner'
-type NoWinner = Winner NoWinner'
-
-data NoActionRounds (cnt :: Nat)
-
-data StartAction' (bidQuery :: BidTag a) (winner :: WinnerTag b)
-data EndCondition' (endOn :: EndOnTag a)
-
-data LotProcess' (startFrom :: StartFromTag a) (endOn :: EndOnTag b) (lotRound :: LotRoundTag c)
 
 data AuctionFlow (lotProcess :: LotProcessTag a)
+data LotProcess' (startActions :: ActionsTag a)
+data SetRef' (refName :: Symbol) (src :: FunctionTag a)
+data GetPayloadValue' (valName :: Symbol)
+data Action (act :: ActionTag a)
+
+type LotProcess startActions = MkLotProcess (LotProcess' startActions)
+type SetRef refName src = Action (MkSetRef (SetRef' refName src))
+type GetPayloadValue valName = MkFunction (GetPayloadValue' valName)
+
+
+-- Non-type-safe. The type of minBid is not checked somehow.
+-- (This proves that when you lift to the type level, you have
+--  to reestablish type safety, if you really need it).
+
+-- You have to decide on how low level your DSL should be.
+--   Should it be a domain-level DSL, or it should include
+--   a limited but domain-agnostic programming language.
+
 
 type EnglishAuctionFlow = AuctionFlow
   (LotProcess
-      (StartFrom (Bid "minBid") NoWinner)
-      (EndOn (NoActionRounds 3))
-      (LotRound '[])
+      (Actions '[ SetRef "curBid" (GetPayloadValue "minBid")
+                ]
+      )
   )
 
 

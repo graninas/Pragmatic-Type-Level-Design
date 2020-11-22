@@ -42,21 +42,49 @@ type WorldArtsAuction = Auction
           ]
   )
 
+-- Auction algorithm
+
+-- English Auction Flow
+
+-- Greeting
+-- Iterations
+-- Bid
+-- Lot
+-- Notification
+-- Final condition
+-- Round
+
+-- Lenses?
+-- data LotPayloadGetter
+-- data MinBidGetter
+-- data Get l r
+
+-- TODO: try make Symbol work instead of type marks
+
+data MinBid
+data AuctionState = AuctionState
+  { minBidVal :: Float
+  }
 
 type EnglishAuctionFlow = AuctionFlow
   ( LotProcess
-      ( Action (GetPayloadValue "minBid" Print)
-        ( Action (GetPayloadValue "minBid" Drop)
+      ( Action (GetPayloadValue MinBid Float Print)
+        ( Action (GetPayloadValue MinBid Float Drop)
           End
         )
       )
   )
 
+instance HasValue AuctionState MinBid Float where
+  getVal (AuctionState mb) = mb
 
 runner :: IO [String]
 runner = do
-  eval AsAction (Proxy :: Proxy End')               -- we can eval a 'data' type
-  eval AsAction (Proxy :: Proxy End)                -- we can eval this as (act ~ MkAction act2, Eval AsAction act2 ())
+  let ctx = AuctionState 1000.0
+  evalCtx ctx AsAction (Proxy :: Proxy End')               -- we can eval a 'data' type
+  evalCtx ctx AsAction (Proxy :: Proxy End)                -- we can eval this as (act ~ MkAction act2, Eval AsAction act2 ())
+  evalCtx ctx AsAction (Proxy :: Proxy (Action (GetPayloadValue MinBid Float Drop) End))
+
   eval AsAuction (Proxy :: Proxy WorldArtsAuction)
 
 

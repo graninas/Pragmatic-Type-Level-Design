@@ -8,6 +8,9 @@
 {-# LANGUAGE FlexibleInstances        #-}
 {-# LANGUAGE ScopedTypeVariables      #-}
 
+{-# LANGUAGE AllowAmbiguousTypes      #-}
+
+
 module TypeLevelDSL.Auction.AuctionDSL where
 
 import TypeLevelDSL.Auction.Language
@@ -48,49 +51,23 @@ type family MkLambda      (a :: *) :: LambdaTag a
 
 data AuctionFlow'     (lotProcess :: LotProcessTag lp)
 data LotProcess'      (startActions :: *)
-data GetPayloadValue' (valName :: Symbol) (cont :: LambdaTag lam)
+
+-- Should valName be a Symbol?
+data GetPayloadValue' (valName :: *) (valType :: *) (lam :: LambdaTag lamBody)
+data Action'          (act :: ActionTag a) acts
 data End'
 data Print'
 data Drop'
 
 type AuctionFlow lotProcess       = MkAuctionFlow (AuctionFlow' lotProcess)
 type LotProcess startActions      = MkLotProcess (LotProcess' startActions)
-type GetPayloadValue valName cont = MkAction (GetPayloadValue' valName cont)
+type GetPayloadValue n t lam      = MkAction (GetPayloadValue' n t lam)
+type Action act acts              = Action' act acts    -- Just a synonym
 type End                          = MkAction End'
 type Print                        = MkLambda Print'
 type Drop                         = MkLambda Drop'
 
-data Action (act :: ActionTag a) acts
-
--- Non-type-safe. The type of minBid is not checked somehow.
--- (This proves that when you lift to the type level, you have
---  to reestablish type safety, if you really need it).
-
--- You have to decide on how low level your DSL should be.
---   Should it be a domain-level DSL, or it should include
---   a limited but domain-agnostic programming language.
 
 
--- English Auction Flow
-
--- Greeting
--- Iterations
--- Bid
--- Lot
--- Notification
--- Final condition
--- Round
-
--- Lenses?
--- data LotPayloadGetter
--- data MinBidGetter
--- data Get l r
-
-type EnglishAuctionFlow = AuctionFlow
-  ( LotProcess
-      ( Action (GetPayloadValue "minBid" Print)
-        ( Action (GetPayloadValue "minBid" Drop)
-          End
-        )
-      )
-  )
+class HasValue ctx valName valType | ctx valName -> valType where
+  getVal :: ctx -> valType

@@ -7,6 +7,7 @@
 {-# LANGUAGE FlexibleContexts         #-}
 {-# LANGUAGE FlexibleInstances        #-}
 {-# LANGUAGE ScopedTypeVariables      #-}
+{-# LANGUAGE TypeApplications         #-}
 
 module TypeLevelDSL.Auction.AuctionDSLImpl where
 
@@ -69,7 +70,7 @@ data AsAction = AsAction
 --   eval _ _ = pure "20000.0"
 --
 
--- Actions
+-- The Actions mechanism
 
 -- This is how we unwrap a type constructed with a type family.
 -- Example:
@@ -78,10 +79,24 @@ data AsAction = AsAction
 --            ^ type family
 --                     ^ some real data type
 
-instance (act ~ MkAction act2, Eval AsAction act2 ()) =>
-  Eval AsAction act () where
-  eval _ _ = eval AsAction (Proxy :: Proxy act2)
+instance (act ~ MkAction act2, EvalCtx ctx AsAction act2 ()) =>
+  EvalCtx ctx AsAction act () where
+  evalCtx ctx _ _ = evalCtx ctx AsAction (Proxy :: Proxy act2)
 
 -- Interpreting a real action
-instance Eval AsAction End' () where
-  eval _ _ = putStrLn "DEBUG: End reached."
+instance EvalCtx ctx AsAction End' () where
+  evalCtx ctx _ _ = putStrLn "DEBUG: End reached."
+
+instance EvalCtx ctx AsAction act () =>
+  EvalCtx ctx AsAction (Action' act acts) () where
+  evalCtx ctx _ _ = do
+    evalCtx ctx AsAction (Proxy :: Proxy act)
+
+
+-- Specific actions
+
+instance (Show valType, HasValue ctx valName valType) =>
+  EvalCtx ctx AsAction (GetPayloadValue' valName valType lam) () where
+  evalCtx ctx _ _ = do
+    putStrLn $ show $ ((getVal @_ @valName @valType) ctx)
+    putStrLn "GetPayloadValue' reached"

@@ -14,8 +14,16 @@ import           Data.Proxy (Proxy(..))
 import           GHC.TypeLits (Symbol)
 
 
-
+-- | The Eval type class.
+-- Allows to pattern match over a type level DSL,
+-- while interpreting it into something real.
 
 -- This FunDep is needed to simplify the return type inference.
 class Eval tag payload ret | tag payload -> ret where
   eval :: tag -> Proxy payload -> IO ret
+
+-- Eval with context.
+-- Currently, the context should be passed as an argument.
+
+class EvalCtx ctx tag payload ret | tag payload -> ret where
+  evalCtx :: ctx -> tag -> Proxy payload -> IO ret

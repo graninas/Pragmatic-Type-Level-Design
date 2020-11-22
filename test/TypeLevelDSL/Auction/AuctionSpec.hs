@@ -15,6 +15,7 @@ import TypeLevelDSL.Auction.Exts
 import TypeLevelDSL.Auction.AuctionDSL
 import TypeLevelDSL.Auction.Implementation
 import TypeLevelDSL.Auction.ExtsImpl
+import TypeLevelDSL.Auction.AuctionDSLImpl
 import TypeLevelDSL.Eval
 
 import Test.Hspec
@@ -53,7 +54,11 @@ type EnglishAuctionFlow = AuctionFlow
 
 
 runner :: IO [String]
-runner = eval AsAuction (Proxy :: Proxy WorldArtsAuction)
+runner = do
+  eval AsAction (Proxy :: Proxy End')               -- we can eval a 'data' type
+  eval AsAction (Proxy :: Proxy End)                -- we can eval this as (act ~ MkAction act2, Eval AsAction act2 ())
+  eval AsAuction (Proxy :: Proxy WorldArtsAuction)
+
 
 
 spec :: Spec

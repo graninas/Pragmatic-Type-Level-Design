@@ -109,12 +109,68 @@ type PayloadLot2 = LotPayload (Payload (MoneyDynVal "202 min bid"))
 type PayloadLot3 = LotPayload (Payload (MoneyVal "40000.0"))
 
 type WorldArtsAuction = Auction
-  (Info "World arts" EnglishAuction "UK Bank")
-  (Lots '[ Lot "101" "Dali artwork"      PayloadLot1 (Currency GBP) UKOnly
-         , Lot "202" "Chinese vase"      PayloadLot2 (Currency USD) UKAndUS
-         , Lot "303" "Ancient mechanism" PayloadLot3 (Currency USD) NoCensorship
-         ]
+  ( Info "World arts" EnglishAuction "UK Bank")
+  ( Lots '[ Lot "101" "Dali artwork"      PayloadLot1 (Currency GBP) UKOnly
+          , Lot "202" "Chinese vase"      PayloadLot2 (Currency USD) UKAndUS
+          , Lot "303" "Ancient mechanism" PayloadLot3 (Currency USD) NoCensorship
+          ]
   )
+
+
+
+
+-- data GetPayloadValueTag a
+-- data FunctionTag a
+
+-- type family MkSetRef (a :: *) :: ActionTag a
+-- type family MkGetRef (a :: *) :: ActionTag a
+--
+-- -- type family MkGetPayloadValue (a :: *) :: GetPayloadValueTag a
+
+--
+--
+-- data SetRef' (refName :: Symbol) (src :: FunctionTag a)
+-- data GetRef' (refName :: Symbol) (src :: FunctionTag a)
+--
+-- data Action (act :: ActionTag a)
+--
+-- type SetRef refName src = Action (MkSetRef (SetRef' refName src))
+-- type GetRef refName src = Action (MkGetRef (GetRef' refName src))
+
+
+data AuctionFlowTag a
+data LotProcessTag a
+data ActionsTag a
+data ActionTag a
+data LambdaTag a
+
+type family MkAuctionFlow (a :: *) :: AuctionFlowTag a
+type family MkLotProcess  (a :: *) :: LotProcessTag a
+type family Actions       (a :: [ActionTag b]) :: ActionsTag b      -- Will this work??
+type family MkAction      (a :: *) :: ActionTag a
+type family MkLambda      (a :: *) :: LambdaTag a
+
+data AuctionFlow'     (lotProcess :: LotProcessTag lp)
+data LotProcess'      (startActions :: ActionsTag acts)
+data GetPayloadValue' (valName :: Symbol) (cont :: LambdaTag lam)
+data Print'
+data Drop'
+
+type AuctionFlow lotProcess       = MkAuctionFlow (AuctionFlow' lotProcess)
+type LotProcess startActions      = MkLotProcess (LotProcess' startActions)
+type GetPayloadValue valName cont = MkAction (GetPayloadValue' valName cont)
+type Print                        = MkLambda Print'
+type Drop                         = MkLambda Drop'
+
+
+-- Non-type-safe. The type of minBid is not checked somehow.
+-- (This proves that when you lift to the type level, you have
+--  to reestablish type safety, if you really need it).
+
+-- You have to decide on how low level your DSL should be.
+--   Should it be a domain-level DSL, or it should include
+--   a limited but domain-agnostic programming language.
+
 
 -- English Auction Flow
 
@@ -131,43 +187,13 @@ type WorldArtsAuction = Auction
 -- data MinBidGetter
 -- data Get l r
 
-data ActionsTag a
-data ActionTag a
-data GetPayloadValueTag a
-data LotProcessTag a
-data FunctionTag a
-
-type family Actions (a :: [*]) :: ActionsTag a
-type family MkSetRef (a :: *) :: ActionTag a
-type family MkGetPayloadValue (a :: *) :: GetPayloadValueTag a
-type family MkLotProcess (a :: *) :: LotProcessTag a
-type family MkFunction (a :: *) :: FunctionTag a
-
-
-data AuctionFlow (lotProcess :: LotProcessTag a)
-data LotProcess' (startActions :: ActionsTag a)
-data SetRef' (refName :: Symbol) (src :: FunctionTag a)
-data GetPayloadValue' (valName :: Symbol)
-data Action (act :: ActionTag a)
-
-type LotProcess startActions = MkLotProcess (LotProcess' startActions)
-type SetRef refName src = Action (MkSetRef (SetRef' refName src))
-type GetPayloadValue valName = MkFunction (GetPayloadValue' valName)
-
-
--- Non-type-safe. The type of minBid is not checked somehow.
--- (This proves that when you lift to the type level, you have
---  to reestablish type safety, if you really need it).
-
--- You have to decide on how low level your DSL should be.
---   Should it be a domain-level DSL, or it should include
---   a limited but domain-agnostic programming language.
-
-
 type EnglishAuctionFlow = AuctionFlow
-  (LotProcess
-      (Actions '[ SetRef "curBid" (GetPayloadValue "minBid")
-                ]
+  ( LotProcess
+      ( Actions '[ GetPayloadValue "minBid" Print
+                 , GetPayloadValue "minBid" Drop
+      -- ( Actions '[ GetPayloadValue "minBid" (SetRef "curBid")
+                 -- , GetRef "curBid"           Print
+                 ]
       )
   )
 

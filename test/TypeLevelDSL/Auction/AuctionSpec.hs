@@ -84,6 +84,20 @@ runner = do
   evalCtx ctx AsAction (Proxy :: Proxy End')               -- we can eval a 'data' type
   evalCtx ctx AsAction (Proxy :: Proxy End)                -- we can eval this as (act ~ MkAction act2, Eval AsAction act2 ())
   evalCtx ctx AsAction (Proxy :: Proxy (Action (GetPayloadValue MinBid Float Drop) End))
+  evalCtx ctx AsAction
+    (Proxy :: Proxy
+      (Action (GetPayloadValue MinBid Float Drop)
+          (Action (GetPayloadValue MinBid Float Drop) End)
+      )
+    )
+
+  evalCtx ctx AsLotProcess
+    ( Proxy :: Proxy
+      ( LotProcess
+        ( Action (GetPayloadValue MinBid Float Print)
+          ( Action (GetPayloadValue MinBid Float Drop) End ) )
+      )
+    )
 
   eval AsAuction (Proxy :: Proxy WorldArtsAuction)
 

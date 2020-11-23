@@ -24,51 +24,20 @@ import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 -- Interpreting of the participants list
 
 data AsAuctioinDSL = AsAuctioinDSL
+data AsLotProcess  = AsLotProcess
+data AsAction      = AsAction
 
-data AsAction = AsAction
+-- Lot Process
 
--- -- Empty list of participants is not allowed.
--- -- instance ParticipantInfo p => Eval AsParticipants '[] [String] where
--- --   eval _ _ = pure []
---
--- instance ParticipantInfo p => Eval AsParticipants (p ': '[]) String where
---   eval _ _ = pure $ showParticipant (Proxy :: Proxy p)
---
--- instance (ParticipantInfo p, Eval AsParticipants (x ': xs) String) =>
---   Eval AsParticipants (p ': x ': xs) String where
---   eval _ _ = do
---     ps <- eval AsParticipants (Proxy :: Proxy (x ': xs))
---     let p = showParticipant (Proxy :: Proxy p)
---     pure $ p <> ", " <> ps
---
---
--- -- Interpreting of the AllowedCountries censorship
---
--- instance (Eval AsParticipants participants String) =>
---   Eval AsCensorship (AllowedCountries name participants) Ret where
---   eval _ _ = do
---     participants <- eval AsParticipants (Proxy :: Proxy participants)
---     pure [ "Eligible participants: " <> participants ]
---
---
--- -- Interpreting of the specific currency
---
--- instance Eval AsCurrency GBP Ret where
---   eval _ _ = pure [ "Currency: " <> showCurrency (Proxy :: Proxy GBP) ]
---
--- instance Eval AsCurrency USD Ret where
---   eval _ _ = pure [ "Currency: " <> showCurrency (Proxy :: Proxy USD) ]
---
--- instance Eval AsCurrency EUR Ret where
---   eval _ _ = pure [ "Currency: " <> showCurrency (Proxy :: Proxy EUR) ]
---
--- -- Interpreting other extensions
---
--- -- Dynamic (runtime) value.
--- -- N.B., this sample does not check for type safety of the money value.
--- instance Eval AsMoneyConst (DynVal "202 min bid") String where
---   eval _ _ = pure "20000.0"
---
+instance (EvalCtx ctx AsAction acts ()) =>
+  EvalCtx ctx AsLotProcess (LotProcess' acts) () where
+  evalCtx ctx _ _ = do
+    putStrLn "Lot process"
+    evalCtx ctx AsAction (Proxy :: Proxy acts)
+
+instance (mkProc ~ MkLotProcess proc, EvalCtx ctx AsLotProcess proc ()) =>
+  EvalCtx ctx AsLotProcess mkProc () where
+  evalCtx ctx _ _ = evalCtx ctx AsLotProcess (Proxy :: Proxy proc)
 
 -- The Actions mechanism
 
@@ -79,19 +48,18 @@ data AsAction = AsAction
 --            ^ type family
 --                     ^ some real data type
 
-instance (act ~ MkAction act2, EvalCtx ctx AsAction act2 ()) =>
-  EvalCtx ctx AsAction act () where
-  evalCtx ctx _ _ = evalCtx ctx AsAction (Proxy :: Proxy act2)
+instance (mkAct ~ MkAction act, EvalCtx ctx AsAction act ()) =>
+  EvalCtx ctx AsAction mkAct () where
+  evalCtx ctx _ _ = evalCtx ctx AsAction (Proxy :: Proxy act)
 
--- Interpreting a real action
 instance EvalCtx ctx AsAction End' () where
   evalCtx ctx _ _ = putStrLn "DEBUG: End reached."
 
-instance EvalCtx ctx AsAction act () =>
+instance (EvalCtx ctx AsAction act (), EvalCtx ctx AsAction acts ()) =>
   EvalCtx ctx AsAction (Action' act acts) () where
   evalCtx ctx _ _ = do
     evalCtx ctx AsAction (Proxy :: Proxy act)
-
+    evalCtx ctx AsAction (Proxy :: Proxy acts)
 
 -- Specific actions
 

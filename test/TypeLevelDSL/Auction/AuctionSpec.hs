@@ -85,9 +85,9 @@ runner = do
   evalCtx ctx AsAction (Proxy :: Proxy End)                -- we can eval this as (act ~ MkAction act2, Eval AsAction act2 ())
   evalCtx ctx AsAction (Proxy :: Proxy (Action (GetPayloadValue MinBid Float Drop) End))
   evalCtx ctx AsAction
-    (Proxy :: Proxy
-      (Action (GetPayloadValue MinBid Float Drop)
-          (Action (GetPayloadValue MinBid Float Drop) End)
+    ( Proxy :: Proxy
+      ( Action (GetPayloadValue MinBid Float Drop)
+        ( Action (GetPayloadValue MinBid Float Drop) End)
       )
     )
 
@@ -96,6 +96,16 @@ runner = do
       ( LotProcess
         ( Action (GetPayloadValue MinBid Float Print)
           ( Action (GetPayloadValue MinBid Float Drop) End ) )
+      )
+    )
+
+  evalCtx ctx AsAuctionFlow
+    ( Proxy :: Proxy
+      ( AuctionFlow
+        ( LotProcess
+          ( Action (GetPayloadValue MinBid Float Print)
+            ( Action (GetPayloadValue MinBid Float Drop) End ) )
+        )
       )
     )
 

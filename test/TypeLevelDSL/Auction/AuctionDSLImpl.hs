@@ -23,9 +23,25 @@ import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 
 -- Interpreting of the participants list
 
-data AsAuctioinDSL = AsAuctioinDSL
+data AsAuctionFlow = AsAuctionFlow
 data AsLotProcess  = AsLotProcess
 data AsAction      = AsAction
+
+
+
+
+-- AuctionFlow
+
+instance (EvalCtx ctx AsLotProcess proc ()) =>
+  EvalCtx ctx AsAuctionFlow (AuctionFlow' proc) () where
+  evalCtx ctx _ _ = do
+    putStrLn "AuctionFlow"
+    evalCtx ctx AsLotProcess (Proxy :: Proxy proc)
+
+instance (mkAuct ~ MkAuctionFlow auct, EvalCtx ctx AsAuctionFlow auct ()) =>
+  EvalCtx ctx AsAuctionFlow mkAuct () where
+  evalCtx ctx _ _ = evalCtx ctx AsAuctionFlow (Proxy :: Proxy auct)
+
 
 -- Lot Process
 

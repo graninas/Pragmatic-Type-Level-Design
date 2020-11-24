@@ -8,13 +8,9 @@
 {-# LANGUAGE FlexibleInstances        #-}
 {-# LANGUAGE ScopedTypeVariables      #-}
 
-{-# LANGUAGE AllowAmbiguousTypes      #-}
 
 
-module TypeLevelDSL.Auction.AuctionDSL where
-
-import TypeLevelDSL.Auction.Language
-import TypeLevelDSL.Auction.Exts
+module TypeLevelDSL.Auction.Flow.Language where
 
 import Data.List (intercalate)
 import Data.Proxy (Proxy(..))
@@ -66,8 +62,3 @@ type Action act acts              = Action' act acts    -- Just a synonym
 type End                          = MkAction End'
 type Print                        = MkLambda Print'
 type Drop                         = MkLambda Drop'
-
-
-
-class HasValue ctx valName valType | ctx valName -> valType where
-  getVal :: ctx -> valType

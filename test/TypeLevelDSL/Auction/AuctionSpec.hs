@@ -11,12 +11,13 @@
 module TypeLevelDSL.Auction.AuctionSpec where
 
 import TypeLevelDSL.Auction.Language
+import TypeLevelDSL.Auction.Flow.Language
 import TypeLevelDSL.Auction.Exts
-import TypeLevelDSL.Auction.AuctionDSL
 import TypeLevelDSL.Auction.Implementation
+import TypeLevelDSL.Auction.Flow.Implementation
 import TypeLevelDSL.Auction.ExtsImpl
-import TypeLevelDSL.Auction.AuctionDSLImpl
 import TypeLevelDSL.Eval
+import TypeLevelDSL.HasValue
 
 import Test.Hspec
 
@@ -117,7 +118,7 @@ spec :: Spec
 spec =
   describe "Type level Servant-like eDSL Auction" $ do
     it "Run WorldArtsAuction script" $ do
-      strs <- runner
+      strs <- eval AsAuction (Proxy :: Proxy WorldArtsAuction)
       -- putStrLn $ intercalate "\n" strs
       strs `shouldBe`
         [ "==> Auction! <=="

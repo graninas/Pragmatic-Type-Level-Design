@@ -9,13 +9,12 @@
 {-# LANGUAGE ScopedTypeVariables      #-}
 {-# LANGUAGE TypeApplications         #-}
 
-module TypeLevelDSL.Auction.AuctionDSLImpl where
+module TypeLevelDSL.Auction.Flow.Implementation where
 
-import TypeLevelDSL.Auction.Language
-import TypeLevelDSL.Auction.AuctionDSL
+import TypeLevelDSL.Auction.Flow.Language
 import TypeLevelDSL.Eval
+import TypeLevelDSL.HasValue
 
-import Data.List (intercalate)
 import Data.Proxy (Proxy(..))
 import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 
@@ -26,9 +25,6 @@ import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 data AsAuctionFlow = AsAuctionFlow
 data AsLotProcess  = AsLotProcess
 data AsAction      = AsAction
-
-
-
 
 -- AuctionFlow
 
@@ -41,7 +37,6 @@ instance (EvalCtx ctx AsLotProcess proc ()) =>
 instance (mkAuct ~ MkAuctionFlow auct, EvalCtx ctx AsAuctionFlow auct ()) =>
   EvalCtx ctx AsAuctionFlow mkAuct () where
   evalCtx ctx _ _ = evalCtx ctx AsAuctionFlow (Proxy :: Proxy auct)
-
 
 -- Lot Process
 

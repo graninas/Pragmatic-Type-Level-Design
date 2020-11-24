@@ -9,11 +9,10 @@
 {-# LANGUAGE FlexibleContexts         #-}
 {-# LANGUAGE FlexibleInstances        #-}
 
-module TypeLevelDSL.Auction.Implementation
+module TypeLevelDSL.Auction.Introspection
   ( module X
-  , AuctionState (..)
   , AsAuction (..)
-  , runAuction
+  , describeAuction
   ) where
 
 import Data.Proxy (Proxy(..))
@@ -22,20 +21,9 @@ import GHC.TypeLits (KnownSymbol, symbolVal)
 import TypeLevelDSL.Auction.Description.Language
 import TypeLevelDSL.Auction.Flow.Language
 import TypeLevelDSL.Auction.Language
-import TypeLevelDSL.Auction.Description.Implementation as X
-import TypeLevelDSL.Auction.Flow.Implementation as X
+import TypeLevelDSL.Auction.Description.Introspection as X
+import TypeLevelDSL.Auction.Flow.Introspection as X
 import TypeLevelDSL.Eval
-
-
-
--- TODO: try to make it separated from the implementation
--- by a massive using of the Has pattern
--- and additional mechanisms to switch the state.
-data AuctionState
-  = AuctionStart
-  | AuctionState
-  { minBidVal :: Float
-  }
 
 -- Interpretation tags
 
@@ -47,22 +35,21 @@ data AsAuction = AsAuction
 instance
   ( Eval AsInfo info [String]
   , Eval AsLots lots [String]
-  , EvalCtx AuctionState AsAuctionFlow flow [String]) =>
-  EvalCtx AsAuction AuctionState (Auction' flow info lots) [String] where
-  evalCtx ctx _ _ = do
+  , Eval AsAuctionFlow flow [String]
+  ) =>
+  Eval AsAuction (Auction' flow info lots) [String] where
+  eval _ _ = do
 
     -- start the flow
     strs1 <- eval AsInfo (Proxy :: Proxy info)
     strs2 <- eval AsLots (Proxy :: Proxy lots)
 
     -- get a min bid for a lot
-    strs3 <- evalCtx (AuctionState 1000.0) AsAuctionFlow (Proxy :: Proxy flow)
+    strs3 <- eval AsAuctionFlow (Proxy :: Proxy flow)
     pure $ "==> Auction! <==" : (strs1 <> strs2 <> strs3)
 
 
-
-
-runAuction
-  :: EvalCtx AsAuction AuctionState auction a
+describeAuction
+  :: Eval AsAuction auction a
   => Proxy auction -> IO a
-runAuction p = evalCtx AsAuction AuctionStart p
+describeAuction p = eval AsAuction p

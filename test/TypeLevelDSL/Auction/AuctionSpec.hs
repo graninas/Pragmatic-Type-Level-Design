@@ -11,9 +11,9 @@
 module TypeLevelDSL.Auction.AuctionSpec where
 
 import TypeLevelDSL.Auction.Language
-import TypeLevelDSL.Auction.Implementation
-import TypeLevelDSL.Auction.Exts
-import TypeLevelDSL.Auction.ExtsImpl
+import TypeLevelDSL.Auction.Extensions.Language
+import qualified TypeLevelDSL.Auction.Introspection as I
+import qualified TypeLevelDSL.Auction.Extensions.Introspection as I
 import TypeLevelDSL.Eval
 import TypeLevelDSL.HasValue
 
@@ -64,62 +64,28 @@ type EnglishAuctionFlow = AuctionFlow
 type WorldArtsInfo = Info "World arts" "UK Bank"
 type WorldArtsLots = Lots
   '[ Lot "101" "Dali artwork"      PayloadLot1 (Currency GBP) UKOnly
-  , Lot "202" "Chinese vase"      PayloadLot2 (Currency USD) UKAndUS
-  , Lot "303" "Ancient mechanism" PayloadLot3 (Currency USD) NoCensorship
-  ]
+   , Lot "202" "Chinese vase"      PayloadLot2 (Currency USD) UKAndUS
+   , Lot "303" "Ancient mechanism" PayloadLot3 (Currency USD) NoCensorship
+   ]
 
 type WorldArtsAuction = Auction
   EnglishAuctionFlow
   WorldArtsInfo
   WorldArtsLots
 
-runner :: IO [String]
-runner = do
-  let ctx = AuctionState 1000.0
-  evalCtx ctx AsAction (Proxy :: Proxy End')               -- we can eval a 'data' type
-  evalCtx ctx AsAction (Proxy :: Proxy End)                -- we can eval this as (act ~ MkAction act2, Eval AsAction act2 ())
-  evalCtx ctx AsAction (Proxy :: Proxy (Action (GetPayloadValue MinBid Float Drop) End))
-  evalCtx ctx AsAction
-    ( Proxy :: Proxy
-      ( Action (GetPayloadValue MinBid Float Drop)
-        ( Action (GetPayloadValue MinBid Float Drop) End)
-      )
-    )
-
-  evalCtx ctx AsLotProcess
-    ( Proxy :: Proxy
-      ( LotProcess
-        ( Action (GetPayloadValue MinBid Float Print)
-          ( Action (GetPayloadValue MinBid Float Drop) End ) )
-      )
-    )
-
-  evalCtx ctx AsAuctionFlow
-    ( Proxy :: Proxy
-      ( AuctionFlow
-        ( LotProcess
-          ( Action (GetPayloadValue MinBid Float Print)
-            ( Action (GetPayloadValue MinBid Float Drop) End ) )
-        )
-      )
-    )
-
-
-
-
 spec :: Spec
 spec =
   describe "Type level eDSL Auction" $ do
 
     it "AuctionInfo test" $ do
-      strs <- eval AsInfo (Proxy :: Proxy WorldArtsInfo)
+      strs <- eval I.AsInfo (Proxy :: Proxy WorldArtsInfo)
       strs `shouldBe`
         [ "Name: World arts"
         , "Holder: UK Bank"
         ]
 
     it "Auction Lots test" $ do
-      strs <- eval AsLots (Proxy :: Proxy WorldArtsLots)
+      strs <- eval I.AsLots (Proxy :: Proxy WorldArtsLots)
       strs `shouldBe`
         [ "Lot: 101"
         , "Description: Dali artwork"
@@ -138,7 +104,7 @@ spec =
         ]
 
     it "Auction test" $ do
-      strs <- runAuction (Proxy :: Proxy WorldArtsAuction)
+      strs <- I.describeAuction (Proxy :: Proxy WorldArtsAuction)
       strs `shouldBe`
         [ "==> Auction! <=="
         , "Name: World arts"

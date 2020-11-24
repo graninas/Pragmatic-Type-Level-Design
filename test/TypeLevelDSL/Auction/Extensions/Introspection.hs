@@ -8,11 +8,11 @@
 {-# LANGUAGE FlexibleInstances        #-}
 {-# LANGUAGE ScopedTypeVariables      #-}
 
-module TypeLevelDSL.Auction.ExtsImpl where
+module TypeLevelDSL.Auction.Extensions.Introspection where
 
 import TypeLevelDSL.Auction.Description.Language
-import TypeLevelDSL.Auction.Description.Implementation
-import TypeLevelDSL.Auction.Exts
+import TypeLevelDSL.Auction.Description.Introspection
+import TypeLevelDSL.Auction.Extensions.Language
 import TypeLevelDSL.Eval
 
 import Data.List (intercalate)

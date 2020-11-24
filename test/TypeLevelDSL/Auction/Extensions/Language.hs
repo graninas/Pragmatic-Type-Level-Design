@@ -8,7 +8,7 @@
 {-# LANGUAGE FlexibleInstances        #-}
 {-# LANGUAGE ScopedTypeVariables      #-}
 
-module TypeLevelDSL.Auction.Exts where
+module TypeLevelDSL.Auction.Extensions.Language where
 
 import TypeLevelDSL.Auction.Description.Language
 

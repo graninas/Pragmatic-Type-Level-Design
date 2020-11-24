@@ -25,7 +25,6 @@ import TypeLevelDSL.Auction.Language
 import TypeLevelDSL.Auction.Description.Implementation as X
 import TypeLevelDSL.Auction.Flow.Implementation as X
 import TypeLevelDSL.Eval
-import TypeLevelDSL.HasValue
 
 
 
@@ -67,8 +66,3 @@ runAuction
   :: EvalCtx AsAuction AuctionState auction a
   => Proxy auction -> IO a
 runAuction p = evalCtx AsAuction AuctionStart p
-
-
-instance HasValue AuctionState MinBid Float where
-getVal (AuctionState mb) = mb
-getVal _ = error "Value is not supported: MinBid"

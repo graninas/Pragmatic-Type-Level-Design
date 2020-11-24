@@ -13,7 +13,6 @@ module TypeLevelDSL.Auction.Flow.Implementation where
 
 import TypeLevelDSL.Auction.Flow.Language
 import TypeLevelDSL.Eval
-import TypeLevelDSL.HasValue
 
 import Data.Proxy (Proxy(..))
 import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
@@ -75,9 +74,5 @@ instance (EvalCtx ctx AsAction act [String], EvalCtx ctx AsAction acts [String])
 
 -- Specific actions
 
-instance (Show valType, HasValue ctx valName valType) =>
-  EvalCtx ctx AsAction (GetPayloadValue' valName valType lam) [String] where
-  evalCtx ctx _ _ = do
-    -- let str1 = show ((getVal @_ @valName @valType) ctx)
-    let str2 = "GetPayloadValue' reached"
-    pure [str2]
+instance EvalCtx ctx AsAction (GetPayloadValue' valName valType lam) [String] where
+  evalCtx ctx _ _ = pure ["GetPayloadValue' reached"]

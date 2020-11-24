@@ -28,26 +28,26 @@ data AsAction      = AsAction
 
 -- AuctionFlow
 
-instance (EvalCtx ctx AsLotProcess proc ()) =>
-  EvalCtx ctx AsAuctionFlow (AuctionFlow' proc) () where
+instance (EvalCtx ctx AsLotProcess proc [String]) =>
+  EvalCtx ctx AsAuctionFlow (AuctionFlow' proc) [String] where
   evalCtx ctx _ _ = do
-    putStrLn "AuctionFlow"
-    evalCtx ctx AsLotProcess (Proxy :: Proxy proc)
+    strs <- evalCtx ctx AsLotProcess (Proxy :: Proxy proc)
+    pure $ "AuctionFlow" : strs
 
-instance (mkAuct ~ MkAuctionFlow auct, EvalCtx ctx AsAuctionFlow auct ()) =>
-  EvalCtx ctx AsAuctionFlow mkAuct () where
+instance (mkAuct ~ MkAuctionFlow auct, EvalCtx ctx AsAuctionFlow auct [String]) =>
+  EvalCtx ctx AsAuctionFlow mkAuct [String] where
   evalCtx ctx _ _ = evalCtx ctx AsAuctionFlow (Proxy :: Proxy auct)
 
 -- Lot Process
 
-instance (EvalCtx ctx AsAction acts ()) =>
-  EvalCtx ctx AsLotProcess (LotProcess' acts) () where
+instance (EvalCtx ctx AsAction acts [String]) =>
+  EvalCtx ctx AsLotProcess (LotProcess' acts) [String] where
   evalCtx ctx _ _ = do
-    putStrLn "Lot process"
-    evalCtx ctx AsAction (Proxy :: Proxy acts)
+    strs <- evalCtx ctx AsAction (Proxy :: Proxy acts)
+    pure $ "Lot process" : strs
 
-instance (mkProc ~ MkLotProcess proc, EvalCtx ctx AsLotProcess proc ()) =>
-  EvalCtx ctx AsLotProcess mkProc () where
+instance (mkProc ~ MkLotProcess proc, EvalCtx ctx AsLotProcess proc [String]) =>
+  EvalCtx ctx AsLotProcess mkProc [String] where
   evalCtx ctx _ _ = evalCtx ctx AsLotProcess (Proxy :: Proxy proc)
 
 -- The Actions mechanism
@@ -59,23 +59,25 @@ instance (mkProc ~ MkLotProcess proc, EvalCtx ctx AsLotProcess proc ()) =>
 --            ^ type family
 --                     ^ some real data type
 
-instance (mkAct ~ MkAction act, EvalCtx ctx AsAction act ()) =>
-  EvalCtx ctx AsAction mkAct () where
+instance (mkAct ~ MkAction act, EvalCtx ctx AsAction act [String]) =>
+  EvalCtx ctx AsAction mkAct [String] where
   evalCtx ctx _ _ = evalCtx ctx AsAction (Proxy :: Proxy act)
 
-instance EvalCtx ctx AsAction End' () where
-  evalCtx ctx _ _ = putStrLn "DEBUG: End reached."
+instance EvalCtx ctx AsAction End' [String] where
+  evalCtx ctx _ _ = pure ["End' reached."]
 
-instance (EvalCtx ctx AsAction act (), EvalCtx ctx AsAction acts ()) =>
-  EvalCtx ctx AsAction (Action' act acts) () where
+instance (EvalCtx ctx AsAction act [String], EvalCtx ctx AsAction acts [String]) =>
+  EvalCtx ctx AsAction (Action' act acts) [String] where
   evalCtx ctx _ _ = do
-    evalCtx ctx AsAction (Proxy :: Proxy act)
-    evalCtx ctx AsAction (Proxy :: Proxy acts)
+    strs1 <- evalCtx ctx AsAction (Proxy :: Proxy act)
+    strs2 <- evalCtx ctx AsAction (Proxy :: Proxy acts)
+    pure $ strs1 <> strs2
 
 -- Specific actions
 
 instance (Show valType, HasValue ctx valName valType) =>
-  EvalCtx ctx AsAction (GetPayloadValue' valName valType lam) () where
+  EvalCtx ctx AsAction (GetPayloadValue' valName valType lam) [String] where
   evalCtx ctx _ _ = do
-    putStrLn $ show $ ((getVal @_ @valName @valType) ctx)
-    putStrLn "GetPayloadValue' reached"
+    -- let str1 = show ((getVal @_ @valName @valType) ctx)
+    let str2 = "GetPayloadValue' reached"
+    pure [str2]

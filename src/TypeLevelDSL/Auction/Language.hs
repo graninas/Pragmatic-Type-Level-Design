@@ -5,79 +5,26 @@
 {-# LANGUAGE FlexibleContexts         #-}
 {-# LANGUAGE FlexibleInstances        #-}
 {-# LANGUAGE ScopedTypeVariables      #-}
-
--- type family Lots (a :: [*]) :: LotsTag a
---                                        ^
 {-# LANGUAGE PolyKinds                #-}
-
--- data D (name :: Symbol) (ps :: [Country])
---                 ^              ^
 {-# LANGUAGE KindSignatures           #-}
 
-module TypeLevelDSL.Auction.Language where
+module TypeLevelDSL.Auction.Language
+  ( module X
+  , Auction
+  , Auction'
+  ) where
 
 import GHC.TypeLits (Symbol)
 
--- Closed data
+import TypeLevelDSL.Auction.Description.Language as X
+import TypeLevelDSL.Auction.Flow.Language as X
 
-data Country
-  = US
-  | UK
-  | UA
-  deriving (Show, Read, Eq, Ord)
 
--- We don't support other types of auctions in our dsl.
-data AuctionType
-  = EnglishAuction
 
--- eDSL
+data Auction'
+  (auctionFlow :: AuctionFlowTag f)
+  (auctionInfo :: AuctionInfoTag i)
+  (lots        :: LotsTag ls)
 
-data DynVal (name :: Symbol)
 
-data MoneyVal' (val :: Symbol)
-
-data Auction (auctionInfo :: AuctionInfoTag i) (lots :: LotsTag ls)
-
-data Info' (name :: Symbol) (aType :: AuctionType) (holder :: Symbol)
-
-data Lot (name :: Symbol)
-         (descr :: Symbol)
-         (payload :: LotPayloadTag p)
-         (currency :: CurrencyTag a)
-         (censorship :: CensorshipTag c)
-
--- Extension points:
-
-data MoneyConstTag a
-data AuctionInfoTag a
-data LotsTag a
-data LotPayloadTag a
-data CurrencyTag a
-data CensorshipTag a
-data BidTag a
-
--- Construction
-
-type family MoneyConst (a :: *) :: MoneyConstTag a
-
-type family AuctionInfo (a :: *) :: AuctionInfoTag a
-
-type family Currency (a :: *) :: CurrencyTag a
-
-type family Censorship (a :: *) :: CensorshipTag a
-
-type family Lots (a :: [*]) :: LotsTag a
-
-type family LotPayload (a :: *) :: LotPayloadTag a
-
-type family Bid (a :: *) :: BidTag a
-
--- Helpers
-
-data NoCensorship'    -- This can be pattern matched esier than something like ()
-type NoCensorship = Censorship NoCensorship'
-
-type Info name aType holder = AuctionInfo (Info' name aType holder)
-
-type MoneyVal (val :: Symbol)     = MoneyConst (MoneyVal' val)
-type MoneyDynVal (name :: Symbol) = MoneyConst (DynVal name)
+type Auction = Auction'       -- Just a type synonym

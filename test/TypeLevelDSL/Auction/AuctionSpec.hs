@@ -11,10 +11,8 @@
 module TypeLevelDSL.Auction.AuctionSpec where
 
 import TypeLevelDSL.Auction.Language
-import TypeLevelDSL.Auction.Flow.Language
-import TypeLevelDSL.Auction.Exts
 import TypeLevelDSL.Auction.Implementation
-import TypeLevelDSL.Auction.Flow.Implementation
+import TypeLevelDSL.Auction.Exts
 import TypeLevelDSL.Auction.ExtsImpl
 import TypeLevelDSL.Eval
 import TypeLevelDSL.HasValue
@@ -35,14 +33,6 @@ type PayloadLot1 = LotPayload (Payload (MoneyVal "1000.0"))
 type PayloadLot2 = LotPayload (Payload (MoneyDynVal "202 min bid"))
 type PayloadLot3 = LotPayload (Payload (MoneyVal "40000.0"))
 
-type WorldArtsAuction = Auction
-  ( Info "World arts" EnglishAuction "UK Bank")
-  ( Lots '[ Lot "101" "Dali artwork"      PayloadLot1 (Currency GBP) UKOnly
-          , Lot "202" "Chinese vase"      PayloadLot2 (Currency USD) UKAndUS
-          , Lot "303" "Ancient mechanism" PayloadLot3 (Currency USD) NoCensorship
-          ]
-  )
-
 -- Auction algorithm
 
 -- English Auction Flow
@@ -60,13 +50,6 @@ type WorldArtsAuction = Auction
 -- data MinBidGetter
 -- data Get l r
 
--- TODO: try make Symbol work instead of type marks
-
-data MinBid
-data AuctionState = AuctionState
-  { minBidVal :: Float
-  }
-
 type EnglishAuctionFlow = AuctionFlow
   ( LotProcess
       ( Action (GetPayloadValue MinBid Float Print)
@@ -76,8 +59,19 @@ type EnglishAuctionFlow = AuctionFlow
       )
   )
 
-instance HasValue AuctionState MinBid Float where
-  getVal (AuctionState mb) = mb
+-- Auction
+
+type WorldArtsInfo = Info "World arts" "UK Bank"
+type WorldArtsLots = Lots
+  '[ Lot "101" "Dali artwork"      PayloadLot1 (Currency GBP) UKOnly
+  , Lot "202" "Chinese vase"      PayloadLot2 (Currency USD) UKAndUS
+  , Lot "303" "Ancient mechanism" PayloadLot3 (Currency USD) NoCensorship
+  ]
+
+type WorldArtsAuction = Auction
+  EnglishAuctionFlow
+  WorldArtsInfo
+  WorldArtsLots
 
 runner :: IO [String]
 runner = do
@@ -110,21 +104,45 @@ runner = do
       )
     )
 
-  eval AsAuction (Proxy :: Proxy WorldArtsAuction)
 
 
 
 spec :: Spec
 spec =
-  describe "Type level Servant-like eDSL Auction" $ do
-    it "Run WorldArtsAuction script" $ do
-      strs <- eval AsAuction (Proxy :: Proxy WorldArtsAuction)
-      -- putStrLn $ intercalate "\n" strs
+  describe "Type level eDSL Auction" $ do
+
+    it "AuctionInfo test" $ do
+      strs <- eval AsInfo (Proxy :: Proxy WorldArtsInfo)
+      strs `shouldBe`
+        [ "Name: World arts"
+        , "Holder: UK Bank"
+        ]
+
+    it "Auction Lots test" $ do
+      strs <- eval AsLots (Proxy :: Proxy WorldArtsLots)
+      strs `shouldBe`
+        [ "Lot: 101"
+        , "Description: Dali artwork"
+        , "Minimum bid: 1000.0"
+        , "Currency: GBP"
+        , "Eligible participants: UK"
+        , "Lot: 202"
+        , "Description: Chinese vase"
+        , "Minimum bid: 20000.0"
+        , "Currency: USD"
+        , "Eligible participants: UK, US"
+        , "Lot: 303"
+        , "Description: Ancient mechanism"
+        , "Minimum bid: 40000.0"
+        , "Currency: USD"
+        ]
+
+    it "Auction test" $ do
+      strs <- runAuction (Proxy :: Proxy WorldArtsAuction)
       strs `shouldBe`
         [ "==> Auction! <=="
         , "Name: World arts"
         , "Holder: UK Bank"
-        , "Type: EnglishAuction"
         , "Lot: 101"
         , "Description: Dali artwork"
         , "Minimum bid: 1000.0"
@@ -139,4 +157,9 @@ spec =
         , "Description: Ancient mechanism"
         , "Minimum bid: 40000.0"
         , "Currency: USD"
+        , "AuctionFlow"
+        , "Lot process"
+        , "GetPayloadValue' reached"
+        , "GetPayloadValue' reached"
+        , "End' reached."
         ]

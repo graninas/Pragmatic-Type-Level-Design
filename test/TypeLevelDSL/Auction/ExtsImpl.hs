@@ -10,8 +10,8 @@
 
 module TypeLevelDSL.Auction.ExtsImpl where
 
-import TypeLevelDSL.Auction.Language
-import TypeLevelDSL.Auction.Implementation
+import TypeLevelDSL.Auction.Description.Language
+import TypeLevelDSL.Auction.Description.Implementation
 import TypeLevelDSL.Auction.Exts
 import TypeLevelDSL.Eval
 
@@ -43,7 +43,7 @@ instance (ParticipantInfo p, Eval AsParticipants (x ': xs) String) =>
 -- Interpreting of the AllowedCountries censorship
 
 instance (Eval AsParticipants participants String) =>
-  Eval AsCensorship (AllowedCountries name participants) Ret where
+  Eval AsCensorship (AllowedCountries name participants) [String] where
   eval _ _ = do
     participants <- eval AsParticipants (Proxy :: Proxy participants)
     pure [ "Eligible participants: " <> participants ]
@@ -51,13 +51,13 @@ instance (Eval AsParticipants participants String) =>
 
 -- Interpreting of the specific currency
 
-instance Eval AsCurrency GBP Ret where
+instance Eval AsCurrency GBP [String] where
   eval _ _ = pure [ "Currency: " <> showCurrency (Proxy :: Proxy GBP) ]
 
-instance Eval AsCurrency USD Ret where
+instance Eval AsCurrency USD [String] where
   eval _ _ = pure [ "Currency: " <> showCurrency (Proxy :: Proxy USD) ]
 
-instance Eval AsCurrency EUR Ret where
+instance Eval AsCurrency EUR [String] where
   eval _ _ = pure [ "Currency: " <> showCurrency (Proxy :: Proxy EUR) ]
 
 -- Interpreting other extensions

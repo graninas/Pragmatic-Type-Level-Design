@@ -11,7 +11,7 @@
 
 module TypeLevelDSL.Auction.Introspection
   ( module X
-  , AsAuction (..)
+  , AsIntroAuction (..)
   , describeAuction
   ) where
 
@@ -27,29 +27,29 @@ import TypeLevelDSL.Eval
 
 -- Interpretation tags
 
-data AsAuction = AsAuction
+data AsIntroAuction = AsIntroAuction
 
 -- Interpreting of the Auction
 
 
 instance
-  ( Eval AsInfo info [String]
-  , Eval AsLots lots [String]
-  , Eval AsAuctionFlow flow [String]
+  ( Eval AsIntroInfo info [String]
+  , Eval AsIntroLots lots [String]
+  , Eval AsIntroAuctionFlow flow [String]
   ) =>
-  Eval AsAuction (Auction' flow info lots) [String] where
+  Eval AsIntroAuction (Auction' flow info lots) [String] where
   eval _ _ = do
 
     -- start the flow
-    strs1 <- eval AsInfo (Proxy :: Proxy info)
-    strs2 <- eval AsLots (Proxy :: Proxy lots)
+    strs1 <- eval AsIntroInfo (Proxy :: Proxy info)
+    strs2 <- eval AsIntroLots (Proxy :: Proxy lots)
 
     -- get a min bid for a lot
-    strs3 <- eval AsAuctionFlow (Proxy :: Proxy flow)
+    strs3 <- eval AsIntroAuctionFlow (Proxy :: Proxy flow)
     pure $ "==> Auction! <==" : (strs1 <> strs2 <> strs3)
 
 
 describeAuction
-  :: Eval AsAuction auction a
+  :: Eval AsIntroAuction auction a
   => Proxy auction -> IO a
-describeAuction p = eval AsAuction p
+describeAuction p = eval AsIntroAuction p

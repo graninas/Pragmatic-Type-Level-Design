@@ -23,54 +23,54 @@ import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 
 -- Interpreting of the participants list
 
-data AsParticipants = AsParticipants
+data AsIntroParticipants = AsIntroParticipants
 
 -- Empty list of participants is not allowed.
--- instance ParticipantInfo p => Eval AsParticipants '[] [String] where
+-- instance ParticipantInfo p => Eval AsIntroParticipants '[] [String] where
 --   eval _ _ = pure []
 
 instance ParticipantInfo p =>
-  Eval AsParticipants (p ': '[]) String where
+  Eval AsIntroParticipants (p ': '[]) String where
   eval _ _ = pure $ showParticipant (Proxy :: Proxy p)
 
-instance (ParticipantInfo p, Eval AsParticipants (x ': xs) String) =>
-  Eval AsParticipants (p ': x ': xs) String where
+instance (ParticipantInfo p, Eval AsIntroParticipants (x ': xs) String) =>
+  Eval AsIntroParticipants (p ': x ': xs) String where
   eval _ _ = do
-    ps <- eval AsParticipants (Proxy :: Proxy (x ': xs))
+    ps <- eval AsIntroParticipants (Proxy :: Proxy (x ': xs))
     let p = showParticipant (Proxy :: Proxy p)
     pure $ p <> ", " <> ps
 
 
 -- Interpreting of the AllowedCountries censorship
 
-instance (Eval AsParticipants participants String) =>
-  Eval AsCensorship (AllowedCountries' name participants) [String] where
+instance (Eval AsIntroParticipants participants String) =>
+  Eval AsIntroCensorship (AllowedCountries' name participants) [String] where
   eval _ _ = do
-    participants <- eval AsParticipants (Proxy :: Proxy participants)
+    participants <- eval AsIntroParticipants (Proxy :: Proxy participants)
     pure [ "Eligible participants: " <> participants ]
 
 
 -- Interpreting of the specific currency
 
-instance Eval AsCurrency GBP [String] where
+instance Eval AsIntroCurrency GBP [String] where
   eval _ _ = pure [ "Currency: " <> showCurrency (Proxy :: Proxy GBP) ]
 
-instance Eval AsCurrency USD [String] where
+instance Eval AsIntroCurrency USD [String] where
   eval _ _ = pure [ "Currency: " <> showCurrency (Proxy :: Proxy USD) ]
 
-instance Eval AsCurrency EUR [String] where
+instance Eval AsIntroCurrency EUR [String] where
   eval _ _ = pure [ "Currency: " <> showCurrency (Proxy :: Proxy EUR) ]
 
 -- Interpreting other extensions
 
 -- Dynamic (runtime) value.
 -- N.B., this sample does not check for type safety of the money value.
-instance Eval AsMoneyConst (DynVal' "202 min bid") String where
+instance Eval AsIntroMoneyConst (DynVal' "202 min bid") String where
   eval _ _ = pure "20000.0"
 
 -- Payload
-instance Eval AsMoneyConst minBid String =>
-  Eval AsLotPayload (Payload' minBid) String where
+instance Eval AsIntroMoneyConst minBid String =>
+  Eval AsIntroLotPayload (Payload' minBid) String where
   eval _ _ = do
-    v <- eval AsMoneyConst (Proxy :: Proxy minBid)
+    v <- eval AsIntroMoneyConst (Proxy :: Proxy minBid)
     pure $ "Minimum bid: " <> v

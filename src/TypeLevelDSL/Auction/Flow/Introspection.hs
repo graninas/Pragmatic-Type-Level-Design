@@ -21,33 +21,33 @@ import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 
 -- Interpreting of the participants list
 
-data AsAuctionFlow = AsAuctionFlow
-data AsLotProcess  = AsLotProcess
-data AsAction      = AsAction
+data AsIntroAuctionFlow = AsIntroAuctionFlow
+data AsIntroLotProcess  = AsIntroLotProcess
+data AsIntroAction      = AsIntroAction
 
 -- AuctionFlow
 
-instance (Eval AsLotProcess proc [String]) =>
-  Eval AsAuctionFlow (AuctionFlow' proc) [String] where
+instance (Eval AsIntroLotProcess proc [String]) =>
+  Eval AsIntroAuctionFlow (AuctionFlow' proc) [String] where
   eval _ _ = do
-    strs <- eval AsLotProcess (Proxy :: Proxy proc)
+    strs <- eval AsIntroLotProcess (Proxy :: Proxy proc)
     pure $ "AuctionFlow" : strs
 
-instance (mkAuct ~ MkAuctionFlow auct, Eval AsAuctionFlow auct [String]) =>
-  Eval AsAuctionFlow mkAuct [String] where
-  eval _ _ = eval AsAuctionFlow (Proxy :: Proxy auct)
+instance (mkAuct ~ MkAuctionFlow auct, Eval AsIntroAuctionFlow auct [String]) =>
+  Eval AsIntroAuctionFlow mkAuct [String] where
+  eval _ _ = eval AsIntroAuctionFlow (Proxy :: Proxy auct)
 
 -- Lot Process
 
-instance (Eval AsAction acts [String]) =>
-  Eval AsLotProcess (LotProcess' acts) [String] where
+instance (Eval AsIntroAction acts [String]) =>
+  Eval AsIntroLotProcess (LotProcess' acts) [String] where
   eval _ _ = do
-    strs <- eval AsAction (Proxy :: Proxy acts)
+    strs <- eval AsIntroAction (Proxy :: Proxy acts)
     pure $ "Lot process" : strs
 
-instance (mkProc ~ MkLotProcess proc, Eval AsLotProcess proc [String]) =>
-  Eval AsLotProcess mkProc [String] where
-  eval _ _ = eval AsLotProcess (Proxy :: Proxy proc)
+instance (mkProc ~ MkLotProcess proc, Eval AsIntroLotProcess proc [String]) =>
+  Eval AsIntroLotProcess mkProc [String] where
+  eval _ _ = eval AsIntroLotProcess (Proxy :: Proxy proc)
 
 -- The Actions mechanism
 
@@ -58,21 +58,21 @@ instance (mkProc ~ MkLotProcess proc, Eval AsLotProcess proc [String]) =>
 --            ^ type family
 --                     ^ some real data type
 
-instance (mkAct ~ MkAction act, Eval AsAction act [String]) =>
-  Eval AsAction mkAct [String] where
-  eval _ _ = eval AsAction (Proxy :: Proxy act)
+instance (mkAct ~ MkAction act, Eval AsIntroAction act [String]) =>
+  Eval AsIntroAction mkAct [String] where
+  eval _ _ = eval AsIntroAction (Proxy :: Proxy act)
 
-instance Eval AsAction End' [String] where
+instance Eval AsIntroAction End' [String] where
   eval _ _ = pure ["End' reached."]
 
-instance (Eval AsAction act [String], Eval AsAction acts [String]) =>
-  Eval AsAction (Action' act acts) [String] where
+instance (Eval AsIntroAction act [String], Eval AsIntroAction acts [String]) =>
+  Eval AsIntroAction (Action' act acts) [String] where
   eval _ _ = do
-    strs1 <- eval AsAction (Proxy :: Proxy act)
-    strs2 <- eval AsAction (Proxy :: Proxy acts)
+    strs1 <- eval AsIntroAction (Proxy :: Proxy act)
+    strs2 <- eval AsIntroAction (Proxy :: Proxy acts)
     pure $ strs1 <> strs2
 
 -- Specific actions
 
-instance Eval AsAction (GetPayloadValue' valName valType lam) [String] where
+instance Eval AsIntroAction (GetPayloadValue' valName valType lam) [String] where
   eval _ _ = pure ["GetPayloadValue' reached"]

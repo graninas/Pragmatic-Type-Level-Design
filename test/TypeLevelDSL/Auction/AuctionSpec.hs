@@ -78,14 +78,14 @@ spec =
   describe "Type level eDSL Auction" $ do
 
     it "AuctionInfo test" $ do
-      strs <- eval I.AsInfo (Proxy :: Proxy WorldArtsInfo)
+      strs <- eval I.AsIntroInfo (Proxy :: Proxy WorldArtsInfo)
       strs `shouldBe`
         [ "Name: World arts"
         , "Holder: UK Bank"
         ]
 
     it "Auction Lots test" $ do
-      strs <- eval I.AsLots (Proxy :: Proxy WorldArtsLots)
+      strs <- eval I.AsIntroLots (Proxy :: Proxy WorldArtsLots)
       strs `shouldBe`
         [ "Lot: 101"
         , "Description: Dali artwork"

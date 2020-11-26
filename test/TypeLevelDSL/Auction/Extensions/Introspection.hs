@@ -29,7 +29,8 @@ data AsParticipants = AsParticipants
 -- instance ParticipantInfo p => Eval AsParticipants '[] [String] where
 --   eval _ _ = pure []
 
-instance ParticipantInfo p => Eval AsParticipants (p ': '[]) String where
+instance ParticipantInfo p =>
+  Eval AsParticipants (p ': '[]) String where
   eval _ _ = pure $ showParticipant (Proxy :: Proxy p)
 
 instance (ParticipantInfo p, Eval AsParticipants (x ': xs) String) =>
@@ -43,7 +44,7 @@ instance (ParticipantInfo p, Eval AsParticipants (x ': xs) String) =>
 -- Interpreting of the AllowedCountries censorship
 
 instance (Eval AsParticipants participants String) =>
-  Eval AsCensorship (AllowedCountries name participants) [String] where
+  Eval AsCensorship (AllowedCountries' name participants) [String] where
   eval _ _ = do
     participants <- eval AsParticipants (Proxy :: Proxy participants)
     pure [ "Eligible participants: " <> participants ]
@@ -64,12 +65,12 @@ instance Eval AsCurrency EUR [String] where
 
 -- Dynamic (runtime) value.
 -- N.B., this sample does not check for type safety of the money value.
-instance Eval AsMoneyConst (DynVal "202 min bid") String where
+instance Eval AsMoneyConst (DynVal' "202 min bid") String where
   eval _ _ = pure "20000.0"
 
 -- Payload
 instance Eval AsMoneyConst minBid String =>
-  Eval AsLotPayload (Payload minBid) String where
+  Eval AsLotPayload (Payload' minBid) String where
   eval _ _ = do
     v <- eval AsMoneyConst (Proxy :: Proxy minBid)
     pure $ "Minimum bid: " <> v

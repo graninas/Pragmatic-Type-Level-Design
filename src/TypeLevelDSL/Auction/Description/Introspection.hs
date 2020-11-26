@@ -43,7 +43,7 @@ data AsMinBid = AsMinBid
 
 -- Interpreting of the auction info (auctionInfo :: AuctionInfoTag)
 
-instance (ai ~ AuctionInfo i, Eval AsInfo i [String]) =>
+instance (ai ~ MkAuctionInfo i, Eval AsInfo i [String]) =>
   Eval AsInfo ai [String] where
   eval _ _ = eval AsInfo (Proxy :: Proxy i)
 
@@ -61,7 +61,8 @@ instance (KnownSymbol name, KnownSymbol holder) =>
 --   eval _ _ = pure []
 
 -- N.B., item is interpreted AsLot
-instance Eval AsLot p [String] => Eval AsLots (p ': '[]) [String] where
+instance Eval AsLot p [String] =>
+  Eval AsLots (p ': '[]) [String] where
   eval _ _ = eval AsLot (Proxy :: Proxy p)
 
 -- N.B., item is interpreted AsLot
@@ -72,16 +73,21 @@ instance (Eval AsLot p [String], Eval AsLots (x ': ps) [String]) =>
     strs2 <- eval AsLots (Proxy :: Proxy (x ': ps))
     pure $ strs1 <> strs2
 
-instance (b ~ Lots a, Eval AsLots a [String]) => Eval AsLots b [String] where
+instance (b ~ MkLots a, Eval AsLots a [String]) =>
+  Eval AsLots b [String] where
   eval _ _ = eval AsLots (Proxy :: Proxy a)
 
 
 -- Interpreting of a Lot
 
-instance (Eval AsCurrency currency [String], Eval AsCensorship censorship [String],
-  Eval AsLotPayload payload String,
-  KnownSymbol name, KnownSymbol descr) =>
-  Eval AsLot (Lot name descr payload currency censorship) [String] where
+instance
+  ( Eval AsCurrency currency [String]
+  , Eval AsCensorship censorship [String]
+  , Eval AsLotPayload payload String
+  , KnownSymbol name
+  , KnownSymbol descr
+  ) =>
+  Eval AsLot (Lot' name descr payload currency censorship) [String] where
   eval _ _ = do
     payload    <- eval AsLotPayload (Proxy :: Proxy payload)
     censorship <- eval AsCensorship (Proxy :: Proxy censorship)
@@ -94,14 +100,14 @@ instance (Eval AsCurrency currency [String], Eval AsCensorship censorship [Strin
 
 -- Interpreting of the Currency extension
 
-instance (b ~ Currency a, Eval AsCurrency a [String]) =>
+instance (b ~ MkCurrency a, Eval AsCurrency a [String]) =>
   Eval AsCurrency b [String] where
   eval _ _ = eval AsCurrency (Proxy :: Proxy a)
 
 
 -- Interpreting of the Censorship extension
 
-instance (b ~ Censorship a, Eval AsCensorship a [String]) =>
+instance (b ~ MkCensorship a, Eval AsCensorship a [String]) =>
   Eval AsCensorship b [String] where
   eval _ _ = eval AsCensorship (Proxy :: Proxy a)
 
@@ -114,15 +120,16 @@ instance Eval AsCensorship NoCensorship' [String] where
 
 -- Interpreting a MoneyConst value
 
-instance (b ~ MoneyConst a, Eval AsMoneyConst a String) =>
+instance (b ~ MkMoneyConst a, Eval AsMoneyConst a String) =>
   Eval AsMoneyConst b String where
   eval _ _ = eval AsMoneyConst (Proxy :: Proxy a)
 
-instance KnownSymbol val => Eval AsMoneyConst (MoneyVal' val) String where
+instance KnownSymbol val =>
+ Eval AsMoneyConst (MoneyVal' val) String where
   eval _ _ = pure $ symbolVal (Proxy :: Proxy val)
 
 -- Interpreting a LotPayload value
 
-instance (b ~ LotPayload a, Eval AsLotPayload a String) =>
+instance (b ~ MkLotPayload a, Eval AsLotPayload a String) =>
   Eval AsLotPayload b String where
   eval _ _ = eval AsLotPayload (Proxy :: Proxy a)

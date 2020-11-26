@@ -22,9 +22,9 @@ data USD
 data EUR
 data GBP
 
-data AllowedCountries (name :: Symbol) (participants :: [ Country ])
+data AllowedCountries' (name :: Symbol) (participants :: [ Country ])
 
-data Payload (minBid :: MoneyConstTag a)
+data Payload' (minBid :: MoneyConstTag a)
 
 class CurrencyInfo a where
   showCurrency :: Proxy a -> String
@@ -39,3 +39,6 @@ class ParticipantInfo a where
 instance ParticipantInfo US where showParticipant _ = "US"
 instance ParticipantInfo UK where showParticipant _ = "UK"
 instance ParticipantInfo UA where showParticipant _ = "UA"
+
+type AllowedCountries = AllowedCountries'     -- Just a synonym
+type Payload          = Payload'              -- Just a synonym

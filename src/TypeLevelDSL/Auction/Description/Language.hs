@@ -32,17 +32,19 @@ data MinBid
 
 -- eDSL
 
-data DynVal (name :: Symbol)
+data DynVal' (name :: Symbol)
 
 data MoneyVal' (val :: Symbol)
 
 data Info' (name :: Symbol) (holder :: Symbol)
 
-data Lot (name :: Symbol)
-         (descr :: Symbol)
-         (payload :: LotPayloadTag p)
-         (currency :: CurrencyTag a)
-         (censorship :: CensorshipTag c)
+data Lot' (name :: Symbol)
+          (descr :: Symbol)
+          (payload :: LotPayloadTag p)
+          (currency :: CurrencyTag a)
+          (censorship :: CensorshipTag c)
+
+data NoCensorship'    -- This can be pattern matched esier than something like ()
 
 -- Extension points:
 
@@ -56,26 +58,22 @@ data BidTag a
 
 -- Construction
 
-type family MoneyConst (a :: *) :: MoneyConstTag a
-
-type family AuctionInfo (a :: *) :: AuctionInfoTag a
-
-type family Currency (a :: *) :: CurrencyTag a
-
-type family Censorship (a :: *) :: CensorshipTag a
-
-type family Lots (a :: [*]) :: LotsTag a
-
-type family LotPayload (a :: *) :: LotPayloadTag a
-
-type family Bid (a :: *) :: BidTag a
+type family MkMoneyConst  (a :: *)   :: MoneyConstTag a
+type family MkAuctionInfo (a :: *)   :: AuctionInfoTag a
+type family MkCurrency    (a :: *)   :: CurrencyTag a
+type family MkCensorship  (a :: *)   :: CensorshipTag a
+type family MkLots        (a :: [*]) :: LotsTag a
+type family MkLotPayload  (a :: *)   :: LotPayloadTag a
+type family MkBid         (a :: *)   :: BidTag a
 
 -- Helpers
 
-data NoCensorship'    -- This can be pattern matched esier than something like ()
-type NoCensorship = Censorship NoCensorship'
-
-type Info name holder = AuctionInfo (Info' name holder)
-
-type MoneyVal (val :: Symbol)     = MoneyConst (MoneyVal' val)
-type MoneyDynVal (name :: Symbol) = MoneyConst (DynVal name)
+type NoCensorship                 = MkCensorship NoCensorship'
+type Info name holder             = MkAuctionInfo (Info' name holder)
+type MoneyVal (val :: Symbol)     = MkMoneyConst (MoneyVal' val)
+type MoneyDynVal (name :: Symbol) = MkMoneyConst (DynVal' name)
+type Censorship c                 = MkCensorship c
+type LotPayload p                 = MkLotPayload p
+type Currency c                   = MkCurrency c
+type Lots ls                      = MkLots ls
+type Lot                          = Lot'                       -- Just a synonym

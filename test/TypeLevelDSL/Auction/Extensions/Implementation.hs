@@ -27,7 +27,7 @@ import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 -- Interpreting other extensions
 
 -- Dynamic (runtime) value. For now hardcoded by can be obtained from any source.
-instance Eval Impl.AsImplMoneyConst (DynVal' "202 min bid") T.Money where
+instance Eval Impl.AsImplMoneyConst (L.DynVal' "202 min bid") T.Money where
   eval _ _ = pure 20000
 
 -- Payload

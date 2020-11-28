@@ -9,7 +9,7 @@ data Lot = Lot
   , currentCost :: IORef T.Money
   }
 
-type Lots = Lots
+type Lots = [Lot]
 
 data Payload = Payload
   { startBid :: T.Money

@@ -12,6 +12,7 @@
 module TypeLevelDSL.Auction.Implementation.Description where
 
 import Data.Proxy (Proxy(..))
+import Data.IORef (newIORef)
 import GHC.TypeLits (KnownSymbol, symbolVal)
 
 import qualified TypeLevelDSL.Auction.Types as T
@@ -33,8 +34,10 @@ data AsImplMoneyConst = AsImplMoneyConst
 -- Interpreting of the list of lots (lots :: LotsTag a)
 
 instance Eval AsImplLot p Impl.Lot =>
-  Eval AsImplLots (p ': '[]) Impl.Lots where
-  eval _ _ = eval AsImplLot (Proxy :: Proxy p)
+  Eval AsImplLots (p ': '[]) [Impl.Lot] where
+  eval _ _ = do
+    lot <- eval AsImplLot (Proxy :: Proxy p)
+    pure [lot]
 
 instance
   ( Eval AsImplLot p Impl.Lot
@@ -60,11 +63,16 @@ instance
   Eval AsImplLot (L.Lot' name descr payload currency censorship) Impl.Lot where
   eval _ _ = do
     payload <- eval AsImplLotPayload (Proxy :: Proxy payload)
-    pure $ Lot (symbolVal (Proxy :: Proxy name)) (symbolVal (Proxy :: Proxy descr)) (Impl.startBid payload)
+    curCostRef <- newIORef $ Impl.startBid payload
+    pure $ Impl.Lot
+      { Impl.name        = symbolVal (Proxy :: Proxy name)
+      , Impl.description = symbolVal (Proxy :: Proxy descr)
+      , Impl.currentCost = curCostRef
+      }
 
 -- Interpreting a MoneyConst value
 
-instance (b ~ MkMoneyConst a, Eval AsImplMoneyConst a T.Money) =>
+instance (b ~ L.MkMoneyConst a, Eval AsImplMoneyConst a T.Money) =>
   Eval AsImplMoneyConst b T.Money where
   eval _ _ = eval AsImplMoneyConst (Proxy :: Proxy a)
 
@@ -74,6 +82,6 @@ instance KnownSymbol val =>
 
 -- Interpreting a LotPayload value
 
-instance (b ~ MkLotPayload a, Eval AsImplLotPayload a Impl.Payload) =>
+instance (b ~ L.MkLotPayload a, Eval AsImplLotPayload a Impl.Payload) =>
   Eval AsImplLotPayload b Impl.Payload where
   eval _ _ = eval AsImplLotPayload (Proxy :: Proxy a)

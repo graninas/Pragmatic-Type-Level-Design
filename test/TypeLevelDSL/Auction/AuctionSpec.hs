@@ -12,8 +12,12 @@ module TypeLevelDSL.Auction.AuctionSpec where
 
 import TypeLevelDSL.Auction.Language
 import TypeLevelDSL.Auction.Extensions.Language
+import qualified TypeLevelDSL.Auction.Implementation.Types as Impl
+import qualified TypeLevelDSL.Auction.Implementation.Description as Impl
+import qualified TypeLevelDSL.Auction.Implementation.Auction as Impl
 import qualified TypeLevelDSL.Auction.Introspection as I
 import qualified TypeLevelDSL.Auction.Extensions.Introspection as I
+import qualified TypeLevelDSL.Auction.Extensions.Implementation as Impl
 import TypeLevelDSL.Eval
 import TypeLevelDSL.HasValue
 
@@ -74,8 +78,8 @@ type WorldArtsAuction = Auction
   WorldArtsLots
 
 spec :: Spec
-spec =
-  describe "Type level eDSL Auction" $ do
+spec = do
+  describe "Type level eDSL Auction: Introspection" $ do
 
     it "AuctionInfo test" $ do
       strs <- eval I.AsIntroInfo (Proxy :: Proxy WorldArtsInfo)
@@ -129,3 +133,8 @@ spec =
         , "GetPayloadValue' reached"
         , "End' reached."
         ]
+
+  describe "Type level eDSL Auction: Implementation" $ do
+    it "runAuction test" $ do
+      Impl.runAuction (Proxy :: Proxy WorldArtsAuction)
+      1 `shouldBe` 2

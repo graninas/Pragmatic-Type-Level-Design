@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f8465eb4e7bb8d960c79c043f6922bbf8b850d5451ac318b20f83efbc697395a
+-- hash: ebc4bca3735d67eb8766bba3172d28a953e76dfabccb7c39a32f34682288f516
 
 name:           Pragmatic-Type-Level-Design
 version:        0.0.0.1
@@ -27,8 +27,13 @@ library
       TypeLevelDSL.Auction.Description.Language
       TypeLevelDSL.Auction.Flow.Introspection
       TypeLevelDSL.Auction.Flow.Language
+      TypeLevelDSL.Auction.Implementation.Auction
+      TypeLevelDSL.Auction.Implementation.Description
+      TypeLevelDSL.Auction.Implementation.Flow
+      TypeLevelDSL.Auction.Implementation.Types
       TypeLevelDSL.Auction.Introspection
       TypeLevelDSL.Auction.Language
+      TypeLevelDSL.Auction.Types
       TypeLevelDSL.Car.Implementation
       TypeLevelDSL.Car.Language
       TypeLevelDSL.Eval
@@ -46,6 +51,7 @@ library
     , free
     , mtl
     , newtype-generics
+    , random
     , scientific
     , template-haskell
     , text
@@ -60,6 +66,7 @@ test-suite functional-tests
   main-is: Spec.hs
   other-modules:
       TypeLevelDSL.Auction.AuctionSpec
+      TypeLevelDSL.Auction.Extensions.Implementation
       TypeLevelDSL.Auction.Extensions.Introspection
       TypeLevelDSL.Auction.Extensions.Language
       TypeLevelDSL.CarSpec
@@ -77,6 +84,7 @@ test-suite functional-tests
     , hspec
     , mtl
     , newtype-generics
+    , random
     , scientific
     , template-haskell
     , text

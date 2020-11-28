@@ -10,9 +10,9 @@
 {-# LANGUAGE FlexibleInstances        #-}
 
 module TypeLevelDSL.Auction.Implementation.Auction
-  ( module X
+  ( module Impl
   , AsImplAuction (..)
-  , describeAuction
+  , runAuction
   ) where
 
 import Data.Proxy (Proxy(..))
@@ -30,7 +30,7 @@ import qualified TypeLevelDSL.Auction.Description.Introspection as I
 import TypeLevelDSL.Eval
 import Data.IORef
 import Data.Maybe (catMaybes)
-import Data.List (sortBy)
+import Data.List (sortOn)
 
 -- Interpretation tags
 
@@ -38,7 +38,7 @@ data AsImplAuction = AsImplAuction
 
 -- Interpreting of the Auction
 
-for_ :: [a] -> (a -> m b) -> m ()
+for_ :: Monad m => [a] -> (a -> m b) -> m ()
 for_ = flip mapM_
 
 type Order = Int
@@ -50,7 +50,7 @@ data Participant = Participant
   }
 
 
-getParticipantDecision :: Impl.Bid -> Participant -> IO (Maybe (ParticipantNumber, Order))
+getParticipantDecision :: T.Money -> Participant -> IO (Maybe (ParticipantNumber, Order))
 getParticipantDecision _ (Participant n act) = do
   x <- randomRIO (1, 10)
   o <- randomRIO (1, 1000)      -- hardcoded value to simulate the priority of a bid
@@ -67,9 +67,9 @@ costIncrease = 500
 instance
   ( Eval Impl.AsImplLots lots Impl.Lots
   , Eval I.AsIntroLots lots [String]
-  , Eval AsImplAuctionFlow flow ()
+  -- , Eval Impl.AsImplAuctionFlow flow ()
   ) =>
-  Eval AsImplAuction (Auction' flow info lots) () where
+  Eval AsImplAuction (L.Auction' flow info lots) () where
   eval _ _ = do
 
     -- "participants registration".
@@ -87,7 +87,7 @@ instance
 
     for_ (zip lots lotsDescrs) $ \(lot, descr) -> do
       putStrLn "New lot!"
-      mapM_ putStrLn descr
+      putStrLn descr
       lotProcess lotRounds Nothing participants lot
 
 finalizeLot :: Maybe ParticipantNumber -> Impl.Lot -> IO ()
@@ -103,14 +103,14 @@ lotProcess n curOwner ps lot = do
   let newCost = lastCost + costIncrease
   putStrLn $ "Current lot cost: " <> show newCost <> ". Who will pay?"
 
-  rawDecisions <- mapM (getParticipantDecision curBid) ps
-  let decisions = sortBy snd $ catMaybes rawDecisions
+  rawDecisions <- mapM (getParticipantDecision newCost) ps
+  let decisions = sortOn snd $ catMaybes rawDecisions
   putStrLn $ "Raw decisions: " <> show rawDecisions
 
   case decisions of
-    []          -> lotProcess (n - 1) curOwner ps lot
-    ((n,_) : _) -> do
-      putStrLn $ "Current owner is participant " <> show n <> "."
+    [] -> lotProcess (n - 1) curOwner ps lot
+    ((pNum,_) : _) -> do
+      putStrLn $ "Current owner is participant " <> show pNum <> "."
       writeIORef (Impl.currentCost lot) newCost
       lotProcess lotRounds (Just n) ps lot
 

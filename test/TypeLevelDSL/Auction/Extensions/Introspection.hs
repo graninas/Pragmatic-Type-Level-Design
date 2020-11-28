@@ -66,7 +66,7 @@ instance Eval AsIntroCurrency EUR [String] where
 -- Dynamic (runtime) value. For now hardcoded but can be obtained from any source.
 -- N.B., this sample does not check for type safety of the money value.
 instance Eval AsIntroMoneyConst (DynVal' "202 min bid") String where
-  eval _ _ = pure "20000.0"
+  eval _ _ = pure "20000"
 
 -- Payload
 instance Eval AsIntroMoneyConst minBid String =>

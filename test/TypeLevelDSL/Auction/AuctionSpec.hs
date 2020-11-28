@@ -137,4 +137,4 @@ spec = do
   describe "Type level eDSL Auction: Implementation" $ do
     it "runAuction test" $ do
       Impl.runAuction (Proxy :: Proxy WorldArtsAuction)
-      1 `shouldBe` 2
+      

@@ -125,7 +125,7 @@ instance (b ~ MkMoneyConst a, Eval AsIntroMoneyConst a String) =>
   eval _ _ = eval AsIntroMoneyConst (Proxy :: Proxy a)
 
 instance KnownSymbol val =>
- Eval AsIntroMoneyConst (MoneyVal' val) String where
+  Eval AsIntroMoneyConst (MoneyVal' val) String where
   eval _ _ = pure $ symbolVal (Proxy :: Proxy val)
 
 -- Interpreting a LotPayload value

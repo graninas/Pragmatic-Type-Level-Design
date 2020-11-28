@@ -9,7 +9,7 @@
 {-# LANGUAGE ScopedTypeVariables      #-}
 {-# LANGUAGE TypeApplications         #-}
 
-module TypeLevelDSL.Auction.Flow.Implementation where
+module TypeLevelDSL.Auction.Implementation.Flow where
 
 import TypeLevelDSL.Auction.Flow.Language
 import TypeLevelDSL.Eval

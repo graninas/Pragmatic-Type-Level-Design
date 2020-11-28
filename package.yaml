@@ -35,6 +35,7 @@ dependencies:
 - newtype-generics
 - uuid
 - void
+- random
 
 library:
   source-dirs:

@@ -29,9 +29,9 @@ import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 type UKOnly  = Censorship (AllowedCountries "UK only" '[UK])
 type UKAndUS = Censorship (AllowedCountries "UK & US" '[UK, US])
 
-type PayloadLot1 = LotPayload (Payload (MoneyVal "1000.0"))
+type PayloadLot1 = LotPayload (Payload (MoneyVal "1000"))
 type PayloadLot2 = LotPayload (Payload (MoneyDynVal "202 min bid"))
-type PayloadLot3 = LotPayload (Payload (MoneyVal "40000.0"))
+type PayloadLot3 = LotPayload (Payload (MoneyVal "40000"))
 
 -- Auction algorithm
 
@@ -89,17 +89,17 @@ spec =
       strs `shouldBe`
         [ "Lot: 101"
         , "Description: Dali artwork"
-        , "Minimum bid: 1000.0"
+        , "Minimum bid: 1000"
         , "Currency: GBP"
         , "Eligible participants: UK"
         , "Lot: 202"
         , "Description: Chinese vase"
-        , "Minimum bid: 20000.0"
+        , "Minimum bid: 20000"
         , "Currency: USD"
         , "Eligible participants: UK, US"
         , "Lot: 303"
         , "Description: Ancient mechanism"
-        , "Minimum bid: 40000.0"
+        , "Minimum bid: 40000"
         , "Currency: USD"
         ]
 
@@ -111,17 +111,17 @@ spec =
         , "Holder: UK Bank"
         , "Lot: 101"
         , "Description: Dali artwork"
-        , "Minimum bid: 1000.0"
+        , "Minimum bid: 1000"
         , "Currency: GBP"
         , "Eligible participants: UK"
         , "Lot: 202"
         , "Description: Chinese vase"
-        , "Minimum bid: 20000.0"
+        , "Minimum bid: 20000"
         , "Currency: USD"
         , "Eligible participants: UK, US"
         , "Lot: 303"
         , "Description: Ancient mechanism"
-        , "Minimum bid: 40000.0"
+        , "Minimum bid: 40000"
         , "Currency: USD"
         , "AuctionFlow"
         , "Lot process"

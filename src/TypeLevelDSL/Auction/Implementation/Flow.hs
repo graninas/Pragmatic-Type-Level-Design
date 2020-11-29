@@ -14,6 +14,7 @@ module TypeLevelDSL.Auction.Implementation.Flow where
 import qualified TypeLevelDSL.Auction.Types as T
 import qualified TypeLevelDSL.Auction.Language as L
 import qualified TypeLevelDSL.Auction.Implementation.Types as Impl
+import qualified TypeLevelDSL.Auction.Implementation.Action as Impl
 import TypeLevelDSL.Eval
 
 import Data.Proxy (Proxy(..))
@@ -28,7 +29,6 @@ type LotProcessFlow  = Impl.Lot -> IO ()
 
 data AsImplAuctionFlow = AsImplAuctionFlow
 data AsImplLotProcess  = AsImplLotProcess
-data AsImplAction      = AsImplAction
 
 -- AuctionFlow
 
@@ -47,7 +47,7 @@ instance (mkAuct ~ L.MkAuctionFlow auct, Eval AsImplAuctionFlow auct AuctionFlow
 
 -- Lot Process
 
-instance (Eval AsImplAction acts [String]) =>
+instance (Eval Impl.AsImplAction acts [String]) =>
   Eval AsImplLotProcess (L.LotProcess' acts) LotProcessFlow where
   eval _ _ = do
     -- lotProc <- eval AsImplAction (Proxy :: Proxy acts)
@@ -60,37 +60,3 @@ instance
   ) =>
   Eval AsImplLotProcess mkProc LotProcessFlow where
   eval _ _ = eval AsImplLotProcess (Proxy :: Proxy proc)
-
--- The Actions mechanism
-
--- This is how we unwrap a type constructed with a type family.
--- Example:
--- type End = MkAction End'
---      ^ type to unwrap
---            ^ type family
---                     ^ some real data type
-
-instance
-  ( mkAct ~ L.MkAction act
-  , Eval AsImplAction act [String]
-  ) =>
-  Eval AsImplAction mkAct [String] where
-  eval _ _ = eval AsImplAction (Proxy :: Proxy act)
-
-instance Eval AsImplAction L.End' [String] where
-  eval _ _ = pure ["End' reached."]
-
-instance
-  ( Eval AsImplAction act [String]
-  , Eval AsImplAction acts [String]
-  ) =>
-  Eval AsImplAction (L.Action' act acts) [String] where
-  eval _ _ = do
-    strs1 <- eval AsImplAction (Proxy :: Proxy act)
-    strs2 <- eval AsImplAction (Proxy :: Proxy acts)
-    pure $ strs1 <> strs2
-
--- Specific actions
-
-instance Eval AsImplAction (L.GetPayloadValue' valName valType lam) [String] where
-  eval _ _ = pure ["GetPayloadValue' reached"]

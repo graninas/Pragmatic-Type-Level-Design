@@ -86,7 +86,7 @@ registerParticipants = mapM createParticipant [1..3]
       pure $ Participant pNum actRef
 
 initParticipants :: AuctionState -> IO ()
-initParticipants (AuctionFlow {..}) =
+initParticipants (AuctionState {..}) =
   mapM_ initParticipant participants
   where
     initParticipant (Participant {..}) = pure ()
@@ -113,7 +113,11 @@ instance
       <$> registerParticipants
       <*> pure 3
       <*> pure 500
-      <*> (LotState <$> newIORef <*> newIORef <*> newIORef <*> newIORef)
+      <*> (LotState
+            <$> newIORef ""
+            <*> newIORef 0
+            <*> newIORef Nothing
+            <*> newIORef 0)
 
     putStrLn "Auction is started."
 
@@ -171,12 +175,13 @@ lotProcess' st@(AuctionState {..}) lot = do
           lotProcess' st lot
 
 
+lotProcess :: Int -> Maybe ParticipantNumber -> [Participant] -> Impl.Lot -> IO ()
 lotProcess 0 curOwner _  lot = finalizeLot curOwner lot
 lotProcess n curOwner ps lot = do
   putStrLn $ "Round: " <> show (4 - n)
 
   lastCost <- readIORef $ Impl.currentCost lot
-  let newCost = lastCost + costIncrease
+  let newCost = lastCost + 500        -- hardcoded cost increase
   putStrLn $ "New lot cost: " <> show newCost <> ". Who will pay?"
 
   rawDecisions <- mapM (getParticipantDecision newCost) ps
@@ -188,7 +193,7 @@ lotProcess n curOwner ps lot = do
     ((pNum,_) : _) -> do
       putStrLn $ "Current owner is participant " <> show pNum <> "."
       writeIORef (Impl.currentCost lot) newCost
-      lotProcess lotRounds (Just pNum) ps lot
+      lotProcess 3 (Just pNum) ps lot     -- hardcoded lot rounds number
 
 
 runAuction

@@ -66,9 +66,13 @@ type EnglishAuctionFlow = AuctionFlow
 
 type TestFlow = AuctionFlow
   ( LotProcess
-      ( 
+      ( Action (ReadRef "curRound" Int Print)
+        ( Action (ReadRef "curCost" Int Drop)
+          End
+        )
       )
   )
+
 --
 --
 -- lotProcess' :: AuctionState -> Impl.Lot -> IO ()

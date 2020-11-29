@@ -5,3 +5,5 @@ module TypeLevelDSL.Auction.Language
 import TypeLevelDSL.Auction.Language.Description as X
 import TypeLevelDSL.Auction.Language.Flow as X
 import TypeLevelDSL.Auction.Language.Auction as X
+import TypeLevelDSL.Auction.Language.Action as X
+import TypeLevelDSL.Auction.Language.DataActions as X

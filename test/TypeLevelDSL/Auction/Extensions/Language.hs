@@ -10,7 +10,7 @@
 
 module TypeLevelDSL.Auction.Extensions.Language where
 
-import TypeLevelDSL.Auction.Description.Language
+import TypeLevelDSL.Auction.Language.Description
 
 import Data.List (intercalate)
 import Data.Proxy (Proxy(..))

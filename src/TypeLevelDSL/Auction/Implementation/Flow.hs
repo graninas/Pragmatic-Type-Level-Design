@@ -12,7 +12,7 @@
 module TypeLevelDSL.Auction.Implementation.Flow where
 
 import qualified TypeLevelDSL.Auction.Types as T
-import qualified TypeLevelDSL.Auction.Flow.Language as L
+import qualified TypeLevelDSL.Auction.Language.Flow as L
 import qualified TypeLevelDSL.Auction.Implementation.Types as Impl
 import TypeLevelDSL.Eval
 

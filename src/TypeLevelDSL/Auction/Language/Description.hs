@@ -14,7 +14,7 @@
 --                 ^              ^
 {-# LANGUAGE KindSignatures           #-}
 
-module TypeLevelDSL.Auction.Description.Language where
+module TypeLevelDSL.Auction.Language.Description where
 
 import GHC.TypeLits (Symbol)
 

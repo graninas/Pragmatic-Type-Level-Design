@@ -19,12 +19,12 @@
 --                                             ^^^^^^^^^^^^^^^^
 {-# LANGUAGE FlexibleInstances        #-}
 
-module TypeLevelDSL.Auction.Description.Introspection where
+module TypeLevelDSL.Auction.Introspection.Description where
 
 import Data.Proxy (Proxy(..))
 import GHC.TypeLits (KnownSymbol, symbolVal)
 
-import TypeLevelDSL.Auction.Description.Language
+import TypeLevelDSL.Auction.Language.Description
 import TypeLevelDSL.Eval
 
 

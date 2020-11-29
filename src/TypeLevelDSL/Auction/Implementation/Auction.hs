@@ -16,13 +16,13 @@ module TypeLevelDSL.Auction.Implementation.Auction
   ) where
 
 import qualified TypeLevelDSL.Auction.Types as T
-import qualified TypeLevelDSL.Auction.Description.Language as L
-import qualified TypeLevelDSL.Auction.Flow.Language as L
-import qualified TypeLevelDSL.Auction.Language as L
+import qualified TypeLevelDSL.Auction.Language.Description as L
+import qualified TypeLevelDSL.Auction.Language.Flow as L
+import qualified TypeLevelDSL.Auction.Language.Auction as L
 import qualified TypeLevelDSL.Auction.Implementation.Types as Impl
 import qualified TypeLevelDSL.Auction.Implementation.Description as Impl
 -- import qualified TypeLevelDSL.Auction.Implementation.Flow as Impl
-import qualified TypeLevelDSL.Auction.Description.Introspection as I
+import qualified TypeLevelDSL.Auction.Introspection.Description as I
 import TypeLevelDSL.Eval
 
 import Data.Proxy (Proxy(..))
@@ -133,10 +133,6 @@ instance
       putStrLn descr
       lotProcess' auctionState lot
 
-finalizeLot :: Maybe ParticipantNumber -> Impl.Lot -> IO ()
-finalizeLot Nothing     lot = putStrLn $ "Lot " <> Impl.name lot <> " is not sold."
-finalizeLot (Just pNum) lot = putStrLn $ "Lot " <> Impl.name lot <> " goes to the participant " <> show pNum <> "."
-
 finalizeLot' :: LotState -> IO ()
 finalizeLot' LotState {..} = do
   curOwner <- readIORef curOwnerRef
@@ -173,28 +169,6 @@ lotProcess' st@(AuctionState {..}) lot = do
           writeIORef curOwnerRef $ Just pNum
           writeIORef curRoundRef lotRounds
           lotProcess' st lot
-
-
-lotProcess :: Int -> Maybe ParticipantNumber -> [Participant] -> Impl.Lot -> IO ()
-lotProcess 0 curOwner _  lot = finalizeLot curOwner lot
-lotProcess n curOwner ps lot = do
-  putStrLn $ "Round: " <> show (4 - n)
-
-  lastCost <- readIORef $ Impl.currentCost lot
-  let newCost = lastCost + 500        -- hardcoded cost increase
-  putStrLn $ "New lot cost: " <> show newCost <> ". Who will pay?"
-
-  rawDecisions <- mapM (getParticipantDecision newCost) ps
-  let decisions = sortOn snd $ catMaybes rawDecisions
-  putStrLn $ "Raw decisions: " <> show rawDecisions
-
-  case decisions of
-    [] -> lotProcess (n - 1) curOwner ps lot
-    ((pNum,_) : _) -> do
-      putStrLn $ "Current owner is participant " <> show pNum <> "."
-      writeIORef (Impl.currentCost lot) newCost
-      lotProcess 3 (Just pNum) ps lot     -- hardcoded lot rounds number
-
 
 runAuction
   :: Eval AsImplAuction auction ()

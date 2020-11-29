@@ -9,9 +9,9 @@
 {-# LANGUAGE ScopedTypeVariables      #-}
 {-# LANGUAGE TypeApplications         #-}
 
-module TypeLevelDSL.Auction.Flow.Introspection where
+module TypeLevelDSL.Auction.Introspection.Flow where
 
-import TypeLevelDSL.Auction.Flow.Language
+import TypeLevelDSL.Auction.Language.Flow
 import TypeLevelDSL.Eval
 
 import Data.Proxy (Proxy(..))

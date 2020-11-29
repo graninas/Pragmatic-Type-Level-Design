@@ -10,7 +10,7 @@
 
 
 
-module TypeLevelDSL.Auction.Flow.Language where
+module TypeLevelDSL.Auction.Language.Flow where
 
 import Data.List (intercalate)
 import Data.Proxy (Proxy(..))

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ebc4bca3735d67eb8766bba3172d28a953e76dfabccb7c39a32f34682288f516
+-- hash: d843c64b7cef6e4c3a67c4b80eec891e485457828b33846a25f4d8ef12dff2af
 
 name:           Pragmatic-Type-Level-Design
 version:        0.0.0.1
@@ -23,16 +23,18 @@ source-repository head
 
 library
   exposed-modules:
-      TypeLevelDSL.Auction.Description.Introspection
-      TypeLevelDSL.Auction.Description.Language
-      TypeLevelDSL.Auction.Flow.Introspection
-      TypeLevelDSL.Auction.Flow.Language
       TypeLevelDSL.Auction.Implementation.Auction
       TypeLevelDSL.Auction.Implementation.Description
       TypeLevelDSL.Auction.Implementation.Flow
       TypeLevelDSL.Auction.Implementation.Types
       TypeLevelDSL.Auction.Introspection
+      TypeLevelDSL.Auction.Introspection.Auction
+      TypeLevelDSL.Auction.Introspection.Description
+      TypeLevelDSL.Auction.Introspection.Flow
       TypeLevelDSL.Auction.Language
+      TypeLevelDSL.Auction.Language.Auction
+      TypeLevelDSL.Auction.Language.Description
+      TypeLevelDSL.Auction.Language.Flow
       TypeLevelDSL.Auction.Types
       TypeLevelDSL.Car.Implementation
       TypeLevelDSL.Car.Language

@@ -11,7 +11,7 @@
 module TypeLevelDSL.Auction.Extensions.Implementation where
 
 import qualified TypeLevelDSL.Auction.Types as T
-import qualified TypeLevelDSL.Auction.Description.Language as L
+import qualified TypeLevelDSL.Auction.Language.Description as L
 import qualified TypeLevelDSL.Auction.Extensions.Language as L
 import qualified TypeLevelDSL.Auction.Implementation.Types as Impl
 import qualified TypeLevelDSL.Auction.Implementation.Description as Impl

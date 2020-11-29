@@ -16,7 +16,7 @@ import Data.IORef (newIORef)
 import GHC.TypeLits (KnownSymbol, symbolVal)
 
 import qualified TypeLevelDSL.Auction.Types as T
-import qualified TypeLevelDSL.Auction.Description.Language as L
+import qualified TypeLevelDSL.Auction.Language.Description as L
 import qualified TypeLevelDSL.Auction.Implementation.Types as Impl
 import TypeLevelDSL.Eval
 

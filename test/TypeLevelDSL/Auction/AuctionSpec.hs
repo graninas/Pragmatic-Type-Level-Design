@@ -63,6 +63,44 @@ type EnglishAuctionFlow = AuctionFlow
       )
   )
 
+
+type TestFlow = AuctionFlow
+  ( LotProcess
+      ( 
+      )
+  )
+--
+--
+-- lotProcess' :: AuctionState -> Impl.Lot -> IO ()
+-- lotProcess' st@(AuctionState {..}) lot = do
+--   let LotState {..} = lotState
+--
+--   curRound <- readIORef curRoundRef
+--   curCost  <- readIORef curCostRef
+--   let newCost = curCost + costIncrease
+--
+--   putStrLn $ "Round: " <> show curRound
+--   case curRound of
+--     0 -> finalizeLot' lotState
+--     _ -> do
+--       putStrLn $ "New lot cost: " <> show newCost <> ". Who will pay?"
+--
+--       rawDecisions <- mapM (getParticipantDecision newCost) participants
+--       let decisions = sortOn snd $ catMaybes rawDecisions
+--       putStrLn $ "Raw decisions: " <> show rawDecisions
+--
+--       case decisions of
+--         []  -> do
+--           writeIORef curRoundRef $ curRound - 1
+--           lotProcess' st lot
+--         ((pNum,_) : _) -> do
+--           putStrLn $ "Current owner is participant " <> show pNum <> "."
+--           writeIORef curCostRef newCost
+--           writeIORef curOwnerRef $ Just pNum
+--           writeIORef curRoundRef lotRounds
+--           lotProcess' st lot
+
+
 -- Auction
 
 type WorldArtsInfo = Info "World arts" "UK Bank"
@@ -74,6 +112,11 @@ type WorldArtsLots = Lots
 
 type WorldArtsAuction = Auction
   EnglishAuctionFlow
+  WorldArtsInfo
+  WorldArtsLots
+
+type TestAuction = Auction
+  TestFlow
   WorldArtsInfo
   WorldArtsLots
 
@@ -137,4 +180,7 @@ spec = do
   describe "Type level eDSL Auction: Implementation" $ do
     it "runAuction test" $ do
       Impl.runAuction (Proxy :: Proxy WorldArtsAuction)
-      
+
+  describe "Type level eDSL TestAuction: Implementation" $ do
+    it "runAuction test" $ do
+      Impl.runAuction (Proxy :: Proxy TestAuction)

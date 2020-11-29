@@ -50,6 +50,19 @@ data Participant = Participant
   , participantActivity :: IORef Int
   }
 
+data LotState = LotState
+  { lotNameRef  :: IORef String
+  , curRoundRef :: IORef Int
+  , curOwnerRef :: IORef (Maybe ParticipantNumber)
+  , curCostRef  :: IORef T.Money
+  }
+
+data AuctionState = AuctionState
+  { participants :: [Participant]
+  , lotRounds    :: Int
+  , costIncrease :: T.Money
+  , lotState     :: LotState
+  }
 
 getParticipantDecision :: T.Money -> Participant -> IO (Maybe (ParticipantNumber, Order))
 getParticipantDecision _ (Participant pNum actRef) = do
@@ -72,47 +85,99 @@ registerParticipants = mapM createParticipant [1..3]
       actRef <- newIORef baseAct
       pure $ Participant pNum actRef
 
+initParticipants :: AuctionState -> IO ()
+initParticipants (AuctionFlow {..}) =
+  mapM_ initParticipant participants
+  where
+    initParticipant (Participant {..}) = pure ()
+      -- baseAct <- randomRIO (400, 1000)
+      -- actRef <- newIORef baseAct
+      -- pure $ Participant pNum actRef
 
--- Tmp harcode
-lotRounds :: Int
-lotRounds = 3
-
-costIncrease :: T.Money
-costIncrease = 500
+initLot :: AuctionState -> Impl.Lot -> IO ()
+initLot (AuctionState {..}) lot = do
+  let LotState {..} = lotState
+  writeIORef lotNameRef $ Impl.name lot
+  writeIORef curRoundRef lotRounds
+  writeIORef curOwnerRef Nothing
 
 instance
   ( Eval Impl.AsImplLots lots Impl.Lots
   , Eval I.AsIntroLots lots [String]
-  -- , Eval Impl.AsImplAuctionFlow flow ()
+  -- , Eval Impl.AsImplAuctionFlow flow Impl.AuctionFlow
   ) =>
   Eval AsImplAuction (L.Auction' flow info lots) () where
   eval _ _ = do
 
-    -- "participants registration".
+    auctionState <- AuctionState
+      <$> registerParticipants
+      <*> pure 3
+      <*> pure 500
+      <*> (LotState <$> newIORef <*> newIORef <*> newIORef <*> newIORef)
 
     putStrLn "Auction is started."
 
-    lots       <- eval Impl.AsImplLots (Proxy :: Proxy lots)
-    lotsDescrs <- eval I.AsIntroLots (Proxy :: Proxy lots)
+    lots        <- eval Impl.AsImplLots (Proxy :: Proxy lots)
+    -- auctionFlow <- eval Impl.AsImplAuctionFlow (Proxy :: Proxy flow)
+    lotsDescrs  <- eval I.AsIntroLots (Proxy :: Proxy lots)
 
     for_ (zip lots lotsDescrs) $ \(lot, descr) -> do
+      initParticipants auctionState
+      initLot auctionState lot
+      -- auctionFlow (lot, descr)
       putStrLn "New lot!"
       putStrLn descr
-      participants <- registerParticipants
-      lotProcess lotRounds Nothing participants lot
+      lotProcess' auctionState lot
 
 finalizeLot :: Maybe ParticipantNumber -> Impl.Lot -> IO ()
 finalizeLot Nothing     lot = putStrLn $ "Lot " <> Impl.name lot <> " is not sold."
 finalizeLot (Just pNum) lot = putStrLn $ "Lot " <> Impl.name lot <> " goes to the participant " <> show pNum <> "."
 
-lotProcess :: Int -> Maybe ParticipantNumber -> [Participant] -> Impl.Lot -> IO ()
+finalizeLot' :: LotState -> IO ()
+finalizeLot' LotState {..} = do
+  curOwner <- readIORef curOwnerRef
+  lotName  <- readIORef lotNameRef
+  case curOwner of
+    Nothing   -> putStrLn $ "Lot " <> lotName <> " is not sold."
+    Just pNum -> putStrLn $ "Lot " <> lotName <> " goes to the participant " <> show pNum <> "."
+
+lotProcess' :: AuctionState -> Impl.Lot -> IO ()
+lotProcess' st@(AuctionState {..}) lot = do
+  let LotState {..} = lotState
+
+  curRound <- readIORef curRoundRef
+  curCost  <- readIORef curCostRef
+  let newCost = curCost + costIncrease
+
+  putStrLn $ "Round: " <> show curRound
+  case curRound of
+    0 -> finalizeLot' lotState
+    _ -> do
+      putStrLn $ "New lot cost: " <> show newCost <> ". Who will pay?"
+
+      rawDecisions <- mapM (getParticipantDecision newCost) participants
+      let decisions = sortOn snd $ catMaybes rawDecisions
+      putStrLn $ "Raw decisions: " <> show rawDecisions
+
+      case decisions of
+        []  -> do
+          writeIORef curRoundRef $ curRound - 1
+          lotProcess' st lot
+        ((pNum,_) : _) -> do
+          putStrLn $ "Current owner is participant " <> show pNum <> "."
+          writeIORef curCostRef newCost
+          writeIORef curOwnerRef $ Just pNum
+          writeIORef curRoundRef lotRounds
+          lotProcess' st lot
+
+
 lotProcess 0 curOwner _  lot = finalizeLot curOwner lot
 lotProcess n curOwner ps lot = do
   putStrLn $ "Round: " <> show (4 - n)
 
   lastCost <- readIORef $ Impl.currentCost lot
   let newCost = lastCost + costIncrease
-  putStrLn $ "Current lot cost: " <> show newCost <> ". Who will pay?"
+  putStrLn $ "New lot cost: " <> show newCost <> ". Who will pay?"
 
   rawDecisions <- mapM (getParticipantDecision newCost) ps
   let decisions = sortOn snd $ catMaybes rawDecisions

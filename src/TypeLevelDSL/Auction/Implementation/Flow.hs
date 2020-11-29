@@ -11,13 +11,18 @@
 
 module TypeLevelDSL.Auction.Implementation.Flow where
 
-import TypeLevelDSL.Auction.Flow.Language
+import qualified TypeLevelDSL.Auction.Types as T
+import qualified TypeLevelDSL.Auction.Flow.Language as L
+import qualified TypeLevelDSL.Auction.Implementation.Types as Impl
 import TypeLevelDSL.Eval
 
 import Data.Proxy (Proxy(..))
 import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 
 -- Implementation
+
+type AuctionFlow     = (Impl.Lot, String) -> IO ()
+type LotProcessFlow  = Impl.Lot -> IO ()
 
 -- Interpreting of the participants list
 
@@ -27,26 +32,33 @@ data AsImplAction      = AsImplAction
 
 -- AuctionFlow
 
-instance (Eval AsImplLotProcess proc [String]) =>
-  Eval AsImplAuctionFlow (AuctionFlow' proc) [String] where
+instance (Eval AsImplLotProcess proc LotProcessFlow) =>
+  Eval AsImplAuctionFlow (L.AuctionFlow' proc) AuctionFlow where
   eval _ _ = do
-    strs <- eval AsImplLotProcess (Proxy :: Proxy proc)
-    pure $ "AuctionFlow" : strs
+    lotProc <- eval AsImplLotProcess (Proxy :: Proxy proc)
+    pure $ \(lot, descr) -> do
+      putStrLn "New lot!"
+      putStrLn descr
+      lotProc lot
 
-instance (mkAuct ~ MkAuctionFlow auct, Eval AsImplAuctionFlow auct [String]) =>
-  Eval AsImplAuctionFlow mkAuct [String] where
+instance (mkAuct ~ L.MkAuctionFlow auct, Eval AsImplAuctionFlow auct AuctionFlow) =>
+  Eval AsImplAuctionFlow mkAuct AuctionFlow where
   eval _ _ = eval AsImplAuctionFlow (Proxy :: Proxy auct)
 
 -- Lot Process
 
 instance (Eval AsImplAction acts [String]) =>
-  Eval AsImplLotProcess (LotProcess' acts) [String] where
+  Eval AsImplLotProcess (L.LotProcess' acts) LotProcessFlow where
   eval _ _ = do
-    strs <- eval AsImplAction (Proxy :: Proxy acts)
-    pure $ "Lot process" : strs
+    -- lotProc <- eval AsImplAction (Proxy :: Proxy acts)
+    -- pure $ "Lot process" : strs
+    pure $ \lot -> pure ()
 
-instance (mkProc ~ MkLotProcess proc, Eval AsImplLotProcess proc [String]) =>
-  Eval AsImplLotProcess mkProc [String] where
+instance
+  ( mkProc ~ L.MkLotProcess proc
+  , Eval AsImplLotProcess proc LotProcessFlow
+  ) =>
+  Eval AsImplLotProcess mkProc LotProcessFlow where
   eval _ _ = eval AsImplLotProcess (Proxy :: Proxy proc)
 
 -- The Actions mechanism
@@ -58,15 +70,21 @@ instance (mkProc ~ MkLotProcess proc, Eval AsImplLotProcess proc [String]) =>
 --            ^ type family
 --                     ^ some real data type
 
-instance (mkAct ~ MkAction act, Eval AsImplAction act [String]) =>
+instance
+  ( mkAct ~ L.MkAction act
+  , Eval AsImplAction act [String]
+  ) =>
   Eval AsImplAction mkAct [String] where
   eval _ _ = eval AsImplAction (Proxy :: Proxy act)
 
-instance Eval AsImplAction End' [String] where
+instance Eval AsImplAction L.End' [String] where
   eval _ _ = pure ["End' reached."]
 
-instance (Eval AsImplAction act [String], Eval AsImplAction acts [String]) =>
-  Eval AsImplAction (Action' act acts) [String] where
+instance
+  ( Eval AsImplAction act [String]
+  , Eval AsImplAction acts [String]
+  ) =>
+  Eval AsImplAction (L.Action' act acts) [String] where
   eval _ _ = do
     strs1 <- eval AsImplAction (Proxy :: Proxy act)
     strs2 <- eval AsImplAction (Proxy :: Proxy acts)
@@ -74,5 +92,5 @@ instance (Eval AsImplAction act [String], Eval AsImplAction acts [String]) =>
 
 -- Specific actions
 
-instance Eval AsImplAction (GetPayloadValue' valName valType lam) [String] where
+instance Eval AsImplAction (L.GetPayloadValue' valName valType lam) [String] where
   eval _ _ = pure ["GetPayloadValue' reached"]

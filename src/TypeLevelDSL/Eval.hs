@@ -27,3 +27,9 @@ class Eval tag payload ret | tag payload -> ret where
 
 class EvalCtx ctx tag payload ret | tag payload -> ret where
   evalCtx :: ctx -> tag -> Proxy payload -> IO ret
+
+-- Eval lambda with context and input
+-- Currently, the context should be passed as an argument.
+
+class EvalLambdaCtx ctx input tag payload ret | tag payload -> ret where
+  evalLambdaCtx :: ctx -> input -> tag -> Proxy payload -> IO ret

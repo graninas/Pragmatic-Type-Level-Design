@@ -20,6 +20,7 @@ import Data.Proxy (Proxy(..))
 import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 
 data AsImplAction = AsImplAction
+data AsImplLambda = AsImplLambda
 
 -- The Actions mechanism
 
@@ -49,3 +50,14 @@ instance
     strs1 <- evalCtx ctx AsImplAction (Proxy :: Proxy act)
     strs2 <- evalCtx ctx AsImplAction (Proxy :: Proxy acts)
     pure $ strs1 <> strs2
+
+-- Lambda mechanism
+
+
+instance
+  ( mkLam ~ L.MkLambda lam
+  , EvalLambdaCtx ctx valType AsImplLambda lam [String]
+  ) =>
+  EvalLambdaCtx ctx valType AsImplLambda mkLam [String] where
+  evalLambdaCtx ctx val _ _ =
+    evalLambdaCtx ctx val AsImplLambda (Proxy :: Proxy lam)

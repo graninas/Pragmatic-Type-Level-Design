@@ -29,16 +29,30 @@ import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
   -- eval _ _ = pure ["GetPayloadValue' reached"]
 
 instance
-  (Context ctx, KnownSymbol refName, Dyn.Typeable refType)
+  ( Context ctx
+  , KnownSymbol refName
+  , Dyn.Typeable refType
+  , EvalLambdaCtx ctx refType Impl.AsImplLambda lam [String]
+  )
   => EvalCtx ctx Impl.AsImplAction (L.ReadRef' refName refType lam) [String] where
   evalCtx ctx _ _ = do
-    putStrLn "ReadRef' reached"
-
     let valName = (symbolVal (Proxy :: Proxy refName))
     mbDyn <- getDyn ctx valName
-    case mbDyn of
+    let mbVal = mbDyn >>= Dyn.fromDynamic
+    case mbVal of
       Nothing -> error $ "Value " <> valName <> " not found."
-      Just dyn -> case Dyn.fromDynamic dyn of
-        Nothing -> error "no conversion"
-        Just (v :: refType) -> putStrLn $ "Successfully fetched value " <> valName <> "."
-    pure ["ReadRef' reached"]
+      Just (val :: refType) -> do
+        putStrLn $ "Successfully fetched value " <> valName <> "."
+        evalLambdaCtx ctx val Impl.AsImplLambda (Proxy :: Proxy lam)
+    pure []
+
+
+-- Specific lambdas
+
+instance Show val
+  => EvalLambdaCtx ctx val Impl.AsImplLambda L.Print' [String] where
+  evalLambdaCtx _ val _ _ = pure [show val]
+
+instance Show val
+  => EvalLambdaCtx ctx val Impl.AsImplLambda L.Drop' [String] where
+  evalLambdaCtx _ _ _ _ = pure []

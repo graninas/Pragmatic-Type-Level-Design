@@ -70,9 +70,12 @@ data AuctionState = AuctionState
   }
 
 instance Context AuctionState where
-  getDyn AuctionState {lotState} "curRound" = readIORef (curRoundRef lotState) >>= mkVal
-  getDyn AuctionState {lotState} "curCost"  = readIORef (curCostRef lotState) >>= mkVal
-  getDyn _ _ = noVal
+  getDyn AuctionState {lotState} "curRound" _ = readIORef (curRoundRef lotState) >>= mkVal
+  getDyn AuctionState {lotState} "curCost"  _ = readIORef (curCostRef lotState) >>= mkVal
+  getDyn _ _ _ = noVal
+  setDyn AuctionState {lotState} "curRound" val _ = error "setDyn for curRound not implemented"
+  setDyn AuctionState {lotState} "curCost" val _ = error "setDyn for curCost not implemented"
+  setDyn AuctionState {lotState} n val _ = error $ "setDyn for " <> n <> " not implemented"
 
 getParticipantDecision :: T.Money -> Participant -> IO (Maybe (ParticipantNumber, Order))
 getParticipantDecision _ (Participant pNum actRef) = do

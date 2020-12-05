@@ -104,9 +104,12 @@ data TestData = TestData
   }
 
 instance Context TestData where
-  getDyn TestData {dynsRef} refName = do
+  getDyn TestData {dynsRef} refName _ = do
     dyns <- readIORef dynsRef
     pure $ Map.lookup refName dyns
+  setDyn TestData {dynsRef} refName val _ = do
+    dyns <- readIORef dynsRef
+    writeIORef dynsRef $ Map.insert refName val dyns
 
 spec :: Spec
 spec = do
@@ -176,8 +179,8 @@ spec = do
       ctx <- TestData <$> newIORef (Map.fromList [("ref1", Dyn.toDyn (10 :: Int))])
 
       void $ evalCtx ctx Impl.AsImplAction (Proxy :: Proxy (
-            Action (ReadRef "ref1" Int Print)
-              ( Action (ReadRef "ref1" Int Drop)
+            Action (ReadRef "ref1" Int (WriteRef "ref2" Int))
+              ( Action (ReadRef "ref2" Int Drop)
                 End
               )
           ))

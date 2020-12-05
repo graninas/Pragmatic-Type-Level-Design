@@ -25,4 +25,6 @@ data WriteRef' (refName :: Symbol) (t :: *)
 
 type GetPayloadValue n t lam = MkAction (GetPayloadValue' n t lam)
 type ReadRef n t lam = MkAction (ReadRef' n t lam)
-type WriteRef n t = MkAction (WriteRef' n t)
+
+
+type WriteRef n t = MkLambda (WriteRef' n t)

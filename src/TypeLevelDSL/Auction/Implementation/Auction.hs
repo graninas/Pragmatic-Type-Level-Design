@@ -74,6 +74,10 @@ instance Context AuctionState where
   getDyn AuctionState {..} "curRound" = pure $ Just $ Dyn.toDyn (10 :: Int)
   getDyn AuctionState {..} "curCost" = pure $ Just $ Dyn.toDyn (20 :: Int)
   getDyn AuctionState {..} _ = pure Nothing
+  getVal' AuctionState {..} "abc" = pure $ Just (10 :: Int)
+  getVal' AuctionState {..} "curRound" = pure $ Just (10 :: Int)
+  getVal' AuctionState {..} "curCost" = pure $ Just (20 :: Int)
+  getVal' AuctionState {..} _ = pure Nothing
 
 getParticipantDecision :: T.Money -> Participant -> IO (Maybe (ParticipantNumber, Order))
 getParticipantDecision _ (Participant pNum actRef) = do

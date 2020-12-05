@@ -36,7 +36,13 @@ instance
 
     let valName = (symbolVal (Proxy :: Proxy refName))
     mbDyn <- getDyn ctx valName
+    mbDyn' <- getDyn' @ctx @refType ctx valName
     case mbDyn of
+      Nothing -> error $ "Value " <> valName <> " not found."
+      Just dyn -> case Dyn.fromDynamic dyn of
+        Nothing -> error "no conversion"
+        Just (v :: refType) -> putStrLn $ "Successfully fetched value " <> valName <> "."
+    case mbDyn' of
       Nothing -> error $ "Value " <> valName <> " not found."
       Just dyn -> case Dyn.fromDynamic dyn of
         Nothing -> error "no conversion"

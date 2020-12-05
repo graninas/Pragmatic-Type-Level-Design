@@ -25,6 +25,7 @@ import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 
 -- Specific actions
 
+-- TODO: rework get payload value
 -- instance Eval Impl.AsImplAction (L.GetPayloadValue' valName valType lam) [String] where
   -- eval _ _ = pure ["GetPayloadValue' reached"]
 

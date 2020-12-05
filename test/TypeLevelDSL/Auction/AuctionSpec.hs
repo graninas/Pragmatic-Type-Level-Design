@@ -15,6 +15,9 @@ import TypeLevelDSL.Auction.Extensions.Language
 import qualified TypeLevelDSL.Auction.Implementation.Types as Impl
 import qualified TypeLevelDSL.Auction.Implementation.Description as Impl
 import qualified TypeLevelDSL.Auction.Implementation.Auction as Impl
+import qualified TypeLevelDSL.Auction.Implementation.Flow as Impl
+import qualified TypeLevelDSL.Auction.Implementation.Action as Impl
+import qualified TypeLevelDSL.Auction.Implementation.DataActions as Impl
 import qualified TypeLevelDSL.Auction.Introspection as I
 import qualified TypeLevelDSL.Auction.Extensions.Introspection as I
 import qualified TypeLevelDSL.Auction.Extensions.Implementation as Impl
@@ -25,7 +28,11 @@ import Test.Hspec
 
 import Data.List (intercalate)
 import Data.Proxy (Proxy(..))
+import Data.IORef
+import qualified Data.Map as Map
+import qualified Data.Dynamic as Dyn
 import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
+import Control.Monad (void)
 
 
 -- Test sample
@@ -73,38 +80,6 @@ type TestFlow = AuctionFlow
       )
   )
 
---
---
--- lotProcess' :: AuctionState -> Impl.Lot -> IO ()
--- lotProcess' st@(AuctionState {..}) lot = do
---   let LotState {..} = lotState
---
---   curRound <- readIORef curRoundRef
---   curCost  <- readIORef curCostRef
---   let newCost = curCost + costIncrease
---
---   putStrLn $ "Round: " <> show curRound
---   case curRound of
---     0 -> finalizeLot' lotState
---     _ -> do
---       putStrLn $ "New lot cost: " <> show newCost <> ". Who will pay?"
---
---       rawDecisions <- mapM (getParticipantDecision newCost) participants
---       let decisions = sortOn snd $ catMaybes rawDecisions
---       putStrLn $ "Raw decisions: " <> show rawDecisions
---
---       case decisions of
---         []  -> do
---           writeIORef curRoundRef $ curRound - 1
---           lotProcess' st lot
---         ((pNum,_) : _) -> do
---           putStrLn $ "Current owner is participant " <> show pNum <> "."
---           writeIORef curCostRef newCost
---           writeIORef curOwnerRef $ Just pNum
---           writeIORef curRoundRef lotRounds
---           lotProcess' st lot
-
-
 -- Auction
 
 type WorldArtsInfo = Info "World arts" "UK Bank"
@@ -123,6 +98,15 @@ type TestAuction = Auction
   TestFlow
   WorldArtsInfo
   WorldArtsLots
+
+data TestData = TestData
+  { dynsRef :: IORef (Map.Map String Dyn.Dynamic)
+  }
+
+instance Context TestData where
+  getDyn TestData {dynsRef} refName = do
+    dyns <- readIORef dynsRef
+    pure $ Map.lookup refName dyns
 
 spec :: Spec
 spec = do
@@ -187,3 +171,14 @@ spec = do
 
     it "runAuction TestAuction test" $ do
       Impl.runAuction (Proxy :: Proxy TestAuction)
+
+    it "runAction ReadRef WriteRef ReadRef test" $ do
+      ctx <- TestData <$> newIORef (Map.fromList [("ref1", Dyn.toDyn (10 :: Int))])
+
+      void $ evalCtx ctx Impl.AsImplAction (Proxy :: Proxy (
+            Action (ReadRef "ref1" Int Print)
+              ( Action (ReadRef "ref1" Int Drop)
+                End
+              )
+          ))
+      pure ()

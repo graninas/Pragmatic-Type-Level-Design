@@ -46,7 +46,7 @@ library
       TypeLevelDSL.Car.Implementation
       TypeLevelDSL.Car.Language
       TypeLevelDSL.Eval
-      TypeLevelDSL.HasValue
+      TypeLevelDSL.Context
   other-modules:
       Paths_Pragmatic_Type_Level_Design
   hs-source-dirs:

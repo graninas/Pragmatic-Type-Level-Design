@@ -32,30 +32,30 @@ data AsImplLotProcess  = AsImplLotProcess
 
 -- AuctionFlow
 
-instance (Eval AsImplLotProcess proc LotProcessFlow) =>
-  Eval AsImplAuctionFlow (L.AuctionFlow' proc) AuctionFlow where
-  eval _ _ = do
-    lotProc <- eval AsImplLotProcess (Proxy :: Proxy proc)
+instance (EvalCtx ctx AsImplLotProcess proc LotProcessFlow) =>
+  EvalCtx ctx AsImplAuctionFlow (L.AuctionFlow' proc) AuctionFlow where
+  evalCtx ctx _ _ = do
+    lotProc <- evalCtx ctx AsImplLotProcess (Proxy :: Proxy proc)
     pure $ \(lot, descr) -> do
       putStrLn "New lot!"
       putStrLn descr
       lotProc lot
 
-instance (mkAuct ~ L.MkAuctionFlow auct, Eval AsImplAuctionFlow auct AuctionFlow) =>
-  Eval AsImplAuctionFlow mkAuct AuctionFlow where
-  eval _ _ = eval AsImplAuctionFlow (Proxy :: Proxy auct)
+instance (mkAuct ~ L.MkAuctionFlow auct, EvalCtx ctx AsImplAuctionFlow auct AuctionFlow) =>
+  EvalCtx ctx AsImplAuctionFlow mkAuct AuctionFlow where
+  evalCtx ctx _ _ = evalCtx ctx AsImplAuctionFlow (Proxy :: Proxy auct)
 
 -- Lot Process
 
-instance (Eval Impl.AsImplAction acts [String]) =>
-  Eval AsImplLotProcess (L.LotProcess' acts) LotProcessFlow where
-  eval _ _ = do
-    lotProc <- eval Impl.AsImplAction (Proxy :: Proxy acts)
+instance (EvalCtx ctx Impl.AsImplAction acts [String]) =>
+  EvalCtx ctx AsImplLotProcess (L.LotProcess' acts) LotProcessFlow where
+  evalCtx ctx _ _ = do
+    lotProc <- evalCtx ctx Impl.AsImplAction (Proxy :: Proxy acts)
     pure $ \lot -> pure ()
 
 instance
   ( mkProc ~ L.MkLotProcess proc
-  , Eval AsImplLotProcess proc LotProcessFlow
+  , EvalCtx ctx AsImplLotProcess proc LotProcessFlow
   ) =>
-  Eval AsImplLotProcess mkProc LotProcessFlow where
-  eval _ _ = eval AsImplLotProcess (Proxy :: Proxy proc)
+  EvalCtx ctx AsImplLotProcess mkProc LotProcessFlow where
+  evalCtx ctx _ _ = evalCtx ctx AsImplLotProcess (Proxy :: Proxy proc)

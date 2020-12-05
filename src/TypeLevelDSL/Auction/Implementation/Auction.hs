@@ -8,6 +8,7 @@
 {-# LANGUAGE UndecidableInstances     #-}
 {-# LANGUAGE FlexibleContexts         #-}
 {-# LANGUAGE FlexibleInstances        #-}
+-- {-# LANGUAGE AllowAmbiguousTypes      #-}
 
 module TypeLevelDSL.Auction.Implementation.Auction
   ( module Impl
@@ -26,7 +27,9 @@ import qualified TypeLevelDSL.Auction.Implementation.Action as Impl
 import qualified TypeLevelDSL.Auction.Implementation.DataActions as Impl
 import qualified TypeLevelDSL.Auction.Introspection.Description as I
 import TypeLevelDSL.Eval
+import TypeLevelDSL.Context
 
+import qualified Data.Dynamic as Dyn (toDyn)
 import Data.Proxy (Proxy(..))
 import Data.IORef
 import Data.Maybe (catMaybes)
@@ -65,6 +68,12 @@ data AuctionState = AuctionState
   , costIncrease :: T.Money
   , lotState     :: LotState
   }
+
+instance Context AuctionState where
+  getDyn AuctionState {..} "abc" = pure $ Just $ Dyn.toDyn (10 :: Int)
+  getDyn AuctionState {..} "curRound" = pure $ Just $ Dyn.toDyn (10 :: Int)
+  getDyn AuctionState {..} "curCost" = pure $ Just $ Dyn.toDyn (20 :: Int)
+  getDyn AuctionState {..} _ = pure Nothing
 
 getParticipantDecision :: T.Money -> Participant -> IO (Maybe (ParticipantNumber, Order))
 getParticipantDecision _ (Participant pNum actRef) = do
@@ -106,7 +115,7 @@ initLot (AuctionState {..}) lot = do
 instance
   ( Eval Impl.AsImplLots lots Impl.Lots
   , Eval I.AsIntroLots lots [String]
-  , Eval Impl.AsImplAuctionFlow flow Impl.AuctionFlow
+  , EvalCtx AuctionState Impl.AsImplAuctionFlow flow Impl.AuctionFlow
   ) =>
   Eval AsImplAuction (L.Auction' flow info lots) () where
   eval _ _ = do
@@ -123,8 +132,10 @@ instance
 
     putStrLn "Auction is started."
 
+    let ctx = auctionState
+
     lots        <- eval Impl.AsImplLots (Proxy :: Proxy lots)
-    auctionFlow <- eval Impl.AsImplAuctionFlow (Proxy :: Proxy flow)
+    auctionFlow <- evalCtx ctx Impl.AsImplAuctionFlow (Proxy :: Proxy flow)
     lotsDescrs  <- eval I.AsIntroLots (Proxy :: Proxy lots)
 
     for_ (zip lots lotsDescrs) $ \(lot, descr) -> do

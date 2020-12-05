@@ -32,20 +32,20 @@ data AsImplAction = AsImplAction
 
 instance
   ( mkAct ~ L.MkAction act
-  , Eval AsImplAction act [String]
+  , EvalCtx ctx AsImplAction act [String]
   ) =>
-  Eval AsImplAction mkAct [String] where
-  eval _ _ = eval AsImplAction (Proxy :: Proxy act)
+  EvalCtx ctx AsImplAction mkAct [String] where
+  evalCtx ctx _ _ = evalCtx ctx AsImplAction (Proxy :: Proxy act)
 
-instance Eval AsImplAction L.End' [String] where
-  eval _ _ = pure ["End' reached."]
+instance EvalCtx ctx AsImplAction L.End' [String] where
+  evalCtx ctx _ _ = pure ["End' reached."]
 
 instance
-  ( Eval AsImplAction act [String]
-  , Eval AsImplAction acts [String]
+  ( EvalCtx ctx AsImplAction act [String]
+  , EvalCtx ctx AsImplAction acts [String]
   ) =>
-  Eval AsImplAction (L.Action' act acts) [String] where
-  eval _ _ = do
-    strs1 <- eval AsImplAction (Proxy :: Proxy act)
-    strs2 <- eval AsImplAction (Proxy :: Proxy acts)
+  EvalCtx ctx AsImplAction (L.Action' act acts) [String] where
+  evalCtx ctx _ _ = do
+    strs1 <- evalCtx ctx AsImplAction (Proxy :: Proxy act)
+    strs2 <- evalCtx ctx AsImplAction (Proxy :: Proxy acts)
     pure $ strs1 <> strs2

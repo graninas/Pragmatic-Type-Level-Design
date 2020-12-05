@@ -19,7 +19,7 @@ import qualified TypeLevelDSL.Auction.Introspection as I
 import qualified TypeLevelDSL.Auction.Extensions.Introspection as I
 import qualified TypeLevelDSL.Auction.Extensions.Implementation as Impl
 import TypeLevelDSL.Eval
-import TypeLevelDSL.HasValue
+import TypeLevelDSL.Context
 
 import Test.Hspec
 

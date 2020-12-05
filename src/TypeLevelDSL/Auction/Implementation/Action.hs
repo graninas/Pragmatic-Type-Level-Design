@@ -19,7 +19,7 @@ import TypeLevelDSL.Eval
 import Data.Proxy (Proxy(..))
 import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 
-data AsImplAction      = AsImplAction
+data AsImplAction = AsImplAction
 
 -- The Actions mechanism
 

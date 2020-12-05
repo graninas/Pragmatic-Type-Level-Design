@@ -21,7 +21,9 @@ import qualified TypeLevelDSL.Auction.Language.Flow as L
 import qualified TypeLevelDSL.Auction.Language.Auction as L
 import qualified TypeLevelDSL.Auction.Implementation.Types as Impl
 import qualified TypeLevelDSL.Auction.Implementation.Description as Impl
--- import qualified TypeLevelDSL.Auction.Implementation.Flow as Impl
+import qualified TypeLevelDSL.Auction.Implementation.Flow as Impl
+import qualified TypeLevelDSL.Auction.Implementation.Action as Impl
+import qualified TypeLevelDSL.Auction.Implementation.DataActions as Impl
 import qualified TypeLevelDSL.Auction.Introspection.Description as I
 import TypeLevelDSL.Eval
 
@@ -104,7 +106,7 @@ initLot (AuctionState {..}) lot = do
 instance
   ( Eval Impl.AsImplLots lots Impl.Lots
   , Eval I.AsIntroLots lots [String]
-  -- , Eval Impl.AsImplAuctionFlow flow Impl.AuctionFlow
+  , Eval Impl.AsImplAuctionFlow flow Impl.AuctionFlow
   ) =>
   Eval AsImplAuction (L.Auction' flow info lots) () where
   eval _ _ = do
@@ -122,7 +124,7 @@ instance
     putStrLn "Auction is started."
 
     lots        <- eval Impl.AsImplLots (Proxy :: Proxy lots)
-    -- auctionFlow <- eval Impl.AsImplAuctionFlow (Proxy :: Proxy flow)
+    auctionFlow <- eval Impl.AsImplAuctionFlow (Proxy :: Proxy flow)
     lotsDescrs  <- eval I.AsIntroLots (Proxy :: Proxy lots)
 
     for_ (zip lots lotsDescrs) $ \(lot, descr) -> do

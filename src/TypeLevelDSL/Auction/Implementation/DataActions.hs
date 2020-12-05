@@ -23,5 +23,11 @@ import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 
 -- Specific actions
 
-instance Eval Impl.AsImplAction (L.GetPayloadValue' valName valType lam) [String] where
-  eval _ _ = pure ["GetPayloadValue' reached"]
+-- instance Eval Impl.AsImplAction (L.GetPayloadValue' valName valType lam) [String] where
+  -- eval _ _ = pure ["GetPayloadValue' reached"]
+
+instance Eval Impl.AsImplAction (L.ReadRef' refName refType lam) [String] where
+  eval _ _ = do
+    putStrLn "ReadRef' reached"
+
+    pure ["ReadRef' reached"]

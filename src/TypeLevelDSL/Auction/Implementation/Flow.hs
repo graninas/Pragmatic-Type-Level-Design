@@ -50,8 +50,7 @@ instance (mkAuct ~ L.MkAuctionFlow auct, Eval AsImplAuctionFlow auct AuctionFlow
 instance (Eval Impl.AsImplAction acts [String]) =>
   Eval AsImplLotProcess (L.LotProcess' acts) LotProcessFlow where
   eval _ _ = do
-    -- lotProc <- eval AsImplAction (Proxy :: Proxy acts)
-    -- pure $ "Lot process" : strs
+    lotProc <- eval Impl.AsImplAction (Proxy :: Proxy acts)
     pure $ \lot -> pure ()
 
 instance

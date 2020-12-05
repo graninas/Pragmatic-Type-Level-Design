@@ -128,14 +128,14 @@ spec :: Spec
 spec = do
   describe "Type level eDSL Auction: Introspection" $ do
 
-    it "AuctionInfo test" $ do
+    xit "AuctionInfo test" $ do
       strs <- eval I.AsIntroInfo (Proxy :: Proxy WorldArtsInfo)
       strs `shouldBe`
         [ "Name: World arts"
         , "Holder: UK Bank"
         ]
 
-    it "Auction Lots test" $ do
+    xit "Auction Lots test" $ do
       strs <- eval I.AsIntroLots (Proxy :: Proxy WorldArtsLots)
       strs `shouldBe`
         [ "Lot: 101"
@@ -154,7 +154,7 @@ spec = do
         , "Currency: USD"
         ]
 
-    it "Auction test" $ do
+    xit "Auction test" $ do
       strs <- I.describeAuction (Proxy :: Proxy WorldArtsAuction)
       strs `shouldBe`
         [ "==> Auction! <=="
@@ -182,9 +182,8 @@ spec = do
         ]
 
   describe "Type level eDSL Auction: Implementation" $ do
-    it "runAuction test" $ do
-      Impl.runAuction (Proxy :: Proxy WorldArtsAuction)
+    -- it "runAuction WorldArtsAuction test" $ do
+      -- Impl.runAuction (Proxy :: Proxy WorldArtsAuction)
 
-  describe "Type level eDSL TestAuction: Implementation" $ do
-    it "runAuction test" $ do
+    it "runAuction TestAuction test" $ do
       Impl.runAuction (Proxy :: Proxy TestAuction)

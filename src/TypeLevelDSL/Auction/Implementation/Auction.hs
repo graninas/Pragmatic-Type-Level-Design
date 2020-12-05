@@ -70,10 +70,9 @@ data AuctionState = AuctionState
   }
 
 instance Context AuctionState where
-  getDyn AuctionState {..} "abc"      = mkVal (10 :: Int)
-  getDyn AuctionState {..} "curRound" = mkVal (10 :: Int)
-  getDyn AuctionState {..} "curCost"  = mkVal (20 :: Int)
-  getDyn AuctionState {..} _ = noVal
+  getDyn AuctionState {lotState} "curRound" = readIORef (curRoundRef lotState) >>= mkVal
+  getDyn AuctionState {lotState} "curCost"  = readIORef (curCostRef lotState) >>= mkVal
+  getDyn _ _ = noVal
 
 getParticipantDecision :: T.Money -> Participant -> IO (Maybe (ParticipantNumber, Order))
 getParticipantDecision _ (Participant pNum actRef) = do

@@ -41,7 +41,10 @@ instance (EvalCtx ctx AsImplLotProcess proc LotProcessFlow) =>
       putStrLn descr
       lotProc lot
 
-instance (mkAuct ~ L.MkAuctionFlow auct, EvalCtx ctx AsImplAuctionFlow auct AuctionFlow) =>
+instance
+  ( mkAuct ~ L.MkAuctionFlow auct
+  , EvalCtx ctx AsImplAuctionFlow auct AuctionFlow
+  ) =>
   EvalCtx ctx AsImplAuctionFlow mkAuct AuctionFlow where
   evalCtx ctx _ _ = evalCtx ctx AsImplAuctionFlow (Proxy :: Proxy auct)
 

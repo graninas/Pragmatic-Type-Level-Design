@@ -29,21 +29,42 @@ import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 -- instance Eval Impl.AsImplAction (L.GetPayloadValue' valName valType lam) [String] where
   -- eval _ _ = pure ["GetPayloadValue' reached"]
 
+data AsRefTag
+
+instance
+  ( KnownSymbol refName
+  )
+  => Eval AsRefTag (L.RefTag' refName refType) (String, Proxy refType) where
+  eval _ _ = do
+    let refName = symbolVal (Proxy :: Proxy refName)
+    let proxy = proxy :: Proxy refType
+    pure (refName, proxy)
+
+
+instance
+  ( mkRef ~ L.MkRefTag ref
+  , Eval AsRefTag ref (String, Proxy refType)
+  )
+  => Eval AsRefTag mkRef (String, Proxy refType) where
+  eval _ _ = eval AsRefTag (Proxy :: Proxy ref)
+
+
+
+
 instance
   ( Context ctx
-  , KnownSymbol refName
-  , Dyn.Typeable refType
   , EvalLambdaCtx ctx refType Impl.AsImplLambda lam [String]
   )
-  => EvalCtx ctx Impl.AsImplAction (L.ReadRef' refName refType lam) [String] where
+  => EvalCtx ctx Impl.AsImplAction (L.ReadRef' refTag lam) [String] where
   evalCtx ctx _ _ = do
-    let valName = symbolVal (Proxy :: Proxy refName)
-    mbDyn <- getDyn ctx valName (Proxy :: Proxy refType)
-    let mbVal = mbDyn >>= Dyn.fromDynamic
-    case mbVal of
-      Nothing -> error $ "Value " <> valName <> " not found."
+    let (refName, proxy :: Proxy refType) = eval AsRefTag (Proxy :: Proxy refTag)
+
+    mbDyn <- getDyn ctx refName proxy
+
+    case mbDyn >>= Dyn.fromDynamic of
+      Nothing -> error $ "Reference " <> refName <> " not found."
       Just (val :: refType) -> do
-        putStrLn $ "Successfully fetched value " <> valName <> "."
+        putStrLn $ "Successfully fetched reference " <> refName <> "."
         evalLambdaCtx ctx val Impl.AsImplLambda (Proxy :: Proxy lam)
     pure []
 

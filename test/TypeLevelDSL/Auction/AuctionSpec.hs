@@ -12,6 +12,7 @@ module TypeLevelDSL.Auction.AuctionSpec where
 
 import TypeLevelDSL.Auction.Language
 import TypeLevelDSL.Auction.Extensions.Language
+import qualified TypeLevelDSL.Auction.Language as L
 import qualified TypeLevelDSL.Auction.Implementation.Types as Impl
 import qualified TypeLevelDSL.Auction.Implementation.Description as Impl
 import qualified TypeLevelDSL.Auction.Implementation.Auction as Impl
@@ -103,6 +104,9 @@ data TestData = TestData
   { dynsRef :: IORef (Map.Map String Dyn.Dynamic)
   }
 
+type Ref1 = RefTag "ref1" Int
+type Ref2 = RefTag "ref2" Int
+
 instance Context TestData where
   getDyn TestData {dynsRef} refName _ = do
     dyns <- readIORef dynsRef
@@ -179,8 +183,8 @@ spec = do
       ctx <- TestData <$> newIORef (Map.fromList [("ref1", Dyn.toDyn (10 :: Int))])
 
       void $ evalCtx ctx Impl.AsImplAction (Proxy :: Proxy (
-            Action (ReadRef "ref1" Int (WriteRef "ref2" Int))
-              ( Action (ReadRef "ref2" Int Drop)
+            Action (ReadRef Ref1 (WriteRef Ref2))
+              ( Action (ReadRef Ref2 Drop)
                 End
               )
           ))

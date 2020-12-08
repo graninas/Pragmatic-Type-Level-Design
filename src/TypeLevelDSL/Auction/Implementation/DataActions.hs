@@ -8,6 +8,7 @@
 {-# LANGUAGE FlexibleInstances        #-}
 {-# LANGUAGE ScopedTypeVariables      #-}
 {-# LANGUAGE TypeApplications         #-}
+{-# LANGUAGE UndecidableInstances     #-}
 
 module TypeLevelDSL.Auction.Implementation.DataActions where
 
@@ -29,7 +30,7 @@ import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 -- instance Eval Impl.AsImplAction (L.GetPayloadValue' valName valType lam) [String] where
   -- eval _ _ = pure ["GetPayloadValue' reached"]
 
-data AsRefTag
+data AsRefTag = AsRefTag
 
 instance
   ( KnownSymbol refName
@@ -53,11 +54,13 @@ instance
 
 instance
   ( Context ctx
-  , EvalLambdaCtx ctx refType Impl.AsImplLambda lam [String]
+  , Dyn.Typeable refType
+  -- , EvalLambdaCtx ctx refType Impl.AsImplLambda lam [String]
   )
   => EvalCtx ctx Impl.AsImplAction (L.ReadRef' refTag lam) [String] where
   evalCtx ctx _ _ = do
-    let (refName, proxy :: Proxy refType) = eval AsRefTag (Proxy :: Proxy refTag)
+    -- (refName, proxy :: Proxy refType) <- eval AsRefTag (Proxy :: Proxy refTag)
+    (refName, proxy) <- eval AsRefTag (Proxy :: Proxy refTag)
 
     mbDyn <- getDyn ctx refName proxy
 
@@ -81,12 +84,15 @@ instance Show val
 
 instance
   ( Context ctx
-  , KnownSymbol refName
+  -- , KnownSymbol refName
   , Dyn.Typeable refType
   )
-  => EvalLambdaCtx ctx refType Impl.AsImplLambda (L.WriteRef' refName refType) [String] where
+  => EvalLambdaCtx ctx refType Impl.AsImplLambda (L.WriteRef' refTag) [String] where
   evalLambdaCtx ctx val _ _ = do
-    let valName = symbolVal (Proxy :: Proxy refName)
+    (refName, proxy) <- eval AsRefTag (Proxy :: Proxy refTag)
+
+    -- let refName = symbolVal (Proxy :: Proxy refName)
+
     let dynVal = Dyn.toDyn val
-    setDyn ctx valName dynVal (Proxy :: Proxy refType)
+    setDyn ctx refName dynVal (Proxy :: Proxy refType)
     pure []

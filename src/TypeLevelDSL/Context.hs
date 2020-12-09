@@ -6,6 +6,7 @@ module TypeLevelDSL.Context where
 import qualified Data.Dynamic as Dyn
 
 import Data.Proxy (Proxy(..))
+import qualified Data.Map as Map
 
 class Context ctx where
   getDyn :: forall t. ctx -> String -> Proxy t -> IO (Maybe Dyn.Dynamic)

@@ -25,9 +25,9 @@ import qualified TypeLevelDSL.Auction.Implementation.Description as Impl
 import qualified TypeLevelDSL.Auction.Implementation.Flow as Impl
 import qualified TypeLevelDSL.Auction.Implementation.Action as Impl
 import qualified TypeLevelDSL.Auction.Implementation.DataActions as Impl
-import qualified TypeLevelDSL.Auction.Introspection.Description as I
 import TypeLevelDSL.Eval
 import TypeLevelDSL.Context
+import TypeLevelDSL.StateContext
 
 import qualified Data.Dynamic as Dyn (toDyn)
 import Data.Proxy (Proxy(..))
@@ -60,6 +60,7 @@ data LotState = LotState
   , curRoundRef :: IORef Int
   , curOwnerRef :: IORef (Maybe ParticipantNumber)
   , curCostRef  :: IORef T.Money
+  , lotPayloadContext :: StateContext
   }
 
 data AuctionState = AuctionState
@@ -107,16 +108,16 @@ initParticipants (AuctionState {..}) =
       -- actRef <- newIORef baseAct
       -- pure $ Participant pNum actRef
 
-initLot :: AuctionState -> Impl.Lot -> IO ()
-initLot (AuctionState {..}) lot = do
+initLotState :: AuctionState -> Impl.LotDescr -> IO ()
+initLotState (AuctionState {..}) lotDescr = do
   let LotState {..} = lotState
-  writeIORef lotNameRef $ Impl.name lot
+  writeIORef lotNameRef $ Impl.ldName lotDescr
   writeIORef curRoundRef lotRounds
   writeIORef curOwnerRef Nothing
+  writeIORef curCostRef
 
 instance
-  ( Eval Impl.AsImplLots lots Impl.Lots
-  , Eval I.AsIntroLots lots [String]
+  ( Eval Impl.AsImplLots lots Impl.LotDescrs
   , EvalCtx AuctionState Impl.AsImplAuctionFlow flow Impl.AuctionFlow
   ) =>
   Eval AsImplAuction (L.Auction' flow info lots) () where
@@ -124,28 +125,29 @@ instance
 
     auctionState <- AuctionState
       <$> registerParticipants
-      <*> pure 3
-      <*> pure 500
+      <*> pure 3      -- Number of rounds
+      <*> pure 500    -- Bid increase     -- should be extension (increase / decrease)
       <*> (LotState
-            <$> newIORef ""
-            <*> newIORef 0
-            <*> newIORef Nothing
-            <*> newIORef 0)
+            <$> newIORef ""         -- Lot name
+            <*> newIORef 0          -- Current round
+            <*> newIORef Nothing    -- Current owner
+            <*> newIORef 0          -- Current cost
+            <*> createStateContext  -- Payload context
+            )
 
     putStrLn "Auction is started."
 
     let ctx = auctionState
 
-    lots        <- eval Impl.AsImplLots (Proxy :: Proxy lots)
+    lotDescrs   <- eval Impl.AsImplLots (Proxy :: Proxy lots)
     auctionFlow <- evalCtx ctx Impl.AsImplAuctionFlow (Proxy :: Proxy flow)
-    lotsDescrs  <- eval I.AsIntroLots (Proxy :: Proxy lots)
 
-    for_ (zip lots lotsDescrs) $ \(lot, descr) -> do
+    for_ lotDescrs $ \lotDescr -> do
+      putStrLn $ "New lot: " <> Impl.ldName lotDescr
+      putStrLn $ Impl.ldDescription lotDescr
+
       initParticipants auctionState
-      initLot auctionState lot
-      -- auctionFlow (lot, descr)
-      putStrLn "New lot!"
-      putStrLn descr
+      initLotState auctionState lotDescr
       lotProcess' auctionState lot
 
 finalizeLot' :: LotState -> IO ()

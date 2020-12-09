@@ -23,11 +23,14 @@ import Data.Proxy (Proxy(..))
 import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 
 
--- Specific actions
+-- * Specific actions
 
--- TODO: rework get payload value
--- instance Eval Impl.AsImplAction (L.GetPayloadValue' valName valType lam) [String] where
-  -- eval _ _ = pure ["GetPayloadValue' reached"]
+-- GetPayloadValue
+
+instance EvalCtx ctx Impl.AsImplAction (L.GetPayloadValue' valName valType lam) [String] where
+  evalCtx _ _ _ = error "abc"
+
+-- ReadRef
 
 instance
   ( Context ctx
@@ -48,16 +51,18 @@ instance
     pure []
 
 
--- Specific lambdas
+-- * Specific lambdas
 
+-- Print lambda
 instance Show val
   => EvalLambdaCtx ctx val Impl.AsImplLambda L.Print' [String] where
   evalLambdaCtx _ val _ _ = pure [show val]
 
-instance Show val
-  => EvalLambdaCtx ctx val Impl.AsImplLambda L.Drop' [String] where
+-- Drop lambda
+instance EvalLambdaCtx ctx val Impl.AsImplLambda L.Drop' [String] where
   evalLambdaCtx _ _ _ _ = pure []
 
+-- WriteRef lambda
 instance
   ( Context ctx
   , KnownSymbol refName

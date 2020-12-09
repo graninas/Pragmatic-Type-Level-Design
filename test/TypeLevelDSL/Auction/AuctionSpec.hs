@@ -11,7 +11,6 @@
 module TypeLevelDSL.Auction.AuctionSpec where
 
 import TypeLevelDSL.Auction.Language
-import TypeLevelDSL.Auction.Extensions.Language
 import qualified TypeLevelDSL.Auction.Implementation.Types as Impl
 import qualified TypeLevelDSL.Auction.Implementation.Description as Impl
 import qualified TypeLevelDSL.Auction.Implementation.Auction as Impl
@@ -21,6 +20,9 @@ import qualified TypeLevelDSL.Auction.Implementation.DataActions as Impl
 import qualified TypeLevelDSL.Auction.Introspection as I
 import qualified TypeLevelDSL.Auction.Extensions.Introspection as I
 import qualified TypeLevelDSL.Auction.Extensions.Implementation as Impl
+
+import qualified  TypeLevelDSL.Auction.Extensions.Language as ExtL
+
 import TypeLevelDSL.Eval
 import TypeLevelDSL.Context
 
@@ -37,15 +39,6 @@ import Control.Monad (void)
 
 -- Test sample
 
-type UKOnly  = Censorship (AllowedCountries "UK only" '[UK])
-type UKAndUS = Censorship (AllowedCountries "UK & US" '[UK, US])
-
-type PayloadLot1 = LotPayload (Payload (MoneyVal "1000"))
-type PayloadLot2 = LotPayload (Payload (MoneyDynVal "202 min bid"))
-type PayloadLot3 = LotPayload (Payload (MoneyVal "40000"))
-
--- Auction algorithm
-
 -- English Auction Flow
 
 -- Greeting
@@ -61,10 +54,19 @@ type PayloadLot3 = LotPayload (Payload (MoneyVal "40000"))
 -- data MinBidGetter
 -- data Get l r
 
+type UKOnly  = Censorship (AllowedCountries "UK only" '[UK])
+type UKAndUS = Censorship (AllowedCountries "UK & US" '[UK, US])
+
+type PayloadLot1 = LotPayload (ExtL.EFLotPayload (MoneyVal "1000"))
+type PayloadLot2 = LotPayload (ExtL.EFLotPayload (MoneyDynVal "202 min bid"))
+type PayloadLot3 = LotPayload (ExtL.EFLotPayload (MoneyVal "40000"))
+
+-- Auction algorithm
+
 type EnglishAuctionFlow = AuctionFlow
   ( LotProcess
-      ( Action (GetPayloadValue MinBid Float Print)
-        ( Action (GetPayloadValue MinBid Float Drop)
+      ( Action (GetPayloadValue "minBid" Float Print)
+        ( Action (GetPayloadValue "minBid" Float Drop)
           End
         )
       )
@@ -175,7 +177,7 @@ spec = do
     it "runAuction TestAuction test" $ do
       Impl.runAuction (Proxy :: Proxy TestAuction)
 
-    it "runAction ReadRef WriteRef ReadRef test" $ do
+    it "evalCtx Action ReadRef WriteRef ReadRef test" $ do
       ctx <- TestData <$> newIORef (Map.fromList [("ref1", Dyn.toDyn (10 :: Int))])
 
       void $ evalCtx ctx Impl.AsImplAction (Proxy :: Proxy (
@@ -184,4 +186,14 @@ spec = do
                 End
               )
           ))
-      pure ()
+
+    it "evalCtx Action GetPayloadValue test" $ do
+      ctx <- TestData <$> newIORef (Map.fromList [("ref1", Dyn.toDyn (10 :: Int))])
+
+      void $ evalCtx ctx Impl.AsImplAction (Proxy :: Proxy (
+            ( Action (GetPayloadValue MinBid Float Print)
+              ( Action (GetPayloadValue MinBid Float Drop)
+                End
+              )
+            )
+          ))

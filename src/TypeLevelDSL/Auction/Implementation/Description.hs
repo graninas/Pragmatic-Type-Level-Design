@@ -17,8 +17,19 @@ import GHC.TypeLits (KnownSymbol, symbolVal)
 
 import qualified TypeLevelDSL.Auction.Types as T
 import qualified TypeLevelDSL.Auction.Language.Description as L
-import qualified TypeLevelDSL.Auction.Implementation.Types as Impl
+import TypeLevelDSL.StateContext (StateContext)
 import TypeLevelDSL.Eval
+
+-- Service types
+
+data LotDescr = LotDescr
+  { ldName           :: String
+  , ldDescription    :: String
+  , ldPayloadContext :: StateContext
+  }
+
+type LotDescrs = [LotDescr]
+
 
 -- Interpretation tags
 
@@ -28,46 +39,42 @@ data AsImplLot        = AsImplLot
 data AsImplLotPayload = AsImplLotPayload
 data AsImplMoneyConst = AsImplMoneyConst
 
--- data AsImplBid        = AsImplBid
--- data AsImplMinBid     = AsImplMinBid
-
 -- Interpreting of the list of lots (lots :: LotsTag a)
 
-instance Eval AsImplLot p Impl.Lot =>
-  Eval AsImplLots (p ': '[]) [Impl.Lot] where
+instance Eval AsImplLot p LotDescr =>
+  Eval AsImplLots (p ': '[]) LotDescrs where
   eval _ _ = do
     lot <- eval AsImplLot (Proxy :: Proxy p)
     pure [lot]
 
 instance
-  ( Eval AsImplLot p Impl.Lot
-  , Eval AsImplLots (x ': ps) Impl.Lots
+  ( Eval AsImplLot p LotDescr
+  , Eval AsImplLots (x ': ps) LotDescrs
   ) =>
-  Eval AsImplLots (p ': x ': ps) Impl.Lots where
+  Eval AsImplLots (p ': x ': ps) LotDescrs where
   eval _ _ = do
     lot  <- eval AsImplLot (Proxy :: Proxy p)
     lots <- eval AsImplLots (Proxy :: Proxy (x ': ps))
     pure $ lot : lots
 
-instance (b ~ L.MkLots a, Eval AsImplLots a Impl.Lots) =>
-  Eval AsImplLots b Impl.Lots where
+instance (b ~ L.MkLots a, Eval AsImplLots a LotDescrs) =>
+  Eval AsImplLots b LotDescrs where
   eval _ _ = eval AsImplLots (Proxy :: Proxy a)
 
 -- Interpreting of a Lot
 
 instance
-  ( Eval AsImplLotPayload payload Impl.Payload
+  ( Eval AsImplLotPayload payload StateContext
   , KnownSymbol name
   , KnownSymbol descr
   ) =>
-  Eval AsImplLot (L.Lot' name descr payload currency censorship) Impl.Lot where
+  Eval AsImplLot (L.Lot' name descr payload currency censorship) LotDescr where
   eval _ _ = do
-    payload <- eval AsImplLotPayload (Proxy :: Proxy payload)
-    curCostRef <- newIORef $ Impl.startBid payload
-    pure $ Impl.Lot
-      { Impl.name        = symbolVal (Proxy :: Proxy name)
-      , Impl.description = symbolVal (Proxy :: Proxy descr)
-      , Impl.currentCost = curCostRef
+    payloadCtx <- eval AsImplLotPayload (Proxy :: Proxy payload)
+    pure $ LotDescr
+      { ldName           = symbolVal (Proxy :: Proxy name)
+      , ldDescription    = symbolVal (Proxy :: Proxy descr)
+      , ldPayloadContext = payloadCtx
       }
 
 -- Interpreting a MoneyConst value
@@ -82,6 +89,6 @@ instance KnownSymbol val =>
 
 -- Interpreting a LotPayload value
 
-instance (b ~ L.MkLotPayload a, Eval AsImplLotPayload a Impl.Payload) =>
-  Eval AsImplLotPayload b Impl.Payload where
+instance (b ~ L.MkLotPayload a, Eval AsImplLotPayload a StateContext) =>
+  Eval AsImplLotPayload b StateContext where
   eval _ _ = eval AsImplLotPayload (Proxy :: Proxy a)

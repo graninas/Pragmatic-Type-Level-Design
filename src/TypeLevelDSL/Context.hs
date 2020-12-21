@@ -6,6 +6,7 @@ module TypeLevelDSL.Context where
 import qualified Data.Dynamic as Dyn
 
 import Data.Proxy (Proxy(..))
+import Data.Typeable (Typeable, typeRep)
 import qualified Data.Map as Map
 
 class Context ctx where
@@ -17,3 +18,6 @@ mkVal = pure . Just . Dyn.toDyn
 
 noVal :: IO (Maybe Dyn.Dynamic)
 noVal = pure Nothing
+
+toTypeableKey :: forall k. Typeable k => String
+toTypeableKey = show $ typeRep (Proxy :: Proxy k)

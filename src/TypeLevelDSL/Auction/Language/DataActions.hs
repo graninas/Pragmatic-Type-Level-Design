@@ -16,14 +16,14 @@ import GHC.TypeLits (Symbol, Nat)
 
 
 -- Should valName be a Symbol?
-data GetPayloadValue' (valName :: *) (valType :: *) (lam :: LambdaTag lamBody)
+data GetPayloadValue' (valTag :: *) (valType :: *) (lam :: LambdaTag lamBody)
 data ReadRef' (refName :: Symbol) (t :: *) (lam :: LambdaTag lamBody)
 data WriteRef' (refName :: Symbol) (t :: *)
 
 
 -- Helpers
 
-type GetPayloadValue n t lam = MkAction (GetPayloadValue' n t lam)
+type GetPayloadValue tag typ lam = MkAction (GetPayloadValue' tag typ lam)
 type ReadRef n t lam = MkAction (ReadRef' n t lam)
 
 

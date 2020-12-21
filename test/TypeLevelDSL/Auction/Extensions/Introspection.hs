@@ -70,7 +70,7 @@ instance Eval AsIntroMoneyConst (DynVal' "202 min bid") String where
 
 -- Payload
 instance Eval AsIntroMoneyConst minBid String =>
-  Eval AsIntroLotPayload (Payload' minBid) String where
+  Eval AsIntroLotPayload (EFLotPayload' minBid) String where
   eval _ _ = do
     v <- eval AsIntroMoneyConst (Proxy :: Proxy minBid)
     pure $ "Minimum bid: " <> v

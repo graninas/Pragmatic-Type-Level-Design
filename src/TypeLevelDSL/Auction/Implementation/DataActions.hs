@@ -11,13 +11,12 @@
 
 module TypeLevelDSL.Auction.Implementation.DataActions where
 
-import qualified TypeLevelDSL.Auction.Types as T
 import qualified TypeLevelDSL.Auction.Language as L
-import qualified TypeLevelDSL.Auction.Implementation.Types as Impl
 import qualified TypeLevelDSL.Auction.Implementation.Action as Impl
 import TypeLevelDSL.Eval
 import TypeLevelDSL.Context
 
+import Data.Typeable (Typeable)
 import qualified Data.Dynamic as Dyn
 import Data.Proxy (Proxy(..))
 import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
@@ -27,8 +26,19 @@ import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 
 -- GetPayloadValue
 
-instance EvalCtx ctx Impl.AsImplAction (L.GetPayloadValue' valName valType lam) [String] where
-  evalCtx _ _ _ = error "abc"
+instance
+  ( Context ctx
+  , Typeable valTag
+  , Dyn.Typeable valType
+  , EvalLambdaCtx ctx valType Impl.AsImplLambda lam [String]
+  ) =>
+  EvalCtx ctx Impl.AsImplAction (L.GetPayloadValue' valTag valType lam) [String] where
+  evalCtx ctx _ _ = do
+    let key = toTypeableKey @valTag
+    withContextValue ctx key
+      $ \(val :: valType) -> evalLambdaCtx ctx val Impl.AsImplLambda (Proxy :: Proxy lam)
+    pure []
+
 
 -- ReadRef
 
@@ -41,13 +51,8 @@ instance
   => EvalCtx ctx Impl.AsImplAction (L.ReadRef' refName refType lam) [String] where
   evalCtx ctx _ _ = do
     let valName = symbolVal (Proxy :: Proxy refName)
-    mbDyn <- getDyn ctx valName (Proxy :: Proxy refType)
-    let mbVal = mbDyn >>= Dyn.fromDynamic
-    case mbVal of
-      Nothing -> error $ "Value " <> valName <> " not found."
-      Just (val :: refType) -> do
-        putStrLn $ "Successfully fetched value " <> valName <> "."
-        evalLambdaCtx ctx val Impl.AsImplLambda (Proxy :: Proxy lam)
+    withContextValue ctx valName
+      $ \(val :: refType) -> evalLambdaCtx ctx val Impl.AsImplLambda (Proxy :: Proxy lam)
     pure []
 
 
@@ -74,3 +79,22 @@ instance
     let dynVal = Dyn.toDyn val
     setDyn ctx valName dynVal (Proxy :: Proxy refType)
     pure []
+
+
+withContextValue
+  :: forall refType ctx a
+   . Context ctx
+  => Dyn.Typeable refType
+  => ctx
+  -> String
+  -> (refType -> IO a)
+  -> IO a
+withContextValue ctx valName f = do
+    mbDyn <- getDyn ctx valName (Proxy :: Proxy refType)
+    case mbDyn of
+      Nothing -> error $ "Value " <> valName <> " not found."
+      Just dyn -> case Dyn.fromDynamic dyn of
+        Nothing -> error $ "Value " <> valName <> " not parsed."
+        Just (val :: refType) -> do
+          putStrLn $ "Successfully fetched value " <> valName <> "."
+          f val

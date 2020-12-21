@@ -32,7 +32,7 @@ instance Eval Impl.AsImplMoneyConst (L.DynVal' "202 min bid") T.Money where
 -- Payload
 
 instance Eval Impl.AsImplMoneyConst minBid T.Money =>
-  Eval Impl.AsImplLotPayload (ExtL.Payload' minBid) StCtx.StateContext where
+  Eval Impl.AsImplLotPayload (ExtL.EFLotPayload' minBid) StCtx.StateContext where
   eval _ _ = do
     stCtx <- StCtx.createStateContext
     v <- eval Impl.AsImplMoneyConst (Proxy :: Proxy minBid)

@@ -26,8 +26,9 @@ data Country
   | UA
   deriving (Show, Read, Eq, Ord)
 
-
--- TODO: try make Symbol work instead of type marks
+-- This is not Symbol because it's known at the design time.
+-- Symbol should be used when the name of a value is not related to the domain directly
+-- (like, service or temporary variables etc)
 data MinBid
 
 -- eDSL

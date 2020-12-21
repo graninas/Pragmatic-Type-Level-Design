@@ -13,7 +13,6 @@ module TypeLevelDSL.Auction.Implementation.Action where
 
 import qualified TypeLevelDSL.Auction.Types as T
 import qualified TypeLevelDSL.Auction.Language as L
-import qualified TypeLevelDSL.Auction.Implementation.Types as Impl
 import TypeLevelDSL.Eval
 
 import Data.Proxy (Proxy(..))
@@ -52,7 +51,6 @@ instance
     pure $ strs1 <> strs2
 
 -- Lambda mechanism
-
 
 instance
   ( mkLam ~ L.MkLambda lam

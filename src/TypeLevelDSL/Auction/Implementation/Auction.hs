@@ -20,7 +20,6 @@ import qualified TypeLevelDSL.Auction.Types as T
 import qualified TypeLevelDSL.Auction.Language.Description as L
 import qualified TypeLevelDSL.Auction.Language.Flow as L
 import qualified TypeLevelDSL.Auction.Language.Auction as L
-import qualified TypeLevelDSL.Auction.Implementation.Types as Impl
 import qualified TypeLevelDSL.Auction.Implementation.Description as Impl
 import qualified TypeLevelDSL.Auction.Implementation.Flow as Impl
 import qualified TypeLevelDSL.Auction.Implementation.Action as Impl
@@ -104,9 +103,6 @@ initParticipants (AuctionState {..}) =
   mapM_ initParticipant participants
   where
     initParticipant (Participant {..}) = pure ()
-      -- baseAct <- randomRIO (400, 1000)
-      -- actRef <- newIORef baseAct
-      -- pure $ Participant pNum actRef
 
 initLotState :: AuctionState -> Impl.LotDescr -> IO ()
 initLotState (AuctionState {..}) lotDescr = do
@@ -114,11 +110,11 @@ initLotState (AuctionState {..}) lotDescr = do
   writeIORef lotNameRef $ Impl.ldName lotDescr
   writeIORef curRoundRef lotRounds
   writeIORef curOwnerRef Nothing
-  writeIORef curCostRef
+  writeIORef curCostRef 0               --   hardcode, should be extracted from payload
 
 instance
   ( Eval Impl.AsImplLots lots Impl.LotDescrs
-  , EvalCtx AuctionState Impl.AsImplAuctionFlow flow Impl.AuctionFlow
+  -- , EvalCtx AuctionState Impl.AsImplAuctionFlow flow Impl.AuctionFlow
   ) =>
   Eval AsImplAuction (L.Auction' flow info lots) () where
   eval _ _ = do
@@ -140,7 +136,7 @@ instance
     let ctx = auctionState
 
     lotDescrs   <- eval Impl.AsImplLots (Proxy :: Proxy lots)
-    auctionFlow <- evalCtx ctx Impl.AsImplAuctionFlow (Proxy :: Proxy flow)
+    -- auctionFlow <- evalCtx ctx Impl.AsImplAuctionFlow (Proxy :: Proxy flow)
 
     for_ lotDescrs $ \lotDescr -> do
       putStrLn $ "New lot: " <> Impl.ldName lotDescr
@@ -148,7 +144,7 @@ instance
 
       initParticipants auctionState
       initLotState auctionState lotDescr
-      lotProcess' auctionState lot
+      lotProcess' auctionState
 
 finalizeLot' :: LotState -> IO ()
 finalizeLot' LotState {..} = do
@@ -158,8 +154,8 @@ finalizeLot' LotState {..} = do
     Nothing   -> putStrLn $ "Lot " <> lotName <> " is not sold."
     Just pNum -> putStrLn $ "Lot " <> lotName <> " goes to the participant " <> show pNum <> "."
 
-lotProcess' :: AuctionState -> Impl.Lot -> IO ()
-lotProcess' st@(AuctionState {..}) lot = do
+lotProcess' :: AuctionState -> IO ()
+lotProcess' st@(AuctionState {..}) = do
   let LotState {..} = lotState
 
   curRound <- readIORef curRoundRef
@@ -179,13 +175,13 @@ lotProcess' st@(AuctionState {..}) lot = do
       case decisions of
         []  -> do
           writeIORef curRoundRef $ curRound - 1
-          lotProcess' st lot
+          lotProcess' st
         ((pNum,_) : _) -> do
           putStrLn $ "Current owner is participant " <> show pNum <> "."
           writeIORef curCostRef newCost
           writeIORef curOwnerRef $ Just pNum
           writeIORef curRoundRef lotRounds
-          lotProcess' st lot
+          lotProcess' st
 
 runAuction
   :: Eval AsImplAuction auction ()

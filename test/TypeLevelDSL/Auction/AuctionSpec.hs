@@ -7,11 +7,11 @@
 {-# LANGUAGE FlexibleContexts         #-}
 {-# LANGUAGE FlexibleInstances        #-}
 {-# LANGUAGE ScopedTypeVariables      #-}
+{-# LANGUAGE TypeApplications         #-}
 
 module TypeLevelDSL.Auction.AuctionSpec where
 
 import TypeLevelDSL.Auction.Language
-import qualified TypeLevelDSL.Auction.Implementation.Types as Impl
 import qualified TypeLevelDSL.Auction.Implementation.Description as Impl
 import qualified TypeLevelDSL.Auction.Implementation.Auction as Impl
 import qualified TypeLevelDSL.Auction.Implementation.Flow as Impl
@@ -54,8 +54,8 @@ import Control.Monad (void)
 -- data MinBidGetter
 -- data Get l r
 
-type UKOnly  = Censorship (AllowedCountries "UK only" '[UK])
-type UKAndUS = Censorship (AllowedCountries "UK & US" '[UK, US])
+type UKOnly  = Censorship (ExtL.AllowedCountries "UK only" '[UK])
+type UKAndUS = Censorship (ExtL.AllowedCountries "UK & US" '[UK, US])
 
 type PayloadLot1 = LotPayload (ExtL.EFLotPayload (MoneyVal "1000"))
 type PayloadLot2 = LotPayload (ExtL.EFLotPayload (MoneyDynVal "202 min bid"))
@@ -65,8 +65,8 @@ type PayloadLot3 = LotPayload (ExtL.EFLotPayload (MoneyVal "40000"))
 
 type EnglishAuctionFlow = AuctionFlow
   ( LotProcess
-      ( Action (GetPayloadValue "minBid" Float Print)
-        ( Action (GetPayloadValue "minBid" Float Drop)
+      ( Action (GetPayloadValue MinBid Float Print)
+        ( Action (GetPayloadValue MinBid Float Drop)
           End
         )
       )
@@ -86,9 +86,9 @@ type TestFlow = AuctionFlow
 
 type WorldArtsInfo = Info "World arts" "UK Bank"
 type WorldArtsLots = Lots
-  '[ Lot "101" "Dali artwork"      PayloadLot1 (Currency GBP) UKOnly
-   , Lot "202" "Chinese vase"      PayloadLot2 (Currency USD) UKAndUS
-   , Lot "303" "Ancient mechanism" PayloadLot3 (Currency USD) NoCensorship
+  '[ Lot "101" "Dali artwork"      PayloadLot1 (Currency ExtL.GBP) UKOnly
+   , Lot "202" "Chinese vase"      PayloadLot2 (Currency ExtL.USD) UKAndUS
+   , Lot "303" "Ancient mechanism" PayloadLot3 (Currency ExtL.USD) NoCensorship
    ]
 
 type WorldArtsAuction = Auction
@@ -188,7 +188,9 @@ spec = do
           ))
 
     it "evalCtx Action GetPayloadValue test" $ do
-      ctx <- TestData <$> newIORef (Map.fromList [("ref1", Dyn.toDyn (10 :: Int))])
+      ctx <- TestData <$> newIORef (Map.fromList
+        [ (toTypeableKey @MinBid, Dyn.toDyn (10.0 :: Float))
+        ])
 
       void $ evalCtx ctx Impl.AsImplAction (Proxy :: Proxy (
             ( Action (GetPayloadValue MinBid Float Print)

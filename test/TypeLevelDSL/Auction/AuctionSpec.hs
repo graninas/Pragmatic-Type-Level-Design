@@ -113,6 +113,25 @@ instance Context TestData where
     dyns <- readIORef dynsRef
     writeIORef dynsRef $ Map.insert refName val dyns
 
+
+verifyRef
+  :: forall t ctx
+   . Dyn.Typeable t
+  => Show t
+  => Eq t
+  => Context ctx
+  => ctx
+  -> String
+  -> t
+  -> IO ()
+verifyRef ctx refName expected = do
+  mbRef1 <- getDyn ctx refName (Proxy :: Proxy t)
+  case (mbRef1, mbRef1 >>= Dyn.fromDynamic) of
+    (_, Just v) -> v `shouldBe` expected
+    (Nothing, _) -> fail $ "Ref not found: " ++ refName
+    (_, Nothing) -> fail $ "Ref not parsed: " ++ refName
+
+
 spec :: Spec
 spec = do
   describe "Type level eDSL Auction: Introspection" $ do
@@ -187,6 +206,9 @@ spec = do
               )
           ))
 
+      verifyRef ctx "ref1" (10 :: Int)
+      verifyRef ctx "ref2" (10 :: Int)
+
     it "evalCtx Action GetPayloadValue test" $ do
       ctx <- TestData <$> newIORef (Map.fromList
         [ (toTypeableKey @MinBid, Dyn.toDyn (10.0 :: Float))
@@ -194,8 +216,11 @@ spec = do
 
       void $ evalCtx ctx Impl.AsImplAction (Proxy :: Proxy (
             ( Action (GetPayloadValue MinBid Float Print)
-              ( Action (GetPayloadValue MinBid Float Drop)
+              ( Action (GetPayloadValue MinBid Float (WriteRef "f" Float))
                 End
               )
             )
           ))
+
+      verifyRef ctx (toTypeableKey @MinBid) (10.0 :: Float)
+      verifyRef ctx "f" (10.0 :: Float)

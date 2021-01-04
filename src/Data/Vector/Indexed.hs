@@ -1,4 +1,5 @@
--- Some imaginary implementation of the indexed vector.
+-- imaginary-indexed-vector library.
+-- Not an actual implementation, just a sample of a high-level interface.
 
 {-# LANGUAGE PolyKinds         #-}
 {-# LANGUAGE DataKinds         #-}

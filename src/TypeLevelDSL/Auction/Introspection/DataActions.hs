@@ -23,3 +23,9 @@ import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 
 instance Eval AsIntroAction (L.GetPayloadValue' valName valType lam) [String] where
   eval _ _ = pure ["GetPayloadValue' reached"]
+
+instance Eval AsIntroAction (L.GetLotName' lam) [String] where
+  eval _ _ = pure ["GetLotName' reached"]
+
+instance Eval AsIntroAction (L.GetLotDescr' lam) [String] where
+  eval _ _ = pure ["GetLotDescr' reached"]

@@ -63,13 +63,20 @@ type PayloadLot3 = LotPayload (ExtL.EFLotPayload (MoneyVal "40000"))
 
 -- Auction algorithm
 
+type EnglishAuctionLotAction1 =
+  ( Action (GetLotName (ConcatL "New lot: " Print))
+  ( Action (GetLotDescr Print)
+    End
+  ))
+
+type EnglishAuctionLotAction2 =
+  ( Action (GetLotName2  (ConcatL "New lot: "         (Both (WriteRef "LotName result" String)  Print)))
+  ( Action (GetLotDescr2 (ConcatL "Lot description: " (Both (WriteRef "LotDescr result" String) Print)))
+    End
+  ))
+
 type EnglishAuctionFlow = AuctionFlow
-  ( LotProcess
-      ( Action (GetPayloadValue MinBid Float Print)
-        ( Action (GetPayloadValue MinBid Float Drop)
-          End
-        )
-      )
+  ( LotProcess EnglishAuctionLotAction1
   )
 
 
@@ -224,3 +231,26 @@ spec = do
 
       verifyRef ctx (toTypeableKey @MinBid) (10.0 :: Float)
       verifyRef ctx "f" (10.0 :: Float)
+
+    it "evalCtx EnglishAuctionLotAction1 test (separate actions LotName LotDescr)" $ do
+      ctx <- TestData <$> newIORef (Map.fromList
+        [ ("LotName", Dyn.toDyn ("101" :: String))
+        , ("LotDescr", Dyn.toDyn ("Dali artwork" :: String))
+        ])
+
+      void $ evalCtx ctx Impl.AsImplAction (Proxy :: Proxy EnglishAuctionLotAction1)
+
+      verifyRef ctx "LotName" ("101" :: String)
+
+    it "evalCtx EnglishAuctionLotAction2 test (unified action)" $ do
+      ctx <- TestData <$> newIORef (Map.fromList
+        [ ("LotName", Dyn.toDyn ("101" :: String))
+        , ("LotDescr", Dyn.toDyn ("Dali artwork" :: String))
+        ])
+
+      void $ evalCtx ctx Impl.AsImplAction (Proxy :: Proxy EnglishAuctionLotAction2)
+
+      verifyRef ctx "LotName" ("101" :: String)
+      verifyRef ctx "LotDescr" ("Dali artwork" :: String)
+      verifyRef ctx "LotName result" ("New lot: 101" :: String)
+      verifyRef ctx "LotDescr result" ("Lot description: Dali artwork" :: String)

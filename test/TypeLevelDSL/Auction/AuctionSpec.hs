@@ -75,9 +75,10 @@ type EnglishAuctionLotAction2 =
     End
   ))
 
-type EnglishAuctionFlow = AuctionFlow
-  ( LotProcess EnglishAuctionLotAction1
-  )
+type EnglishAuctionLotProcess = LotProcess EnglishAuctionLotAction1
+
+type EnglishAuctionFlow
+  = AuctionFlow (Action (GetLots (ForEach EnglishAuctionLotProcess)))
 
 
 type TestFlow = AuctionFlow

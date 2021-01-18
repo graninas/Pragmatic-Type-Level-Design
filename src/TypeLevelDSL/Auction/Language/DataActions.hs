@@ -19,11 +19,12 @@ data LotDescr
 
 -- Should valName be a Symbol?
 data GetPayloadValue' (valTag :: *) (valType :: *) (lam :: LambdaTag lamBody)
+data GetLots (lam :: LambdaTag lamBody)
 data GetLotName' (lam :: LambdaTag lamBody)      -- custom methods
 data GetLotDescr' (lam :: LambdaTag lamBody)     -- custom methods
 data ReadRef' (refName :: Symbol) (t :: *) (lam :: LambdaTag lamBody)
 data WriteRef' (refName :: Symbol) (t :: *)
-
+data ForEach (lam :: LambdaTag lamBody)
 
 -- Helpers
 

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4a3c23b2a6274f632807bb910e94e387f28affbdd43a2ce554c5cfbc3a44653d
+-- hash: 673ae93bb5a45b5cfd9e6cfe877b8e0de89105347968b4dd8aa81edd85cc0195
 
 name:           Pragmatic-Type-Level-Design
 version:        0.0.0.1
@@ -80,6 +80,7 @@ test-suite functional-tests
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      CH01Spec
       TypeLevelDSL.Auction.AuctionSpec
       TypeLevelDSL.Auction.Extensions.Implementation
       TypeLevelDSL.Auction.Extensions.Introspection

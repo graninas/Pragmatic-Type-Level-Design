@@ -1,4 +1,4 @@
-module Tmp.DesignIdeas.VariableADT where
+module DesignIdeas.VariableADT where
 
 
 

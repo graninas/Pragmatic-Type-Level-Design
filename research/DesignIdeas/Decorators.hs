@@ -1,4 +1,4 @@
-module Tmp.DesignIdeas.Decorators where
+module DesignIdeas.Decorators where
 
 data ActionTag a
 

@@ -7,14 +7,10 @@ type Wallet = String
 type Currency = String
 type Amount = Int
 
-data TransferMoney act where
-  AndThen  :: TransferMoney act1 -> TransferMoney act2 -> TransferMoney ()
-  Withdraw :: Wallet -> Currency -> Amount -> TransferMoney Amount
-  Deposit  :: Wallet -> Currency -> Amount -> TransferMoney ()
+data WalletAPI act where
+  AndThen  :: WalletAPI act1 -> WalletAPI act2 -> WalletAPI ()
+  Withdraw :: Wallet -> Currency -> Amount -> WalletAPI Amount
+  Deposit  :: Wallet -> Currency -> Amount -> WalletAPI ()
 
 
-transferMoney :: TransferMoney ()
-transferMoney =
-  (Withdraw "MyWallet" "USD" 1000)
-  `AndThen`
-  (Deposit "TheirWallet" "USD" 1000)
+-- See scenarios in [test/CH01Spec.hs]

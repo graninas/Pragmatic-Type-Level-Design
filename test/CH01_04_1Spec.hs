@@ -70,6 +70,7 @@ interpret wsRef (Deposit w c a) = interpret wsRef (Withdraw w c (0 - a))
 -- * Invalid math inbetween
 -- * Duplicated Withdraw / Deposit operations
 -- * Missing Withdraw / Deposit operation
+-- * Confused currency & wallet
 transferMoney :: Wallet -> Wallet -> Currency -> Amount -> WalletAPI
 transferMoney from to currency amount =
   (Withdraw from currency amount)

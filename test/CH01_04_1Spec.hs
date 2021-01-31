@@ -8,9 +8,9 @@
 {-# LANGUAGE FlexibleInstances        #-}
 {-# LANGUAGE ScopedTypeVariables      #-}
 
-module CH01Spec where
+module CH01_04_1Spec where
 
-import BookSamples.CH01.S01_04
+import BookSamples.CH01.S01_04_1
 
 import           Test.Hspec
 import           Data.Proxy (Proxy(..))
@@ -18,7 +18,7 @@ import Data.IORef
 import qualified Data.Map as Map
 
 
-type WalletAPIResult = Either String ()
+type Result = Either String ()
 
 type Wallets = IORef (Map.Map Wallet (Currency, Amount))
 
@@ -38,7 +38,7 @@ type Wallets = IORef (Map.Map Wallet (Currency, Amount))
 -- * Invalid math on amounts
 -- * Missing Wallets update code
 
-interpret :: Wallets -> WalletAPI a -> IO WalletAPIResult
+interpret :: Wallets -> WalletAPI -> IO Result
 interpret wsRef (AndThen act1 act2) = do
   act1Res <- interpret wsRef act1
   act2Res <- interpret wsRef act2
@@ -70,7 +70,7 @@ interpret wsRef (Deposit w c a) = interpret wsRef (Withdraw w c (0 - a))
 -- * Invalid math inbetween
 -- * Duplicated Withdraw / Deposit operations
 -- * Missing Withdraw / Deposit operation
-transferMoney :: Wallet -> Wallet -> Currency -> Amount -> WalletAPI ()
+transferMoney :: Wallet -> Wallet -> Currency -> Amount -> WalletAPI
 transferMoney from to currency amount =
   (Withdraw from currency amount)
   `AndThen`
@@ -85,8 +85,18 @@ transferMoney from to currency amount =
 
 spec :: Spec
 spec =
-  describe "Sample 01_4 test" $ do
-    it "TransferMoney" $ do
+  describe "Sample 01_4_1 test" $ do
+    it "No wallets found" $ do
       wallets <- newIORef Map.empty
       res <- interpret wallets $ transferMoney "MyWallet" "TheirWallet" "USD" 1000
       res `shouldBe` Left "Wallet MyWallet not found."
+
+    it "Successful transfer" $ do
+      walletsRef <- newIORef $ Map.fromList [("MyWallet", ("USD", 2000)), ("TheirWallet", ("USD", 0))]
+      res <- interpret walletsRef $ transferMoney "MyWallet" "TheirWallet" "USD" 1000
+      wallets <- readIORef walletsRef
+      let mbA1 = Map.lookup "MyWallet" wallets
+      let mbA2 = Map.lookup "TheirWallet" wallets
+      res `shouldBe` Right ()
+      mbA1 `shouldBe` Just ("USD", 1000)
+      mbA2 `shouldBe` Just ("USD", 1000)

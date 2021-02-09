@@ -20,7 +20,6 @@ import qualified Data.Map as Map
 
 type Wallets = IORef (Map.Map Wallet (Currency, Amount))
 
-
 interpret :: Wallets -> WalletAPI a -> IO a
 interpret wsRef (AndThen act1 fAct2) = do
   act1Res <- interpret wsRef act1
@@ -61,15 +60,23 @@ transferMoney from to currency amount =
   `AndThen`
   (\token -> Deposit to token)
 
+-- Double Withdrawing is prohibited:
+-- transferMoney2 :: Wallet -> Wallet -> Currency -> Amount -> WalletAPI (Result ())
+-- transferMoney2 from to currency amount =
+--   (Withdraw from currency amount
+--     `AndThen` (\token -> Deposit to token))
+--   `AndThen`
+--   (\token -> Deposit to token)
+
 
 spec :: Spec
 spec =
   describe "Sample 01_4_2 test" $ do
-    it "TransferMoney" $ do
+    it "TransferMoney, source wallet not found" $ do
       wallets <- newIORef Map.empty
       res <- interpret wallets $ transferMoney "MyWallet" "TheirWallet" "USD" 1000
       res `shouldBe` Left "Wallet MyWallet not found."
-      
+
     it "Successful transfer" $ do
       walletsRef <- newIORef $ Map.fromList [("MyWallet", ("USD", 2000)), ("TheirWallet", ("USD", 0))]
       res <- interpret walletsRef $ transferMoney "MyWallet" "TheirWallet" "USD" 1000

@@ -77,6 +77,14 @@ transferMoney from to currency amount =
   `AndThen`
   (Deposit to currency amount)
 
+transferMoney2 :: Wallet -> Wallet -> Currency -> Amount -> WalletAPI
+transferMoney2 from to currency amount =
+  (Withdraw from currency amount
+     `AndThen` Withdraw from currency amount)
+  `AndThen`
+  (Deposit to currency amount)
+
+
 -- Possible improvements
 -- * Unifying Currency and Amount
 -- * Transaction for Withdraw & Deposit

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3a24eae4edd1f94b3f0906416360d18399db74237dd063fac657cb553c7d5f37
+-- hash: ab69ca807893b6f03ac269bbe2464f76020541a54938a3359ca374ea1d0bc1ff
 
 name:           Pragmatic-Type-Level-Design
 version:        0.0.0.1
@@ -28,6 +28,7 @@ library
       BookSamples.CH01.S01_03
       BookSamples.CH01.S01_04_1
       BookSamples.CH01.S01_04_2
+      BookSamples.CH01.S01_05
       Data.Vector.Indexed
       GUI.Components
       TypeLevelDSL.Auction.Implementation
@@ -65,6 +66,7 @@ library
     , bytestring
     , containers
     , free
+    , lens
     , mtl
     , newtype-generics
     , random
@@ -100,6 +102,7 @@ test-suite functional-tests
     , containers
     , free
     , hspec
+    , lens
     , mtl
     , newtype-generics
     , random

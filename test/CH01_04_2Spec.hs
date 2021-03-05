@@ -14,7 +14,7 @@ import BookSamples.CH01.S01_04_2
 
 import           Test.Hspec
 import           Data.Proxy (Proxy(..))
-import Data.IORef
+import           Data.IORef
 import qualified Data.Map as Map
 
 
@@ -60,14 +60,13 @@ transferMoney from to currency amount =
   `AndThen`
   (\token -> Deposit to token)
 
--- Double Withdrawing is prohibited:
+-- Double Withdrawing is prohibited, this won't compile:
 -- transferMoney2 :: Wallet -> Wallet -> Currency -> Amount -> WalletAPI (Result ())
 -- transferMoney2 from to currency amount =
 --   (Withdraw from currency amount
 --     `AndThen` (\token -> Deposit to token))
 --   `AndThen`
 --   (\token -> Deposit to token)
-
 
 spec :: Spec
 spec =

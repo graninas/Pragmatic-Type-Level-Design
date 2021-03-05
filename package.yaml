@@ -36,6 +36,7 @@ dependencies:
 - uuid
 - void
 - random
+- lens
 
 library:
   source-dirs:

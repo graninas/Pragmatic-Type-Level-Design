@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeApplications     #-}
 {-# LANGUAGE GADTs         #-}
 
-module BookSamples.CH01.S01_05 where
+module BookSamples.CH01.S01_05_1 where
 
 import Data.Text
 

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ab69ca807893b6f03ac269bbe2464f76020541a54938a3359ca374ea1d0bc1ff
+-- hash: cd463b4cd6adad6719c65de87a469ecff53e71a09b1b39b8a2d6f002b0957f05
 
 name:           Pragmatic-Type-Level-Design
 version:        0.0.0.1
@@ -28,7 +28,8 @@ library
       BookSamples.CH01.S01_03
       BookSamples.CH01.S01_04_1
       BookSamples.CH01.S01_04_2
-      BookSamples.CH01.S01_05
+      BookSamples.CH01.S01_05_1
+      BookSamples.CH01.S01_05_2
       Data.Vector.Indexed
       GUI.Components
       TypeLevelDSL.Auction.Implementation

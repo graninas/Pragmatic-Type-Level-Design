@@ -1,6 +1,6 @@
 {-# LANGUAGE DataKinds     #-}
 
-module BookSamples.CH01.S01_03 where
+module CH01.S01_03 where
 
 import GUI.Components (ColumnLayout, TextBox, TextField, TextFieldWithMode, PasswordEchoOnEdit)
 

@@ -1,0 +1,74 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: fb6e2995803bfb6aaaa0bd85cad8d166ca0b79525f54b5b37602ff1b72704526
+
+name:           ptld-lib
+version:        0.0.0.1
+homepage:       https://github.com/graninas/Pragmatic-Type-Level-Design#readme
+bug-reports:    https://github.com/graninas/Pragmatic-Type-Level-Design/issues
+author:         Alexander Granin
+maintainer:     graninas@gmail.com
+copyright:      Granin A.S. 2021
+license:        BSD3
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: https://github.com/graninas/Pragmatic-Type-Level-Design
+  subdir: lib
+
+library
+  exposed-modules:
+      Data.Vector.Indexed
+      GUI.Components
+      TypeLevelDSL.Auction.Implementation
+      TypeLevelDSL.Auction.Implementation.Action
+      TypeLevelDSL.Auction.Implementation.Auction
+      TypeLevelDSL.Auction.Implementation.DataActions
+      TypeLevelDSL.Auction.Implementation.Description
+      TypeLevelDSL.Auction.Implementation.Flow
+      TypeLevelDSL.Auction.Introspection
+      TypeLevelDSL.Auction.Introspection.Action
+      TypeLevelDSL.Auction.Introspection.Auction
+      TypeLevelDSL.Auction.Introspection.DataActions
+      TypeLevelDSL.Auction.Introspection.Description
+      TypeLevelDSL.Auction.Introspection.Flow
+      TypeLevelDSL.Auction.Language
+      TypeLevelDSL.Auction.Language.Action
+      TypeLevelDSL.Auction.Language.Auction
+      TypeLevelDSL.Auction.Language.DataActions
+      TypeLevelDSL.Auction.Language.Description
+      TypeLevelDSL.Auction.Language.Flow
+      TypeLevelDSL.Auction.Types
+      TypeLevelDSL.Car.Implementation
+      TypeLevelDSL.Car.Language
+      TypeLevelDSL.Context
+      TypeLevelDSL.Eval
+      TypeLevelDSL.StateContext
+  other-modules:
+      Paths_ptld_lib
+  hs-source-dirs:
+      src
+  default-extensions: DeriveFunctor DeriveGeneric OverloadedStrings LambdaCase MultiParamTypeClasses ScopedTypeVariables ExplicitNamespaces NamedFieldPuns TupleSections ViewPatterns MultiWayIf RecordWildCards
+  ghc-options: -Wall
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , containers
+    , free
+    , lens
+    , mtl
+    , newtype-generics
+    , random
+    , scientific
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , uuid
+    , void
+  default-language: Haskell2010

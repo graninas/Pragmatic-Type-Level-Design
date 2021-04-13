@@ -1,6 +1,6 @@
 {-# LANGUAGE DataKinds     #-}
 
-module BookSamples.CH01.S01_01 where
+module CH01.S01_01 where
 
 import Data.Vector.Indexed (Vector, ParseError (..), fromString)
 

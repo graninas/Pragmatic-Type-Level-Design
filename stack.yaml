@@ -2,4 +2,6 @@
 resolver: lts-16.16
 
 packages:
-- .
+- lib
+- book-samples
+- demo-apps/hcell

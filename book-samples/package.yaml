@@ -1,6 +1,6 @@
-name:                Pragmatic-Type-Level-Design
+name:                ptld-book-samples
 version:             0.0.0.1
-github:              "graninas/Pragmatic-Type-Level-Design"
+github:              "graninas/Pragmatic-Type-Level-Design/book-samples"
 license:             BSD3
 author:              "Alexander Granin"
 maintainer:          "graninas@gmail.com"
@@ -37,6 +37,7 @@ dependencies:
 - void
 - random
 - lens
+- ptld-lib
 
 library:
   source-dirs:
@@ -56,4 +57,5 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - hspec
-    - Pragmatic-Type-Level-Design
+    - ptld-lib
+    - ptld-book-samples

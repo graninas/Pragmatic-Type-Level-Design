@@ -1,0 +1,45 @@
+name:                ptld-lib
+version:             0.0.0.1
+github:              "graninas/Pragmatic-Type-Level-Design/lib"
+license:             BSD3
+author:              "Alexander Granin"
+maintainer:          "graninas@gmail.com"
+copyright:           "Granin A.S. 2021"
+
+
+default-extensions:
+- DeriveFunctor
+- DeriveGeneric
+- OverloadedStrings
+- LambdaCase
+- MultiParamTypeClasses
+- ScopedTypeVariables
+- ExplicitNamespaces
+- NamedFieldPuns
+- TupleSections
+- ViewPatterns
+- MultiWayIf
+- RecordWildCards
+
+dependencies:
+- base >= 4.7 && < 5
+- bytestring
+- mtl
+- time
+- scientific
+- containers
+- free
+- transformers
+- template-haskell
+- text
+- newtype-generics
+- uuid
+- void
+- random
+- lens
+
+library:
+  source-dirs:
+  - src
+  ghc-options:
+  - -Wall

@@ -10,7 +10,7 @@
 
 module CH01_04_1Spec where
 
-import BookSamples.CH01.S01_04_1
+import CH01.S01_04_1
 
 import           Test.Hspec
 import           Data.Proxy (Proxy(..))

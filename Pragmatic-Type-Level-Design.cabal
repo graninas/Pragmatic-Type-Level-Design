@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: cd463b4cd6adad6719c65de87a469ecff53e71a09b1b39b8a2d6f002b0957f05
+-- hash: bc45318d357cfd63411b3ed72ef96ca26b6118ca4f8c1e341ff91563bae12749
 
 name:           Pragmatic-Type-Level-Design
 version:        0.0.0.1
@@ -12,7 +12,7 @@ homepage:       https://github.com/graninas/Pragmatic-Type-Level-Design#readme
 bug-reports:    https://github.com/graninas/Pragmatic-Type-Level-Design/issues
 author:         Alexander Granin
 maintainer:     graninas@gmail.com
-copyright:      Granin A.S. 2020
+copyright:      Granin A.S. 2021
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
@@ -86,6 +86,7 @@ test-suite functional-tests
   other-modules:
       CH01_04_1Spec
       CH01_04_2Spec
+      CH01_06_2Spec
       TypeLevelDSL.Auction.AuctionSpec
       TypeLevelDSL.Auction.Extensions.Implementation
       TypeLevelDSL.Auction.Extensions.Introspection

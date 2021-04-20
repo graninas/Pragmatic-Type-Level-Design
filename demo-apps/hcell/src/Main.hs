@@ -4,7 +4,6 @@ import HCell.Prelude
 
 import HCell.Types
 import HCell.Gloss.Types
-import HCell.Gloss.Conv
 import HCell.Gloss.Renderer1
 import HCell.Game.Logic
 import HCell.Game.State
@@ -43,7 +42,7 @@ initGame
   -> GridDimensions
   -> BareCellSize
   -> CellSpaceSize
-  -> Level
+  -> AliveCells
   -> DebugOptions
   -> IO (GameState, Display)
 initGame
@@ -52,7 +51,7 @@ initGame
   gridDims
   bareCellSize
   cellSpaceSize
-  level
+  aliveCells
   dbgOpts = do
     let glossWindow = InWindow "Cellular automata" wndSize wndPos
     st <- GameState
@@ -60,34 +59,43 @@ initGame
       <*> newTVarIO gridDims
       <*> newTVarIO bareCellSize
       <*> newTVarIO cellSpaceSize
-      <*> newTVarIO level
+      <*> newTVarIO aliveCells
       <*> newTVarIO dbgOpts
     pure (st, glossWindow)
 
 
-loadLevel :: String -> IO Level
-loadLevel lvlFileName = do
-  l1 :: [String] <- (reverse . map T.unpack . lines) <$> (readFile lvlFileName)
+loadBoard :: String -> IO AliveCells
+loadBoard fName = do
+  l1 :: [String] <- (reverse . map T.unpack . lines) <$> (readFile fName)
   let l2 :: [(Int, String)] = zip [1..] l1
   let l3 :: [ (Coords, Char) ] = join $ map zipRow l2
   pure $ Set.fromList $ map fst $ filter isAlive l3
   where
     zipRow :: (Int, String) -> [ (Coords, Char) ]
     zipRow (y, str) = [ ((x, y), ch) | (x, ch) <- zip [1..] str ]
-    isAlive (pos, ch) = ch == 'x'
+    isAlive (_, ch) = ch == 'x'
 
 
-simulator :: viewport -> Float -> GameState -> IO GameState
-simulator _ _ st@(GameState {levelVar}) = do
+golSimulator :: GameState -> IO GameState
+golSimulator st@(GameState {aliveCellsVar}) = do
   atomically $ do
-    lvl <- readTVar levelVar
-    writeTVar levelVar $ golStep lvl
+    lvl <- readTVar aliveCellsVar
+    writeTVar aliveCellsVar $ golStep lvl
   pure st
+
+startSimulation
+  :: (GameState -> IO GameState)
+  -> GameState
+  -> Display
+  -> IO ()
+startSimulation simulator st glossWindow =
+  simulateIO glossWindow black 2 st glossRenderer (\_ _ -> simulator)
+
 
 main :: IO ()
 main = do
 
-  lvl <- loadLevel "./data/lvl.txt"
+  aliveCells <- loadBoard "./data/gol_board.txt"
 
   (st, glossWindow) <- initGame
     defaultGlossWindowSize
@@ -95,7 +103,7 @@ main = do
     defaultGridDimensions
     defaultBareCellSize
     defaultCellSpaceSize
-    lvl
+    aliveCells
     defaultDbgOptions
 
-  simulateIO glossWindow black 2 st glossRenderer simulator
+  startSimulation golSimulator st glossWindow

@@ -42,8 +42,8 @@ unknown (GlossBareCellSize s) w = Color red $ Pictures
 
 
 
-renderLevel :: RenderOptions -> Level -> Picture
-renderLevel (RenderOptions {..}) level =
+renderBoard :: RenderOptions -> AliveCells -> Picture
+renderBoard (RenderOptions {..}) level =
   Pictures $ map (toGlossCell'' . withGlossCoords) $ Set.toList level
   where
     withGlossCoords :: Coords -> GlossCoords
@@ -60,13 +60,13 @@ renderLevel (RenderOptions {..}) level =
 
 glossRenderer :: GameState -> IO Picture
 glossRenderer (GameState {..}) = do
-  (wndSize, bareCellSize, cellSpaceSize, level, dbgOpts) <- atomically $ do
+  (wndSize, bareCellSize, cellSpaceSize, activeCells, dbgOpts) <- atomically $ do
     wndSize       <- readTVar wndSizeVar
     bareCellSize  <- readTVar bareCellSizeVar
     cellSpaceSize <- readTVar cellSpaceSizeVar
-    level         <- readTVar levelVar
+    activeCells   <- readTVar aliveCellsVar
     dbgOpts       <- readTVar debugOptionsVar
-    pure (wndSize, bareCellSize, cellSpaceSize, level, dbgOpts)
+    pure (wndSize, bareCellSize, cellSpaceSize, activeCells, dbgOpts)
 
   let gridCellSize      = getGridCellSize bareCellSize cellSpaceSize
   let glossBaseShift    = getGlossBaseShift wndSize
@@ -82,5 +82,5 @@ glossRenderer (GameState {..}) = do
         glossBareCellSize
 
   pure $ Pictures
-    [ renderLevel renderOptions level
+    [ renderBoard renderOptions activeCells
     ]

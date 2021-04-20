@@ -17,4 +17,4 @@ newtype BareCellHalf    = BareCellHalf Int
 newtype BaseShift       = BaseShift Coords
 newtype CellSpaceSize   = CellSpaceSize Int
 
-type Level = Set.Set Coords
+type AliveCells = Set.Set Coords

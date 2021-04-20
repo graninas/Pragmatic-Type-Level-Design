@@ -6,8 +6,9 @@ import HCell.Types
 
 import qualified Data.Set as Set
 
+-- FIXME: this GoL logic has bugs.
 
-golStep :: Level -> Level
+golStep :: AliveCells -> AliveCells
 golStep level = newCells2
   where
     allNeighbours = Set.foldr' mkNeighbours Set.empty level
@@ -17,8 +18,8 @@ golStep level = newCells2
 
 
 golRule
-  :: Level
-  -> Coords -> Level -> Level
+  :: AliveCells
+  -> Coords -> AliveCells -> AliveCells
 golRule oldLvl (x, y) newLvl = res
   where
     neighbours = filter (==True)

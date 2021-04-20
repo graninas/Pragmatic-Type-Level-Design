@@ -13,6 +13,6 @@ data GameState = GameState
   , gridDimsVar       :: TVar GridDimensions
   , bareCellSizeVar   :: TVar BareCellSize
   , cellSpaceSizeVar  :: TVar CellSpaceSize
-  , levelVar          :: TVar Level
+  , aliveCellsVar     :: TVar AliveCells
   , debugOptionsVar   :: TVar DebugOptions
   }

@@ -33,11 +33,11 @@ data AsIntroAuction = AsIntroAuction
 
 
 instance
-  ( Eval AsIntroInfo info [String]
-  , Eval AsIntroLots lots [String]
-  , Eval AsIntroAuctionFlow flow [String]
+  ( Eval AsIntroInfo info (IO [String])
+  , Eval AsIntroLots lots (IO [String])
+  , Eval AsIntroAuctionFlow flow (IO [String])
   ) =>
-  Eval AsIntroAuction (Auction' flow info lots) [String] where
+  Eval AsIntroAuction (Auction' flow info lots) (IO [String]) where
   eval _ _ = do
 
     -- start the flow
@@ -50,6 +50,6 @@ instance
 
 
 describeAuction
-  :: Eval AsIntroAuction auction a
+  :: Eval AsIntroAuction auction (IO a)
   => Proxy auction -> IO a
 describeAuction p = eval AsIntroAuction p

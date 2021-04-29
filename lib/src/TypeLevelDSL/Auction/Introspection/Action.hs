@@ -19,7 +19,7 @@ import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 
 -- Implementation
 
-data AsIntroAction      = AsIntroAction
+data AsIntroAction = AsIntroAction
 
 -- The Actions mechanism
 
@@ -30,15 +30,21 @@ data AsIntroAction      = AsIntroAction
 --            ^ type family
 --                     ^ some real data type
 
-instance (mkAct ~ MkAction act, Eval AsIntroAction act [String]) =>
-  Eval AsIntroAction mkAct [String] where
+instance
+  ( mkAct ~ MkAction act
+  , Eval AsIntroAction act (IO [String])
+  ) =>
+  Eval AsIntroAction mkAct (IO [String)] where
   eval _ _ = eval AsIntroAction (Proxy :: Proxy act)
 
-instance Eval AsIntroAction End' [String] where
+instance Eval AsIntroAction End' (IO [String)] where
   eval _ _ = pure ["End' reached."]
 
-instance (Eval AsIntroAction act [String], Eval AsIntroAction acts [String]) =>
-  Eval AsIntroAction (Action' act acts) [String] where
+instance
+  ( Eval AsIntroAction act [String]
+  , Eval AsIntroAction acts (IO [String])
+  ) =>
+  Eval AsIntroAction (Action' act acts) (IO [String)] where
   eval _ _ = do
     strs1 <- eval AsIntroAction (Proxy :: Proxy act)
     strs2 <- eval AsIntroAction (Proxy :: Proxy acts)

@@ -20,16 +20,16 @@ import           GHC.TypeLits (Symbol)
 
 -- This FunDep is needed to simplify the return type inference.
 class Eval tag payload ret | tag payload -> ret where
-  eval :: tag -> Proxy payload -> IO ret
+  eval :: tag -> Proxy payload -> ret
 
 -- Eval with context.
 -- Currently, the context should be passed as an argument.
 
 class EvalCtx ctx tag payload ret | tag payload -> ret where
-  evalCtx :: ctx -> tag -> Proxy payload -> IO ret
+  evalCtx :: ctx -> tag -> Proxy payload -> ret
 
 -- Eval lambda with context and input
 -- Currently, the context should be passed as an argument.
 
 class EvalLambdaCtx ctx input tag payload ret | tag payload -> ret where
-  evalLambdaCtx :: ctx -> input -> tag -> Proxy payload -> IO ret
+  evalLambdaCtx :: ctx -> input -> tag -> Proxy payload -> ret

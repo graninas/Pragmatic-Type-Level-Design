@@ -21,11 +21,11 @@ import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 
 -- Specific actions
 
-instance Eval AsIntroAction (L.GetPayloadValue' valName valType lam) [String] where
+instance Eval AsIntroAction (L.GetPayloadValue' valName valType lam) (IO [String]) where
   eval _ _ = pure ["GetPayloadValue' reached"]
 
-instance Eval AsIntroAction (L.GetLotName' lam) [String] where
+instance Eval AsIntroAction (L.GetLotName' lam) (IO [String]) where
   eval _ _ = pure ["GetLotName' reached"]
 
-instance Eval AsIntroAction (L.GetLotDescr' lam) [String] where
+instance Eval AsIntroAction (L.GetLotDescr' lam) (IO [String]) where
   eval _ _ = pure ["GetLotDescr' reached"]

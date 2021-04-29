@@ -32,19 +32,19 @@ data AsImplLambda = AsImplLambda
 
 instance
   ( mkAct ~ L.MkAction act
-  , EvalCtx ctx AsImplAction act [String]
+  , EvalCtx ctx AsImplAction act (IO [String])
   ) =>
-  EvalCtx ctx AsImplAction mkAct [String] where
+  EvalCtx ctx AsImplAction mkAct (IO [String]) where
   evalCtx ctx _ _ = evalCtx ctx AsImplAction (Proxy :: Proxy act)
 
-instance EvalCtx ctx AsImplAction L.End' [String] where
+instance EvalCtx ctx AsImplAction L.End' (IO [String]) where
   evalCtx ctx _ _ = pure ["End' reached."]
 
 instance
-  ( EvalCtx ctx AsImplAction act [String]
-  , EvalCtx ctx AsImplAction acts [String]
+  ( EvalCtx ctx AsImplAction act (IO [String])
+  , EvalCtx ctx AsImplAction acts (IO [String])
   ) =>
-  EvalCtx ctx AsImplAction (L.Action' act acts) [String] where
+  EvalCtx ctx AsImplAction (L.Action' act acts) (IO [String]) where
   evalCtx ctx _ _ = do
     strs1 <- evalCtx ctx AsImplAction (Proxy :: Proxy act)
     strs2 <- evalCtx ctx AsImplAction (Proxy :: Proxy acts)
@@ -54,8 +54,8 @@ instance
 
 instance
   ( mkLam ~ L.MkLambda lam
-  , EvalLambdaCtx ctx valType AsImplLambda lam [String]
+  , EvalLambdaCtx ctx valType AsImplLambda lam (IO [String])
   ) =>
-  EvalLambdaCtx ctx valType AsImplLambda mkLam [String] where
+  EvalLambdaCtx ctx valType AsImplLambda mkLam (IO [String]) where
   evalLambdaCtx ctx val _ _ =
     evalLambdaCtx ctx val AsImplLambda (Proxy :: Proxy lam)

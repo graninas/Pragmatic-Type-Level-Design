@@ -42,22 +42,25 @@ data AsImplMoneyConst = AsImplMoneyConst
 -- Interpreting of the list of lots (lots :: LotsTag a)
 
 instance Eval AsImplLot p LotDescr =>
-  Eval AsImplLots (p ': '[]) LotDescrs where
+  Eval AsImplLots (p ': '[]) (IO LotDescrs) where
   eval _ _ = do
     lot <- eval AsImplLot (Proxy :: Proxy p)
     pure [lot]
 
 instance
   ( Eval AsImplLot p LotDescr
-  , Eval AsImplLots (x ': ps) LotDescrs
+  , Eval AsImplLots (x ': ps) (IO LotDescrs)
   ) =>
-  Eval AsImplLots (p ': x ': ps) LotDescrs where
+  Eval AsImplLots (p ': x ': ps) (IO LotDescrs) where
   eval _ _ = do
     lot  <- eval AsImplLot (Proxy :: Proxy p)
     lots <- eval AsImplLots (Proxy :: Proxy (x ': ps))
     pure $ lot : lots
 
-instance (b ~ L.MkLots a, Eval AsImplLots a LotDescrs) =>
+instance
+  ( b ~ L.MkLots a
+  , Eval AsImplLots a (IO LotDescrs)
+  ) =>
   Eval AsImplLots b LotDescrs where
   eval _ _ = eval AsImplLots (Proxy :: Proxy a)
 
@@ -68,7 +71,7 @@ instance
   , KnownSymbol name
   , KnownSymbol descr
   ) =>
-  Eval AsImplLot (L.Lot' name descr payload currency censorship) LotDescr where
+  Eval AsImplLot (L.Lot' name descr payload currency censorship) (IO LotDescr) where
   eval _ _ = do
     payloadCtx <- eval AsImplLotPayload (Proxy :: Proxy payload)
     pure $ LotDescr
@@ -79,16 +82,22 @@ instance
 
 -- Interpreting a MoneyConst value
 
-instance (b ~ L.MkMoneyConst a, Eval AsImplMoneyConst a T.Money) =>
-  Eval AsImplMoneyConst b T.Money where
+instance
+  ( b ~ L.MkMoneyConst a
+  , Eval AsImplMoneyConst a (IO T.Money)
+  ) =>
+  Eval AsImplMoneyConst b (IO T.Money) where
   eval _ _ = eval AsImplMoneyConst (Proxy :: Proxy a)
 
 instance KnownSymbol val =>
- Eval AsImplMoneyConst (L.MoneyVal' val) T.Money where
+ Eval AsImplMoneyConst (L.MoneyVal' val) (IO T.Money) where
   eval _ _ = pure $ read $ symbolVal (Proxy :: Proxy val)     -- unsafe
 
 -- Interpreting a LotPayload value
 
-instance (b ~ L.MkLotPayload a, Eval AsImplLotPayload a StateContext) =>
-  Eval AsImplLotPayload b StateContext where
+instance
+  ( b ~ L.MkLotPayload a
+  , Eval AsImplLotPayload a (IO StateContext)
+  ) =>
+  Eval AsImplLotPayload b (IO StateContext) where
   eval _ _ = eval AsImplLotPayload (Proxy :: Proxy a)

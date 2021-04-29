@@ -43,12 +43,18 @@ data AsIntroMinBid = AsIntroMinBid
 
 -- Interpreting of the auction info (auctionInfo :: AuctionInfoTag)
 
-instance (ai ~ MkAuctionInfo i, Eval AsIntroInfo i [String]) =>
-  Eval AsIntroInfo ai [String] where
+instance
+  ( ai ~ MkAuctionInfo i
+  , Eval AsIntroInfo i (IO [String])
+  ) =>
+  Eval AsIntroInfo ai (IO [String]) where
   eval _ _ = eval AsIntroInfo (Proxy :: Proxy i)
 
-instance (KnownSymbol name, KnownSymbol holder) =>
-  Eval AsIntroInfo (Info' name holder) [String] where
+instance
+  ( KnownSymbol name
+  , KnownSymbol holder
+  ) =>
+  Eval AsIntroInfo (Info' name holder) (IO [String]) where
   eval _ _ = do
     pure $ ( "Name: " <> symbolVal (Proxy :: Proxy name) )
          : ( "Holder: " <> symbolVal (Proxy :: Proxy holder) )
@@ -61,33 +67,39 @@ instance (KnownSymbol name, KnownSymbol holder) =>
 --   eval _ _ = pure []
 
 -- N.B., item is interpreted AsIntroLot
-instance Eval AsIntroLot p [String] =>
-  Eval AsIntroLots (p ': '[]) [String] where
+instance Eval AsIntroLot p (IO [String]) =>
+  Eval AsIntroLots (p ': '[]) (IO [String]) where
   eval _ _ = eval AsIntroLot (Proxy :: Proxy p)
 
 -- N.B., item is interpreted AsIntroLot
-instance (Eval AsIntroLot p [String], Eval AsIntroLots (x ': ps) [String]) =>
-  Eval AsIntroLots (p ': x ': ps) [String] where
+instance
+  ( Eval AsIntroLot p (IO [String])
+  , Eval AsIntroLots (x ': ps) (IO [String])
+  ) =>
+  Eval AsIntroLots (p ': x ': ps) (IO [String]) where
   eval _ _ = do
     strs1 <- eval AsIntroLot (Proxy :: Proxy p)
     strs2 <- eval AsIntroLots (Proxy :: Proxy (x ': ps))
     pure $ strs1 <> strs2
 
-instance (b ~ MkLots a, Eval AsIntroLots a [String]) =>
-  Eval AsIntroLots b [String] where
+instance
+  ( b ~ MkLots a
+  , Eval AsIntroLots a (IO [String])
+  ) =>
+  Eval AsIntroLots b (IO [String]) where
   eval _ _ = eval AsIntroLots (Proxy :: Proxy a)
 
 
 -- Interpreting of a Lot
 
 instance
-  ( Eval AsIntroCurrency currency [String]
-  , Eval AsIntroCensorship censorship [String]
-  , Eval AsIntroLotPayload payload String
+  ( Eval AsIntroCurrency currency (IO [String])
+  , Eval AsIntroCensorship censorship (IO [String])
+  , Eval AsIntroLotPayload payload (IO String)
   , KnownSymbol name
   , KnownSymbol descr
   ) =>
-  Eval AsIntroLot (Lot' name descr payload currency censorship) [String] where
+  Eval AsIntroLot (Lot' name descr payload currency censorship) (IO [String]) where
   eval _ _ = do
     payload    <- eval AsIntroLotPayload (Proxy :: Proxy payload)
     censorship <- eval AsIntroCensorship (Proxy :: Proxy censorship)
@@ -100,36 +112,48 @@ instance
 
 -- Interpreting of the Currency extension
 
-instance (b ~ MkCurrency a, Eval AsIntroCurrency a [String]) =>
-  Eval AsIntroCurrency b [String] where
+instance
+  ( b ~ MkCurrency a
+  , Eval AsIntroCurrency a (IO [String])
+  ) =>
+  Eval AsIntroCurrency b (IO [String]) where
   eval _ _ = eval AsIntroCurrency (Proxy :: Proxy a)
 
 
 -- Interpreting of the Censorship extension
 
-instance (b ~ MkCensorship a, Eval AsIntroCensorship a [String]) =>
-  Eval AsIntroCensorship b [String] where
+instance
+  ( b ~ MkCensorship a
+  , Eval AsIntroCensorship a (IO [String])
+  ) =>
+  Eval AsIntroCensorship b (IO [String]) where
   eval _ _ = eval AsIntroCensorship (Proxy :: Proxy a)
 
 
 -- Interpretating of the NoCensorship
 
-instance Eval AsIntroCensorship NoCensorship' [String] where
+instance Eval AsIntroCensorship NoCensorship' (IO [String]) where
   eval _ _ = pure []
 
 
 -- Interpreting a MoneyConst value
 
-instance (b ~ MkMoneyConst a, Eval AsIntroMoneyConst a String) =>
-  Eval AsIntroMoneyConst b String where
+instance
+  ( b ~ MkMoneyConst a
+  , Eval AsIntroMoneyConst a (IO String)
+  ) =>
+  Eval AsIntroMoneyConst b (IO String) where
   eval _ _ = eval AsIntroMoneyConst (Proxy :: Proxy a)
 
 instance KnownSymbol val =>
-  Eval AsIntroMoneyConst (MoneyVal' val) String where
+  Eval AsIntroMoneyConst (MoneyVal' val) (IO String) where
   eval _ _ = pure $ symbolVal (Proxy :: Proxy val)
 
 -- Interpreting a LotPayload value
 
-instance (b ~ MkLotPayload a, Eval AsIntroLotPayload a String) =>
-  Eval AsIntroLotPayload b String where
+instance
+  ( b ~ MkLotPayload a
+  , Eval AsIntroLotPayload a (IO String)
+  ) =>
+  Eval AsIntroLotPayload b (IO String) where
   eval _ _ = eval AsIntroLotPayload (Proxy :: Proxy a)

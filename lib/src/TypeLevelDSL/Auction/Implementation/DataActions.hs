@@ -30,9 +30,9 @@ instance
   ( Context ctx
   , Typeable valTag
   , Dyn.Typeable valType
-  , EvalLambdaCtx ctx valType Impl.AsImplLambda lam [String]
+  , EvalLambdaCtx ctx valType Impl.AsImplLambda lam (IO [String])
   ) =>
-  EvalCtx ctx Impl.AsImplAction (L.GetPayloadValue' valTag valType lam) [String] where
+  EvalCtx ctx Impl.AsImplAction (L.GetPayloadValue' valTag valType lam) (IO [String]) where
   evalCtx ctx _ _ = do
     let key = toTypeableKey @valTag
     withContextValue ctx key
@@ -43,9 +43,9 @@ instance
 
 instance
   ( Context ctx
-  , EvalLambdaCtx ctx String Impl.AsImplLambda lam [String]
+  , EvalLambdaCtx ctx String Impl.AsImplLambda lam (IO [String])
   ) =>
-  EvalCtx ctx Impl.AsImplAction (L.GetLotName' lam) [String] where
+  EvalCtx ctx Impl.AsImplAction (L.GetLotName' lam) (IO [String]) where
   evalCtx ctx _ _ = do
     let key = "LotName"         -- FIXME: magic constant
     withContextValue ctx key
@@ -56,9 +56,9 @@ instance
 
 instance
   ( Context ctx
-  , EvalLambdaCtx ctx String Impl.AsImplLambda lam [String]
+  , EvalLambdaCtx ctx String Impl.AsImplLambda lam (IO [String])
   ) =>
-  EvalCtx ctx Impl.AsImplAction (L.GetLotDescr' lam) [String] where
+  EvalCtx ctx Impl.AsImplAction (L.GetLotDescr' lam) (IO [String]) where
   evalCtx ctx _ _ = do
     let key = "LotDescr"         -- FIXME: magic constant
     withContextValue ctx key
@@ -72,9 +72,9 @@ instance
   ( Context ctx
   , KnownSymbol refName
   , Dyn.Typeable refType
-  , EvalLambdaCtx ctx refType Impl.AsImplLambda lam [String]
+  , EvalLambdaCtx ctx refType Impl.AsImplLambda lam (IO [String])
   )
-  => EvalCtx ctx Impl.AsImplAction (L.ReadRef' refName refType lam) [String] where
+  => EvalCtx ctx Impl.AsImplAction (L.ReadRef' refName refType lam) (IO [String]) where
   evalCtx ctx _ _ = do
     let valName = symbolVal (Proxy :: Proxy refName)
     withContextValue ctx valName
@@ -88,10 +88,10 @@ instance
 
 instance
   ( Context ctx
-  , EvalLambdaCtx ctx val Impl.AsImplLambda lam1 [String]
-  , EvalLambdaCtx ctx val Impl.AsImplLambda lam2 [String]
+  , EvalLambdaCtx ctx val Impl.AsImplLambda lam1 (IO [String])
+  , EvalLambdaCtx ctx val Impl.AsImplLambda lam2 (IO [String])
   )
-  => EvalLambdaCtx ctx val Impl.AsImplLambda (L.Both' lam1 lam2) [String] where
+  => EvalLambdaCtx ctx val Impl.AsImplLambda (L.Both' lam1 lam2) (IO [String]) where
   evalLambdaCtx ctx val _ _ = do
     evalLambdaCtx ctx val Impl.AsImplLambda (Proxy :: Proxy lam1)
     evalLambdaCtx ctx val Impl.AsImplLambda (Proxy :: Proxy lam2)
@@ -100,20 +100,20 @@ instance
 
 -- Print lambda
 instance Show val
-  => EvalLambdaCtx ctx val Impl.AsImplLambda L.Print' [String] where
+  => EvalLambdaCtx ctx val Impl.AsImplLambda L.Print' (IO [String]) where
   evalLambdaCtx _ val _ _ = pure [show val]
 
 -- Drop lambda
-instance EvalLambdaCtx ctx val Impl.AsImplLambda L.Drop' [String] where
+instance EvalLambdaCtx ctx val Impl.AsImplLambda L.Drop' (IO [String]) where
   evalLambdaCtx _ _ _ _ = pure []
 
 -- ConcatL lambda
 instance
   ( Context ctx
   , KnownSymbol str
-  , EvalLambdaCtx ctx String Impl.AsImplLambda lam [String]
+  , EvalLambdaCtx ctx String Impl.AsImplLambda lam (IO [String])
   )
-  => EvalLambdaCtx ctx String Impl.AsImplLambda (L.ConcatL' str lam) [String] where
+  => EvalLambdaCtx ctx String Impl.AsImplLambda (L.ConcatL' str lam) (IO [String]) where
   evalLambdaCtx ctx val _ _ = do
     let lStr = symbolVal (Proxy :: Proxy str)
     evalLambdaCtx ctx (lStr ++ val) Impl.AsImplLambda (Proxy :: Proxy lam)
@@ -122,9 +122,9 @@ instance
 instance
   ( Context ctx
   , KnownSymbol str
-  , EvalLambdaCtx ctx String Impl.AsImplLambda lam [String]
+  , EvalLambdaCtx ctx String Impl.AsImplLambda lam (IO [String])
   )
-  => EvalLambdaCtx ctx String Impl.AsImplLambda (L.ConcatR' lam str) [String] where
+  => EvalLambdaCtx ctx String Impl.AsImplLambda (L.ConcatR' lam str) (IO [String]) where
   evalLambdaCtx ctx val _ _ = do
     let rStr = symbolVal (Proxy :: Proxy str)
     evalLambdaCtx ctx (val ++ rStr) Impl.AsImplLambda (Proxy :: Proxy lam)
@@ -135,7 +135,7 @@ instance
   , KnownSymbol refName
   , Dyn.Typeable refType
   )
-  => EvalLambdaCtx ctx refType Impl.AsImplLambda (L.WriteRef' refName refType) [String] where
+  => EvalLambdaCtx ctx refType Impl.AsImplLambda (L.WriteRef' refName refType) (IO [String]) where
   evalLambdaCtx ctx val _ _ = do
     let valName = symbolVal (Proxy :: Proxy refName)
     let dynVal = Dyn.toDyn val

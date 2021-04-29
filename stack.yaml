@@ -5,3 +5,4 @@ packages:
 - lib
 - book-samples
 - demo-apps/hcell
+- demo-apps/tl-cell

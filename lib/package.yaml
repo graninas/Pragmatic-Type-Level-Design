@@ -37,6 +37,10 @@ dependencies:
 - void
 - random
 - lens
+- stm
+- universum
+
+
 
 library:
   source-dirs:

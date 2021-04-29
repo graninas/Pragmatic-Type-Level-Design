@@ -1,6 +1,6 @@
-name:                ptld-hcell
+name:                ptld-tl-cell
 version:             0.0.0.1
-github:              "graninas/Pragmatic-Type-Level-Design/demo-apps/hcell"
+github:              "graninas/Pragmatic-Type-Level-Design/demo-apps/tl-cell"
 license:             BSD3
 author:              "Alexander Granin"
 maintainer:          "graninas@gmail.com"
@@ -70,7 +70,7 @@ dependencies:
 
 
 executables:
-  hcell:
+  tl-cell:
     main:                Main.hs
     source-dirs:         src/
     ghc-options:
@@ -79,7 +79,6 @@ executables:
     - -with-rtsopts=-N
     - -Wall
     # - -O2
-
 
 library:
   source-dirs:

@@ -1,6 +1,6 @@
 module HCell.Game.Logic where
 
-import HCell.Prelude
+import CPrelude
 
 import HCell.Types
 

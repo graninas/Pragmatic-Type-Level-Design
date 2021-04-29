@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fb6e2995803bfb6aaaa0bd85cad8d166ca0b79525f54b5b37602ff1b72704526
+-- hash: c8e18ec5450f0fb104ad7665a4b2b3ea14e45bdeac5da9ed261aa308e9d56dc8
 
 name:           ptld-lib
 version:        0.0.0.1
@@ -23,6 +23,7 @@ source-repository head
 
 library
   exposed-modules:
+      CPrelude
       Data.Vector.Indexed
       GUI.Components
       TypeLevelDSL.Auction.Implementation
@@ -65,10 +66,12 @@ library
     , newtype-generics
     , random
     , scientific
+    , stm
     , template-haskell
     , text
     , time
     , transformers
+    , universum
     , uuid
     , void
   default-language: Haskell2010

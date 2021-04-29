@@ -1,6 +1,6 @@
 module HCell.Gloss.Renderer1 where
 
-import HCell.Prelude
+import CPrelude
 
 import HCell.Types
 import HCell.Gloss.Types

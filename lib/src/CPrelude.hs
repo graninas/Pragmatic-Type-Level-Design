@@ -1,6 +1,6 @@
 {-# OPTIONS -fno-warn-orphans #-}
 
-module HCell.Prelude
+module CPrelude
   ( module X
   ) where
 

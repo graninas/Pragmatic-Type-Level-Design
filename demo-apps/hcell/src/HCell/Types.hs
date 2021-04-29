@@ -1,6 +1,6 @@
 module HCell.Types where
 
-import HCell.Prelude
+import CPrelude
 
 import qualified Data.Map as Map
 import qualified Data.Set as Set

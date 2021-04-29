@@ -1,6 +1,6 @@
 module HCell.Gloss.Types where
 
-import HCell.Prelude
+import CPrelude
 
 import HCell.Types
 

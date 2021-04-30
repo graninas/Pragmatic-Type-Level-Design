@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1bbfc6792b061a01d169d267a29662bd5a20295a41cdbb91608458c2a871248d
+-- hash: 6999e0b71420db14d076773394735349c948419b02bd62b109cf0618c178d725
 
 name:           ptld-car
 version:        0.0.0.1
@@ -30,51 +30,6 @@ library
       src
   default-extensions: GADTs RankNTypes DeriveFunctor DeriveGeneric OverloadedStrings LambdaCase MultiParamTypeClasses ExplicitNamespaces TypeApplications ScopedTypeVariables TypeOperators TypeFamilies DataKinds FlexibleContexts FlexibleInstances PatternSynonyms PolyKinds DefaultSignatures ConstraintKinds NamedFieldPuns TupleSections ViewPatterns MultiWayIf RecordWildCards
   ghc-options: -Wall
-  build-depends:
-      MonadRandom
-    , aeson
-    , base >=4.7 && <5
-    , bytestring
-    , clock
-    , containers
-    , data-default
-    , directory
-    , entropy
-    , extra
-    , filepath
-    , fmt
-    , generic-lens
-    , gloss
-    , lens
-    , mtl
-    , newtype-generics
-    , ptld-lib
-    , random
-    , resource-pool
-    , resourcet
-    , scientific
-    , stm
-    , template-haskell
-    , text
-    , time
-    , time-units
-    , transformers
-    , universum
-    , uuid
-    , vector
-    , void
-  default-language: Haskell2010
-
-executable tl-cell
-  main-is: Main.hs
-  other-modules:
-      Car.Implementation
-      Car.Language
-      Paths_ptld_car
-  hs-source-dirs:
-      src/
-  default-extensions: GADTs RankNTypes DeriveFunctor DeriveGeneric OverloadedStrings LambdaCase MultiParamTypeClasses ExplicitNamespaces TypeApplications ScopedTypeVariables TypeOperators TypeFamilies DataKinds FlexibleContexts FlexibleInstances PatternSynonyms PolyKinds DefaultSignatures ConstraintKinds NamedFieldPuns TupleSections ViewPatterns MultiWayIf RecordWildCards
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
   build-depends:
       MonadRandom
     , aeson

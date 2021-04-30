@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: afccce295aca2706346ca0337f4fbe044556d85e855f45518c5442e82de87f4f
+-- hash: f1c8dc9f74fdb9831975c506e1ea7a7ff24f1f8590cc00812cfa0510c7912867
 
 name:           ptld-auction
 version:        0.0.0.1
@@ -45,66 +45,6 @@ library
       src
   default-extensions: GADTs RankNTypes DeriveFunctor DeriveGeneric OverloadedStrings LambdaCase MultiParamTypeClasses ExplicitNamespaces TypeApplications ScopedTypeVariables TypeOperators TypeFamilies DataKinds FlexibleContexts FlexibleInstances PatternSynonyms PolyKinds DefaultSignatures ConstraintKinds NamedFieldPuns TupleSections ViewPatterns MultiWayIf RecordWildCards
   ghc-options: -Wall
-  build-depends:
-      MonadRandom
-    , aeson
-    , base >=4.7 && <5
-    , bytestring
-    , clock
-    , containers
-    , data-default
-    , directory
-    , entropy
-    , extra
-    , filepath
-    , fmt
-    , generic-lens
-    , gloss
-    , lens
-    , mtl
-    , newtype-generics
-    , ptld-lib
-    , random
-    , resource-pool
-    , resourcet
-    , scientific
-    , stm
-    , template-haskell
-    , text
-    , time
-    , time-units
-    , transformers
-    , universum
-    , uuid
-    , vector
-    , void
-  default-language: Haskell2010
-
-executable tl-cell
-  main-is: Main.hs
-  other-modules:
-      Auction.Implementation
-      Auction.Implementation.Auction
-      Auction.Implementation.DataActions
-      Auction.Implementation.Description
-      Auction.Implementation.Flow
-      Auction.Introspection
-      Auction.Introspection.Action
-      Auction.Introspection.Auction
-      Auction.Introspection.DataActions
-      Auction.Introspection.Description
-      Auction.Introspection.Flow
-      Auction.Language
-      Auction.Language.Auction
-      Auction.Language.DataActions
-      Auction.Language.Description
-      Auction.Language.Flow
-      Auction.Types
-      Paths_ptld_auction
-  hs-source-dirs:
-      src/
-  default-extensions: GADTs RankNTypes DeriveFunctor DeriveGeneric OverloadedStrings LambdaCase MultiParamTypeClasses ExplicitNamespaces TypeApplications ScopedTypeVariables TypeOperators TypeFamilies DataKinds FlexibleContexts FlexibleInstances PatternSynonyms PolyKinds DefaultSignatures ConstraintKinds NamedFieldPuns TupleSections ViewPatterns MultiWayIf RecordWildCards
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
   build-depends:
       MonadRandom
     , aeson

@@ -6,42 +6,46 @@
 
 module TypeLevelDSL.StateContext where
 
+import Prelude
+
 import qualified Data.Dynamic as Dyn
 import qualified Data.Map as Map
 import Data.IORef
+import Data.Text (Text)
 
-import TypeLevelDSL.Context (Context, getDyn, setDyn)
+import TypeLevelDSL.Context (Context, Key, getDyn, setDyn, getSubContext)
 
-newtype StateContext = StateContext (IORef (Map.Map String (IORef Dyn.Dynamic)))
+-- Previous version:
+-- newtype StateContext = StateContext (IORef (Map.Map Text (IORef Dyn.Dynamic)))
+
+-- But we don't exposure the internal dynamic reference anyway,
+-- and there is none consumers of this secret IORef,
+-- so no need to keep a mutable value.
+newtype StateContext = StateContext (IORef (Map.Map Key Dyn.Dynamic))
 
 instance Context StateContext where
-  getDyn ctx k _ = lookupValue k ctx
-  setDyn ctx k val _ = updateValue k val ctx
+  getDyn ctx k     = lookupValue k ctx
+  setDyn ctx k val = updateValue k val ctx
+  getSubContext _ _ = pure Nothing
 
 createStateContext :: IO StateContext
 createStateContext = StateContext <$> newIORef Map.empty
 
-lookupValue :: String -> StateContext -> IO (Maybe Dyn.Dynamic)
-lookupValue k (StateContext ctx) = do
-  ctxMap <- readIORef ctx
-  case Map.lookup k ctxMap of
-    Just valRef -> Just <$> readIORef valRef
-    Nothing -> pure Nothing
+fromList :: [(Key, Dyn.Dynamic)] -> IO StateContext
+fromList l = do
+  stCtx <- createStateContext
+  mapM_ (\(k, v) -> insertValue k v stCtx) l
+  pure stCtx
 
-updateValue :: String -> Dyn.Dynamic -> StateContext -> IO ()
-updateValue k val (StateContext ctx) = do
-  ctxMap <- readIORef ctx
-  case Map.lookup k ctxMap of
-    Nothing -> do
-      valRef <- newIORef val
-      writeIORef ctx $ Map.insert k valRef ctxMap
-    Just valRef -> writeIORef valRef val
+lookupValue :: Key -> StateContext -> IO (Maybe Dyn.Dynamic)
+lookupValue k (StateContext mapRef) = do
+  ctxMap <- readIORef mapRef
+  pure $ Map.lookup k ctxMap
 
-insertValue :: String -> Dyn.Dynamic -> StateContext -> IO ()
-insertValue k val (StateContext ctx) = do
-  ctxMap <- readIORef ctx
-  case Map.lookup k ctxMap of
-    Nothing -> do
-      valRef <- newIORef val
-      writeIORef ctx $ Map.insert k valRef ctxMap
-    Just _ -> error $ "Value " <> k <> " already exists."
+insertValue :: Key -> Dyn.Dynamic -> StateContext -> IO ()
+insertValue k val (StateContext mapRef) = do
+  ctxMap <- readIORef mapRef
+  writeIORef mapRef $ Map.insert k val ctxMap
+
+updateValue :: Key -> Dyn.Dynamic -> StateContext -> IO ()
+updateValue = insertValue

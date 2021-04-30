@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d3d776b542c3d70f09b6c99cb4da81c7c462d91a98e97296c428a41d056ceb65
+-- hash: 7a402a6a3f9de6a38b0f20f3a4989efd9f02c2e4c20d392e5f9ff299b81482de
 
 name:           ptld-book-samples
 version:        0.0.0.1
@@ -61,11 +61,6 @@ test-suite functional-tests
   other-modules:
       CH01_04_1Spec
       CH01_04_2Spec
-      TypeLevelDSL.Auction.AuctionSpec
-      TypeLevelDSL.Auction.Extensions.Implementation
-      TypeLevelDSL.Auction.Extensions.Introspection
-      TypeLevelDSL.Auction.Extensions.Language
-      TypeLevelDSL.CarSpec
       Paths_ptld_book_samples
   hs-source-dirs:
       test/

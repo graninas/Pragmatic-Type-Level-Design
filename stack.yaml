@@ -6,3 +6,5 @@ packages:
 - book-samples
 - demo-apps/hcell
 - demo-apps/tl-cell
+- demo-apps/auction
+- demo-apps/car

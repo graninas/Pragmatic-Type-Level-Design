@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: da81a618dabaa5a4cba9e820815a0146177daa8371c0b7134bf1615cccb121c1
+-- hash: 36d2bf9befd7ef6e9e3b3a69f7e684f78f0670abb136a840406915a185ba1157
 
 name:           ptld-tl-cell
 version:        0.0.0.1
@@ -23,6 +23,8 @@ source-repository head
 library
   exposed-modules:
       Main
+      TLCell.GoLRule
+      TLCell.Runner
       TLCell.Types
   other-modules:
       Paths_ptld_tl_cell
@@ -68,6 +70,8 @@ library
 executable tl-cell
   main-is: Main.hs
   other-modules:
+      TLCell.GoLRule
+      TLCell.Runner
       TLCell.Types
       Paths_ptld_tl_cell
   hs-source-dirs:

@@ -9,6 +9,8 @@
 
 module Data.Vector.Indexed where
 
+import Prelude
+
 import GHC.TypeNats
 import Data.Proxy
 

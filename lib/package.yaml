@@ -39,6 +39,8 @@ dependencies:
 - lens
 - stm
 - universum
+- aeson
+- hspec
 
 
 
@@ -47,3 +49,17 @@ library:
   - src
   ghc-options:
   - -Wall
+
+
+
+tests:
+  ptld-lib-tests:
+    main: Spec.hs
+    source-dirs:
+    - test/
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - ptld-lib

@@ -12,5 +12,10 @@ import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Simulate
 
 
+
+
+
+
+
 main :: IO ()
 main = pure ()

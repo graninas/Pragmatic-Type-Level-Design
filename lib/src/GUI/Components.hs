@@ -9,6 +9,8 @@
 
 module GUI.Components where
 
+import Prelude
+
 import GHC.TypeNats
 import GHC.TypeLits
 import Data.Proxy

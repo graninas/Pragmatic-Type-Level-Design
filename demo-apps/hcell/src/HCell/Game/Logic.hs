@@ -9,12 +9,12 @@ import qualified Data.Set as Set
 -- FIXME: this GoL logic has bugs.
 
 golStep :: AliveCells -> AliveCells
-golStep level = newCells2
+golStep cells = newCells2
   where
-    allNeighbours = Set.foldr' mkNeighbours Set.empty level
-    inactiveNeighbours = Set.difference allNeighbours level
-    newCells1 = Set.foldr' (golRule level) Set.empty level
-    newCells2 = Set.foldr' (golRule level) newCells1 inactiveNeighbours
+    allNeighbours = Set.foldr' mkNeighbours Set.empty cells
+    inactiveNeighbours = Set.difference allNeighbours cells
+    newCells1 = Set.foldr' (golRule cells) Set.empty cells
+    newCells2 = Set.foldr' (golRule cells) newCells1 inactiveNeighbours
 
 
 golRule

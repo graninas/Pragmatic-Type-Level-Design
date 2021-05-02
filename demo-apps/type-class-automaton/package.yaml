@@ -1,6 +1,6 @@
-name:                ptld-tl-cell
+name:                ptld-type-class-automaton
 version:             0.0.0.1
-github:              "graninas/Pragmatic-Type-Level-Design/demo-apps/tl-cell"
+github:              "graninas/Pragmatic-Type-Level-Design/demo-apps/type-class-automaton"
 license:             BSD3
 author:              "Alexander Granin"
 maintainer:          "graninas@gmail.com"
@@ -70,7 +70,7 @@ dependencies:
 
 
 executables:
-  tl-cell:
+  type-class-automaton:
     main:                Main.hs
     source-dirs:         src/
     ghc-options:

@@ -15,8 +15,9 @@ data GoLRule
 -- data GoLCell = GoLAlive | GoLDead
 --   deriving (Show, Eq, Ord, Enum)
 
-instance Dim2Automaton GoLRule TwoStateCell where
-  emptyCell = GoLDead
+instance Dim2Automaton GoLRule where
+  type Cell GoLRule = TwoStateCell
+  emptyCell = Dead
   step = golStep
 
 
@@ -26,7 +27,7 @@ instance Dim2Automaton GoLRule TwoStateCell where
 -- TODO: the actual logic
 
 
-golStep :: Dim2Board GoLRule TwoStateCell -> Dim2Board GoLRule TwoStateCell
+golStep :: Dim2Board (Cell GoLRule) -> Dim2Board (Cell GoLRule)
 golStep Dim2Board {cells, xSize, ySize} = newBoard
   where
     newCells = cells

@@ -11,9 +11,10 @@ import TCA3.Automaton
 
 data Arbitrary2S
 
-instance Dim2Automaton Arbitrary2S TwoStateCell where
+instance Dim2Automaton Arbitrary2S where
+  type Cell Arbitrary2S = TwoStateCell
   emptyCell = Dead
-  step = golStep
+  step = some2D2SAutomatonStep
 
 
 
@@ -22,8 +23,8 @@ instance Dim2Automaton Arbitrary2S TwoStateCell where
 -- TODO: the actual logic
 
 
-golStep :: Dim2Board Arbitrary2S TwoStateCell -> Dim2Board Arbitrary2S TwoStateCell
-golStep Dim2Board {cells, xSize, ySize} = newBoard
+some2D2SAutomatonStep :: Dim2Board (Cell Arbitrary2S) -> Dim2Board (Cell Arbitrary2S)
+some2D2SAutomatonStep Dim2Board {cells, xSize, ySize} = newBoard
   where
     newCells = cells
     newBoard = Dim2Board newCells xSize ySize

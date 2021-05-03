@@ -1,3 +1,5 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
+
 module TCA3.Automaton where
 
 import CPrelude
@@ -8,21 +10,22 @@ import qualified Data.Vector as V
 import TCA3.Types
 
 
-class Dim2Automaton rule cell | rule -> cell where
-  emptyCell :: cell
-  step :: Dim2Board cell -> Dim2Board cell
+class Dim2Automaton rule where
+  type Cell rule :: *
+  emptyCell :: Cell rule
+  step :: Dim2Board (Cell rule) -> Dim2Board (Cell rule)
 
 
 initialize
-  :: forall rule cell
-   . Dim2Automaton rule cell
+  :: forall rule
+   . Dim2Automaton rule
   => Coords
-  -> Map Coords cell
-  -> Dim2Board cell
+  -> Map Coords (Cell rule)
+  -> Dim2Board (Cell rule)
 initialize (xSize, ySize) srcCells = Dim2Board cells xSize ySize
   where
     cells = V.generate xSize generateX
     generateX x = V.generate ySize (generateY x)
     generateY x y = case Map.lookup (x, y) srcCells of
-      Nothing -> emptyCell
+      Nothing -> emptyCell @rule
       Just cell -> cell

@@ -25,7 +25,8 @@ main = do
   let arbitrary3SBoard2 = step arbitrary3SBoard1
 
   let arbitrary2SBoard1 = initialize @Arbitrary2S @TwoStateCell (50, 50) Map.empty
-  let arbitrary2SBoard2 = step arbitrary3SBoard1
+  let arbitrary2SBoard2 = step arbitrary2SBoard1      -- was a copy-paste bug: arbitrary3SBoard1; => type unsafe
 
   print golBoard2
   print arbitrary3SBoard2
+  print arbitrary2SBoard2

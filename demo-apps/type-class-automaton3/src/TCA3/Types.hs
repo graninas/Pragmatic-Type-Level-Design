@@ -10,7 +10,7 @@ type Coords = (Idx, Idx)
 type Torus = Bool
 type Expandable = Bool
 
-data Dim2Board rule cell = Dim2Board
+data Dim2Board cell = Dim2Board
   { cells :: V.Vector (V.Vector cell)
   , xSize :: Idx
   , ySize :: Idx

@@ -17,7 +17,8 @@ newtype Arbitrary3SCell = Arbitrary3SCell Int
 
 
 
-instance Dim2Automaton Arbitrary3S Arbitrary3SCell where
+instance Dim2Automaton Arbitrary3S where
+  type Cell Arbitrary3S = Arbitrary3SCell
   emptyCell = Arbitrary3SCell 0
   step = step'
 
@@ -30,7 +31,7 @@ toArbitrary3SCell i = Arbitrary3SCell $ i `mod` 3
 -- TODO: the actual logic
 
 
-step' :: Dim2Board Arbitrary3S Arbitrary3SCell -> Dim2Board Arbitrary3S Arbitrary3SCell
+step' :: Dim2Board (Cell Arbitrary3S) -> Dim2Board (Cell Arbitrary3S)
 step' Dim2Board {cells, xSize, ySize} = newBoard
   where
     newCells = cells

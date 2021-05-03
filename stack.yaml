@@ -5,6 +5,7 @@ packages:
 - lib
 - book-samples
 - demo-apps/hcell
-- demo-apps/type-class-automaton
+- demo-apps/type-class-automaton1
+- demo-apps/type-class-automaton2
 - demo-apps/auction
 - demo-apps/car

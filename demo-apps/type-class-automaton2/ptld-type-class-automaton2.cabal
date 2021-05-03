@@ -4,12 +4,12 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: cdfc6168e0080c9b939e400477d4afacd4d8dbdb6fb2e4ebaeeb51fdad5d69a3
+-- hash: 5177958131240800002ea685bfff39c2738939a672cbae8bc7c6f8b125839f59
 
-name:           ptld-type-class-automaton
+name:           ptld-type-class-automaton2
 version:        0.0.0.1
-homepage:       https://github.com/graninas/Pragmatic-Type-Level-Design/demo-apps/type-class-automaton#readme
-bug-reports:    https://github.com/graninas/Pragmatic-Type-Level-Design/demo-apps/type-class-automaton/issues
+homepage:       https://github.com/graninas/Pragmatic-Type-Level-Design/demo-apps/type-class-automaton2#readme
+bug-reports:    https://github.com/graninas/Pragmatic-Type-Level-Design/demo-apps/type-class-automaton2/issues
 author:         Alexander Granin
 maintainer:     graninas@gmail.com
 copyright:      Granin A.S. 2021
@@ -18,17 +18,18 @@ build-type:     Simple
 
 source-repository head
   type: git
-  location: https://github.com/graninas/Pragmatic-Type-Level-Design/demo-apps/type-class-automaton
+  location: https://github.com/graninas/Pragmatic-Type-Level-Design/demo-apps/type-class-automaton2
 
 library
   exposed-modules:
       Main
+      TCA.Arbitrary2S
       TCA.Arbitrary3S
       TCA.Automaton
       TCA.GameOfLife
       TCA.Types
   other-modules:
-      Paths_ptld_type_class_automaton
+      Paths_ptld_type_class_automaton2
   hs-source-dirs:
       src
   default-extensions: NoImplicitPrelude GADTs RankNTypes DeriveFunctor DeriveGeneric OverloadedStrings LambdaCase MultiParamTypeClasses ExplicitNamespaces TypeApplications ScopedTypeVariables TypeOperators TypeFamilies DataKinds FlexibleContexts FlexibleInstances PatternSynonyms PolyKinds DefaultSignatures ConstraintKinds NamedFieldPuns TupleSections ViewPatterns MultiWayIf RecordWildCards
@@ -68,14 +69,15 @@ library
     , void
   default-language: Haskell2010
 
-executable type-class-automaton
+executable type-class-automaton2
   main-is: Main.hs
   other-modules:
+      TCA.Arbitrary2S
       TCA.Arbitrary3S
       TCA.Automaton
       TCA.GameOfLife
       TCA.Types
-      Paths_ptld_type_class_automaton
+      Paths_ptld_type_class_automaton2
   hs-source-dirs:
       src/
   default-extensions: NoImplicitPrelude GADTs RankNTypes DeriveFunctor DeriveGeneric OverloadedStrings LambdaCase MultiParamTypeClasses ExplicitNamespaces TypeApplications ScopedTypeVariables TypeOperators TypeFamilies DataKinds FlexibleContexts FlexibleInstances PatternSynonyms PolyKinds DefaultSignatures ConstraintKinds NamedFieldPuns TupleSections ViewPatterns MultiWayIf RecordWildCards

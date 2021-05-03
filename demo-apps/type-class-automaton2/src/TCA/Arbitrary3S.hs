@@ -10,25 +10,27 @@ import qualified Data.Vector as V
 import TCA.Types
 import TCA.Automaton
 
+data Arbitrary3S
 
-newtype Arbitary3SCell = Arbitary3SCell Int
+newtype Arbitrary3SCell = Arbitrary3SCell Int
   deriving (Show, Eq, Ord, Enum)
 
 
-instance Dim2Automaton Arbitary3SCell where
-  emptyCell = Arbitary3SCell 0
+
+instance Dim2Automaton Arbitrary3S Arbitrary3SCell where
+  emptyCell _ = Arbitrary3SCell 0
   step = step'
 
 
 
-toArbitrary3SCell :: Int -> Arbitary3SCell
-toArbitrary3SCell i = Arbitary3SCell $ i `mod` 3
+toArbitrary3SCell :: Int -> Arbitrary3SCell
+toArbitrary3SCell i = Arbitrary3SCell $ i `mod` 3
 
 
 -- TODO: the actual logic
 
 
-step' :: Dim2Board Arbitary3SCell -> Dim2Board Arbitary3SCell
+step' :: Dim2Board Arbitrary3S Arbitrary3SCell -> Dim2Board Arbitrary3S Arbitrary3SCell
 step' Dim2Board {cells, xSize, ySize} = newBoard
   where
     newCells = cells

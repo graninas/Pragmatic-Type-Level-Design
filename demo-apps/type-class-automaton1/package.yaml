@@ -1,6 +1,6 @@
-name:                ptld-type-class-automaton
+name:                ptld-type-class-automaton1
 version:             0.0.0.1
-github:              "graninas/Pragmatic-Type-Level-Design/demo-apps/type-class-automaton"
+github:              "graninas/Pragmatic-Type-Level-Design/demo-apps/type-class-automaton1"
 license:             BSD3
 author:              "Alexander Granin"
 maintainer:          "graninas@gmail.com"
@@ -70,7 +70,7 @@ dependencies:
 
 
 executables:
-  type-class-automaton:
+  type-class-automaton1:
     main:                Main.hs
     source-dirs:         src/
     ghc-options:

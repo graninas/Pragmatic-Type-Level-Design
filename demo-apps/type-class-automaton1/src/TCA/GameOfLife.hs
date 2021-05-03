@@ -10,14 +10,13 @@ import TCA.Types
 import TCA.Automaton
 
 
-data GoLCell
-  = GoLAlive
-  | GoLDead
+
+data GoLCell = Alive | Dead
   deriving (Show, Eq, Ord, Enum)
 
 
 instance Dim2Automaton GoLCell where
-  emptyCell = GoLDead
+  emptyCell = Dead
   step = golStep
 
 

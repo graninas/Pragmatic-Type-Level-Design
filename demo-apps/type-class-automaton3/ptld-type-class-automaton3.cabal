@@ -1,0 +1,118 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 743c36f5a2525ed08d03dc9ff87323f97025e0ab5917036662522edd7ccd305a
+
+name:           ptld-type-class-automaton3
+version:        0.0.0.1
+homepage:       https://github.com/graninas/Pragmatic-Type-Level-Design/demo-apps/type-class-automaton3#readme
+bug-reports:    https://github.com/graninas/Pragmatic-Type-Level-Design/demo-apps/type-class-automaton3/issues
+author:         Alexander Granin
+maintainer:     graninas@gmail.com
+copyright:      Granin A.S. 2021
+license:        BSD3
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: https://github.com/graninas/Pragmatic-Type-Level-Design/demo-apps/type-class-automaton3
+
+library
+  exposed-modules:
+      Main
+      TCA3.Arbitrary2S
+      TCA3.Arbitrary3S
+      TCA3.Automaton
+      TCA3.GameOfLife
+      TCA3.Types
+  other-modules:
+      Paths_ptld_type_class_automaton3
+  hs-source-dirs:
+      src
+  default-extensions: NoImplicitPrelude GADTs RankNTypes DeriveFunctor DeriveGeneric OverloadedStrings LambdaCase MultiParamTypeClasses ExplicitNamespaces TypeApplications ScopedTypeVariables TypeOperators TypeFamilies DataKinds FlexibleContexts FlexibleInstances PatternSynonyms PolyKinds DefaultSignatures ConstraintKinds NamedFieldPuns TupleSections ViewPatterns MultiWayIf RecordWildCards
+  ghc-options: -Wall
+  build-depends:
+      MonadRandom
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , clock
+    , containers
+    , data-default
+    , directory
+    , entropy
+    , extra
+    , filepath
+    , fmt
+    , generic-lens
+    , gloss
+    , lens
+    , mtl
+    , newtype-generics
+    , ptld-lib
+    , random
+    , resource-pool
+    , resourcet
+    , scientific
+    , stm
+    , template-haskell
+    , text
+    , time
+    , time-units
+    , transformers
+    , universum
+    , uuid
+    , vector
+    , void
+  default-language: Haskell2010
+
+executable type-class-automaton3
+  main-is: Main.hs
+  other-modules:
+      TCA3.Arbitrary2S
+      TCA3.Arbitrary3S
+      TCA3.Automaton
+      TCA3.GameOfLife
+      TCA3.Types
+      Paths_ptld_type_class_automaton3
+  hs-source-dirs:
+      src/
+  default-extensions: NoImplicitPrelude GADTs RankNTypes DeriveFunctor DeriveGeneric OverloadedStrings LambdaCase MultiParamTypeClasses ExplicitNamespaces TypeApplications ScopedTypeVariables TypeOperators TypeFamilies DataKinds FlexibleContexts FlexibleInstances PatternSynonyms PolyKinds DefaultSignatures ConstraintKinds NamedFieldPuns TupleSections ViewPatterns MultiWayIf RecordWildCards
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-depends:
+      MonadRandom
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , clock
+    , containers
+    , data-default
+    , directory
+    , entropy
+    , extra
+    , filepath
+    , fmt
+    , generic-lens
+    , gloss
+    , lens
+    , mtl
+    , newtype-generics
+    , ptld-lib
+    , random
+    , resource-pool
+    , resourcet
+    , scientific
+    , stm
+    , template-haskell
+    , text
+    , time
+    , time-units
+    , transformers
+    , universum
+    , uuid
+    , vector
+    , void
+  default-language: Haskell2010

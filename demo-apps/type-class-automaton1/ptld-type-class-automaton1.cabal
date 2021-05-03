@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: db3c1d3a78fafe3b92ef30111ac94fcdba88f9a5019f525b352246eb6e14a835
+-- hash: ae47f69b12d11713b3f714b5372ce9ac5f07bde551894e844eb30ddc7e5f54ee
 
 name:           ptld-type-class-automaton1
 version:        0.0.0.1
@@ -23,10 +23,10 @@ source-repository head
 library
   exposed-modules:
       Main
-      TCA.Arbitrary3S
-      TCA.Automaton
-      TCA.GameOfLife
-      TCA.Types
+      TCA1.Arbitrary3S
+      TCA1.Automaton
+      TCA1.GameOfLife
+      TCA1.Types
   other-modules:
       Paths_ptld_type_class_automaton1
   hs-source-dirs:
@@ -71,10 +71,10 @@ library
 executable type-class-automaton1
   main-is: Main.hs
   other-modules:
-      TCA.Arbitrary3S
-      TCA.Automaton
-      TCA.GameOfLife
-      TCA.Types
+      TCA1.Arbitrary3S
+      TCA1.Automaton
+      TCA1.GameOfLife
+      TCA1.Types
       Paths_ptld_type_class_automaton1
   hs-source-dirs:
       src/

@@ -1,11 +1,11 @@
-module TCA.Automaton where
+module TCA2.Automaton where
 
 import CPrelude
 
 import qualified Data.Map as Map
 import qualified Data.Vector as V
 
-import TCA.Types
+import TCA2.Types
 
 
 class Dim2Automaton rule cell where

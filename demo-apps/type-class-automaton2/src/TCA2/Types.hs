@@ -1,4 +1,4 @@
-module TCA.Types where
+module TCA2.Types where
 
 import CPrelude
 
@@ -10,7 +10,7 @@ type Coords = (Idx, Idx)
 type Torus = Bool
 type Expandable = Bool
 
-data Dim2Board cell = Dim2Board
+data Dim2Board rule cell = Dim2Board
   { cells :: V.Vector (V.Vector cell)
   , xSize :: Idx
   , ySize :: Idx
@@ -18,3 +18,8 @@ data Dim2Board cell = Dim2Board
   -- , isExpandable :: Expandable
   }
   deriving Show
+
+
+
+data TwoStateCell = Alive | Dead
+  deriving (Show, Eq, Ord, Enum)

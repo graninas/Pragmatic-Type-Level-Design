@@ -5,10 +5,10 @@ import CPrelude
 import qualified Data.Map as Map
 import qualified Data.Vector as V
 
-import TCA.Types
-import TCA.Automaton
-import TCA.GameOfLife
-import TCA.Arbitrary3S
+import TCA1.Types
+import TCA1.Automaton
+import TCA1.GameOfLife
+import TCA1.Arbitrary3S
 
 
 

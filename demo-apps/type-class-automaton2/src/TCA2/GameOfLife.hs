@@ -1,4 +1,4 @@
-module TCA.GameOfLife where
+module TCA2.GameOfLife where
 
 import CPrelude
 
@@ -6,17 +6,13 @@ import CPrelude
 import qualified Data.Map as Map
 import qualified Data.Vector as V
 
-import TCA.Types
-import TCA.Automaton
+import TCA2.Types
+import TCA2.Automaton
 
+data GoLRule
 
-
-data GoLCell = Alive | Dead
-  deriving (Show, Eq, Ord, Enum)
-
-
-instance Dim2Automaton GoLCell where
-  emptyCell = Dead
+instance Dim2Automaton GoLRule TwoStateCell where
+  emptyCell _ = Dead
   step = golStep
 
 
@@ -26,7 +22,7 @@ instance Dim2Automaton GoLCell where
 -- TODO: the actual logic
 
 
-golStep :: Dim2Board GoLCell -> Dim2Board GoLCell
+golStep :: Dim2Board GoLRule TwoStateCell -> Dim2Board GoLRule TwoStateCell
 golStep Dim2Board {cells, xSize, ySize} = newBoard
   where
     newCells = cells

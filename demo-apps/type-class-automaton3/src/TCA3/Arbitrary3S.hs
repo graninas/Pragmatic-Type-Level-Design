@@ -24,6 +24,8 @@ instance Dim2Automaton Arbitrary3S where
 
 
 
+-- Possible writing:
+-- toArbitrary3SCell :: Int -> Cell Arbitrary3S
 toArbitrary3SCell :: Int -> Arbitrary3SCell
 toArbitrary3SCell i = Arbitrary3SCell $ i `mod` 3
 

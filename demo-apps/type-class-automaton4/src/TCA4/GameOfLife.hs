@@ -1,4 +1,4 @@
-module TCA3.GameOfLife where
+module TCA4.GameOfLife where
 
 import CPrelude
 
@@ -6,15 +6,18 @@ import CPrelude
 import qualified Data.Map as Map
 import qualified Data.Vector as V
 
-import TCA3.Types
-import TCA3.Automaton
+import TCA4.Types
+import TCA4.Automaton
 
 data GoLRule
 
 
 instance Dim2Automaton GoLRule where
-  type Cell GoLRule = TwoStateCell
-  emptyCell = Dead
+
+  data Cell GoLRule = GoLAlive | GoLDead
+    deriving (Show, Eq, Ord, Enum)
+
+  emptyCell = GoLDead
   step = golStep
 
 

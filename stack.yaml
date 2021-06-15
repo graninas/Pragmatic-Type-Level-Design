@@ -9,5 +9,6 @@ packages:
 - demo-apps/type-class-automaton2
 - demo-apps/type-class-automaton3
 - demo-apps/type-class-automaton4
+- demo-apps/type-class-automaton5
 - demo-apps/auction
 - demo-apps/car

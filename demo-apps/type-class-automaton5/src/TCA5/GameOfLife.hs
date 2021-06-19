@@ -9,15 +9,15 @@ import qualified Data.Vector as V
 import TCA5.Types
 import TCA5.Automaton
 
-data GameOfLife
+data GameOfLife = GameOfLife
 
 data GoLCell = GoLAlive | GoLDead
   deriving (Show, Eq, Ord, Enum)
 
 
 instance Dim2Automaton GameOfLife GoLCell where
-  emptyCell = GoLDead
-  step = golStep
+  emptyCell _ = GoLDead
+  step _ = golStep
 
 
 

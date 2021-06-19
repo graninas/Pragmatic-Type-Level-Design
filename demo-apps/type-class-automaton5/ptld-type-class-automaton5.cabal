@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 11ba221db5b1e72ddc241a561404a7faef7b9276a3ebed70dfe5160656032bcf
+-- hash: 9e5373d31a734cfe1471cbb8822351c07d46686e132ddd2c427cd6dac729ac11
 
 name:           ptld-type-class-automaton5
 version:        0.0.0.1
@@ -27,6 +27,7 @@ library
       TCA5.Arbitrary3S
       TCA5.Automaton
       TCA5.GameOfLife
+      TCA5.MultiRule
       TCA5.Types
   other-modules:
       Paths_ptld_type_class_automaton5
@@ -76,6 +77,7 @@ executable type-class-automaton2
       TCA5.Arbitrary3S
       TCA5.Automaton
       TCA5.GameOfLife
+      TCA5.MultiRule
       TCA5.Types
       Paths_ptld_type_class_automaton5
   hs-source-dirs:

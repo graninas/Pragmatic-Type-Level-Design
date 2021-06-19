@@ -8,21 +8,23 @@ import qualified Data.Vector as V
 import TCA5.Types
 
 
-class Dim2Automaton rule cell | cell -> rule, rule -> cell where
-  emptyCell :: cell
-  step :: Dim2Board cell -> Dim2Board cell
+class Dim2Automaton rule cell | rule -> cell where
+  emptyCell :: rule -> cell
+  step      :: rule -> Dim2Board cell -> Dim2Board cell
 
 
-initialize
+initializeBoard
   :: forall rule cell
    . Dim2Automaton rule cell
-  => Coords
+  => rule
+  -> Coords
   -> Map Coords cell
   -> Dim2Board cell
-initialize (xSize, ySize) srcCells = Dim2Board cells xSize ySize
+initializeBoard rule (xSize, ySize) srcCells =
+  Dim2Board cells xSize ySize
   where
-    cells = V.generate xSize generateX
-    generateX x = V.generate ySize (generateY x)
+    cells         = V.generate xSize generateX
+    generateX x   = V.generate ySize (generateY x)
     generateY x y = case Map.lookup (x, y) srcCells of
-      Nothing -> emptyCell
+      Nothing   -> emptyCell rule
       Just cell -> cell

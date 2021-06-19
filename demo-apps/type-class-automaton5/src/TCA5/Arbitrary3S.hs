@@ -10,15 +10,16 @@ import qualified Data.Vector as V
 import TCA5.Types
 import TCA5.Automaton
 
-data Arbitrary3S
+data Arbitrary3S = Arbitrary3S
 data Arbitrary3SCell = A3S0 | A3S1 | A3S2
   deriving (Show, Eq, Ord, Enum)
 
 
 
 instance Dim2Automaton Arbitrary3S Arbitrary3SCell where
-  emptyCell = A3S0
-  step = step'
+  -- initRule = Arbitrary3S
+  emptyCell _ = A3S0
+  step _ = step'
 
 
 

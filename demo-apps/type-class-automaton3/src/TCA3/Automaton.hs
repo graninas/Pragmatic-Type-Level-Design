@@ -16,13 +16,13 @@ class Dim2Automaton rule where
   step :: Dim2Board (Cell rule) -> Dim2Board (Cell rule)
 
 
-initialize
+initializeBoard
   :: forall rule
    . Dim2Automaton rule
   => Coords
   -> Map Coords (Cell rule)
   -> Dim2Board (Cell rule)
-initialize (xSize, ySize) srcCells = Dim2Board cells xSize ySize
+initializeBoard (xSize, ySize) srcCells = Dim2Board cells xSize ySize
   where
     cells = V.generate xSize generateX
     generateX x = V.generate ySize (generateY x)

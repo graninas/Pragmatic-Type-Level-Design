@@ -17,4 +17,4 @@ data Dim2Board cell = Dim2Board
   -- , isTorus :: Torus
   -- , isExpandable :: Expandable
   }
-  deriving Show
+  deriving (Show, Functor)

@@ -14,7 +14,7 @@ data Arbitrary2S
 instance Dim2Automaton Arbitrary2S where
   type Cell Arbitrary2S = TwoStateCell
   emptyCell = Dead
-  step = some2D2SAutomatonStep
+  step = step'
 
 
 
@@ -23,8 +23,8 @@ instance Dim2Automaton Arbitrary2S where
 -- TODO: the actual logic
 
 
-some2D2SAutomatonStep :: Dim2Board (Cell Arbitrary2S) -> Dim2Board (Cell Arbitrary2S)
-some2D2SAutomatonStep Dim2Board {cells, xSize, ySize} = newBoard
+step' :: Dim2Board (Cell Arbitrary2S) -> Dim2Board (Cell Arbitrary2S)
+step' Dim2Board {cells, xSize, ySize} = newBoard
   where
     newCells = cells
     newBoard = Dim2Board newCells xSize ySize

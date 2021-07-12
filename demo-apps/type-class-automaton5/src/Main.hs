@@ -26,11 +26,11 @@ main = do
   let arbitrary3SBoard2 = step Arbitrary3S arbitrary3SBoard1
 
   let arbitrary2SBoard1 = initializeBoard Arbitrary2S (50, 50) Map.empty
-  let arbitrary2SBoard2 = step Arbitrary2S arbitrary2SBoard1      -- was a copy-paste bug: arbitrary3SBoard1; => type unsafe
+  let arbitrary2SBoard2 = step Arbitrary2S arbitrary2SBoard1
 
   -- Multi rule
   let multiRuleBoard1 = initializeBoard GameOfLifeRule (50, 50) Map.empty
-  let multiRuleBoard2 = step GameOfLifeRule multiRuleBoard1      -- was a copy-paste bug: arbitrary3SBoard1; => type unsafe
+  let multiRuleBoard2 = step GameOfLifeRule multiRuleBoard1
 
   print golBoard2
   print arbitrary3SBoard2

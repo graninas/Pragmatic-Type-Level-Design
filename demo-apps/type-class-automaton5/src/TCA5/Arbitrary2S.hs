@@ -14,7 +14,6 @@ data Arbitrary2SCell = A2SAlive | A2SDead
   deriving (Show, Eq, Ord, Enum)
 
 instance Dim2Automaton Arbitrary2S Arbitrary2SCell where
-  -- initRule = Arbitrary2S
   emptyCell _ = A2SDead
   step _ = step'
 

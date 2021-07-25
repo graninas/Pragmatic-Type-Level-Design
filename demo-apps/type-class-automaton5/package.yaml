@@ -71,7 +71,7 @@ dependencies:
 
 
 executables:
-  type-class-automaton2:
+  type-class-automaton5:
     main:                Main.hs
     source-dirs:         src/
     ghc-options:

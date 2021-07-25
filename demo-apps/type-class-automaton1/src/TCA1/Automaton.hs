@@ -1,3 +1,5 @@
+{- Single parameter type class for 2.1.1 -}
+
 module TCA1.Automaton where
 
 import CPrelude

@@ -1,3 +1,5 @@
+{- Multiparameter type class for section 2.2.1 -}
+
 module TCA2.Automaton where
 
 import CPrelude

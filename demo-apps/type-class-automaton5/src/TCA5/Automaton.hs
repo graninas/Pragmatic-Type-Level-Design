@@ -1,3 +1,5 @@
+{- Multiparameter type class with a functional dependency for 2.2.2 -}
+
 module TCA5.Automaton where
 
 import CPrelude

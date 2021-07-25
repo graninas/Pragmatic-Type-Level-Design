@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9e5373d31a734cfe1471cbb8822351c07d46686e132ddd2c427cd6dac729ac11
+-- hash: 5e3552f82d049bc5038675ec28ddc3e033f3efcf8855f40e349e5464f6466cd5
 
 name:           ptld-type-class-automaton5
 version:        0.0.0.1
@@ -70,7 +70,7 @@ library
     , void
   default-language: Haskell2010
 
-executable type-class-automaton2
+executable type-class-automaton5
   main-is: Main.hs
   other-modules:
       TCA5.Arbitrary2S

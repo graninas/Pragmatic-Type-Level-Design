@@ -31,9 +31,16 @@ main = do
   -- Multi rule
   -- Step the board as GoL and then step it as A3S:
   let multiRuleBoard1 = initializeBoard GameOfLifeMultiRule (50, 50) Map.empty
-  let multiRuleBoard2 = step GameOfLifeMultiRule multiRuleBoard1
+  let multiRuleBoard2 = step GameOfLifeMultiRule  multiRuleBoard1
   let multiRuleBoard3 = step Arbitrary2SMultiRule multiRuleBoard2
   let multiRuleBoard4 = step Arbitrary3SMultiRule multiRuleBoard3
+  let multiRuleBoard5 = step GameOfLifeMultiRule  multiRuleBoard4
+
+  let multiBoard1 = initializeMultiBoard (50, 50) Map.empty
+  let multiBoard2 = stepAndEvolve multiBoard1
+  let multiBoard3 = stepAndEvolve multiBoard2
+  let multiBoard4 = stepAndEvolve multiBoard3
+  let multiBoard5 = stepAndEvolve multiBoard4
 
   print golBoard2
   print arbitrary3SBoard2

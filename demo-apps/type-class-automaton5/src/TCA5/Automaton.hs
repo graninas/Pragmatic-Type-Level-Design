@@ -31,3 +31,11 @@ initializeBoard rule (xSize, ySize) srcCells =
     generateY x y = case Map.lookup (x, y) srcCells of
       Nothing   -> emptyCell rule
       Just cell -> cell
+
+
+stepAndEvolve
+  :: forall rule cell
+   . Dim2Automaton rule cell
+  => (rule, Dim2Board cell)
+  -> (rule, Dim2Board cell)
+stepAndEvolve (rule, board) = (evolve rule, step rule board)

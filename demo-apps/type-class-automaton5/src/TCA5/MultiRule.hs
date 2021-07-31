@@ -25,7 +25,7 @@ data MultiCell = MC0 | MC1 | MC2
 
 instance Dim2Automaton MultiRule MultiCell where
   emptyCell = adaptedEmptyCell
-  evolve = adaptedEvolve
+  evolve = evolveMultiRule
   step = adaptedStep
 
 -- Won't compile (prohibited by fun dep)
@@ -73,10 +73,10 @@ adaptedEmptyCell rule = case rule of
   Arbitrary3SMultiRule -> toMultiCell $ emptyCell A3S.A3S
 
 
-
-
-adaptedEvolve :: MultiRule -> MultiRule
-adaptedEvolve = id
+evolveMultiRule :: MultiRule -> MultiRule
+evolveMultiRule GameOfLifeMultiRule  = Arbitrary3SMultiRule
+evolveMultiRule Arbitrary2SMultiRule = GameOfLifeMultiRule
+evolveMultiRule Arbitrary3SMultiRule = Arbitrary2SMultiRule
 
 adaptedStep :: MultiRule -> Dim2Board MultiCell -> Dim2Board MultiCell
 adaptedStep GameOfLifeMultiRule board
@@ -93,3 +93,13 @@ adaptedStep Arbitrary3SMultiRule board
   = fmap toMultiCell
   $ A3S.step'
   $ fmap fromMultiCell board
+
+
+initializeMultiBoard
+  :: Coords
+  -> Map Coords MultiCell
+  -> (MultiRule, Dim2Board MultiCell)
+initializeMultiBoard coords cells =
+  ( GameOfLifeMultiRule
+  , initializeBoard GameOfLifeMultiRule coords cells
+  )

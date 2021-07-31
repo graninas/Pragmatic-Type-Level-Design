@@ -28,6 +28,18 @@ instance Dim2Automaton MultiRule MultiCell where
   evolve = adaptedEvolve
   step = adaptedStep
 
+-- Won't compile (prohibited by fun dep)
+-- instance Dim2Automaton MultiRule String where
+--   emptyCell = undefined
+--   evolve = undefined
+--   step = undefined
+
+-- Valid
+instance Dim2Automaton String MultiCell where
+  emptyCell = undefined
+  evolve = undefined
+  step = undefined
+
 
 class MultiCellConvert foreignCell where
   toMultiCell  :: foreignCell -> MultiCell

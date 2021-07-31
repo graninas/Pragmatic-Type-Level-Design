@@ -25,6 +25,7 @@ data MultiCell = MC0 | MC1 | MC2
 
 instance Dim2Automaton MultiRule MultiCell where
   emptyCell _ = MC0
+  evolve rule = rule
   step = adaptedStep
 
 

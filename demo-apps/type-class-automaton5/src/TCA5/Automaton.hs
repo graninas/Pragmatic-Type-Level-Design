@@ -12,6 +12,7 @@ import TCA5.Types
 
 class Dim2Automaton rule cell | rule -> cell where
   emptyCell :: rule -> cell
+  evolve    :: rule -> rule
   step      :: rule -> Dim2Board cell -> Dim2Board cell
 
 

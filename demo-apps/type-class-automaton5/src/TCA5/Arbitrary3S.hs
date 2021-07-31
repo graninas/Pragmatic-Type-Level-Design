@@ -18,6 +18,7 @@ data Arbitrary3SCell = A3S0 | A3S1 | A3S2
 
 instance Dim2Automaton Arbitrary3S Arbitrary3SCell where
   emptyCell _ = A3S0
+  evolve rule = rule
   step _ = step'
 
 

@@ -17,6 +17,7 @@ data GoLCell = GoLAlive | GoLDead
 
 instance Dim2Automaton GameOfLife GoLCell where
   emptyCell _ = GoLDead
+  evolve rule = rule
   step _ = golStep
 
 

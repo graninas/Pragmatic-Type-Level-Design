@@ -15,6 +15,7 @@ data Arbitrary2SCell = A2SAlive | A2SDead
 
 instance Dim2Automaton Arbitrary2S Arbitrary2SCell where
   emptyCell _ = A2SDead
+  evolve rule = rule
   step _ = step'
 
 

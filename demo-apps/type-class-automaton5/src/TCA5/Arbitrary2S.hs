@@ -9,11 +9,11 @@ import qualified Data.Vector as V
 import TCA5.Types
 import TCA5.Automaton
 
-data Arbitrary2S = Arbitrary2S
-data Arbitrary2SCell = A2SAlive | A2SDead
+data A2S = A2S
+data A2SCell = A2SAlive | A2SDead
   deriving (Show, Eq, Ord, Enum)
 
-instance Dim2Automaton Arbitrary2S Arbitrary2SCell where
+instance Dim2Automaton A2S A2SCell where
   emptyCell _ = A2SDead
   evolve rule = rule
   step _ = step'
@@ -24,7 +24,7 @@ instance Dim2Automaton Arbitrary2S Arbitrary2SCell where
 -- TODO: the actual logic
 
 
-step' :: Dim2Board Arbitrary2SCell -> Dim2Board Arbitrary2SCell
+step' :: Dim2Board A2SCell -> Dim2Board A2SCell
 step' Dim2Board {cells, xSize, ySize} = newBoard
   where
     newCells = cells

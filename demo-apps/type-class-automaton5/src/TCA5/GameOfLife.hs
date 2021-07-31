@@ -9,13 +9,13 @@ import qualified Data.Vector as V
 import TCA5.Types
 import TCA5.Automaton
 
-data GameOfLife = GameOfLife
+data GoL = GoL
 
 data GoLCell = GoLAlive | GoLDead
   deriving (Show, Eq, Ord, Enum)
 
 
-instance Dim2Automaton GameOfLife GoLCell where
+instance Dim2Automaton GoL GoLCell where
   emptyCell _ = GoLDead
   evolve rule = rule
   step _ = golStep

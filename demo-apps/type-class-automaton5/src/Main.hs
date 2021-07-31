@@ -18,22 +18,22 @@ import TCA5.MultiRule
 main :: IO ()
 main = do
 
-  let golBoard1 = initializeBoard GameOfLife (50, 50) Map.empty
-  let golBoard2 = step GameOfLife golBoard1
+  let golBoard1 = initializeBoard GoL (50, 50) Map.empty
+  let golBoard2 = step GoL golBoard1
 
-  let arbitrary3SBoard1 = initializeBoard Arbitrary3S (50, 50) $ Map.fromList
+  let arbitrary3SBoard1 = initializeBoard A3S (50, 50) $ Map.fromList
           [((x, y), toArbitrary3SCell (x+y)) | x <- [0..10], y <- [0..10]]
-  let arbitrary3SBoard2 = step Arbitrary3S arbitrary3SBoard1
+  let arbitrary3SBoard2 = step A3S arbitrary3SBoard1
 
-  let arbitrary2SBoard1 = initializeBoard Arbitrary2S (50, 50) Map.empty
-  let arbitrary2SBoard2 = step Arbitrary2S arbitrary2SBoard1
+  let arbitrary2SBoard1 = initializeBoard A2S (50, 50) Map.empty
+  let arbitrary2SBoard2 = step A2S arbitrary2SBoard1
 
   -- Multi rule
   -- Step the board as GoL and then step it as A3S:
-  let multiRuleBoard1 = initializeBoard GameOfLifeRule (50, 50) Map.empty
-  let multiRuleBoard2 = step GameOfLifeRule multiRuleBoard1
-  let multiRuleBoard3 = step Arbitrary2SRule multiRuleBoard2
-  let multiRuleBoard4 = step Arbitrary3SRule multiRuleBoard3
+  let multiRuleBoard1 = initializeBoard GameOfLifeMultiRule (50, 50) Map.empty
+  let multiRuleBoard2 = step GameOfLifeMultiRule multiRuleBoard1
+  let multiRuleBoard3 = step Arbitrary2SMultiRule multiRuleBoard2
+  let multiRuleBoard4 = step Arbitrary3SMultiRule multiRuleBoard3
 
   print golBoard2
   print arbitrary3SBoard2

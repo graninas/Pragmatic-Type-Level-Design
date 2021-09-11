@@ -15,6 +15,10 @@ class Dim2Automaton rule where
   emptyCell :: Cell rule
   step :: Dim2Board (Cell rule) -> Dim2Board (Cell rule)
 
+  type DatabaseCell rule :: *
+  toDatabaseCell   :: Cell rule -> DatabaseCell rule
+  fromDatabaseCell :: DatabaseCell rule -> Cell rule
+
 
 initializeBoard
   :: forall rule

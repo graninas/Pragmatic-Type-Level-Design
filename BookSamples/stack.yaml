@@ -1,0 +1,6 @@
+
+resolver: lts-16.16
+
+packages:
+- BookSamples/CH01/Section1
+

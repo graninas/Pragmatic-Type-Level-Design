@@ -25,3 +25,9 @@ main = do
 
   saveToFile "./data/GoL/glider_5th_gen.txt"   gol2
   saveToFile "./data/Seeds/world1_3th_gen.txt" seeds2
+
+  -- let automata = Map.fromList                  -- won't compile
+  --       [ ("Game of Life", GoL glider)
+  --       , ("Seeds", Seeds Map.empty)
+  --       , ("Replicator", Replicator Map.empty)
+  --       ]

@@ -12,23 +12,13 @@ newtype Seeds = Seeds Board
 instance Automaton Seeds where
   step :: Seeds -> Seeds                      -- N.B., InstanceSigs is enabled to show sigs
   step = seedsStep
-  loadFromFile :: FilePath -> IO Seeds
-  loadFromFile = loadSeedsFromFile
-  saveToFile :: FilePath -> Seeds -> IO ()
-  saveToFile = saveSeedsToFile
+  wrap :: Board -> Seeds
+  wrap = Seeds
+  unwrap :: Seeds -> Board
+  unwrap (Seeds board) = board
 
 
 -- TODO: rules
 
 seedsStep :: Seeds -> Seeds
 seedsStep = error "Not implemented"
-
-loadSeedsFromFile :: FilePath -> IO Seeds
-loadSeedsFromFile path = do
-  (board :: Board) <- loadBoardFromFile path
-  pure (Seeds board)
-
-saveSeedsToFile :: FilePath -> Seeds -> IO ()
-saveSeedsToFile path (Seeds board) =
-  saveBoardToFile path board
-

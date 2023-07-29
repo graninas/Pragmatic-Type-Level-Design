@@ -14,20 +14,11 @@ newtype GoL = GoL Board
 instance Automaton GoL where
   step :: GoL -> GoL                      -- N.B., InstanceSigs is enabled to show sigs
   step = golStep
-  loadFromFile :: FilePath -> IO GoL
-  loadFromFile = loadGoLFromFile
-  saveToFile :: FilePath -> GoL -> IO ()
-  saveToFile = saveGoLToFile
+  wrap :: Board -> GoL
+  wrap = GoL
+  unwrap :: GoL -> Board
+  unwrap (GoL board) = board
 
 golStep :: GoL -> GoL
 golStep = error "Not implemented"
-
-loadGoLFromFile :: FilePath -> IO GoL
-loadGoLFromFile path = do
-  (board :: Board) <- loadBoardFromFile path
-  pure (GoL board)
-
-saveGoLToFile :: FilePath -> GoL -> IO ()
-saveGoLToFile path (GoL board) =
-  saveBoardToFile path board
 

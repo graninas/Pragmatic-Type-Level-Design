@@ -1,0 +1,2 @@
+- Single cellular automaton (Game of Life)
+- No newtype

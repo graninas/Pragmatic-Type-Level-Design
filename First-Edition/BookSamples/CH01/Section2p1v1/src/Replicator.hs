@@ -1,6 +1,6 @@
 module Replicator where
 
-import Board ( loadFromFile, saveToFile, Board )
+import Board ( Board, loadFromFile, saveToFile )
 
 import qualified Data.Map as Map
 

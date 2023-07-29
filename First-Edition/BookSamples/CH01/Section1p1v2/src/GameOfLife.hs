@@ -1,6 +1,6 @@
 module GameOfLife where
 
-import Board
+import Board ( Board, saveToFile, loadFromFile )
 
 import qualified Data.Map as Map
 

@@ -4,6 +4,7 @@ resolver: lts-16.16
 packages:
 - BookSamples/CH01/Section1p1v1
 - BookSamples/CH01/Section1p1v2
-- BookSamples/CH01/Section2p1v1
-- BookSamples/CH01/Section2p1v2
+- BookSamples/CH01/Section2p1
+- BookSamples/CH01/Section2p2
+- BookSamples/CH01/Section2p3
 

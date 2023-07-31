@@ -1,0 +1,4 @@
+- Several cellular automata
+- Newtype wrappers
+- Type-level literals
+- Type class generalization

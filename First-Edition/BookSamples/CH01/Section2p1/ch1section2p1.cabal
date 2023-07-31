@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           ch1section2p1v2
+name:           ch1section2p1
 version:        1.0.0.0
 author:         Alexander Granin
 maintainer:     graninas@gmail.com
@@ -14,7 +14,6 @@ build-type:     Simple
 
 library
   exposed-modules:
-      Automaton
       Board
       Cell
       GameOfLife
@@ -22,7 +21,7 @@ library
       Replicator
       Seeds
   other-modules:
-      Paths_ch1section2p1v2
+      Paths_ch1section2p1
   hs-source-dirs:
       src
   default-extensions:
@@ -38,7 +37,6 @@ library
       ViewPatterns
       MultiWayIf
       RecordWildCards
-      InstanceSigs
   ghc-options: -Wall
   build-depends:
       base >=4.7 && <5
@@ -58,16 +56,15 @@ library
     , void
   default-language: Haskell2010
 
-executable ch1section2p1v2
+executable ch1section2p1
   main-is: Main.hs
   other-modules:
-      Automaton
       Board
       Cell
       GameOfLife
       Replicator
       Seeds
-      Paths_ch1section2p1v2
+      Paths_ch1section2p1
   hs-source-dirs:
       ./src
   default-extensions:
@@ -83,7 +80,6 @@ executable ch1section2p1v2
       ViewPatterns
       MultiWayIf
       RecordWildCards
-      InstanceSigs
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
   build-depends:
       base >=4.7 && <5

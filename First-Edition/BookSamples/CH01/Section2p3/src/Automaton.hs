@@ -8,14 +8,15 @@ import GHC.TypeLits ( KnownSymbol, Symbol, symbolVal )
 import Data.Proxy ( Proxy(..) )
 
 
-newtype CellWorld (rule :: Symbol)   -- DataKinds + KindSignatures are used here
-  = CellWorld Board
+newtype CellWorld (rule :: Symbol)     -- DataKinds + KindSignatures are used here
+  = CW Board
   deriving (Show, Eq)
 
 class KnownSymbol rule => Automaton (rule :: Symbol) where
   step :: CellWorld rule -> CellWorld rule
   name :: CellWorld rule -> String
   name _ = symbolVal (Proxy :: Proxy rule)
+
 
 -- Alternative to `name`:
 automatonName
@@ -37,7 +38,7 @@ iterateWorld _ _ = error "Invalid iteration count"
 loadFromFile :: Automaton rule => FilePath -> IO (CellWorld rule)
 loadFromFile file = do
   (board :: Board) <- loadBoardFromFile file
-  pure (CellWorld board)
+  pure (CW board)
 
 saveToFile :: Automaton rule => FilePath -> CellWorld rule -> IO ()
-saveToFile file (CellWorld world) = saveBoardToFile file world
+saveToFile file (CW world) = saveBoardToFile file world

@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeApplications #-}
 module Main where
 
 import Board (Board)
@@ -18,7 +19,7 @@ glider = Map.fromList [((1, 0), Alive),
 main :: IO ()
 main = do
   gol1   :: GoL   <- loadFromFile "./data/GoL/glider.txt"
-  seeds1 :: Seeds <- loadFromFile "./data/Seeds/world1.txt"
+  seeds1 <- loadFromFile @Seeds "./data/Seeds/world1.txt"   -- TypeApplications used here
 
   let gol2   = iterateWorld 5 gol1
   let seeds2 = iterateWorld 3 seeds1

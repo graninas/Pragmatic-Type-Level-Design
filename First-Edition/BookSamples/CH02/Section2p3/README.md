@@ -1,4 +1,4 @@
 - Several cellular automata
-- Newtype wrappers
 - Type-level literals
+- Phantom type
 - Type class generalization

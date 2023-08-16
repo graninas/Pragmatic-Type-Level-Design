@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           ch1section2p3
+name:           ch2section1
 version:        1.0.0.0
 author:         Alexander Granin
 maintainer:     graninas@gmail.com
@@ -23,7 +23,7 @@ library
       Seeds
       Test
   other-modules:
-      Paths_ch1section2p3
+      Paths_ch2section1
   hs-source-dirs:
       src
   default-extensions:
@@ -59,7 +59,7 @@ library
     , void
   default-language: Haskell2010
 
-executable ch1section2p3
+executable ch2section1
   main-is: Main.hs
   other-modules:
       Automaton
@@ -69,7 +69,7 @@ executable ch1section2p3
       Replicator
       Seeds
       Test
-      Paths_ch1section2p3
+      Paths_ch2section1
   hs-source-dirs:
       ./src
   default-extensions:

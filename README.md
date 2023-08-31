@@ -2,7 +2,8 @@
 
 Code and materials for my book [Pragmatic Type Level Design](https://leanpub.com/pragmatic-type-level-design).
 
-**Pragmatic type level design** is a book about practical ideas expressed with the help of the rich type system of Haskell. In contrast with all other materials about types in Haskell, the main focus of this book is not the type system itself, and not the related math. The main focus of the book is pragmatism: how to apply those concepts in real programs. What are the best practices, how types affect the design and architecture of applciations, what principles one should follow when dealing with the accidental complexity of a type-level code.
+
+**Pragmatic Type-Level Design** is a book that delves into practical concepts harnessed by the robust type system of Haskell. Unlike most resources centered around Haskell's type system or its mathematical underpinnings, this book's primary emphasis lies in pragmatism: it explores the practical application of these concepts in actual programming scenarios. It delves into best practices, examines how types influence application design and architecture, and outlines principles to navigate the challenges of managing the inherent complexity in type-level code.
 
 [ToC (draft)](https://docs.google.com/document/d/1eCZKPeq5tiRzY8QyxcgYlKXTGaPLWCVboAaaUEfC_D0/edit?usp=sharing)
 

@@ -1,4 +1,4 @@
-name:                ch2section2p4
+name:                ch2section2p1
 version:             1.0.0.0
 license:             BSD3
 author:              "Alexander Granin"
@@ -44,7 +44,7 @@ library:
   - -Wall
 
 executables:
-  ch1section2p4:
+  ch2section2p1:
     main:                Main.hs
     source-dirs:         ./src
     ghc-options:

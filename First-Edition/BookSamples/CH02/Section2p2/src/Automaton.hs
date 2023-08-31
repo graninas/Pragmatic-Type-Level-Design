@@ -12,19 +12,24 @@ newtype CellWorld (rule :: Symbol)     -- DataKinds + KindSignatures are used he
   = CW Board
   deriving (Show, Eq)
 
+type RuleCode = String
+
 class KnownSymbol rule => Automaton (rule :: Symbol) where
   step :: CellWorld rule -> CellWorld rule
-  name :: CellWorld rule -> String
-  name _ = symbolVal (Proxy :: Proxy rule)
+  code :: Proxy rule -> RuleCode
+  name :: Proxy rule -> String
+  name proxy = symbolVal proxy
+
+
 
 
 -- Alternative to `name`:
-automatonName
+worldName
   :: forall rule            -- Brings `rule` into the scope of function's body
    . KnownSymbol rule
   => CellWorld rule
   -> String
-automatonName _ = symbolVal (Proxy :: Proxy rule)
+worldName _ = symbolVal (Proxy :: Proxy rule)
 
 iterateWorld
   :: Automaton rule

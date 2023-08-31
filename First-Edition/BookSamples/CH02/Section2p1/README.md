@@ -1,0 +1,5 @@
+- Several cellular automata
+- Type-level literals
+- Phantom type
+- Type class generalization
+- Better type class interface

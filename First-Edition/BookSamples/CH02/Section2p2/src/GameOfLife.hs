@@ -2,8 +2,9 @@
 {-# LANGUAGE FlexibleInstances #-}
 module GameOfLife where
 
-import Board ( loadBoardFromFile, saveBoardToFile, Board )
-import Automaton ( Automaton(..), CellWorld )
+import Cell ( Cell(..) )
+import Board ( Board, Coords, countAliveNeighbours )
+import Automaton ( Automaton(step, code), CellWorld(..) )
 
 import qualified Data.Map as Map
 
@@ -22,8 +23,16 @@ instance Automaton GoLRule where   -- FlexibleInstances used here
   step = golStep
   code _ = "gol"
 
--- TODO: rules
-
+-- B3/S23
 golStep :: GoL -> GoL
-golStep = error "Not implemented"
-
+golStep (CW board) = CW board'
+  where
+    updateCell :: Coords -> Cell
+    updateCell pos =
+        case (Map.lookup pos board, countAliveNeighbours board pos) of
+            (Just Dead, 3)  -> Alive
+            (Just Alive, 2) -> Alive
+            (Just Alive, 3) -> Alive
+            _               -> Dead
+    board' :: Board
+    board' = Map.mapWithKey (\pos _ -> updateCell pos) board

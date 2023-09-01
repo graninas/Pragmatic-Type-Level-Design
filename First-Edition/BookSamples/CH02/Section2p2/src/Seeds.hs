@@ -2,8 +2,9 @@
 {-# LANGUAGE FlexibleInstances #-}
 module Seeds where
 
-import Board ( loadBoardFromFile, saveBoardToFile, Board )
-import Automaton
+import Cell ( Cell(..) )
+import Board ( Board, Coords, countAliveNeighbours )
+import Automaton ( Automaton(step, code), CellWorld(..) )
 
 import qualified Data.Map as Map
 
@@ -25,5 +26,14 @@ instance Automaton SeedsRule where  -- FlexibleInstances used here
 
 -- TODO: rules
 
+-- B2/S
 seedsStep :: Seeds -> Seeds
-seedsStep = error "Not implemented"
+seedsStep (CW board) = CW board'
+  where
+    updateCell :: Coords -> Cell
+    updateCell pos =
+        case (Map.lookup pos board, countAliveNeighbours board pos) of
+            (Just Dead, 2)  -> Alive
+            _               -> Dead
+    board' :: Board
+    board' = Map.mapWithKey (\pos _ -> updateCell pos) board

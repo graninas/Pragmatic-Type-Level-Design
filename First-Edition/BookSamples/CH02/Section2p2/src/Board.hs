@@ -60,3 +60,11 @@ printBoard board = do
         cellChar Alive = "#"
         cellChar Dead  = "."
     mapM_ (printRow board) [(y, x) | y <- [minY..maxY], x <- [minX..maxX]]
+
+
+fillBoard :: (Int, Int) -> (Int, Int) -> Board -> Board
+fillBoard (fromX, fromY) (toX, toY) board =
+  let newCells = [(x, y)
+        | x <- [fromX .. toX]
+        , y <- [fromY .. toY]]
+  in foldr (\k -> Map.insertWith (\_ a -> a) k Dead) board newCells

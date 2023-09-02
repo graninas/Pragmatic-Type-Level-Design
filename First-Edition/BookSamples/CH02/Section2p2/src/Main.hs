@@ -113,8 +113,6 @@ processLoad worldsRef = do
         Left err  -> putStrLn ("Failed to load [" <> ruleCode <> "]: " <> err)
         Right idx -> putStrLn ("Successfully loaded [" <> ruleCode <> "], index: " <> show idx)
 
-      go worldsRef
-
 printHelp :: IO ()
 printHelp = do
   putStrLn "\nCommands:"
@@ -141,7 +139,7 @@ go worldsRef = do
   putStrLn "\nType a command:"
   cmd <- getLine
 
-  case cmd of
+  case filter (/=' ') cmd of
     "quit"   -> pure ()
     "help"   -> printHelp >> go worldsRef
     "rules"  -> listRuleCodes >> go worldsRef

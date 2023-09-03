@@ -1,11 +1,10 @@
 {-# LANGUAGE TypeApplications #-}
 module Main where
 
-import Board (loadBoardFromFile, printBoard)
-import Automaton ( Automaton(..), CellWorld(CW) )
+import Board
+import Automaton
 import Rules
-    ( supportedRulesDict, supportedRules, RuleImpl(RuleImpl) )
-import Worlds ( Worlds, WorldInstance(..), WorldIndex )
+import Worlds
 
 import qualified Data.Map as Map
 import Data.Proxy (Proxy)
@@ -91,7 +90,7 @@ processPrint worldsRef = do
       worlds <- readIORef worldsRef
       case Map.lookup idx worlds of
         Nothing -> putStrLn "Index doesn't exist."
-        Just (WorldInstance proxy gen (CW board)) ->
+        Just (WorldInstance _ _ (CW board)) ->
           printBoard board
 
 

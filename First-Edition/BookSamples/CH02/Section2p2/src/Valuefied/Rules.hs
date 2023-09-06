@@ -2,11 +2,11 @@
 {-# LANGUAGE TypeApplications #-}
 module Valuefied.Rules where
 
-import Board
-import Automaton
-import GameOfLife ( GoLRule )
-import Seeds ( SeedsRule )
-import Replicator ( ReplicatorRule )
+import Board ( loadBoardFromFile, Board )
+import Automaton ( Automaton(..), RuleCode, CellWorld(CW) )
+import Automata.GameOfLife ( GoLRule )
+import Automata.Seeds ( SeedsRule )
+import Automata.Replicator ( ReplicatorRule )
 
 import qualified Data.Map as Map
 import Data.Proxy (Proxy(..))
@@ -19,8 +19,13 @@ data RuleImpl = RuleImpl
   , ruleStep :: Board -> Board
   }
 
+
+
 supportedRules :: [(RuleCode, RuleImpl)]
-supportedRules = map (\ri@(RuleImpl _ ruleCode _ _) -> (ruleCode, ri))
+supportedRules = map (\ri -> (ruleCode ri, ri)) supportedRules'
+
+supportedRules' :: [RuleImpl]
+supportedRules' =
   [ toRuleImpl (Proxy :: Proxy SeedsRule)
   , toRuleImpl (Proxy :: Proxy ReplicatorRule)
   , toRuleImpl (Proxy :: Proxy GoLRule)

@@ -8,6 +8,7 @@ import Automaton ( iterateWorld, loadFromFile, saveToFile, name, Automaton, Cell
 import qualified Data.Map as Map
 import Data.Proxy ( Proxy )
 
+
 type Generation = Int
 
 data WorldInstance where

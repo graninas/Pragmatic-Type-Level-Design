@@ -1,6 +1,6 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
-module Seeds where
+module Automata.GameOfLife where
 
 import Cell ( Cell(..) )
 import Board ( Board, Coords, countAliveNeighbours )
@@ -9,31 +9,30 @@ import Automaton ( Automaton(step, code), CellWorld(..) )
 import qualified Data.Map as Map
 
 
-type SeedsRule = "Seeds"       -- DataKinds used here
-type Seeds = CellWorld SeedsRule
+type GoLRule = "Game of Life"    -- DataKinds used here
+type GoL = CellWorld GoLRule
 
 {-
 -- Alternative:
 
-type Seeds = CellWorld "Seeds"
+type GoL = CellWorld "Game of Life"
 -}
 
-instance Automaton SeedsRule where  -- FlexibleInstances used here
-  step :: Seeds -> Seeds            -- InstanceSigs is enabled to show sigs
-  step = seedsStep
-  code _ = "seeds"
+instance Automaton GoLRule where   -- FlexibleInstances used here
+  step :: GoL -> GoL               -- InstanceSigs is enabled to show sigs
+  step = golStep
+  code _ = "gol"
 
-
--- TODO: rules
-
--- B2/S
-seedsStep :: Seeds -> Seeds
-seedsStep (CW board) = CW board'
+-- B3/S23
+golStep :: GoL -> GoL
+golStep (CW board) = CW board'
   where
     updateCell :: Coords -> Cell
     updateCell pos =
         case (Map.lookup pos board, countAliveNeighbours board pos) of
-            (Just Dead, 2)  -> Alive
+            (Just Dead, 3)  -> Alive
+            (Just Alive, 2) -> Alive
+            (Just Alive, 3) -> Alive
             _               -> Dead
     board' :: Board
     board' = Map.mapWithKey (\pos _ -> updateCell pos) board

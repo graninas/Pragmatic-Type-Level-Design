@@ -12,8 +12,11 @@ newtype CellWorld (rule :: Symbol)     -- DataKinds + KindSignatures are used he
   = CW Board
   deriving (Show, Eq)
 
+type RuleCode = String
+
 class KnownSymbol rule => Automaton (rule :: Symbol) where
   step :: CellWorld rule -> CellWorld rule
+  code :: Proxy rule -> RuleCode
   name :: Proxy rule -> String
   name proxy = symbolVal proxy
 

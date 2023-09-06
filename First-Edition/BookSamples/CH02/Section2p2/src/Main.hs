@@ -7,22 +7,61 @@ import qualified Data.Map as Map
 import Data.IORef ( IORef, newIORef )
 import App (AppAction (..), continue, finish, continueWithMsg)
 
+import Data.Proxy
+
+import Automaton
+import Automata.GameOfLife
+import Automata.Seeds
+import Automata.Replicator
+-- Won't compile:
+
+-- rules1 :: [(RuleCode, Proxy rule)]
+-- rules1 =
+--   [ ("gol", Proxy :: Proxy GoL)
+--   , ("seeds", Proxy :: Proxy Seeds)
+--   , ("repl", Proxy :: Proxy Replicator)
+--   ]
+
+-- rules2 :: Automaton rule => [(RuleCode, Proxy rule)]
+-- rules2 =
+--   [ ("gol", Proxy :: Proxy GoL)
+--   , ("seeds", Proxy :: Proxy Seeds)
+--   , ("repl", Proxy :: Proxy Replicator)
+--   ]
+
+-- rules3 :: forall rule . Automaton rule => [(RuleCode, Proxy rule)]
+-- rules3 =
+--   ("gol", Proxy :: Proxy GoL)
+--   : ("seeds", Proxy :: Proxy Seeds)
+--   : ("repl", Proxy :: Proxy Replicator)
+--   : []
+
+-- worlds2 :: Automaton rule => Map.Map String (CellWorld rule)
+-- worlds2 = Map.fromList [("gol", golWorld), ("Seeds", seedsWorld)]
+
+-- worlds3 :: Automaton rule => Map.Map String (CellWorld rule)
+-- worlds3 =
+--   Map.insert "gol" golWorld
+--   (Map.insert "seeds" seedsWorld Map.empty)
+
+
+
 -- Won't compile:
 
 -- worlds1 :: Map.Map String (CellWorld rule)
 -- worlds1 = Map.fromList
---   [ ("Game of Life", golWorld)
---   , ("Seeds", seedsWorld)
---   , ("Replicator", replicatorWorld)
+--   [ ("gol", golWorld)
+--   , ("seeds", seedsWorld)
+--   , ("repl", replicatorWorld)
 --   ]
 
 -- worlds2 :: Automaton rule => Map.Map String (CellWorld rule)
--- worlds2 = Map.fromList [("Game of Life", golWorld), ("Seeds", seedsWorld)]
+-- worlds2 = Map.fromList [("gol", golWorld), ("seeds", seedsWorld)]
 
 -- worlds3 :: Automaton rule => Map.Map String (CellWorld rule)
 -- worlds3 =
---   Map.insert "Game of Life" golWorld
---   (Map.insert "Seeds" seedsWorld Map.empty)
+--   Map.insert "gol" golWorld
+--   (Map.insert "seeds" seedsWorld Map.empty)
 
 
 printHelp :: IO AppAction
@@ -36,6 +75,7 @@ printHelp = do
   putStrLn "step   - step a world once"
   putStrLn "print  - print a world"
   continue
+
 
 
 

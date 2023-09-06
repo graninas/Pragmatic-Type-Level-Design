@@ -1,6 +1,6 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
-module Replicator where
+module Automata.Replicator where
 
 import Cell ( Cell(..) )
 import Board ( Board, Coords, countAliveNeighbours )
@@ -22,7 +22,6 @@ instance Automaton ReplicatorRule where  -- FlexibleInstances used here
   step = replicatorStep
   code _ = "repl"
 
--- TODO: rules
 
 -- B1357/S1357
 replicatorStep :: Replicator -> Replicator

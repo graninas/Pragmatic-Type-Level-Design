@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE GADTs #-}
 module Main where
 
 import qualified Valuefied.App as VApp
@@ -75,9 +77,6 @@ printHelp = do
   putStrLn "step   - step a world once"
   putStrLn "print  - print a world"
   continue
-
-
-
 
 main :: IO ()
 main = do

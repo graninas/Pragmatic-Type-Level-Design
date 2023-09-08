@@ -12,7 +12,7 @@ import Data.Proxy ( Proxy )
 
 type Generation = Int
 
-data WorldInstance = WorldInstance
+data WorldInstance = WI
   { ruleImpl   :: RuleImpl
   , worldGen   :: Generation
   , worldBoard :: Board

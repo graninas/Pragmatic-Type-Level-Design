@@ -9,9 +9,9 @@ module Valuefied.App
 
 import Board ( printBoard )
 import Valuefied.Rules
-    ( supportedRulesDict, supportedRules, RuleImpl(RuleImpl) )
+    ( supportedRulesDict, supportedRules, RuleImpl(RI) )
 import Valuefied.Worlds
-    ( Worlds, WorldIndex, WorldInstance(WorldInstance) )
+    ( Worlds, WorldIndex, WorldInstance(WI) )
 import Valuefied.Worlds as X (Worlds)
 import App ( AppAction, continueWithMsg, continue )
 
@@ -27,7 +27,7 @@ loadWorld
   -> RuleImpl
   -> FilePath
   -> IO (Either String WorldIndex)
-loadWorld worldsRef ruleImpl@(RuleImpl _ _ loadF _) path = do
+loadWorld worldsRef ruleImpl@(RI _ _ loadF _) path = do
   eBoard <- try (loadF path)
   case eBoard of
     Left (err :: SomeException) -> pure (Left (show err))
@@ -35,7 +35,7 @@ loadWorld worldsRef ruleImpl@(RuleImpl _ _ loadF _) path = do
       worlds <- readIORef worldsRef
 
       let idx = Map.size worlds
-      let w = WorldInstance ruleImpl 0 board
+      let w = WI ruleImpl 0 board
       let worlds' = Map.insert idx w worlds
 
       writeIORef worldsRef worlds'
@@ -50,7 +50,7 @@ processListRuleCodes = do
   mapM_ f supportedRules
   continue
   where
-    f (ruleCode, RuleImpl ruleName _ _ _) = putStrLn ("[" <> ruleCode <> "] " <> ruleName)
+    f (ruleCode, RI ruleName _ _ _) = putStrLn ("[" <> ruleCode <> "] " <> ruleName)
 
 processListWorlds :: IORef Worlds -> IO AppAction
 processListWorlds worldsRef = do
@@ -61,7 +61,7 @@ processListWorlds worldsRef = do
   continue
   where
     f :: (WorldIndex, WorldInstance) -> IO ()
-    f (idx, WorldInstance (RuleImpl _ ruleCode _ _) gen _) = do
+    f (idx, WI (RI _ ruleCode _ _) gen _) = do
       putStrLn (show idx <> ") [" <> ruleCode <> "], gen: " <> show gen)
 
 processStep :: IORef Worlds -> IO AppAction
@@ -74,9 +74,9 @@ processStep worldsRef = do
       worlds <- readIORef worldsRef
       case Map.lookup idx worlds of
         Nothing -> continueWithMsg "Index doesn't exist."
-        Just (WorldInstance ri@(RuleImpl _ _ _ step') gen board) -> do
+        Just (WI ri@(RI _ _ _ step') gen board) -> do
           let board' = step' board
-          let wi = WorldInstance ri (gen + 1) board'
+          let wi = WI ri (gen + 1) board'
           let worlds' = Map.insert idx wi worlds
           writeIORef worldsRef worlds'
           continue
@@ -91,7 +91,7 @@ processPrint worldsRef = do
       worlds <- readIORef worldsRef
       case Map.lookup idx worlds of
         Nothing -> continueWithMsg "Index doesn't exist."
-        Just (WorldInstance _ _ board) -> do
+        Just (WI _ _ board) -> do
           printBoard board
           continue
 
@@ -102,7 +102,7 @@ processLoad worldsRef = do
   ruleCode <- getLine
 
   case Map.lookup ruleCode supportedRulesDict of
-    Nothing -> continueWithMsg "Unknown world type."
+    Nothing -> continueWithMsg "Unknown rule."
     Just ruleImpl -> do
       putStrLn "\nEnter world path:"
       path <- getLine

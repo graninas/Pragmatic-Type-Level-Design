@@ -9,7 +9,7 @@ module Existential.App
   ) where
 
 import Existential.Rules
-    ( supportedRules, supportedRulesDict, RuleImpl(RuleImpl) )
+    ( supportedRules, supportedRulesDict, RuleImpl(..) )
 import Existential.Worlds ( WorldIndex, WorldInstance(..), Worlds )
 import Existential.Worlds as X (Worlds)
 import Board ( printBoard )
@@ -27,10 +27,11 @@ loadWorld
   :: forall rule        -- Brings `rule` into the scope of body
    . Automaton rule     -- Demands the `rule` to be automaton.
   => IORef Worlds
+  -> RuleImpl
   -> Proxy rule         -- Highlights what rule type was requrested by the caller.
   -> FilePath
   -> IO (Either String WorldIndex)
-loadWorld worldsRef proxy path = do
+loadWorld worldsRef ri proxy path = do
   eCellWorld <- try (loadFromFile path)
   case eCellWorld of
     Left (err :: SomeException) -> pure (Left (show err))
@@ -38,11 +39,35 @@ loadWorld worldsRef proxy path = do
       worlds <- readIORef worldsRef
 
       let idx = Map.size worlds
-      let w = WorldInstance @rule proxy 0 world    -- specifying the automaton rule
+      let w = WI @rule ri 0 world    -- specifying the automaton rule
       let worlds' = Map.insert idx w worlds
 
       writeIORef worldsRef worlds'
       pure (Right idx)
+
+
+-- Simplified snippet for the with no error processing for the book
+loadWorld'
+  :: forall rule        -- Brings `rule` into the scope of body
+   . Automaton rule     -- Demands the `rule` to be automaton.
+  => IORef Worlds
+  -> RuleImpl
+  -> Proxy rule         -- Highlights what rule type was requrested by the caller.
+  -> FilePath
+  -> IO WorldIndex
+loadWorld' worldsRef ri proxy path = do
+  world <- loadFromFile path
+
+  worlds <- readIORef worldsRef
+
+  let w = WI @rule ri 0 world    -- specifying the automaton rule
+
+  let idx = Map.size worlds
+  let worlds' = Map.insert idx w worlds
+  writeIORef worldsRef worlds'
+
+  pure idx
+
 
 -- App interface
 
@@ -52,7 +77,7 @@ processListRuleCodes = do
   mapM_ f supportedRules
   continue
   where
-    f (ruleCode, RuleImpl proxy) = putStrLn ("[" <> ruleCode <> "] " <> name proxy)
+    f (ruleCode, RI proxy) = putStrLn ("[" <> ruleCode <> "] " <> name proxy)
 
 
 processListWorlds :: IORef Worlds -> IO AppAction
@@ -64,7 +89,7 @@ processListWorlds worldsRef = do
   continue
   where
     f :: (WorldIndex, WorldInstance) -> IO ()
-    f (idx, WorldInstance proxy gen _) = do
+    f (idx, WI (RI proxy) gen _) = do
       let strCode = code proxy
       putStrLn (show idx <> ") [" <> strCode <> "], gen: " <> show gen)
 
@@ -78,9 +103,9 @@ processStep worldsRef = do
       worlds <- readIORef worldsRef
       case Map.lookup idx worlds of
         Nothing -> continueWithMsg "Index doesn't exist."
-        Just (WorldInstance proxy gen world) -> do
+        Just (WI ri gen world) -> do
           let world' = step world
-          let wi = WorldInstance proxy (gen + 1) world'
+          let wi = WI ri (gen + 1) world'
           let worlds' = Map.insert idx wi worlds
           writeIORef worldsRef worlds'
           continue
@@ -95,7 +120,7 @@ processPrint worldsRef = do
       worlds <- readIORef worldsRef
       case Map.lookup idx worlds of
         Nothing -> continueWithMsg "Index doesn't exist."
-        Just (WorldInstance _ _ (CW board)) -> do
+        Just (WI _ _ (CW board)) -> do
           printBoard board
           continue
 
@@ -106,12 +131,12 @@ processLoad worldsRef = do
   ruleCode <- getLine
 
   case Map.lookup ruleCode supportedRulesDict of
-    Nothing -> continueWithMsg "Unknown world type."
-    Just (RuleImpl proxy) -> do
+    Nothing -> continueWithMsg "Unknown rule."
+    Just ri@(RI proxy) -> do
       putStrLn "\nEnter world path:"
       path <- getLine
 
-      eIndex <- loadWorld worldsRef proxy path
+      eIndex <- loadWorld worldsRef ri proxy path
 
       case eIndex of
         Left err  -> continueWithMsg ("Failed to load [" <> ruleCode <> "]: " <> err)

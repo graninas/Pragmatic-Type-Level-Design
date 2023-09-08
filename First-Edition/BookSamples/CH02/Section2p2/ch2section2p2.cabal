@@ -24,9 +24,9 @@ library
       Existential.App
       Existential.Rules
       Existential.Worlds
+      Existential.WorldsSample
+      FightClub
       Main
-      Test
-      Test2
       Valuefied.App
       Valuefied.Rules
       Valuefied.Worlds
@@ -80,8 +80,8 @@ executable ch2section2p2
       Existential.App
       Existential.Rules
       Existential.Worlds
-      Test
-      Test2
+      Existential.WorldsSample
+      FightClub
       Valuefied.App
       Valuefied.Rules
       Valuefied.Worlds

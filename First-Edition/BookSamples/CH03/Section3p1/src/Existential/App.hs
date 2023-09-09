@@ -21,7 +21,7 @@ import qualified Data.Map as Map
 import Data.Proxy
 import Data.IORef ( IORef, newIORef, readIORef, writeIORef )
 import Control.Exception ( SomeException, try )
-import Text.Read (readMaybe)
+import Text.Read (readMaybe, readEither)
 
 
 data AppState = AppState
@@ -135,4 +135,14 @@ processLoad appSt@(AppState rulesRef worldsRef) = do
 
 
 processAddRule :: AppState -> IO AppAction
-processAddRule _ = error "not impl"
+processAddRule _ = do
+  putStrLn "\nEnter new rule:"
+  -- ruleStr <- getLine
+  let ruleStr = "[r1] B2 S123"
+
+  let eRule = readEither @Int ruleStr
+
+  case eRule of
+    Left err -> continueWithMsg err
+    Right rule -> continue
+

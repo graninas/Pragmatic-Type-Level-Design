@@ -26,8 +26,6 @@ getCode (RI proxy) = getCode' proxy
 getCode' :: Automaton rule => Proxy rule -> RuleCode
 getCode' proxy = code proxy
 
-
-
 supportedRulesDict :: Map.Map RuleCode RuleImpl
 supportedRulesDict = Map.fromList supportedRules
 

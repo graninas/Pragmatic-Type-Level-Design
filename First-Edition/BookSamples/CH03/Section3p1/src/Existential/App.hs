@@ -1,4 +1,5 @@
-module Valuefied.App
+{-# LANGUAGE TypeApplications #-}
+module Existential.App
   ( module X
   , processListRuleCodes
   , processListWorlds
@@ -7,12 +8,12 @@ module Valuefied.App
   , processStep
   ) where
 
+import Existential.Rules
+    ( supportedRules, supportedRulesDict, RuleImpl(..) )
+import Existential.Worlds ( WorldIndex, WorldInstance(..), Worlds )
+import Existential.Worlds as X (Worlds)
 import Board ( printBoard )
-import Valuefied.Rules
-    ( supportedRulesDict, supportedRules, RuleImpl(RI) )
-import Valuefied.Worlds
-    ( Worlds, WorldIndex, WorldInstance(WI) )
-import Valuefied.Worlds as X (Worlds)
+import Automaton ( loadFromFile, Automaton(..), CellWorld(CW) )
 import App ( AppAction, continueWithMsg, continue )
 
 import qualified Data.Map as Map
@@ -23,15 +24,27 @@ import Text.Read (readMaybe)
 
 
 loadWorld
-  :: IORef Worlds
+  :: forall rule        -- Brings `rule` into the scope of body
+   . Automaton rule     -- Demands the `rule` to be automaton.
+  => IORef Worlds
   -> RuleImpl
+  -> Proxy rule         -- Highlights what rule type was requrested by the caller.
   -> FilePath
-  -> IO (Either String WorldInstance)
-loadWorld worldsRef ri@(RI _ _ loadF _) path = do
-  eBoard <- try (loadF path)
-  case eBoard of
+  -> IO (Either String WorldIndex)
+loadWorld worldsRef ri proxy path = do
+  eCellWorld <- try (loadFromFile path)
+  case eCellWorld of
     Left (err :: SomeException) -> pure (Left (show err))
-    Right board -> pure (Right (WI ri 0 board))
+    Right world -> do
+      worlds <- readIORef worldsRef
+
+      let idx = Map.size worlds
+      let w = WI @rule ri 0 world    -- specifying the automaton rule
+      let worlds' = Map.insert idx w worlds
+
+      writeIORef worldsRef worlds'
+      pure (Right idx)
+
 
 -- App interface
 
@@ -41,7 +54,8 @@ processListRuleCodes = do
   mapM_ f supportedRules
   continue
   where
-    f (ruleCode, RI ruleName _ _ _) = putStrLn ("[" <> ruleCode <> "] " <> ruleName)
+    f (ruleCode, RI proxy) = putStrLn ("[" <> ruleCode <> "] " <> name proxy)
+
 
 processListWorlds :: IORef Worlds -> IO AppAction
 processListWorlds worldsRef = do
@@ -52,8 +66,9 @@ processListWorlds worldsRef = do
   continue
   where
     f :: (WorldIndex, WorldInstance) -> IO ()
-    f (idx, WI (RI _ ruleCode _ _) gen _) = do
-      putStrLn (show idx <> ") [" <> ruleCode <> "], gen: " <> show gen)
+    f (idx, WI (RI proxy) gen _) = do
+      let strCode = code proxy
+      putStrLn (show idx <> ") [" <> strCode <> "], gen: " <> show gen)
 
 processStep :: IORef Worlds -> IO AppAction
 processStep worldsRef = do
@@ -65,9 +80,9 @@ processStep worldsRef = do
       worlds <- readIORef worldsRef
       case Map.lookup idx worlds of
         Nothing -> continueWithMsg "Index doesn't exist."
-        Just (WI ri@(RI _ _ _ step') gen board) -> do
-          let board' = step' board
-          let wi = WI ri (gen + 1) board'
+        Just (WI ri gen world) -> do
+          let world' = step world
+          let wi = WI ri (gen + 1) world'
           let worlds' = Map.insert idx wi worlds
           writeIORef worldsRef worlds'
           continue
@@ -82,7 +97,7 @@ processPrint worldsRef = do
       worlds <- readIORef worldsRef
       case Map.lookup idx worlds of
         Nothing -> continueWithMsg "Index doesn't exist."
-        Just (WI _ _ board) -> do
+        Just (WI _ _ (CW board)) -> do
           printBoard board
           continue
 
@@ -94,17 +109,12 @@ processLoad worldsRef = do
 
   case Map.lookup ruleCode supportedRulesDict of
     Nothing -> continueWithMsg "Unknown rule."
-    Just ruleImpl -> do
+    Just ri@(RI proxy) -> do
       putStrLn "\nEnter world path:"
       path <- getLine
 
-      eWI <- loadWorld worldsRef ruleImpl path
+      eIndex <- loadWorld worldsRef ri proxy path
 
-      case eWI of
+      case eIndex of
         Left err  -> continueWithMsg ("Failed to load [" <> ruleCode <> "]: " <> err)
-        Right wi -> do
-          worlds <- readIORef worldsRef
-          let idx = Map.size worlds
-          let worlds' = Map.insert idx wi worlds
-          writeIORef worldsRef worlds'
-          continueWithMsg ("Successfully loaded [" <> ruleCode <> "], index: " <> show idx)
+        Right idx -> continueWithMsg ("Successfully loaded [" <> ruleCode <> "], index: " <> show idx)

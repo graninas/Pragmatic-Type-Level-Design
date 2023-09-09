@@ -14,7 +14,8 @@ type Generation = Int
 
 data WorldInstance where
   WI :: Automaton rule
-     => Generation
+     => RuleImpl
+     -> Generation
      -> CellWorld rule
      -> WorldInstance
 

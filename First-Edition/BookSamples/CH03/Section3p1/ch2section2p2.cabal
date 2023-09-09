@@ -23,7 +23,6 @@ library
       Cell
       Existential.App
       Existential.Rules
-      Existential.Valuefy
       Existential.Worlds
       Existential.WorldsSample
       FightClub
@@ -80,7 +79,6 @@ executable ch2section2p2
       Cell
       Existential.App
       Existential.Rules
-      Existential.Valuefy
       Existential.Worlds
       Existential.WorldsSample
       FightClub

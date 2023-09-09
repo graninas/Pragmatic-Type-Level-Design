@@ -26,12 +26,21 @@ loadWorld
   :: IORef Worlds
   -> RuleImpl
   -> FilePath
-  -> IO (Either String WorldInstance)
-loadWorld worldsRef ri@(RI _ _ loadF _) path = do
+  -> IO (Either String WorldIndex)
+loadWorld worldsRef ruleImpl@(RI _ _ loadF _) path = do
   eBoard <- try (loadF path)
   case eBoard of
     Left (err :: SomeException) -> pure (Left (show err))
-    Right board -> pure (Right (WI ri 0 board))
+    Right board -> do
+      worlds <- readIORef worldsRef
+
+      let idx = Map.size worlds
+      let w = WI ruleImpl 0 board
+      let worlds' = Map.insert idx w worlds
+
+      writeIORef worldsRef worlds'
+      pure (Right idx)
+
 
 -- App interface
 
@@ -98,13 +107,8 @@ processLoad worldsRef = do
       putStrLn "\nEnter world path:"
       path <- getLine
 
-      eWI <- loadWorld worldsRef ruleImpl path
+      eIndex <- loadWorld worldsRef ruleImpl path
 
-      case eWI of
+      case eIndex of
         Left err  -> continueWithMsg ("Failed to load [" <> ruleCode <> "]: " <> err)
-        Right wi -> do
-          worlds <- readIORef worldsRef
-          let idx = Map.size worlds
-          let worlds' = Map.insert idx wi worlds
-          writeIORef worldsRef worlds'
-          continueWithMsg ("Successfully loaded [" <> ruleCode <> "], index: " <> show idx)
+        Right idx -> continueWithMsg ("Successfully loaded [" <> ruleCode <> "], index: " <> show idx)

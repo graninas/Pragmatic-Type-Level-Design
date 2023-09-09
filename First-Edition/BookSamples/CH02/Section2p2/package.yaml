@@ -9,9 +9,8 @@ default-extensions:
 - DeriveFunctor
 - DeriveGeneric
 - OverloadedStrings
-- LambdaCase
-- MultiParamTypeClasses
 - ScopedTypeVariables
+- LambdaCase
 - ExplicitNamespaces
 - NamedFieldPuns
 - TupleSections

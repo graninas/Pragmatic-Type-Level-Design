@@ -3,7 +3,7 @@ module AutomataSpec where
 import Cell
 import Board
 import Automaton
-import GameOfLife
+import Automata.GameOfLife
 import Existential.Rules
 import Existential.Worlds
 

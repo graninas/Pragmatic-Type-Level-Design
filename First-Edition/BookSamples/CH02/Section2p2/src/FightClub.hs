@@ -2,7 +2,7 @@
 {-# LANGUAGE GADTs #-}
 module FightClub where
 
-import Data.Proxy
+import Data.Proxy ( Proxy(..) )
 
 class FightClubRule rule where
   explain :: Proxy rule -> String

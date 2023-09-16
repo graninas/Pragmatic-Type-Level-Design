@@ -1,5 +1,6 @@
 
-resolver: lts-16.16
+# resolver: lts-16.16
+resolver: lts-21.12
 
 packages:
 - BookSamples/CH01/Section1p1v1

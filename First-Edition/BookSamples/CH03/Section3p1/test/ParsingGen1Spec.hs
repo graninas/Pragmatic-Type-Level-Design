@@ -10,7 +10,7 @@ import Board
 import Automaton
 
 
--- Parsing mechanism with custom Num types
+-- Value-level verbose parsing with custom Num types
 
 data S
 data B

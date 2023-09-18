@@ -1,11 +1,11 @@
 module AutomataSpec where
 
-import Cell
-import Board
-import Automaton
-import Automata.GameOfLife
-import Existential.Rules
-import Existential.Worlds
+import Domain.Cell
+import Domain.Board
+import Domain.Automaton
+import Assets.Automata.GameOfLife
+import App.Existential.Rules
+import App.Existential.Worlds
 
 import Test.Hspec
 import Data.Proxy (Proxy(..))

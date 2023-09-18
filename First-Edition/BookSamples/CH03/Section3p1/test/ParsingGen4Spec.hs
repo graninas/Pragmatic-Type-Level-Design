@@ -22,12 +22,35 @@ import Test.Hspec
 
 
 -- Value-level parsing powered with existentials
-
 data CustomChar where
   CH :: KnownSymbol s => Proxy s -> CustomChar
 
 data CustomSymbol where
   CS :: [CustomChar] -> CustomSymbol
+
+
+
+mergePSymbols
+  :: forall s1 s2
+   . (KnownSymbol s1, KnownSymbol s2)
+  => Proxy (s1 :: Symbol)
+  -> Proxy (s2 :: Symbol)
+  -> Proxy (AppendSymbol s1 s2)
+mergePSymbols _ _ = Proxy :: Proxy (AppendSymbol s1 s2)
+
+
+mergeCChars :: [CustomChar] -> ()
+mergeCChars [] = ()
+mergeCChars (CH proxy1 : []) = ()
+mergeCChars (CH proxy1 : CH proxy2 : rest) = let
+  proxyA = mergePSymbols proxy1 proxy2
+  -- ch = toCH proxyA
+  x = mergeCChars rest
+  in ()
+
+-- toCH :: forall s. KnownSymbol s => Proxy s -> CustomChar
+toCH proxy = CH proxy
+
 
 showCH :: CustomChar -> String
 showCH (CH proxy) = symbolVal proxy
@@ -44,18 +67,17 @@ appendCH (CS chs) ch = CS (chs <> [ch])
 
 type Parser = String -> Maybe (CustomSymbol, String)
 
-parseCustomChar :: (Char, CustomChar) -> String -> Maybe (CustomChar, String)
-parseCustomChar (ch', sch) (ch:rest) | ch == ch' = Just (sch, rest)
-parseCustomChar _ _ = Nothing
+customChar :: (Char, CustomChar) -> String -> Maybe (CustomChar, String)
+customChar (ch', sch) (ch:rest) | ch == ch' = Just (sch, rest)
+customChar _ _ = Nothing
 
 
 char
- :: forall s
-  . KnownSymbol s
+ :: KnownSymbol s
  => Proxy s
  -> String
  -> Maybe (CustomChar, String)
-char proxy = parseCustomChar (head (symbolVal proxy), CH proxy)
+char proxy = customChar (head (symbolVal proxy), CH proxy)
 
 asString
  :: (String -> Maybe (CustomChar, String))
@@ -81,11 +103,11 @@ many1 p str = case p str of
       Nothing -> Just (CS chs1, rest1)
       Just (CS chs2, rest2) -> Just (CS (chs1 <> chs2), rest2)
 
-sequenceParsers :: [Parser] -> Parser
-sequenceParsers [] str = Nothing
-sequenceParsers (p:ps) str = case p str of
+sequenced :: [Parser] -> Parser
+sequenced [] str = Nothing
+sequenced (p:ps) str = case p str of
   Nothing -> Nothing
-  Just (CS chs1, rest1) -> case sequenceParsers ps rest1 of
+  Just (CS chs1, rest1) -> case sequenced ps rest1 of
     Nothing -> Just (CS chs1, rest1)
     Just (CS chs2, rest2) -> Just (CS (chs1 <> chs2), rest2)
 
@@ -116,27 +138,23 @@ number (a:rest) = case Map.lookup a numbers of
   Nothing -> Nothing
   Just ch -> Just (CS [ch], rest)
 
-parseB :: String -> Maybe (CustomSymbol, String)
-parseB = asString (parseCustomChar ('B', CH (Proxy @"B")))
 
+
+
+bChar :: Parser
+bChar = asString (customChar ('B', CH (Proxy @"B")))
+
+slashToken :: Parser
+slashToken = asString (customChar ('/', CH (Proxy @"/")))
 
 bToken :: Parser
-bToken = sequenceParsers [parseB, many1 number]
+bToken = sequenced [bChar, many1 number]
 
 sToken :: Parser
-sToken = sequenceParsers [asString (char (Proxy @"S")), many1 number]
+sToken = sequenced [asString (char (Proxy @"S")), many1 number]
 
-
-mergePSymbols
-  :: forall s1 s2
-   . (KnownSymbol s1, KnownSymbol s2)
-  => Proxy (s1 :: Symbol)
-  -> Proxy (s2 :: Symbol)
-  -> Proxy (AppendSymbol s1 s2)
-mergePSymbols _ _ = Proxy :: Proxy (AppendSymbol s1 s2)
-
-printPSymbol :: KnownSymbol s => Proxy (s :: Symbol) -> String
-printPSymbol = symbolVal
+customRule :: Parser
+customRule = sequenced [bToken, slashToken, sToken]
 
 
 spec :: Spec
@@ -147,6 +165,7 @@ spec =
       let mbBToken = parse bToken "B12----"
       let mbInvalidSToken = parse sToken "  S12"
       let mbSToken = parse sToken "S12+++"
+      let mbRule = parse customRule "B135/S135===="
 
       case mbBToken of
         Nothing -> error "B token not parsed"
@@ -163,5 +182,11 @@ spec =
         Just (cs, rest) -> do
           showCS cs `shouldBe` "S12"
           rest `shouldBe` "+++"
+
+      case mbRule of
+        Nothing -> error "Rule not parsed"
+        Just (cs, rest) -> do
+          showCS cs `shouldBe` "B135/S135"
+          rest `shouldBe` "===="
 
 

@@ -14,23 +14,23 @@ build-type:     Simple
 
 library
   exposed-modules:
-      App
-      Automata.GameOfLife
-      Automata.Replicator
-      Automata.Seeds
-      Automaton
-      Board
-      Cell
-      Existential.App
-      Existential.Rules
-      Existential.Valuefy
-      Existential.Worlds
-      Existential.WorldsSample
+      App.Action
+      App.Existential.App
+      App.Existential.Rules
+      App.Existential.Valuefy
+      App.Existential.Worlds
+      App.Valuefied.App
+      App.Valuefied.Rules
+      App.Valuefied.Worlds
+      Assets.Automata.GameOfLife
+      Assets.Automata.Replicator
+      Assets.Automata.Seeds
+      Assets.WorldsSample
+      Domain.Automaton
+      Domain.Board
+      Domain.Cell
       FightClub
       Main
-      Valuefied.App
-      Valuefied.Rules
-      Valuefied.Worlds
   other-modules:
       Paths_ch2section2p2
   hs-source-dirs:
@@ -70,22 +70,22 @@ library
 executable ch2section2p2
   main-is: Main.hs
   other-modules:
-      App
-      Automata.GameOfLife
-      Automata.Replicator
-      Automata.Seeds
-      Automaton
-      Board
-      Cell
-      Existential.App
-      Existential.Rules
-      Existential.Valuefy
-      Existential.Worlds
-      Existential.WorldsSample
+      App.Action
+      App.Existential.App
+      App.Existential.Rules
+      App.Existential.Valuefy
+      App.Existential.Worlds
+      App.Valuefied.App
+      App.Valuefied.Rules
+      App.Valuefied.Worlds
+      Assets.Automata.GameOfLife
+      Assets.Automata.Replicator
+      Assets.Automata.Seeds
+      Assets.WorldsSample
+      Domain.Automaton
+      Domain.Board
+      Domain.Cell
       FightClub
-      Valuefied.App
-      Valuefied.Rules
-      Valuefied.Worlds
       Paths_ch2section2p2
   hs-source-dirs:
       ./src

@@ -13,33 +13,29 @@ import Domain.Cell (Cell)
 
 
 data Topology = Open | Torus
-type Dimensions = Nat
-
-type RuleCode = String
-type Name = Symbol
+type Dimension = Nat
+type RuleName = Symbol
+type RuleCode = Symbol
 type States = Nat
 
 data Neighborhood where
-  Adjacents :: Neighborhood
+  AdjacentsLvl :: Nat -> Neighborhood
 
 data CustomBoard where
-  RegularBoard    -- names of val constr should differ
-                  -- to avoid name clash (the compiler gets confused)
+  SquareGrid    -- names of val constr should differ
+                  -- to avoid name clash
+                  -- with kinds (the compiler gets confused)
     :: Topology
-    -> Dimensions
-    -> States
     -> CustomBoard
 
 data CustomRule (board :: CustomBoard) where
   Rule
-    :: Name
-    -> Neighborhood
+    :: RuleName
+    -> RuleCode
+    -> CustomStep
     -> CustomRule board
 
 data CellWorld (board :: CustomBoard)
-
-class IBoard (board :: CustomBoard) where
-
 
 class IAutomaton (board :: CustomBoard) (rule :: CustomRule board) where
   step
@@ -47,42 +43,72 @@ class IAutomaton (board :: CustomBoard) (rule :: CustomRule board) where
     -> CellWorld board
     -> CellWorld board
 
-  init :: Proxy rule -> CellWorld board
+data CellCondition where
+  CellsCount
+    :: Nat            -- what state to count
+    -> [Nat]          -- how many cells of this state should be
+    -> CellCondition  -- to activate the condition
 
-
--- TODO: research the difference
--- class IAutomaton board rule where
-  -- step
-  --   :: Proxy (rule :: CustomRule board)
-  --   -> CellWorld (board :: CustomBoard)
-  --   -> CellWorld (board :: CustomBoard)
-
-data CustomStateTrans where
-  StateTrans
-    :: Nat    -- from state
-    -> Nat    -- to state
-    -> [Nat]  -- neighbors count conditions
-    -> CustomStateTrans
+data CustomStateTransition where
+  StateTransition
+    :: Nat              -- from state
+    -> Nat              -- to state
+    -> [CellCondition]  -- neighbors count conditions
+    -> CustomStateTransition
+  DefaultTransition :: Nat -> CustomStateTransition
 
 data CustomStep where
-  Step :: [CustomStateTrans] -> CustomStep
+  Step :: Neighborhood -> [CustomStateTransition] -> CustomStep
 
 data Lines3S
 type Lines3SBoard = CustomBoard
 
-type LifeLikeBoard = RegularBoard Open 2 2
-type GoLStep = Step
-  '[ StateTrans 1 1 '[2,3]  -- "Survive rule"
-   , StateTrans 0 1 '[3]    -- "Born rule"
-   ]
-type GameOfLife = Rule "Game of Life" Adjacents
+type StandardBoard = SquareGrid Open
 
-instance IAutomaton LifeLikeBoard GameOfLife where
+type GoLStep = Step
+  (AdjacentsLvl 1)
+  '[ StateTransition 0 1 '[CellsCount 1 '[3 ]]   -- "Born rule"
+   , StateTransition 1 1 '[CellsCount 1 '[2,3]]  -- "Survive rule"
+   , DefaultTransition 0
+   ]
+type GameOfLife = Rule "Game of Life" "gol" GoLStep
+
+
+class IBoard (board :: CustomBoard) where
+  init :: CellWorld board
+  neighborsCount :: CellWorld board -> Neighborhood -> Int
+
+  -- init :: Proxy GameOfLife -> CellWorld StandardBoard
+  -- init _ = undefined
+
+
+
+
+instance IAutomaton StandardBoard GameOfLife where
   step
     :: Proxy GameOfLife
-    -> CellWorld LifeLikeBoard
-    -> CellWorld LifeLikeBoard
-  step _ b = b
+    -> CellWorld StandardBoard
+    -> CellWorld StandardBoard
+  step _ b = let
+    -- updCellFunc = makeUpdateFunc
+    in b
 
-  init :: Proxy GameOfLife -> CellWorld LifeLikeBoard
-  init _ = undefined
+-- makeUpdateFunc = \pos ->
+--   let nsCount = count
+
+
+
+
+
+-- golStep :: GoL -> GoL
+-- golStep (CW board) = CW board'
+--   where
+--     updateCell :: Coords -> Cell
+--     updateCell pos =
+--         case (Map.lookup pos board, countAliveNeighbours board pos) of
+--             (Just Dead, 3)  -> Alive
+--             (Just Alive, 2) -> Alive
+--             (Just Alive, 3) -> Alive
+--             _               -> Dead
+--     board' :: Board
+--     board' = Map.mapWithKey (\pos _ -> updateCell pos) board

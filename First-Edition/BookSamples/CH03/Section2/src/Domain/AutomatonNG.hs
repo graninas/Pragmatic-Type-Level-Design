@@ -43,6 +43,7 @@ data CustomBoard (states :: CustomStates) where
                   -- to avoid name clash
                   -- with kinds (the compiler gets confused)
     :: Topology
+    -- -> CustomStates
     -> CustomBoard states
 
 data CustomRule (board :: CustomBoard states) where
@@ -135,7 +136,7 @@ type family StatesCount (states :: [CustomState]) :: Nat where
   StatesCount '[] = 0
   StatesCount (_ ': xs) = 1 + StatesCount xs   -- TypeOperators here
 
-type Open2StateBoard = SquareGrid @States2 Open    -- Type application to types
+type Open2StateBoard = SquareGrid Open    -- Type application to types
 
 type GoLStep = Step
   (AdjacentsLvl 1)
@@ -144,12 +145,11 @@ type GoLStep = Step
    , DefaultTransition 0
    ]
 
-type GameOfLife = Rule
+type GameOfLife = Rule @States2
   "Game of Life"
   "gol"
   Open2StateBoard
   GoLStep
-
 
 
 
@@ -165,5 +165,5 @@ instance IAutomaton GameOfLife where
 
 
 
--- instance IBoard Int where        -- unable to define for invalid types
--- instance IAutomaton Int where    -- unable to define for invalid types
+-- instance IBoard Int where        -- unable to define for invalid
+-- instance IAutomaton Int where    -- unable to define for invalid

@@ -8,6 +8,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE FunctionalDependencies #-}
 module Domain.AutomatonNG where
 
 
@@ -27,33 +28,6 @@ type States = Nat
 data Neighborhood where
   AdjacentsLvl :: Nat -> Neighborhood
 
-data CustomState where
-  State :: Nat -> CustomState
-
-type CustomStates = [CustomState]
-
-data CustomStep (states :: CustomStates) where
-  Step
-    :: [CustomStateTransition]
-    -> CustomStep states
-
-data CustomBoard (states :: CustomStates) where
-  SquareGrid      -- names of val constr should differ
-                  -- to avoid name clash
-                  -- with kinds (the compiler gets confused)
-    :: Topology
-    -- -> CustomStates
-    -> CustomBoard states
-
-data CustomRule (board :: CustomBoard states) where
-  Rule
-    :: RuleName
-    -> RuleCode
-    -> CustomBoard states
-    -> Neighborhood
-    -> CustomStep states
-    -> CustomRule board
-
 data CellCondition where
   CellsCount
     :: StateIdx       -- what state to count
@@ -70,6 +44,28 @@ data CustomStateTransition where
     :: StateIdx
     -> CustomStateTransition
 
+data CustomStep where
+  Step
+    :: [CustomStateTransition]
+    -> CustomStep
+
+data CustomBoard where
+  SquareGrid      -- names of val constr should differ
+                  -- to avoid name clash
+                  -- with kinds (the compiler gets confused)
+    :: Topology
+    -> CustomBoard
+
+data CustomRule
+  (board :: CustomBoard) where
+  Rule
+    :: RuleName
+    -> RuleCode
+    -> CustomBoard
+    -> Neighborhood
+    -> CustomStep
+    -> CustomRule board
+
 type GenericCoords = [Int]
 type Board = Map.Map GenericCoords StateIdx
 
@@ -78,8 +74,7 @@ data CellWorld rule where
 
 class IAutomaton
   (rule :: CustomRule
-    (board :: CustomBoard
-      (states :: CustomStates))) where
+    (board :: CustomBoard)) where
   step
     :: CellWorld rule
     -> CellWorld rule
@@ -93,15 +88,10 @@ class IAutomaton
     ns = generateNeighborhood coords nsDef world
     -- def = defState Proxy -- TODO
     in getCells ns 0 world
--- TODO
--- class IState (states :: CustomStates) where
---   defState :: Proxy states -> StateIdx
---   defState _ = 0                      -- TODO
 
 class IWorld
     (rule :: CustomRule
-      (board :: CustomBoard
-        (states :: CustomStates))) where
+      (board :: CustomBoard)) where
   initWorld :: CellWorld rule
   initWorld = CW Map.empty
 
@@ -128,14 +118,6 @@ getCells ns def (CW board) =
 -- -------------------------------------------------
 
 
-type States2 = '[State 0, State 1]
-
-
--- UndecidableInstances here
-type family StatesCount (states :: [CustomState]) :: Nat where
-  StatesCount '[] = 0
-  StatesCount (_ ': xs) = 1 + StatesCount xs   -- TypeOperators here
-
 type Open2StateBoard = SquareGrid Open         -- Type application to types
 
 type GoLStep = Step
@@ -144,7 +126,7 @@ type GoLStep = Step
    , DefaultTransition 0
    ]
 
-type GameOfLife = Rule @States2       -- TODO: @States2 Seems strange. Redesign
+type GameOfLife = Rule       -- TODO: @States2 Seems strange. Redesign
   "Game of Life"
   "gol"
   Open2StateBoard
@@ -167,3 +149,23 @@ instance IAutomaton GameOfLife where
 
 -- instance IWorld Int where        -- unable to define for invalid
 -- instance IAutomaton Int where    -- unable to define for invalid
+
+
+
+
+-- TODO
+-- class IState (states :: CustomStates) where
+--   defState :: Proxy states -> StateIdx
+--   defState _ = 0                      -- TODO
+
+-- data CustomState where
+--   State :: Nat -> CustomState
+
+-- type CustomStates = [CustomState]
+
+-- type States2 = '[State 0, State 1]
+
+-- -- UndecidableInstances here
+-- type family StatesCount (states :: [CustomState]) :: Nat where
+--   StatesCount '[] = 0
+--   StatesCount (_ ': xs) = 1 + StatesCount xs   -- TypeOperators here

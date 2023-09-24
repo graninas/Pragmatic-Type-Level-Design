@@ -34,8 +34,7 @@ type CustomStates = [CustomState]
 
 data CustomStep (states :: CustomStates) where
   Step
-    :: Neighborhood
-    -> [CustomStateTransition]
+    :: [CustomStateTransition]
     -> CustomStep states
 
 data CustomBoard (states :: CustomStates) where
@@ -51,6 +50,7 @@ data CustomRule (board :: CustomBoard states) where
     :: RuleName
     -> RuleCode
     -> CustomBoard states
+    -> Neighborhood
     -> CustomStep states
     -> CustomRule board
 
@@ -84,7 +84,15 @@ class IAutomaton
     :: CellWorld rule
     -> CellWorld rule
   step = id
-
+  neighbors
+    :: GenericCoords
+    -> Neighborhood                     -- should be taken from rule
+    -> CellWorld rule
+    -> [(GenericCoords, StateIdx)]
+  neighbors coords nsDef world = let
+    ns = generateNeighborhood coords nsDef world
+    -- def = defState Proxy -- TODO
+    in getCells ns 0 world
 -- TODO
 -- class IState (states :: CustomStates) where
 --   defState :: Proxy states -> StateIdx
@@ -96,15 +104,7 @@ class IBoard
         (states :: CustomStates))) where
   initBoard :: CellWorld rule
   initBoard = CW Map.empty
-  neighbors
-    :: GenericCoords
-    -> Neighborhood
-    -> CellWorld rule
-    -> [(GenericCoords, StateIdx)]
-  neighbors  coords nsDef world = let
-    ns = generateNeighborhood coords nsDef world
-    -- def = defState Proxy -- TODO
-    in getCells ns 0 world
+
 
 generateNeighborhood
   :: GenericCoords
@@ -139,7 +139,6 @@ type family StatesCount (states :: [CustomState]) :: Nat where
 type Open2StateBoard = SquareGrid Open    -- Type application to types
 
 type GoLStep = Step
-  (AdjacentsLvl 1)
   '[ StateTransition 0 1 '[CellsCount 1 '[3 ]]   -- "Born rule"
    , StateTransition 1 1 '[CellsCount 1 '[2,3]]  -- "Survive rule"
    , DefaultTransition 0
@@ -149,6 +148,7 @@ type GameOfLife = Rule @States2
   "Game of Life"
   "gol"
   Open2StateBoard
+  (AdjacentsLvl 1)
   GoLStep
 
 

@@ -13,10 +13,10 @@ spec :: Spec
 spec =
   describe "Automata eDSL tests" $ do
     it "2 state board init" $ do
-      let CW board = initBoard :: CellWorld GameOfLife
+      let CW board = initWorld :: CellWorld GameOfLife
       board `shouldBe` Map.empty
     it "2 state board neighbors" $ do
-      let world = initBoard :: CellWorld GameOfLife
+      let world = initWorld :: CellWorld GameOfLife
 
       let ns = neighbors
                 [0,0]

@@ -40,21 +40,35 @@ data CustomStep where
     -> CustomStep
 
 
+class MakeNeighborhoodLookup (n :: Neighborhood) where
+  makeNeighborhoodLookup
+    :: Proxy n
+    -> Board
+    -> GenericCoords
+    -> Cells
 
 class MakeStep (step :: CustomStep) where
-  makeStep :: Proxy step -> (Board -> Board)
+  makeStep
+    :: MakeNeighborhoodLookup neiborhood
+    => Proxy step
+    -> Proxy (neiborhood :: Neighborhood)
+    -> Board
+    -> Board
 
 class MakeCellUpdate (ts :: [CustomStateTransition]) where
   makeCellUpdate
     :: Proxy ts
-    -> (GenericCoords -> Neighborhood -> Board -> StateIdxNat)
+    -> (GenericCoords -> Cells)       -- neighborhood lookup
+    -> GenericCoords                  -- current cell
+    -> StateIdx                       -- current cell state
+    -> StateIdx                       -- new state
 
 class ApplyTransition (t :: CustomStateTransition) where
   applyTransition
     :: Proxy t
     -> Cells
     -> StateIdx
-    -> Maybe StateIdxNat
+    -> Maybe StateIdx
 
 class ApplyConditions (cs :: [CellCondition]) where
   applyConditions :: Proxy cs -> Cells -> Bool
@@ -63,16 +77,25 @@ class ApplyCondition (c :: CellCondition) where
   applyCondition :: Proxy c -> Cells -> Bool
 
 
+instance
+  (KnownNat lvl) =>
+  MakeNeighborhoodLookup ('AdjacentsLvl lvl) where
+  makeNeighborhoodLookup _ board coords = let
+    ns = generateNeighborhood coords
+          $ AdjacentsLvl
+          $ fromIntegral
+          $ natVal (Proxy @lvl)
+    in getCells ns 0 board        -- Default value
 
 
-
-
-
-instance (MakeCellUpdate ts) =>
+instance
+  (MakeCellUpdate ts) =>
   MakeStep ('Step ts) where
-  makeStep _ board = let
-    updateF = makeCellUpdate (Proxy @ts)
-    in board
+  makeStep _ nProxy board = let
+    nsLookupF = makeNeighborhoodLookup nProxy board
+    updateF = makeCellUpdate (Proxy @ts) nsLookupF
+    board' = Map.mapWithKey updateF board
+    in board'
 
 -- Base case: No transition, return the default state
 instance MakeCellUpdate '[] where
@@ -82,14 +105,12 @@ instance MakeCellUpdate '[] where
 instance (ApplyTransition t, MakeCellUpdate ts)
   => MakeCellUpdate (t ': ts) where
 
-  makeCellUpdate _ coords neighborhood board = let
-    oldState = fromMaybe 0 $ Map.lookup coords board
-    ns = neighbors coords neighborhood board
+  makeCellUpdate _ nsLookupF coords oldState = let
+    ns = nsLookupF coords
     mbApplied = applyTransition (Proxy @t) ns oldState
-    -- mbApplied = Nothing
     in case mbApplied of
       Just newState -> newState
-      Nothing       -> makeCellUpdate (Proxy @ts) coords neighborhood board
+      Nothing       -> makeCellUpdate (Proxy @ts) nsLookupF coords oldState
 
 
 

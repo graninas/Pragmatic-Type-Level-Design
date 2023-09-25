@@ -3,12 +3,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE PolyKinds #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE FunctionalDependencies #-}
 module Domain.AutomatonNG where
 
 
@@ -18,36 +13,15 @@ import Data.Maybe (fromMaybe)
 import qualified Data.Map as Map
 import Control.Monad (mapM)
 
+import Domain.CellTransitionNG
+
 data Topology = Open | Torus
 type Dimension = Nat
 type RuleName = Symbol
 type RuleCode = Symbol
-type StateIdx = Nat
-type States = Nat
 
 data Neighborhood where
   AdjacentsLvl :: Nat -> Neighborhood
-
-data CellCondition where
-  CellsCount
-    :: StateIdx       -- what state to count
-    -> [Nat]          -- how many cells of this state should be
-    -> CellCondition  -- to activate the condition
-
-data CustomStateTransition where
-  StateTransition
-    :: StateIdx         -- from state
-    -> StateIdx         -- to state
-    -> [CellCondition]  -- neighbors count conditions
-    -> CustomStateTransition
-  DefaultTransition
-    :: StateIdx
-    -> CustomStateTransition
-
-data CustomStep where
-  Step
-    :: [CustomStateTransition]
-    -> CustomStep
 
 data CustomBoard where
   SquareGrid      -- names of val constr should differ
@@ -71,6 +45,8 @@ type Board = Map.Map GenericCoords StateIdx
 
 data CellWorld rule where
   CW :: Board -> CellWorld rule
+
+
 
 class IAutomaton
   (rule :: CustomRule
@@ -115,37 +91,6 @@ getCells ns def (CW board) =
   map (\coord ->
     (coord, fromMaybe def (Map.lookup coord board))) ns
 
--- -------------------------------------------------
-
-
-type Open2StateBoard = SquareGrid Open         -- Type application to types
-
-type GoLStep = Step
-  '[ StateTransition 0 1 '[CellsCount 1 '[3 ]]   -- "Born rule"
-   , StateTransition 1 1 '[CellsCount 1 '[2,3]]  -- "Survive rule"
-   , DefaultTransition 0
-   ]
-
-type GameOfLife = Rule       -- TODO: @States2 Seems strange. Redesign
-  "Game of Life"
-  "gol"
-  Open2StateBoard
-  (AdjacentsLvl 1)
-  GoLStep
-
-
-
-instance IWorld GameOfLife where
-
-instance IAutomaton GameOfLife where
-  step
-    :: CellWorld GameOfLife
-    -> CellWorld GameOfLife
-  step (CW b) = let
-    -- updCellFunc = makeUpdateFunc
-    in CW b
-
-
 
 -- instance IWorld Int where        -- unable to define for invalid
 -- instance IAutomaton Int where    -- unable to define for invalid
@@ -169,3 +114,15 @@ instance IAutomaton GameOfLife where
 -- type family StatesCount (states :: [CustomState]) :: Nat where
 --   StatesCount '[] = 0
 --   StatesCount (_ ': xs) = 1 + StatesCount xs   -- TypeOperators here
+
+
+
+
+runStep
+  :: forall a b c d step
+   . ApplyStep step
+  => CellWorld ('Rule a b c d step)
+  -> CellWorld ('Rule a b c d step)
+runStep (CW board) = let
+  result = applyStep (Proxy @step) 0 []
+  in CW board

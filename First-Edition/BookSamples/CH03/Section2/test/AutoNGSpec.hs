@@ -5,8 +5,9 @@
 {-# LANGUAGE FlexibleInstances #-}
 module AutoNGSpec where
 
-import Domain.AutomatonNG
+import Domain.BoardNG
 import Domain.CellTransitionNG
+import Domain.AutomatonNG
 
 import Test.Hspec
 import Data.Proxy
@@ -54,12 +55,12 @@ spec =
       let CW board = initWorld :: CellWorld GameOfLife
       board `shouldBe` Map.empty
     it "2 state board neighbors" $ do
-      let world = initWorld :: CellWorld GameOfLife
+      let CW board = initWorld :: CellWorld GameOfLife
 
       let ns = neighbors
                 [0,0]
                 (AdjacentsLvl 1)
-                world
+                board
 
       ns `shouldBe` [ ([-1,-1],0),([-1,0],0),([-1,1],0)
                     , ([0,-1],0)            ,([0,1],0)
@@ -67,6 +68,6 @@ spec =
 
     it "Apply type-level step" $ do
       let world1 = initWorld :: CellWorld GameOfLife
-      let CW board2 = runStep world1
+      let CW board2 = iterateWorld world1
 
       board2 `shouldBe` Map.empty

@@ -14,10 +14,7 @@ build-type:     Simple
 
 library
   exposed-modules:
-      GADTsRecordSyntax
       Main
-      MultiparamTypeClasses
-      SymbolIsNotString
   other-modules:
       Paths_ch3section1
   hs-source-dirs:
@@ -58,9 +55,6 @@ library
 executable ch3section1
   main-is: Main.hs
   other-modules:
-      GADTsRecordSyntax
-      MultiparamTypeClasses
-      SymbolIsNotString
       Paths_ch3section1
   hs-source-dirs:
       ./src

@@ -14,6 +14,12 @@ build-type:     Simple
 
 library
   exposed-modules:
+      Cellular.Automaton
+      Cellular.Implementation.Algorithm
+      Cellular.Language.Algorithm
+      Cellular.Language.Automaton
+      Cellular.Language.Board
+      Common.NatList
       Main
   other-modules:
       Paths_ch3section1
@@ -55,6 +61,12 @@ library
 executable ch3section1
   main-is: Main.hs
   other-modules:
+      Cellular.Automaton
+      Cellular.Implementation.Algorithm
+      Cellular.Language.Algorithm
+      Cellular.Language.Automaton
+      Cellular.Language.Board
+      Common.NatList
       Paths_ch3section1
   hs-source-dirs:
       ./src
@@ -95,6 +107,7 @@ test-suite functional
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      AutomatonSpec
       Paths_ch3section1
   hs-source-dirs:
       test/

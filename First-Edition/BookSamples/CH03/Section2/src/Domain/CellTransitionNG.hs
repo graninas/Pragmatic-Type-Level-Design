@@ -16,11 +16,12 @@ import Domain.BoardNG
 
 
 type StateIdxNat = Nat
+type CountsNat = [Nat]
 
 data CellCondition where
   CellsCount
     :: StateIdxNat    -- what state to count
-    -> [Nat]          -- how many cells of this state should be
+    -> CountsNat      -- how many cells of this state should be
     -> CellCondition  -- to activate the condition
 
 data CustomStateTransition where
@@ -51,14 +52,17 @@ class MakeCellUpdate (ts :: [CustomStateTransition]) where
 class ApplyTransition (t :: CustomStateTransition) where
   applyTransition
     :: Proxy t
-    -> Cells -> Maybe StateIdxNat
+    -> Cells
+    -> StateIdx
+    -> Maybe StateIdxNat
 
--- class ApplyCondition (c :: CellCondition) where
---   applyCondition :: [StateIdx] -> Bool
+class ApplyConditions (cs :: [CellCondition]) where
+  applyConditions :: Proxy cs -> Cells -> Bool
+
+class ApplyCondition (c :: CellCondition) where
+  applyCondition :: Proxy c -> Cells -> Bool
 
 
--- class ApplyConditions (cs :: [CellCondition]) where
---   applyConditions :: [StateIdx] -> Bool
 
 
 
@@ -81,8 +85,8 @@ instance (ApplyTransition t, MakeCellUpdate ts)
   makeCellUpdate _ coords neighborhood board = let
     oldState = fromMaybe 0 $ Map.lookup coords board
     ns = neighbors coords neighborhood board
-    -- mbApplied = applyTransition (Proxy @t) ns oldState
-    mbApplied = Nothing
+    mbApplied = applyTransition (Proxy @t) ns oldState
+    -- mbApplied = Nothing
     in case mbApplied of
       Just newState -> newState
       Nothing       -> makeCellUpdate (Proxy @ts) coords neighborhood board
@@ -90,35 +94,49 @@ instance (ApplyTransition t, MakeCellUpdate ts)
 
 
 instance
-  -- (ApplyConditions cs) =>
-  (KnownNat from, KnownNat to)
+  (ApplyConditions cs,
+  KnownNat from, KnownNat to)
   => ApplyTransition ('StateTransition from to cs) where
-  applyTransition cells oldState = error "not implemented"
-    -- if True
-    -- -- if oldState == fromIntegral (natVal (Proxy @from))
-    --   -- && applyConditions @cs neighbors
-    -- -- then Just (fromIntegral (natVal (Proxy @to)))
-    -- then Nothing
-    -- else Nothing
+  applyTransition _ ns oldState =
+    if oldState == fromIntegral (natVal (Proxy @from))
+      && applyConditions (Proxy @cs) ns
+    then Just (fromIntegral (natVal (Proxy @to)))
+    else Nothing
 
 instance
   KnownNat to =>
   ApplyTransition ('DefaultTransition to) where
-  applyTransition _ _ = Just $ fromIntegral $ natVal $ Proxy @to
+  applyTransition _ _ _ = Just $ fromIntegral $ natVal $ Proxy @to
 
 
--- instance ApplyConditions '[] where
---   applyConditions _ = True
+instance ApplyConditions '[] where
+  applyConditions _ _ = True
 
--- instance (ApplyCondition c, ApplyConditions cs) => ApplyConditions (c ': cs) where
---   applyConditions neighbors =
---     applyCondition @c neighbors && applyConditions @cs neighbors
+instance
+  (ApplyCondition c, ApplyConditions cs)
+  => ApplyConditions (c ': cs) where
+  applyConditions _ ns =
+    applyCondition (Proxy @c) ns
+    && applyConditions (Proxy @cs) ns
+
+class ToIntList (ns :: [Nat]) where
+  toIntList :: Proxy ns -> [Int]
+
+instance ToIntList '[] where
+  toIntList _ = []
+
+instance (KnownNat  c, ToIntList cs) => ToIntList (c ': cs) where
+  toIntList _
+    = fromIntegral (natVal (Proxy @c))
+    : toIntList (Proxy @cs)
 
 
--- instance ApplyCondition ('CellsCount targetCount counts) where
---   applyCondition neighbors =
---     let cnt = length (filter (== targetCount) neighbors)
---     in cnt `elem` counts
-
-
-
+instance
+  (KnownNat cellIdxNat, ToIntList counts) =>
+  ApplyCondition ('CellsCount cellIdxNat counts) where
+  applyCondition _ ns =
+    let
+        target = fromIntegral $ natVal $ Proxy @cellIdxNat
+        cnt = length (filter (\(_,idx) -> idx == target) ns)
+        counts = toIntList (Proxy @counts)
+    in cnt `elem` counts

@@ -110,3 +110,46 @@ executable ch2section2p2
     , uuid
     , void
   default-language: Haskell2010
+
+test-suite functional
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      AutomataSpec
+      Paths_ch2section2p2
+  hs-source-dirs:
+      test/
+  default-extensions:
+      DeriveFunctor
+      DeriveGeneric
+      OverloadedStrings
+      LambdaCase
+      MultiParamTypeClasses
+      ScopedTypeVariables
+      ExplicitNamespaces
+      NamedFieldPuns
+      TupleSections
+      ViewPatterns
+      MultiWayIf
+      RecordWildCards
+      InstanceSigs
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , ch2section2p2
+    , containers
+    , free
+    , hspec
+    , lens
+    , mtl
+    , newtype-generics
+    , random
+    , scientific
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , uuid
+    , void
+  default-language: Haskell2010

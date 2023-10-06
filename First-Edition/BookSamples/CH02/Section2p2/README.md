@@ -2,3 +2,5 @@
 - Type-level literals
 - Phantom type
 - Type class generalization
+- Existential storage
+- Full automata logic

@@ -1,0 +1,3 @@
+- Several cellular automata
+- Type-level literals
+- Phantom CellWorld type

@@ -1,4 +1,4 @@
-name:                ch1section2p3
+name:                ch1section2p4
 version:             1.0.0.0
 license:             BSD3
 author:              "Alexander Granin"
@@ -6,19 +6,10 @@ maintainer:          "graninas@gmail.com"
 copyright:           "Granin A.S. 2023"
 
 default-extensions:
-- DeriveFunctor
-- DeriveGeneric
-- OverloadedStrings
 - LambdaCase
-- MultiParamTypeClasses
-- ScopedTypeVariables
-- ExplicitNamespaces
 - NamedFieldPuns
 - TupleSections
-- ViewPatterns
-- MultiWayIf
-- RecordWildCards
-- InstanceSigs
+
 
 dependencies:
 - base >= 4.7 && < 5
@@ -44,7 +35,7 @@ library:
   - -Wall
 
 executables:
-  ch1section2p3:
+  ch1section2p4:
     main:                Main.hs
     source-dirs:         ./src
     ghc-options:

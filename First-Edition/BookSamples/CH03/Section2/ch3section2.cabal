@@ -15,6 +15,7 @@ build-type:     Simple
 library
   exposed-modules:
       Domain.Automaton
+      Domain.AutomatonADTs
       Domain.AutomatonNG
       Domain.Board
       Domain.Cell
@@ -60,6 +61,7 @@ executable ch3section2
   main-is: Main.hs
   other-modules:
       Domain.Automaton
+      Domain.AutomatonADTs
       Domain.AutomatonNG
       Domain.Board
       Domain.Cell

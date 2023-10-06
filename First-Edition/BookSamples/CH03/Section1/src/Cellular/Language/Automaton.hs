@@ -17,8 +17,10 @@ import Cellular.Language.Algorithm
 
 
 data Topology = Open | Torus
-type RuleName = Symbol
-type RuleCode = Symbol
+type RuleNameSymb = Symbol
+type RuleCodeSymb = Symbol
+type RuleName = String
+type RuleCode = String
 
 
 data CellWorld rule where
@@ -34,8 +36,8 @@ data CustomBoard where
 data CustomRule
   (board :: CustomBoard) where
   Rule
-    :: RuleName
-    -> RuleCode
+    :: RuleNameSymb
+    -> RuleCodeSymb
     -> CustomBoard
     -> Neighborhood
     -> CustomStep

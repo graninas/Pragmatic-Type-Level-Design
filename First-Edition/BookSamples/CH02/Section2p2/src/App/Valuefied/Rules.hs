@@ -33,16 +33,17 @@ supportedRules' =
 
 toRuleImpl :: Automaton rule => Proxy rule -> RuleImpl
 toRuleImpl proxy =
-  RI (name proxy) (code proxy) loadBoardFromFile (toStep' proxy)
+  RI (name proxy) (code proxy) loadBoardFromFile (valuefyStep proxy)
 
-toStep'
+valuefyStep
   :: forall rule
   . Automaton rule
   => Proxy rule
   -> (Board -> Board)
-toStep' _ board =
-  let (CW board') = step @rule (CW board)
-  in board'
+valuefyStep _ board1 = let
+    cw :: CellWorld rule = step (CW board1)
+    CW board2 = cw
+  in board2
 
 
 supportedRulesDict :: Map.Map RuleCode RuleImpl

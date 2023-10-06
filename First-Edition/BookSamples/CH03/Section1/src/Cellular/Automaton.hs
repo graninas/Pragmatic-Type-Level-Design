@@ -8,9 +8,7 @@ module Cellular.Automaton where
 
 import GHC.TypeLits
 import Data.Proxy ( Proxy(..) )
-import Data.Maybe (fromMaybe)
 import qualified Data.Map as Map
-import Control.Monad (mapM)
 
 import Cellular.Language.Board
 import Cellular.Language.Algorithm
@@ -19,8 +17,30 @@ import Cellular.Language.Automaton
 import Cellular.Implementation.Algorithm
 
 
-initWorld :: CellWorld rule
-initWorld = CW Map.empty
+class IAutomaton
+  (rule :: CustomRule
+    (board :: CustomBoard)) where
+  step :: CellWorld rule -> CellWorld rule
+  name :: Proxy rule -> RuleName
+  code :: Proxy rule -> RuleCode
+
+
+class IWorld
+    (rule :: CustomRule
+      (board :: CustomBoard)) where
+  initWorld :: CellWorld rule
+  initWorld = CW Map.empty
+
+
+instance
+  (MakeStep step, MakeNeighborhoodLookup neighborhood,
+   KnownSymbol name, KnownSymbol code) =>
+  IAutomaton ('Rule name code board neighborhood step) where
+  step = iterateWorld
+  name _ = symbolVal (Proxy @name)
+  code _ = symbolVal (Proxy @code)
+
+instance IWorld ('Rule name code board neighborhood step) where
 
 iterateWorld
   :: forall name code board neighborhood step
@@ -30,3 +50,5 @@ iterateWorld
 iterateWorld (CW board) = let
   stepF = makeStep (Proxy @step) (Proxy @neighborhood)
   in CW (stepF board)
+
+

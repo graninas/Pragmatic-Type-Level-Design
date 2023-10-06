@@ -20,6 +20,9 @@ import GHC.TypeLits
 import Test.Hspec
 
 
+
+-- Value-level parsing powered with existentials
+
 data CustomChar where
   CH :: KnownSymbol s => Proxy s -> CustomChar
 
@@ -30,7 +33,7 @@ showCH :: CustomChar -> String
 showCH (CH proxy) = symbolVal proxy
 
 showCS :: CustomSymbol -> String
-showCS (CS chs) = join $ map showCH chs
+showCS (CS chs) = join (map showCH chs)
 
 mergeCS :: CustomSymbol -> CustomSymbol -> CustomSymbol
 mergeCS (CS chs1) (CS chs2) = CS (chs1 <> chs2)
@@ -141,15 +144,15 @@ spec =
   describe "Parsing gen tests" $ do
     it "Test1" $ do
 
-      let mbBToken = parse bToken "B12"
+      let mbBToken = parse bToken "B12----"
       let mbInvalidSToken = parse sToken "  S12"
-      let mbSToken = parse sToken "S12"
+      let mbSToken = parse sToken "S12+++"
 
       case mbBToken of
         Nothing -> error "B token not parsed"
         Just (cs, rest) -> do
-          print $ showCS cs
-          print rest
+          showCS cs `shouldBe` "B12"
+          rest `shouldBe` "----"
 
       case mbInvalidSToken of
         Nothing -> pure ()
@@ -158,7 +161,7 @@ spec =
       case mbSToken of
         Nothing -> error "S token not parsed"
         Just (cs, rest) -> do
-          print $ showCS cs
-          print rest
+          showCS cs `shouldBe` "S12"
+          rest `shouldBe` "+++"
 
 

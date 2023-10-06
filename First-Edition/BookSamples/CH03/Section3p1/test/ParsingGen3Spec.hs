@@ -13,6 +13,10 @@ import Automaton
 import GHC.TypeLits
 
 
+-- Value-level parsing with custom Num types.
+--   Less boilerplate than in ParsingGen2.
+
+
 data S
 data B
 

@@ -13,7 +13,7 @@ import Automaton
 import GHC.TypeLits
 
 
--- Parsing mechanism with Nat types.
+-- Value-level verbose parsing with custom Num types.
 --   Less boilerplate than in ParsingGen1.
 
 data S

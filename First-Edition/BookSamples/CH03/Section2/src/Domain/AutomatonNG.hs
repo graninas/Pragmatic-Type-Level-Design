@@ -21,6 +21,7 @@ data Topology = Open | Torus
 type Dimension = Nat
 type RuleName = Symbol
 type RuleCode = Symbol
+type StateIdx = Nat
 type States = Nat
 
 data Neighborhood where
@@ -36,7 +37,7 @@ data CustomBoard (states :: CustomStates) where
                   -- to avoid name clash
                   -- with kinds (the compiler gets confused)
     :: Topology
-    -> CustomStates
+    -- -> CustomStates
     -> CustomBoard states
 
 data CustomStep (states :: CustomStates) where
@@ -55,40 +56,73 @@ data CustomRule (board :: CustomBoard states) where
 
 data CellCondition where
   CellsCount
-    :: Nat            -- what state to count
+    :: StateIdx       -- what state to count
     -> [Nat]          -- how many cells of this state should be
     -> CellCondition  -- to activate the condition
 
 data CustomStateTransition where
   StateTransition
-    :: Nat              -- from state
-    -> Nat              -- to state
+    :: StateIdx         -- from state
+    -> StateIdx         -- to state
     -> [CellCondition]  -- neighbors count conditions
     -> CustomStateTransition
   DefaultTransition
-    :: Nat
+    :: StateIdx
     -> CustomStateTransition
 
 type GenericCoords = [Int]
+type Board = Map.Map GenericCoords StateIdx
 
-data CellWorld (board :: CustomBoard states) where
-  CW :: Map.Map GenericCoords Nat -> CellWorld board
+data CellWorld (rule :: CustomRule board) where
+  CW :: Board -> CellWorld rule
 
-class IAutomaton (rule :: CustomRule board) where
+class IAutomaton
+  (rule :: CustomRule
+    (board :: CustomBoard
+      (states :: CustomStates))) where
   step
-    :: Proxy rule
-    -> CellWorld board
-    -> CellWorld board
+    :: CellWorld rule
+    -> CellWorld rule
 
-class IBoard (board :: CustomBoard states) where
-  init :: CellWorld board
+-- TODO
+-- class IState (states :: CustomStates) where
+--   defState :: Proxy states -> StateIdx
+--   defState _ = 0                      -- TODO
+
+class IBoard
+    (rule :: CustomRule
+      (board :: CustomBoard
+        (states :: CustomStates))) where
+  initBoard :: CellWorld rule
+  initBoard = CW Map.empty
   neighbors
-    :: Proxy states
-    -> CustomState
-    -> GenericCoords
+    :: GenericCoords
     -> Neighborhood
-    -> CellWorld board
-    -> [(GenericCoords, Nat)]
+    -> CellWorld rule
+    -> [(GenericCoords, StateIdx)]
+  neighbors  coords nsDef world = let
+    ns = generateNeighborhood coords nsDef world
+    -- def = defState Proxy -- TODO
+    in getCells ns 0 world
+
+generateNeighborhood
+  :: GenericCoords
+  -> Neighborhood
+  -> CellWorld rule
+  -> [GenericCoords]
+generateNeighborhood coords (AdjacentsLvl 1) _
+  = filter (/= coords)
+  $ mapM (\x -> [x-1, x, x+1]) coords
+generateNeighborhood _ _ _ = error "Neighborhood not implemented"
+
+getCells
+  :: [GenericCoords]
+  -> StateIdx
+  -> CellWorld rule
+  -> [(GenericCoords, StateIdx)]
+getCells ns def (CW board) =
+  map (\coord ->
+    (coord, fromMaybe def (Map.lookup coord board))) ns
 
 -- -------------------------------------------------
 
@@ -101,7 +135,7 @@ type family StatesCount (states :: [CustomState]) :: Nat where
   StatesCount '[] = 0
   StatesCount (_ ': xs) = 1 + StatesCount xs   -- TypeOperators here
 
-type Open2StateBoard = SquareGrid @States2 Open States2   -- Type application to types
+type Open2StateBoard = SquareGrid Open    -- Type application to types
 
 type GoLStep = Step
   (AdjacentsLvl 1)
@@ -110,7 +144,7 @@ type GoLStep = Step
    , DefaultTransition 0
    ]
 
-type GameOfLife = Rule
+type GameOfLife = Rule @States2
   "Game of Life"
   "gol"
   Open2StateBoard
@@ -118,86 +152,13 @@ type GameOfLife = Rule
 
 
 
-
-
-
-
--- makeNeighbours coords nsDef
-
-
-
-
-
-
-
-
-
-instance IBoard Open2StateBoard where
-  init :: CellWorld Open2StateBoard
-  init = CW Map.empty
-  neighbors
-    :: Proxy states
-    -> CustomState
-    -> GenericCoords
-    -> Neighborhood
-    -> CellWorld board
-    -> [(GenericCoords, Nat)]
-  neighbors states state coords nsDef world = let
-    ns = generateNeighborhood coords nsDef world
-    def = getDefaultState states
-    cs = getCells ns def world
-    in filter (thisState state) cs
-
-getDefaultState :: Proxy states -> Nat
-getDefaultState _ = 0                     -- TODO
-
-generateNeighborhood
-  :: GenericCoords
-  -> Neighborhood
-  -> CellWorld board
-  -> [GenericCoords]
-generateNeighborhood coords (AdjacentsLvl 1) _
-  = filter (/= coords)
-  $ mapM (\x -> [x-1, x, x+1]) coords
-generateNeighborhood _ _ _ = error "Neighborhood not implemented"
-
-getCells
-  :: [GenericCoords]
-  -> Nat
-  -> CellWorld board
-  -> [(GenericCoords, Nat)]
-getCells ns def (CW board) =
-  map (\coord ->
-    (coord, fromMaybe def (Map.lookup coord board))) ns
-
-thisState _ = undefined
+instance IBoard GameOfLife where
 
 
 instance IAutomaton GameOfLife where
   step
-    :: Proxy GameOfLife
-    -> CellWorld board
-    -> CellWorld board
-  step _ b = let
+    :: CellWorld GameOfLife
+    -> CellWorld GameOfLife
+  step (CW b) = let
     -- updCellFunc = makeUpdateFunc
-    in b
-
--- makeUpdateFunc = \pos ->
---   let nsCount = count
-
-
-
-
-
--- golStep :: GoL -> GoL
--- golStep (CW board) = CW board'
---   where
---     updateCell :: Coords -> Cell
---     updateCell pos =
---         case (Map.lookup pos board, countAliveNeighbours board pos) of
---             (Just Dead, 3)  -> Alive
---             (Just Alive, 2) -> Alive
---             (Just Alive, 3) -> Alive
---             _               -> Dead
---     board' :: Board
---     board' = Map.mapWithKey (\pos _ -> updateCell pos) board
+    in CW b

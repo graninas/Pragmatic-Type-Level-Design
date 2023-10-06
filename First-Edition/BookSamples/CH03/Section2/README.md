@@ -1,0 +1,10 @@
+- Several cellular automata
+- Full automata logic
+- Type-level literals
+- Phantom type
+- Type class generalization
+- Existential storage
+- Existential app interface
+- Valuefied storage
+- Valuefied app interface
+- Command-line app

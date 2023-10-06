@@ -1,5 +1,7 @@
 {-# LANGUAGE TypeApplications #-}
-module ParsingGenSpec where
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
+module ParsingGen2Spec where
 
 import Test.Hspec
 import Data.Proxy (Proxy(..))
@@ -8,70 +10,21 @@ import qualified Data.Map as Map
 import Cell
 import Board
 import Automaton
+import GHC.TypeLits
 
 
-
+-- Parsing mechanism with Nat types.
+--   Less boilerplate than in ParsingGen1.
 
 data S
 data B
-data Num1
-data Num2
-data Num3
-data Num4
-data Num5
-data Num6
-data Num7
-data Num8
 
+data P (a :: Nat) = P
 
-
-
-class RulePart rulePart where
-  getLiteral :: Proxy rulePart -> String
-  getNumber :: Proxy rulePart -> Int
-
-
-instance RulePart S where
-  getLiteral _ = "S"
-  getNumber _ = error "not supported for S"
-
-instance RulePart Num1 where
-  getLiteral _ = error "not supported for Num1"
-  getNumber _ = 1
-
-instance RulePart Num2 where
-  getLiteral _ = error "not supported for Num2"
-  getNumber _ = 2
-
-instance RulePart Num3 where
-  getLiteral _ = error "not supported for Num3"
-  getNumber _ = 3
-
-instance RulePart Num4 where
-  getLiteral _ = error "not supported for Num4"
-  getNumber _ = 4
-
-instance RulePart Num5 where
-  getLiteral _ = error "not supported for Num5"
-  getNumber _ = 5
-
-instance RulePart Num6 where
-  getLiteral _ = error "not supported for Num6"
-  getNumber _ = 6
-
-instance RulePart Num7 where
-  getLiteral _ = error "not supported for Num7"
-  getNumber _ = 7
-
-instance RulePart Num8 where
-  getLiteral _ = error "not supported for Num8"
-  getNumber _ = 8
-
-
-data CustomSRule = CustomSRule Int
+data CustomSRule = CustomSRule Integer
   deriving (Show, Eq, Ord)
 
-data CustomBRule = CustomBRule Int
+data CustomBRule = CustomBRule Integer
   deriving (Show, Eq, Ord)
 
 data CustomRule = CustomRule [CustomBRule] [CustomSRule]
@@ -84,6 +37,7 @@ parseRule str = parseRule' str (CustomRule [] [])
 
 
 parseRule' :: String -> CustomRule -> CustomRule
+parseRule' [] rule = rule
 parseRule' str1 (CustomRule bs ss) = case (str1, bs, ss) of
   ('S':str2, _, []) ->
     let (str3, sRules) = parseSRule (str2, [])
@@ -95,80 +49,80 @@ parseRule' str1 (CustomRule bs ss) = case (str1, bs, ss) of
     in parseRule' str3 (CustomRule bRules ss)
   ('B':_, _, _) -> error "Custom B Rule is already provided"
 
-  ([], _, _) -> CustomRule bs ss
-
   (' ':str2, _, _) -> parseRule' str2 (CustomRule bs ss)
 
   (n, _, _) -> error ("parseRule not supported: " <> n)
 
 
 parseSRule :: (String, [CustomSRule]) -> (String, [CustomSRule])
+parseSRule ([], sRules) = ([], sRules)
+parseSRule (' ':str2, sRules) = (str2, sRules)
 parseSRule (str1, sRules) = case str1 of
-  [] -> ([], sRules)
   '1':str2 -> let
-    sRule = constructSRule (Proxy @Num1)
+    sRule = constructSRule (P @1)
     in parseSRule (str2, sRule : sRules)
   '2':str2 -> let
-    sRule = constructSRule (Proxy @Num2)
+    sRule = constructSRule (P @2)
     in parseSRule (str2, sRule : sRules)
   '3':str2 -> let
-    sRule = constructSRule (Proxy @Num3)
+    sRule = constructSRule (P @3)
     in parseSRule (str2, sRule : sRules)
   '4':str2 -> let
-    sRule = constructSRule (Proxy @Num4)
+    sRule = constructSRule (P @4)
     in parseSRule (str2, sRule : sRules)
   '5':str2 -> let
-    sRule = constructSRule (Proxy @Num5)
+    sRule = constructSRule (P @5)
     in parseSRule (str2, sRule : sRules)
   '6':str2 -> let
-    sRule = constructSRule (Proxy @Num6)
+    sRule = constructSRule (P @6)
     in parseSRule (str2, sRule : sRules)
   '7':str2 -> let
-    sRule = constructSRule (Proxy @Num7)
+    sRule = constructSRule (P @7)
     in parseSRule (str2, sRule : sRules)
   '8':str2 -> let
-    sRule = constructSRule (Proxy @Num8)
+    sRule = constructSRule (P @8)
     in parseSRule (str2, sRule : sRules)
-  ' ':str2 -> (str2, sRules)
   n -> error ("parseSRule not supported: " <> n)
 
-constructSRule :: RulePart s => Proxy s -> CustomSRule
-constructSRule proxy = CustomSRule (getNumber proxy)
+constructSRule :: forall s. KnownNat s => P (s :: Nat) -> CustomSRule
+constructSRule _ = CustomSRule (natVal (Proxy @s))
 
 
 
 parseBRule :: (String, [CustomBRule]) -> (String, [CustomBRule])
+parseBRule ([], bRules) = ([], bRules)
+parseBRule (' ':str2, bRules) = (str2, bRules)
 parseBRule (str1, bRules) = case str1 of
   [] -> ([], bRules)
   '1':str2 -> let
-    bRule = constructBRule (Proxy @Num1)
+    bRule = constructBRule (P @1)
     in parseBRule (str2, bRule : bRules)
   '2':str2 -> let
-    bRule = constructBRule (Proxy @Num2)
+    bRule = constructBRule (P @2)
     in parseBRule (str2, bRule : bRules)
   '3':str2 -> let
-    bRule = constructBRule (Proxy @Num3)
+    bRule = constructBRule (P @3)
     in parseBRule (str2, bRule : bRules)
   '4':str2 -> let
-    bRule = constructBRule (Proxy @Num4)
+    bRule = constructBRule (P @4)
     in parseBRule (str2, bRule : bRules)
   '5':str2 -> let
-    bRule = constructBRule (Proxy @Num5)
+    bRule = constructBRule (P @5)
     in parseBRule (str2, bRule : bRules)
   '6':str2 -> let
-    bRule = constructBRule (Proxy @Num6)
+    bRule = constructBRule (P @6)
     in parseBRule (str2, bRule : bRules)
   '7':str2 -> let
-    bRule = constructBRule (Proxy @Num7)
+    bRule = constructBRule (P @7)
     in parseBRule (str2, bRule : bRules)
   '8':str2 -> let
-    bRule = constructBRule (Proxy @Num8)
+    bRule = constructBRule (P @8)
     in parseBRule (str2, bRule : bRules)
   ' ':str2 -> (str2, bRules)
   n -> error ("parseBRule not supported: " <> n)
 
-constructBRule :: RulePart s => Proxy s -> CustomBRule
-constructBRule proxy = CustomBRule (getNumber proxy)
+constructBRule :: forall s. KnownNat s => P (s :: Nat) -> CustomBRule
+constructBRule _ = CustomBRule (natVal (Proxy @s))
 
 
 
@@ -179,7 +133,7 @@ runCustomRule (CustomRule bRules sRules) board = board'
   where
     updateCell :: Coords -> Cell
     updateCell pos = let
-      alive = countAliveNeighbours board pos
+      alive = fromIntegral $ countAliveNeighbours board pos
       state = Map.lookup pos board
       sRuleWorked = any (\(CustomSRule n) -> n == alive) sRules
       bRuleWorked = any (\(CustomBRule n) -> n == alive) bRules

@@ -116,7 +116,9 @@ test-suite functional
   main-is: Spec.hs
   other-modules:
       AutomataSpec
-      ParsingGenSpec
+      ParsingGen1Spec
+      ParsingGen2Spec
+      ParsingGen3Spec
       Paths_ch3section1p1
   hs-source-dirs:
       test/

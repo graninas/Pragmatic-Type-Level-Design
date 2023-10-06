@@ -19,15 +19,14 @@ supportedRules = map (\ri -> (getCode ri, ri))
   , RI (Proxy :: Proxy ReplicatorRule)
   , RI (Proxy :: Proxy GoLRule)
   ]
-  where
-    getCode :: RuleImpl -> RuleCode
-    getCode (RI proxy) = code proxy
+
+getCode :: RuleImpl -> RuleCode
+getCode (RI proxy) = getCode' proxy
+
+getCode' :: Automaton rule => Proxy rule -> RuleCode
+getCode' proxy = code proxy
 
 type Rules = Map.Map RuleCode RuleImpl
 
 supportedRulesDict :: Rules
 supportedRulesDict = Map.fromList supportedRules
-
--- Won't work:
--- extractProxy :: Automaton rule => RuleImpl -> Proxy rule
--- extractProxy (RI proxy) = proxy

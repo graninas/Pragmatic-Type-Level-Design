@@ -25,6 +25,7 @@ library
       Existential.Rules
       Existential.Worlds
       Main
+      Parsing.Gen
   other-modules:
       Paths_ch3section1p1
   hs-source-dirs:
@@ -74,6 +75,7 @@ executable ch3section1p1
       Existential.App
       Existential.Rules
       Existential.Worlds
+      Parsing.Gen
       Paths_ch3section1p1
   hs-source-dirs:
       ./src
@@ -114,6 +116,7 @@ test-suite functional
   main-is: Spec.hs
   other-modules:
       AutomataSpec
+      ParsingGenSpec
       Paths_ch3section1p1
   hs-source-dirs:
       test/

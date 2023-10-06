@@ -45,3 +45,5 @@ getCells
 getCells ns def board =
   map (\coord ->
     (coord, fromMaybe def (Map.lookup coord board))) ns
+
+

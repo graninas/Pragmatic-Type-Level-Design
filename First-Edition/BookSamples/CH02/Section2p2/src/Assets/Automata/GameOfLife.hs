@@ -27,12 +27,12 @@ instance Automaton GoLRule where   -- FlexibleInstances used here
 golStep :: GoL -> GoL
 golStep (CW board) = CW board'
   where
-    updateCell :: Coords -> Cell
-    updateCell pos =
-        case (Map.lookup pos board, countAliveNeighbours board pos) of
-            (Just Dead, 3)  -> Alive
-            (Just Alive, 2) -> Alive
-            (Just Alive, 3) -> Alive
+    updateCell :: Coords -> Cell -> Cell
+    updateCell pos cell =
+        case (cell, countAliveNeighbours board pos) of
+            (Dead,  3) -> Alive
+            (Alive, 2) -> Alive
+            (Alive, 3) -> Alive
             _               -> Dead
     board' :: Board
-    board' = Map.mapWithKey (\pos _ -> updateCell pos) board
+    board' = Map.mapWithKey updateCell board

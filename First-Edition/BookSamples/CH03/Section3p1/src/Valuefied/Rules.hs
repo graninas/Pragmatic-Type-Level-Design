@@ -30,19 +30,19 @@ supportedRules' =
   , toRuleImpl (Proxy :: Proxy ReplicatorRule)
   , toRuleImpl (Proxy :: Proxy GoLRule)
   ]
+  where
+    toRuleImpl :: Automaton rule => Proxy rule -> RuleImpl
+    toRuleImpl proxy =
+      RI (name proxy) (code proxy) loadBoardFromFile (toStep' proxy)
 
-toRuleImpl :: Automaton rule => Proxy rule -> RuleImpl
-toRuleImpl proxy =
-  RI (name proxy) (code proxy) loadBoardFromFile (toStep' proxy)
-
-toStep'
-  :: forall rule
-  . Automaton rule
-  => Proxy rule
-  -> (Board -> Board)
-toStep' _ board =
-  let (CW board') = step @rule (CW board)
-  in board'
+    toStep'
+      :: forall rule
+      . Automaton rule
+      => Proxy rule
+      -> (Board -> Board)
+    toStep' _ board =
+      let (CW board') = step @rule (CW board)
+      in board'
 
 
 supportedRulesDict :: Map.Map RuleCode RuleImpl

@@ -37,22 +37,33 @@ mkWorld
    . Automaton rule
   => CellWorld rule
   -> WorldInstance
-mkWorld cw = WI 0 cw
+mkWorld cw = WI (RI (Proxy @rule)) 0 cw
 
 
 
-loadWorld' :: RuleCode -> FilePath -> IO WorldInstance
-loadWorld' ruleCode path = do
-  case lookup ruleCode supportedRules of
-    Nothing         -> error "Unknown rule."
-    Just (RI proxy) -> loadWorld'' proxy path
+
+
+loadWorld' :: IORef Worlds -> RuleCode -> FilePath -> IO ()
+loadWorld' worldsRef ruleCode path = do
+  case Map.lookup ruleCode supportedRulesDict of
+    Nothing         -> putStrLn "Unknown rule."
+    Just (RI proxy) -> loadWorld'' worldsRef proxy path    -- unpacks @rule
+
 
 loadWorld''
   :: forall rule        -- Brings `rule` into the scope of body
    . Automaton rule     -- Demands the `rule` to be automaton.
-  => Proxy rule         -- Highlights what rule type was requrested by the caller.
+  => IORef Worlds
+  -> Proxy rule         -- Highlights what rule type was requrested by the caller
   -> FilePath
-  -> IO WorldInstance
-loadWorld'' _ path = do
-  world <- loadFromFile @rule path
-  pure (WI 0 world)    -- specifying the automaton rule
+  -> IO ()
+loadWorld'' worldsRef proxy path = do
+  world <- loadFromFile path
+
+  worlds <- readIORef worldsRef
+
+  let w = WI @rule (RI proxy) 0 world    -- specifying the automaton rule
+
+  let idx = Map.size worlds
+  let worlds' = Map.insert idx w worlds
+  writeIORef worldsRef worlds'

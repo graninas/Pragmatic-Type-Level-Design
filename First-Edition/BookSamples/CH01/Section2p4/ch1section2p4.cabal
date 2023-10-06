@@ -18,6 +18,7 @@ library
       Board
       Cell
       ExtensionsTest
+      ExtensionsTest2
       GameOfLife
       Main
       Replicator
@@ -56,6 +57,7 @@ executable ch1section2p4
       Board
       Cell
       ExtensionsTest
+      ExtensionsTest2
       GameOfLife
       Replicator
       Seeds

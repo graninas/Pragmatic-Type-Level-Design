@@ -19,12 +19,12 @@ library
       Cell
       GameOfLife
       Main
-      MkWorld
       Replicator
       Rules
       Seeds
       Test
       Test2
+      Worlds
   other-modules:
       Paths_ch2section2p2
   hs-source-dirs:
@@ -69,12 +69,12 @@ executable ch2section2p2
       Board
       Cell
       GameOfLife
-      MkWorld
       Replicator
       Rules
       Seeds
       Test
       Test2
+      Worlds
       Paths_ch2section2p2
   hs-source-dirs:
       ./src

@@ -2,19 +2,20 @@
 {-# LANGUAGE GADTs #-}
 module Main where
 
-import qualified Valuefied.App as VApp
-import qualified Existential.App as EApp
+import qualified App.Valuefied.App as VApp
+import qualified App.Existential.App as EApp
 
 import qualified Data.Map as Map
 import Data.IORef ( IORef, newIORef )
-import App (AppAction (..), continue, finish, continueWithMsg)
+import App.Action (AppAction (..), continue, finish, continueWithMsg)
 
 import Data.Proxy
 
-import Automaton
-import Automata.GameOfLife
-import Automata.Seeds
-import Automata.Replicator
+import Domain.Automaton
+import Assets.Automata.GameOfLife
+import Assets.Automata.Seeds
+import Assets.Automata.Replicator
+
 -- Won't compile:
 
 -- rules1 :: [(RuleCode, Proxy rule)]
@@ -77,6 +78,7 @@ printHelp = do
   putStrLn "step   - step a world once"
   putStrLn "print  - print a world"
   continue
+
 
 main :: IO ()
 main = do

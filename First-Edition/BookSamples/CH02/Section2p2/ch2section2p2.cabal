@@ -39,9 +39,8 @@ library
       DeriveFunctor
       DeriveGeneric
       OverloadedStrings
-      LambdaCase
-      MultiParamTypeClasses
       ScopedTypeVariables
+      LambdaCase
       ExplicitNamespaces
       NamedFieldPuns
       TupleSections
@@ -94,9 +93,8 @@ executable ch2section2p2
       DeriveFunctor
       DeriveGeneric
       OverloadedStrings
-      LambdaCase
-      MultiParamTypeClasses
       ScopedTypeVariables
+      LambdaCase
       ExplicitNamespaces
       NamedFieldPuns
       TupleSections
@@ -135,9 +133,8 @@ test-suite functional
       DeriveFunctor
       DeriveGeneric
       OverloadedStrings
-      LambdaCase
-      MultiParamTypeClasses
       ScopedTypeVariables
+      LambdaCase
       ExplicitNamespaces
       NamedFieldPuns
       TupleSections

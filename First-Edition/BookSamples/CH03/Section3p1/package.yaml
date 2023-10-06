@@ -1,4 +1,4 @@
-name:                ch2section2p2
+name:                ch3section1p1
 version:             1.0.0.0
 license:             BSD3
 author:              "Alexander Granin"
@@ -9,9 +9,8 @@ default-extensions:
 - DeriveFunctor
 - DeriveGeneric
 - OverloadedStrings
-- LambdaCase
-- MultiParamTypeClasses
 - ScopedTypeVariables
+- LambdaCase
 - ExplicitNamespaces
 - NamedFieldPuns
 - TupleSections
@@ -44,7 +43,7 @@ library:
   - -Wall
 
 executables:
-  ch2section2p2:
+  ch3section1p1:
     main:                Main.hs
     source-dirs:         ./src
     ghc-options:
@@ -64,4 +63,4 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - hspec
-    - ch2section2p2
+    - ch3section1p1

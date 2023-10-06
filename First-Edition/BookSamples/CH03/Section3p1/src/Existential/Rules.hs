@@ -23,7 +23,9 @@ supportedRules = map (\ri -> (getCode ri, ri))
     getCode :: RuleImpl -> RuleCode
     getCode (RI proxy) = code proxy
 
-supportedRulesDict :: Map.Map RuleCode RuleImpl
+type Rules = Map.Map RuleCode RuleImpl
+
+supportedRulesDict :: Rules
 supportedRulesDict = Map.fromList supportedRules
 
 -- Won't work:

@@ -22,7 +22,6 @@ library
       Main
       Replicator
       Seeds
-      Test
   other-modules:
       Paths_ch2section2p1
   hs-source-dirs:
@@ -70,7 +69,6 @@ executable ch2section2p1
       GameOfLife
       Replicator
       Seeds
-      Test
       Paths_ch2section2p1
   hs-source-dirs:
       ./src

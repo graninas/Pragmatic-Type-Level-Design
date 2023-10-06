@@ -12,7 +12,7 @@ import qualified Data.Map as Map
 import Data.Proxy (Proxy(..))
 
 
-data RuleImpl = RuleImpl
+data RuleImpl = RI
   { ruleName :: String
   , ruleCode :: RuleCode
   , ruleLoad :: FilePath -> IO Board
@@ -33,7 +33,7 @@ supportedRules' =
   where
     toRuleImpl :: Automaton rule => Proxy rule -> RuleImpl
     toRuleImpl proxy =
-      RuleImpl (name proxy) (code proxy) loadBoardFromFile (toStep' proxy)
+      RI (name proxy) (code proxy) loadBoardFromFile (toStep' proxy)
 
     toStep'
       :: forall rule

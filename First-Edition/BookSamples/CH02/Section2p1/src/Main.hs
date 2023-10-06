@@ -1,6 +1,5 @@
 module Main where
 
-
 import Automaton
     ( automatonName,
       iterateWorld,

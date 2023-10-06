@@ -11,14 +11,21 @@ import Data.Proxy (Proxy(..))
 
 
 data RuleImpl where
-  RuleImpl :: Automaton rule => Proxy rule -> RuleImpl
+  RI :: Automaton rule => Proxy rule -> RuleImpl
 
 supportedRules :: [(RuleCode, RuleImpl)]
-supportedRules = map (\ri@(RuleImpl proxy) -> (code proxy, ri))
-  [ RuleImpl (Proxy :: Proxy SeedsRule)
-  , RuleImpl (Proxy :: Proxy ReplicatorRule)
-  , RuleImpl (Proxy :: Proxy GoLRule)
+supportedRules = map (\ri -> (getCode ri, ri))
+  [ RI (Proxy :: Proxy SeedsRule)
+  , RI (Proxy :: Proxy ReplicatorRule)
+  , RI (Proxy :: Proxy GoLRule)
   ]
+  where
+    getCode :: RuleImpl -> RuleCode
+    getCode (RI proxy) = code proxy
 
 supportedRulesDict :: Map.Map RuleCode RuleImpl
 supportedRulesDict = Map.fromList supportedRules
+
+-- Won't work:
+-- extractProxy :: Automaton rule => RuleImpl -> Proxy rule
+-- extractProxy (RI proxy) = proxy

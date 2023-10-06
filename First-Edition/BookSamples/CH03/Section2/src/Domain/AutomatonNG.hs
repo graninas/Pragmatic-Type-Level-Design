@@ -98,12 +98,12 @@ class IAutomaton
 --   defState :: Proxy states -> StateIdx
 --   defState _ = 0                      -- TODO
 
-class IBoard
+class IWorld
     (rule :: CustomRule
       (board :: CustomBoard
         (states :: CustomStates))) where
-  initBoard :: CellWorld rule
-  initBoard = CW Map.empty
+  initWorld :: CellWorld rule
+  initWorld = CW Map.empty
 
 
 generateNeighborhood
@@ -114,7 +114,7 @@ generateNeighborhood
 generateNeighborhood coords (AdjacentsLvl 1) _
   = filter (/= coords)
   $ mapM (\x -> [x-1, x, x+1]) coords
-generateNeighborhood _ _ _ = error "Neighborhood not implemented"
+generateNeighborhood _ _ _ = error "Neighborhood not implemented for adjacents lvl > 1"
 
 getCells
   :: [GenericCoords]
@@ -131,12 +131,12 @@ getCells ns def (CW board) =
 type States2 = '[State 0, State 1]
 
 
--- UndecidableInstances are used here
+-- UndecidableInstances here
 type family StatesCount (states :: [CustomState]) :: Nat where
   StatesCount '[] = 0
   StatesCount (_ ': xs) = 1 + StatesCount xs   -- TypeOperators here
 
-type Open2StateBoard = SquareGrid Open    -- Type application to types
+type Open2StateBoard = SquareGrid Open         -- Type application to types
 
 type GoLStep = Step
   '[ StateTransition 0 1 '[CellsCount 1 '[3 ]]   -- "Born rule"
@@ -144,7 +144,7 @@ type GoLStep = Step
    , DefaultTransition 0
    ]
 
-type GameOfLife = Rule @States2
+type GameOfLife = Rule @States2       -- TODO: @States2 Seems strange. Redesign
   "Game of Life"
   "gol"
   Open2StateBoard
@@ -153,7 +153,7 @@ type GameOfLife = Rule @States2
 
 
 
-instance IBoard GameOfLife where
+instance IWorld GameOfLife where
 
 instance IAutomaton GameOfLife where
   step
@@ -165,5 +165,5 @@ instance IAutomaton GameOfLife where
 
 
 
--- instance IBoard Int where        -- unable to define for invalid
+-- instance IWorld Int where        -- unable to define for invalid
 -- instance IAutomaton Int where    -- unable to define for invalid

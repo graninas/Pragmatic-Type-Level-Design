@@ -41,35 +41,26 @@ appendCH (CS chs) ch = CS (chs <> [ch])
 
 type Parser = String -> Maybe (CustomSymbol, String)
 
-parseCustomChar :: String -> (Char, CustomChar) -> Maybe (CustomChar, String)
-parseCustomChar (a:rest) (a', ch) | a == a' = Just (ch, rest)
+parseCustomChar :: (Char, CustomChar) -> String -> Maybe (CustomChar, String)
+parseCustomChar (ch', sch) (ch:rest) | ch == ch' = Just (sch, rest)
 parseCustomChar _ _ = Nothing
 
-parseB :: String -> Maybe (CustomSymbol, String)
-parseB str = let
-  mbParsed = parseCustomChar str ('B', CH (Proxy @"B"))
-  in case mbParsed of
-    Nothing -> Nothing
-    Just (ch, rest) -> Just (CS [ch], rest)
 
-numbers :: Map.Map Char CustomChar
-numbers = Map.fromList
-  [ ('1', CH (Proxy @"1"))
-  , ('2', CH (Proxy @"2"))
-  , ('3', CH (Proxy @"3"))
-  , ('4', CH (Proxy @"4"))
-  , ('5', CH (Proxy @"5"))
-  , ('6', CH (Proxy @"6"))
-  , ('7', CH (Proxy @"7"))
-  , ('8', CH (Proxy @"8"))
-  , ('9', CH (Proxy @"9"))
-  ]
+char
+ :: forall s
+  . KnownSymbol s
+ => Proxy s
+ -> String
+ -> Maybe (CustomChar, String)
+char proxy = parseCustomChar (head (symbolVal proxy), CH proxy)
 
-parseNumber :: String -> Maybe (CustomSymbol, String)
-parseNumber [] = Nothing
-parseNumber (a:rest) = case Map.lookup a numbers of
+asString
+ :: (String -> Maybe (CustomChar, String))
+ -> String
+ -> Maybe (CustomSymbol, String)
+asString p str = case p str of
   Nothing -> Nothing
-  Just ch -> Just (CS [ch], rest)
+  Just (ch, rest) -> Just (CS [ch], rest)
 
 many :: Parser -> String -> Maybe (CustomSymbol, String)
 many p [] = Nothing
@@ -95,11 +86,43 @@ sequenceParsers (p:ps) str = case p str of
     Nothing -> Just (CS chs1, rest1)
     Just (CS chs2, rest2) -> Just (CS (chs1 <> chs2), rest2)
 
-myParsers :: [Parser]
-myParsers = [parseB, many1 parseNumber]
-
 parse :: Parser -> String -> Maybe (CustomSymbol, String)
 parse p = p
+
+
+
+
+
+
+numbers :: Map.Map Char CustomChar
+numbers = Map.fromList
+  [ ('1', CH (Proxy @"1"))
+  , ('2', CH (Proxy @"2"))
+  , ('3', CH (Proxy @"3"))
+  , ('4', CH (Proxy @"4"))
+  , ('5', CH (Proxy @"5"))
+  , ('6', CH (Proxy @"6"))
+  , ('7', CH (Proxy @"7"))
+  , ('8', CH (Proxy @"8"))
+  , ('9', CH (Proxy @"9"))
+  ]
+
+number :: String -> Maybe (CustomSymbol, String)
+number [] = Nothing
+number (a:rest) = case Map.lookup a numbers of
+  Nothing -> Nothing
+  Just ch -> Just (CS [ch], rest)
+
+parseB :: String -> Maybe (CustomSymbol, String)
+parseB = asString (parseCustomChar ('B', CH (Proxy @"B")))
+
+
+bToken :: Parser
+bToken = sequenceParsers [parseB, many1 number]
+
+sToken :: Parser
+sToken = sequenceParsers [asString (char (Proxy @"S")), many1 number]
+
 
 mergePSymbols
   :: forall s1 s2
@@ -118,28 +141,24 @@ spec =
   describe "Parsing gen tests" $ do
     it "Test1" $ do
 
-      let mbParsed = parse (sequenceParsers myParsers) "B12"
+      let mbBToken = parse bToken "B12"
+      let mbInvalidSToken = parse sToken "  S12"
+      let mbSToken = parse sToken "S12"
 
-      case mbParsed of
-        Nothing -> print "not parsed"
+      case mbBToken of
+        Nothing -> error "B token not parsed"
         Just (cs, rest) -> do
           print $ showCS cs
           print rest
 
-      -- let (mbCs1, rest1) = parseB (Just (CS []), "B12")
-      -- let (mbCs2, rest2) = parse1 (mbCs1, rest1)
+      case mbInvalidSToken of
+        Nothing -> pure ()
+        Just (cs, rest) -> error "Invalid S token is parsed"
 
-      -- let (mbP1, rest1') = parseNumber (Just (CS []), "23")
-      -- let (mbP2, rest2') = parseNumber (mbP1, rest1')
+      case mbSToken of
+        Nothing -> error "S token not parsed"
+        Just (cs, rest) -> do
+          print $ showCS cs
+          print rest
 
-      -- let mbP12 = mergePSymbols <$> mbP1 <*> mbP2
-
-      -- print $ showCS <$> mbCs1
-      -- print $ showCS <$> mbCs2
-      -- print rest1
-      -- print rest2
-
-      -- print $ printPSymbol <$> mbP1
-      -- print $ printPSymbol <$> mbP2
-      -- print $ printPSymbol <$> mbP12
 

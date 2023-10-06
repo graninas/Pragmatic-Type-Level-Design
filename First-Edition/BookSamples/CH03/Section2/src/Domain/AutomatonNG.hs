@@ -32,19 +32,18 @@ data CustomState where
 
 type CustomStates = [CustomState]
 
-data CustomBoard (states :: CustomStates) where
-  SquareGrid      -- names of val constr should differ
-                  -- to avoid name clash
-                  -- with kinds (the compiler gets confused)
-    :: Topology
-    -- -> CustomStates
-    -> CustomBoard states
-
 data CustomStep (states :: CustomStates) where
   Step
     :: Neighborhood
     -> [CustomStateTransition]
     -> CustomStep states
+
+data CustomBoard (states :: CustomStates) where
+  SquareGrid      -- names of val constr should differ
+                  -- to avoid name clash
+                  -- with kinds (the compiler gets confused)
+    :: Topology
+    -> CustomBoard states
 
 data CustomRule (board :: CustomBoard states) where
   Rule
@@ -73,7 +72,7 @@ data CustomStateTransition where
 type GenericCoords = [Int]
 type Board = Map.Map GenericCoords StateIdx
 
-data CellWorld (rule :: CustomRule board) where
+data CellWorld rule where
   CW :: Board -> CellWorld rule
 
 class IAutomaton
@@ -83,6 +82,7 @@ class IAutomaton
   step
     :: CellWorld rule
     -> CellWorld rule
+  step = id
 
 -- TODO
 -- class IState (states :: CustomStates) where
@@ -135,7 +135,7 @@ type family StatesCount (states :: [CustomState]) :: Nat where
   StatesCount '[] = 0
   StatesCount (_ ': xs) = 1 + StatesCount xs   -- TypeOperators here
 
-type Open2StateBoard = SquareGrid Open    -- Type application to types
+type Open2StateBoard = SquareGrid @States2 Open    -- Type application to types
 
 type GoLStep = Step
   (AdjacentsLvl 1)
@@ -144,7 +144,7 @@ type GoLStep = Step
    , DefaultTransition 0
    ]
 
-type GameOfLife = Rule @States2
+type GameOfLife = Rule
   "Game of Life"
   "gol"
   Open2StateBoard
@@ -152,8 +152,8 @@ type GameOfLife = Rule @States2
 
 
 
-instance IBoard GameOfLife where
 
+instance IBoard GameOfLife where
 
 instance IAutomaton GameOfLife where
   step
@@ -162,3 +162,8 @@ instance IAutomaton GameOfLife where
   step (CW b) = let
     -- updCellFunc = makeUpdateFunc
     in CW b
+
+
+
+-- instance IBoard Int where        -- unable to define for invalid types
+-- instance IAutomaton Int where    -- unable to define for invalid types

@@ -1,20 +1,50 @@
 module Main where
 
-import Board (Board)
-import Cell (Cell(..))
-import Automaton ( iterateWorld, loadFromFile, saveToFile, name, automatonName )
-import GameOfLife ( GoL(..), GoLRule )
+
+import Automaton
+    ( automatonName,
+      iterateWorld,
+      loadFromFile,
+      saveToFile,
+      Automaton(name),
+      CellWorld(CW) )
+import GameOfLife ( GoL, GoLRule )
 import Seeds ( Seeds )
+import Replicator ( Replicator )
 
 import qualified Data.Map as Map
 import Data.Proxy ( Proxy(..) )
 
-glider :: Board
-glider = Map.fromList [((1, 0), Alive),
-                       ((2, 1), Alive),
-                       ((0, 2), Alive),
-                       ((1, 2), Alive),
-                       ((2, 2), Alive)]
+golWorld :: GoL
+golWorld = CW Map.empty
+
+seedsWorld :: Seeds
+seedsWorld = CW Map.empty
+
+replicatorWorld :: Replicator
+replicatorWorld = CW Map.empty
+
+-- Won't compile:
+
+-- worlds1 :: Map.Map String (CellWorld rule)
+-- worlds1 = Map.fromList
+--   [ ("Game of Life", golWorld)
+--   , ("Seeds", seedsWorld)
+--   , ("Replicator", replicatorWorld)
+--   ]
+
+-- worlds2 :: Map.Map String (CellWorld rule)
+-- worlds2 = Map.fromList [("Game of Life", golWorld), ("Seeds", seedsWorld)]
+
+-- worlds3 :: Automaton rule => Map.Map String (CellWorld rule)
+-- worlds3 = Map.fromList [("Game of Life", golWorld), ("Seeds", seedsWorld)]
+
+-- worlds4 :: Automaton rule => Map.Map String (CellWorld rule)
+-- worlds4 =
+--   Map.insert "Game of Life" golWorld
+--   (Map.insert "Seeds" seedsWorld Map.empty)
+
+
 
 main :: IO ()
 main = do
@@ -29,9 +59,3 @@ main = do
 
   print (name (Proxy :: Proxy GoLRule))
   print (automatonName seeds2)
-
-  -- let automata = Map.fromList                  -- won't compile
-  --       [ ("Game of Life", GoL glider)
-  --       , ("Seeds", Seeds Map.empty)
-  --       , ("Replicator", Replicator Map.empty)
-  --       ]

@@ -1,6 +1,6 @@
 module Board where
 
-import Cell ( Cell, toCell )
+import Cell ( toCell, Cell(..) )
 
 import qualified Data.Map as Map
 
@@ -33,3 +33,30 @@ toBoard cells = let
       -> [((Int, Int), Cell)]
     joinCells (i, rs) lst =
       lst ++ map (\(j, cell) -> ((i, j), cell)) rs
+
+neighbours :: (Int, Int) -> [(Int, Int)]
+neighbours (x, y) =
+    [(x-1, y-1), (x, y-1), (x+1, y-1),
+     (x-1, y  ),           (x+1, y  ),
+     (x-1, y+1), (x, y+1), (x+1, y+1)]
+
+countAliveNeighbours :: Board -> (Int, Int) -> Int
+countAliveNeighbours board pos = let
+  ns = neighbours pos
+  cells = map (`Map.lookup` board) ns
+  in length $ filter (== Just Alive) cells
+
+
+printBoard :: Board -> IO ()
+printBoard board = do
+    let (xs, ys) = unzip $ Map.keys board
+        minX = minimum xs
+        maxX = maximum xs
+        minY = minimum ys
+        maxY = maximum ys
+        printRow board coords@(_, x)
+            | x == maxX = putStrLn $ cellChar $ Map.findWithDefault Dead coords board
+            | otherwise = putStr $ cellChar $ Map.findWithDefault Dead coords board
+        cellChar Alive = "#"
+        cellChar Dead  = "."
+    mapM_ (printRow board) [(y, x) | y <- [minY..maxY], x <- [minX..maxX]]

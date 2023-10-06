@@ -1,8 +1,8 @@
 {-# LANGUAGE TypeApplications #-}
 module Main where
 
-import Board (loadBoardFromFile)
-import Automaton ( CellWorld(CW), Automaton(code, name) )
+import Board (loadBoardFromFile, printBoard)
+import Automaton ( Automaton(..), CellWorld(CW) )
 import Rules
     ( supportedRulesDict, supportedRules, RuleImpl(RuleImpl) )
 import Worlds ( Worlds, WorldInstance(..), WorldIndex )
@@ -11,6 +11,7 @@ import qualified Data.Map as Map
 import Data.Proxy (Proxy)
 import Data.IORef ( IORef, newIORef, readIORef, writeIORef )
 import Control.Exception ( SomeException, try )
+import Text.Read (readMaybe)
 
 
 -- iterateWorlds :: Int -> Worlds -> Worlds
@@ -38,9 +39,9 @@ listWorlds worldsRef = do
   mapM_ f ws
   where
     f :: (WorldIndex, WorldInstance) -> IO ()
-    f (idx, WorldInstance proxy _) = do
+    f (idx, WorldInstance proxy gen _) = do
       let strCode = code proxy
-      putStrLn (show idx <> ") [" <> strCode <> "]")
+      putStrLn (show idx <> ") [" <> strCode <> "], gen: " <> show gen)
 
 loadWorld
   :: forall rule        -- Brings `rule` into the scope of body
@@ -57,17 +58,46 @@ loadWorld worldsRef proxy path = do
       worlds <- readIORef worldsRef
 
       let idx = Map.size worlds
-      let w = WorldInstance @rule proxy (CW board)    -- specifying the automaton rule
+      let w = WorldInstance @rule proxy 0 (CW board)    -- specifying the automaton rule
       let worlds' = Map.insert idx w worlds
 
       writeIORef worldsRef worlds'
       pure (Right idx)
 
 
+processStep :: IORef Worlds -> IO ()
+processStep worldsRef = do
+  putStrLn "\nEnter world index to step:"
+  idxStr <- getLine
+  case readMaybe idxStr of
+    Nothing -> putStrLn "Invalid index."
+    Just idx -> do
+      worlds <- readIORef worldsRef
+      case Map.lookup idx worlds of
+        Nothing -> putStrLn "Index doesn't exist."
+        Just (WorldInstance proxy gen world) -> do
+          let world' = step world
+          let wi = WorldInstance proxy (gen + 1) world'
+          let worlds' = Map.insert idx wi worlds
+          writeIORef worldsRef worlds'
+
+processPrint :: IORef Worlds -> IO ()
+processPrint worldsRef = do
+  putStrLn "\nEnter world index to print:"
+  idxStr <- getLine
+  case readMaybe idxStr of
+    Nothing -> putStrLn "Invalid index."
+    Just idx -> do
+      worlds <- readIORef worldsRef
+      case Map.lookup idx worlds of
+        Nothing -> putStrLn "Index doesn't exist."
+        Just (WorldInstance proxy gen (CW board)) ->
+          printBoard board
 
 
 processLoad :: IORef Worlds -> IO ()
 processLoad worldsRef = do
+  listRuleCodes
   putStrLn "\nEnter rule code:"
   ruleCode <- getLine
 
@@ -93,6 +123,8 @@ printHelp = do
   putStrLn "rules  - list supported rules"
   putStrLn "load   - load a world"
   putStrLn "worlds - list loaded worlds"
+  putStrLn "step   - step a world once"
+  putStrLn "print  - print a world"
 
 
 
@@ -110,22 +142,13 @@ go worldsRef = do
   cmd <- getLine
 
   case cmd of
-    "quit" -> pure ()
-    "help" -> printHelp >> go worldsRef
-    "rules" -> listRuleCodes >> go worldsRef
+    "quit"   -> pure ()
+    "help"   -> printHelp >> go worldsRef
+    "rules"  -> listRuleCodes >> go worldsRef
     "worlds" -> listWorlds worldsRef >> go worldsRef
-    "load" -> processLoad worldsRef
+    "load"   -> processLoad worldsRef >> go worldsRef
+    "step"   -> processStep worldsRef >> go worldsRef
+    "print"  -> processPrint worldsRef >> go worldsRef
     _ -> do
       putStrLn "Unknown command. Type `help` to see the list of commands."
       go worldsRef
-
-  -- gol1   :: GoL <- loadFromFile "./data/GoL/glider.txt"
-  -- seeds1 :: Seeds <- loadFromFile "./data/Seeds/world1.txt"
-
-  -- let worlds1 = [MkWorld gol1, MkWorld seeds1]
-  -- let worlds2 = iterateWorlds 5 worlds1
-
-  -- case worlds2 of
-  --   [MkWorld gol2, MkWorld seeds2] -> do
-  --     print (name gol2)
-  --     print (name seeds1)

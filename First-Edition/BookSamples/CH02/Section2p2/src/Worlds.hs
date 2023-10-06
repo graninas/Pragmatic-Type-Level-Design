@@ -8,17 +8,32 @@ import Automaton ( iterateWorld, loadFromFile, saveToFile, name, Automaton, Cell
 import qualified Data.Map as Map
 import Data.Proxy ( Proxy )
 
+type Generation = Int
+
 data WorldInstance where
-  WorldInstance :: Automaton rule => Proxy rule -> CellWorld rule -> WorldInstance
+  WorldInstance
+    :: Automaton rule
+    => Proxy rule
+    -> Generation
+    -> CellWorld rule
+    -> WorldInstance
 
   -- There is some difference between that ^ and this V
-    -- WorldInstance :: (Automaton rule => CellWorld rule) -> WorldInstance
   --
+  -- WorldInstance
+  --   :: (Automaton rule
+  --   => Proxy rule
+  --   -> Generation
+  --   -> CellWorld rule)
+  --   -> WorldInstance
+
   -- This variant doesn't work for:
+  --
   --   case worlds2 of
-  --     [WorldInstance gol2, WorldInstance seeds2] -> do
-  --      print (name gol2)
-  --      print (name seeds1)
+  --     [WorldInstance proxy1 _ _, WorldInstance proxy2 _ _] -> do
+  --      print (name proxy1)
+  --      print (name proxy2)
+  --
   -- It says "Automaton should be defined for WorldInstance"
 
 type WorldIndex = Int

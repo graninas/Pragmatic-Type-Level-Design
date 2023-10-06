@@ -17,6 +17,7 @@ library
       Automaton
       Board
       Cell
+      Diamoeba
       GameOfLife
       Main
       Replicator
@@ -64,6 +65,7 @@ executable ch1section2p2
       Automaton
       Board
       Cell
+      Diamoeba
       GameOfLife
       Replicator
       Seeds

@@ -17,7 +17,7 @@ glider = Map.fromList [((1, 0), Alive),
 
 main :: IO ()
 main = do
-  gol1   :: GoL   <- loadFromFile "./data/GoL/glider.txt"
+  gol1   :: GoL <- loadFromFile "./data/GoL/glider.txt"
   seeds1 :: Seeds <- loadFromFile "./data/Seeds/world1.txt"
 
   let gol2   = iterateWorld 5 gol1

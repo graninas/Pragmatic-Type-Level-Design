@@ -20,6 +20,7 @@ type GoL = CellWorld "Game of Life"
 instance Automaton GoLRule where   -- FlexibleInstances used here
   step :: GoL -> GoL               -- InstanceSigs is enabled to show sigs
   step = golStep
+  code _ = "gol"
 
 -- TODO: rules
 

@@ -19,6 +19,7 @@ type Replicator = CellWorld "Replicator"
 instance Automaton ReplicatorRule where  -- FlexibleInstances used here
   step :: Replicator -> Replicator       -- InstanceSigs is enabled to show sigs
   step = replicatorStep
+  code _ = "repl"
 
 -- TODO: rules
 

@@ -14,8 +14,8 @@ newtype CellWorld (rule :: Symbol)     -- DataKinds + KindSignatures are used he
 
 class KnownSymbol rule => Automaton (rule :: Symbol) where
   step :: CellWorld rule -> CellWorld rule
-  name :: CellWorld rule -> String
-  name _ = symbolVal (Proxy :: Proxy rule)
+  name :: Proxy rule -> String
+  name proxy = symbolVal proxy
 
 
 -- Alternative to `name`:

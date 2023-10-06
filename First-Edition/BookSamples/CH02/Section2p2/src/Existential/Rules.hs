@@ -1,5 +1,5 @@
 {-# LANGUAGE GADTs #-}
-module Rules where
+module Existential.Rules where
 
 import Automaton ( Automaton(code), RuleCode )
 import GameOfLife ( GoLRule )

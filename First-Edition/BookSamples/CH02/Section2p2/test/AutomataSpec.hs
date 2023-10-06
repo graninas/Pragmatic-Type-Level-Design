@@ -2,10 +2,10 @@ module AutomataSpec where
 
 import Cell
 import Board
-import Rules
-import Worlds
 import Automaton
 import GameOfLife
+import Existential.Rules
+import Existential.Worlds
 
 import Test.Hspec
 import Data.Proxy (Proxy(..))

@@ -1,5 +1,5 @@
 {-# LANGUAGE GADTs #-}
-module Worlds where
+module Existential.Worlds where
 
 import Board (Board)
 import Cell (Cell(..))

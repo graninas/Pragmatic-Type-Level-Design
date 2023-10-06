@@ -24,28 +24,6 @@ seedsWorld = CW Map.empty
 replicatorWorld :: Replicator
 replicatorWorld = CW Map.empty
 
--- Won't compile:
-
--- worlds1 :: Map.Map String (CellWorld rule)
--- worlds1 = Map.fromList
---   [ ("Game of Life", golWorld)
---   , ("Seeds", seedsWorld)
---   , ("Replicator", replicatorWorld)
---   ]
-
--- worlds2 :: Map.Map String (CellWorld rule)
--- worlds2 = Map.fromList [("Game of Life", golWorld), ("Seeds", seedsWorld)]
-
--- worlds3 :: Automaton rule => Map.Map String (CellWorld rule)
--- worlds3 = Map.fromList [("Game of Life", golWorld), ("Seeds", seedsWorld)]
-
--- worlds4 :: Automaton rule => Map.Map String (CellWorld rule)
--- worlds4 =
---   Map.insert "Game of Life" golWorld
---   (Map.insert "Seeds" seedsWorld Map.empty)
-
-
-
 main :: IO ()
 main = do
   gol1   :: GoL <- loadFromFile "./data/GoL/glider.txt"

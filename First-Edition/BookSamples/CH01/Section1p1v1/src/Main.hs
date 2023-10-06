@@ -1,9 +1,8 @@
 module Main where
 
-import Board (Board)
+import Board ( Board, saveToFile, loadFromFile )
 import Cell (Cell(..))
-import GameOfLife (loadGoLFromFile, saveGoLToFile, iterateGoL)
-import Seeds ( loadSeedsFromFile )
+import GameOfLife ( iterateWorld )
 
 import qualified Data.Map as Map
 
@@ -16,9 +15,6 @@ glider = Map.fromList [((1, 0), Alive),
 
 main :: IO ()
 main = do
-  gol1   <- loadGoLFromFile "./data/GoL/glider.txt"
-  seeds1 <- loadSeedsFromFile "./data/Seeds/world1.txt"
-
-  let gol2 = iterateGoL 5 gol1
-
-  saveGoLToFile "./data/GoL/glider_5th_gen.txt" gol2
+  board1 <- loadFromFile "./data/glider.txt"
+  let board2 = iterateWorld 5 board1
+  saveToFile "./data/glider_5th_gen.txt" board2

@@ -1,0 +1,4 @@
+- Several cellular automata
+- Newtype wrappers
+- High-order generalization (iterateWorld, saveToFile)
+- Lot of boilerplate

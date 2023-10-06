@@ -1,4 +1,4 @@
-name:                ch1section2v2
+name:                ch1section2p1v1
 version:             1.0.0.0
 license:             BSD3
 author:              "Alexander Granin"
@@ -18,7 +18,6 @@ default-extensions:
 - ViewPatterns
 - MultiWayIf
 - RecordWildCards
-- InstanceSigs
 
 dependencies:
 - base >= 4.7 && < 5
@@ -44,7 +43,7 @@ library:
   - -Wall
 
 executables:
-  ch1section2v2:
+  ch1section2p1v1:
     main:                Main.hs
     source-dirs:         ./src
     ghc-options:

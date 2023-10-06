@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           ch1section1
+name:           ch1section1p1v1
 version:        1.0.0.0
 author:         Alexander Granin
 maintainer:     graninas@gmail.com
@@ -14,13 +14,12 @@ build-type:     Simple
 
 library
   exposed-modules:
-      Automata
       Board
       Cell
       GameOfLife
       Main
   other-modules:
-      Paths_ch1section1
+      Paths_ch1section1p1v1
   hs-source-dirs:
       src
   default-extensions:
@@ -55,14 +54,13 @@ library
     , void
   default-language: Haskell2010
 
-executable ch1section1
+executable ch1section1p1v1
   main-is: Main.hs
   other-modules:
-      Automata
       Board
       Cell
       GameOfLife
-      Paths_ch1section1
+      Paths_ch1section1p1v1
   hs-source-dirs:
       ./src
   default-extensions:

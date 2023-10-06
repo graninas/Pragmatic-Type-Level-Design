@@ -4,6 +4,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeApplications #-}
 module Domain.AutomatonNG where
 
 
@@ -17,31 +18,32 @@ type Dimension = Nat
 type RuleName = Symbol
 type RuleCode = Symbol
 type States = Nat
+type IsDefault = Bool
 
 data Neighborhood where
   AdjacentsLvl :: Nat -> Neighborhood
 
-data CustomBoard where
+data CustomState where
+  State :: IsDefault -> Nat -> CustomState
+
+data CustomBoard (states :: [CustomState]) where
   SquareGrid    -- names of val constr should differ
                   -- to avoid name clash
                   -- with kinds (the compiler gets confused)
     :: Topology
-    -> CustomBoard
+    -> [CustomState]
+    -> CustomBoard states
 
-data CustomRule (board :: CustomBoard) where
+data CustomStep where
+  Step :: Neighborhood -> [CustomStateTransition] -> CustomStep
+
+data CustomRule (board :: CustomBoard states) where
   Rule
     :: RuleName
     -> RuleCode
+    -> CustomBoard states
     -> CustomStep
     -> CustomRule board
-
-data CellWorld (board :: CustomBoard)
-
-class IAutomaton (board :: CustomBoard) (rule :: CustomRule board) where
-  step
-    :: Proxy rule
-    -> CellWorld board
-    -> CellWorld board
 
 data CellCondition where
   CellsCount
@@ -57,13 +59,27 @@ data CustomStateTransition where
     -> CustomStateTransition
   DefaultTransition :: Nat -> CustomStateTransition
 
-data CustomStep where
-  Step :: Neighborhood -> [CustomStateTransition] -> CustomStep
 
-data Lines3S
-type Lines3SBoard = CustomBoard
+data CellWorld (rule :: CustomBoard states)
 
-type StandardBoard = SquareGrid Open
+class IAutomaton
+  (rule :: CustomRule (board :: CustomBoard states)) where
+  step
+    :: Proxy rule
+    -> CellWorld board
+    -> CellWorld board
+
+class IBoard (board :: CustomBoard (states :: [CustomState])) where
+  init :: CellWorld board
+  neighborsCount
+    :: Proxy states
+    -> CellWorld board
+    -> Neighborhood
+    -> Int
+
+type States2 = '[State True 0, State False 1]
+
+type Open2StateBoard = SquareGrid Open States2
 
 type GoLStep = Step
   (AdjacentsLvl 1)
@@ -71,24 +87,15 @@ type GoLStep = Step
    , StateTransition 1 1 '[CellsCount 1 '[2,3]]  -- "Survive rule"
    , DefaultTransition 0
    ]
-type GameOfLife = Rule "Game of Life" "gol" GoLStep
+
+type GameOfLife = Rule @States2 "Game of Life" "gol" Open2StateBoard GoLStep
 
 
-class IBoard (board :: CustomBoard) where
-  init :: CellWorld board
-  neighborsCount :: CellWorld board -> Neighborhood -> Int
-
-  -- init :: Proxy GameOfLife -> CellWorld StandardBoard
-  -- init _ = undefined
-
-
-
-
-instance IAutomaton StandardBoard GameOfLife where
+instance IAutomaton GameOfLife where
   step
     :: Proxy GameOfLife
-    -> CellWorld StandardBoard
-    -> CellWorld StandardBoard
+    -> CellWorld board
+    -> CellWorld board
   step _ b = let
     -- updCellFunc = makeUpdateFunc
     in b

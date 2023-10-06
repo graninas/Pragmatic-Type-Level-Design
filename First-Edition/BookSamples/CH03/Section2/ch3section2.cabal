@@ -18,6 +18,7 @@ library
       Domain.AutomatonADTs
       Domain.AutomatonNG
       Domain.Board
+      Domain.BoardNG
       Domain.Cell
       Domain.CellTransitionNG
       Main
@@ -65,6 +66,7 @@ executable ch3section2
       Domain.AutomatonADTs
       Domain.AutomatonNG
       Domain.Board
+      Domain.BoardNG
       Domain.Cell
       Domain.CellTransitionNG
       Paths_ch3section2

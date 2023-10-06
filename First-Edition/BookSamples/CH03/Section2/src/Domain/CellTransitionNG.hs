@@ -2,32 +2,35 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeOperators #-}
 module Domain.CellTransitionNG where
 
 
-import GHC.TypeLits ( Nat )
+import GHC.TypeLits
 import Data.Proxy ( Proxy(..) )
 import Data.Maybe (fromMaybe)
 import qualified Data.Map as Map
 import Control.Monad (mapM)
-import Domain.Automaton (CellWorld)
 
-type StateIdx = Nat
+import Domain.BoardNG
+
+
+type StateIdxNat = Nat
 
 data CellCondition where
   CellsCount
-    :: StateIdx       -- what state to count
+    :: StateIdxNat    -- what state to count
     -> [Nat]          -- how many cells of this state should be
     -> CellCondition  -- to activate the condition
 
 data CustomStateTransition where
   StateTransition
-    :: StateIdx         -- from state
-    -> StateIdx         -- to state
+    :: StateIdxNat      -- from state
+    -> StateIdxNat      -- to state
     -> [CellCondition]  -- neighbors count conditions
     -> CustomStateTransition
   DefaultTransition
-    :: StateIdx
+    :: StateIdxNat
     -> CustomStateTransition
 
 data CustomStep where
@@ -37,23 +40,22 @@ data CustomStep where
 
 
 
-class ApplyStep (step :: CustomStep) where
-  applyStep
-    :: Proxy step
-    -> StateIdx
-    -> [StateIdx]
-    -> StateIdx  -- Old state, neighbor states, new state
+class MakeStep (step :: CustomStep) where
+  makeStep :: Proxy step -> (Board -> Board)
 
--- class ApplyTransitions (ts :: [CustomStateTransition]) where
---   applyTransitions :: StateIdx -> [StateIdx] -> StateIdx  -- Old state, neighbor states, new state
+class MakeCellUpdate (ts :: [CustomStateTransition]) where
+  makeCellUpdate
+    :: Proxy ts
+    -> (GenericCoords -> Neighborhood -> Board -> StateIdxNat)
 
+class ApplyTransition (t :: CustomStateTransition) where
+  applyTransition
+    :: Proxy t
+    -> Cells -> Maybe StateIdxNat
 
 -- class ApplyCondition (c :: CellCondition) where
 --   applyCondition :: [StateIdx] -> Bool
 
-
--- class ApplyTransition (t :: CustomStateTransition) where
---   applyTransition :: StateIdx -> [StateIdx] -> Maybe StateIdx
 
 -- class ApplyConditions (cs :: [CellCondition]) where
 --   applyConditions :: [StateIdx] -> Bool
@@ -62,31 +64,47 @@ class ApplyStep (step :: CustomStep) where
 
 
 
--- instance (ApplyTransitions ts) =>
+instance (MakeCellUpdate ts) =>
+  MakeStep ('Step ts) where
+  makeStep _ board = let
+    updateF = makeCellUpdate (Proxy @ts)
+    in board
+
+-- Base case: No transition, return the default state
+instance MakeCellUpdate '[] where
+  makeCellUpdate _ _ _ _ = 0    -- Default state
+
+-- Inductive case: Try first transition and recur if it doesn't fit
+instance (ApplyTransition t, MakeCellUpdate ts)
+  => MakeCellUpdate (t ': ts) where
+
+  makeCellUpdate _ coords neighborhood board = let
+    oldState = fromMaybe 0 $ Map.lookup coords board
+    ns = neighbors coords neighborhood board
+    -- mbApplied = applyTransition (Proxy @t) ns oldState
+    mbApplied = Nothing
+    in case mbApplied of
+      Just newState -> newState
+      Nothing       -> makeCellUpdate (Proxy @ts) coords neighborhood board
+
+
+
 instance
-  ApplyStep ('Step ts) where
-  applyStep :: Proxy ('Step ts) -> StateIdx -> [StateIdx] -> StateIdx
-  applyStep _ old neighbors =
-    error "not implemented"
-    -- applyTransitions @ts old neighbors
+  -- (ApplyConditions cs) =>
+  (KnownNat from, KnownNat to)
+  => ApplyTransition ('StateTransition from to cs) where
+  applyTransition cells oldState = error "not implemented"
+    -- if True
+    -- -- if oldState == fromIntegral (natVal (Proxy @from))
+    --   -- && applyConditions @cs neighbors
+    -- -- then Just (fromIntegral (natVal (Proxy @to)))
+    -- then Nothing
+    -- else Nothing
 
--- -- Base case: No transition, return the default state
--- instance ApplyTransitions '[] where
---   applyTransitions _ _ = 0  -- Could be made more flexible
-
--- -- Inductive case: Try first transition and recur if it doesn't fit
--- instance (ApplyTransition t, ApplyTransitions ts) => ApplyTransitions (t ': ts) where
---   applyTransitions old neighbors =
---     case applyTransition @t old neighbors of
---       Just newState -> newState
---       Nothing       -> applyTransitions @ts old neighbors
-
--- instance (ApplyConditions cs) => ApplyTransition ('StateTransition from to cs) where
---   applyTransition old neighbors =
---     if old == from && applyConditions @cs neighbors then Just to else Nothing
-
--- instance ApplyTransition ('DefaultTransition to) where
---   applyTransition _ _ = Just to
+instance
+  KnownNat to =>
+  ApplyTransition ('DefaultTransition to) where
+  applyTransition _ _ = Just $ fromIntegral $ natVal $ Proxy @to
 
 
 -- instance ApplyConditions '[] where

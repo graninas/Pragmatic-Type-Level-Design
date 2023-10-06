@@ -20,6 +20,7 @@ type Seeds = CellWorld "Seeds"
 instance Automaton SeedsRule where  -- FlexibleInstances used here
   step :: Seeds -> Seeds            -- InstanceSigs is enabled to show sigs
   step = seedsStep
+  code _ = "seeds"
 
 
 -- TODO: rules

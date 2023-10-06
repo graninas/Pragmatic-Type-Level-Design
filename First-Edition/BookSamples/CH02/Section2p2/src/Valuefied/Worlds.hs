@@ -5,7 +5,7 @@ import Board (Board)
 import Cell (Cell(..))
 import Automaton ( iterateWorld, loadFromFile, saveToFile, name, Automaton, CellWorld (..) )
 
-import Valuefied.Rules
+import Valuefied.Rules ( RuleImpl )
 
 import qualified Data.Map as Map
 import Data.Proxy ( Proxy )

@@ -2,9 +2,9 @@
 module Existential.Rules where
 
 import Automaton ( Automaton(code), RuleCode )
-import GameOfLife ( GoLRule )
-import Seeds ( SeedsRule )
-import Replicator ( ReplicatorRule )
+import Automata.GameOfLife ( GoLRule )
+import Automata.Seeds ( SeedsRule )
+import Automata.Replicator ( ReplicatorRule )
 
 import qualified Data.Map as Map
 import Data.Proxy (Proxy(..))

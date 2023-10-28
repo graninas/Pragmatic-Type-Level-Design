@@ -5,6 +5,8 @@
 {-# LANGUAGE FlexibleInstances #-}
 module AutomatonSpec where
 
+import Prelude hiding ((<>))
+
 import Cellular.Language.Board
 import Cellular.Language.Algorithm
 import Cellular.Language.Automaton
@@ -17,6 +19,8 @@ import Test.Hspec
 import Data.Proxy
 import qualified Data.Map as Map
 
+
+import Text.PrettyPrint
 
 -- -------------------------------------------------
 

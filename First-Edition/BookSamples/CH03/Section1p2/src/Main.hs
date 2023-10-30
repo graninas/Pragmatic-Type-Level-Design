@@ -20,21 +20,30 @@ instance
   describe _ =
     symbolVal (Proxy @fn) <> " " <> symbolVal (Proxy @ln)
 
+instance
+  (KnownSymbol login, Description person) =>
+  Description (User login person) where
+  describe _ = symbolVal (Proxy @login)
+    <> " " <> describe (Proxy @person)
+
 
 getUserDescription
-  :: forall login pincode person
+  :: forall login pincode person fn ln
    . ( KnownSymbol login
      , KnownNat pincode
-     , Description person
+     , KnownSymbol fn
+     , KnownSymbol ln
      )
-  => Proxy (User login person)
+  => Proxy (User login (Person fn ln))
   -> String
 getUserDescription _
      = "User: " <> symbolVal (Proxy @login)
     <> ", pincode: " <> show (natVal (Proxy @pincode))
-    <> ", Person: " <> describe (Proxy @person)
+    <> ", person: " <> symbolVal (Proxy @fn)
+    <> " " <> symbolVal (Proxy @ln)
 
-type MandelbrotUser = User "mandel" (Person "Benoit" "Mandelbrot")
+type MandelbrotPerson = Person "Benoit" "Mandelbrot"
+type MandelbrotUser = User "mandel" MandelbrotPerson
 type InvalidUser = User "invalid" Int
 
 main :: IO ()
@@ -46,12 +55,4 @@ main = do
     @4321
     (Proxy @MandelbrotUser))
 
-
-
-type Hausdorff  = Person "Felix" "Hausdorff"
-type Mandelbrot = Person "Benoit" "Mandelbrot"
-
-data TLTip
-data TLList v next
-
-type Persons = TLList Mandelbrot (TLList Hausdorff TLTip)
+  print (describe (Proxy @MandelbrotUser))

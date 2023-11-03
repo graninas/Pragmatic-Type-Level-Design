@@ -1,6 +1,5 @@
 
-# resolver: lts-16.16
-resolver: lts-21.12
+resolver: lts-21.15
 
 packages:
 - BookSamples/CH01/Section1p1v1
@@ -15,4 +14,5 @@ packages:
 - BookSamples/CH03/Section1p1
 - BookSamples/CH03/Section1p2
 - BookSamples/CH03/Section1p3
+- BookSamples/CH03/Section1p4
 

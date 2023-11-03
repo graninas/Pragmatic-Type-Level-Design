@@ -2,26 +2,40 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE PolyKinds #-}
 
 module Main where
 
 import Data.Proxy
 import GHC.TypeLits
 
-class Description (a :: *) where
-  describe :: Proxy (a :: *) -> String
+import Control.Monad.Reader
+
+
+class Description a where
+  describe :: Proxy a -> String
+
+instance Description Bool where
+  describe _ = "???"
 
 class BoolDescription (a :: Bool) where
   describeBool
     :: Proxy (a :: Bool)
-    -> String -> String -> String
+    -> String     -- on True
+    -> String     -- on False
+    -> String
 
 instance BoolDescription 'True where
-  describeBool _ ifTrue _ = ifTrue
+  describeBool _ onTrue _ = onTrue
 
 instance BoolDescription 'False where
-  describeBool _ _ ifFalse = ifFalse
+  describeBool _ _ onFalse = onFalse
 
+instance Description 'True where
+  describe _ = "verified"
+
+instance Description 'False where
+  describe _ = "not verified"
 
 data Person (firstName :: Symbol) (lastName :: Symbol)
 data User
@@ -31,10 +45,7 @@ data User
 
 
 type MandelbrotPerson = Person "Benoit" "Mandelbrot"
-type HausdorffPerson = Person "Felix" "Hausdorff"
-
 type MandelbrotUser = User "mandel" 'True MandelbrotPerson
-type HausdorffUser = User "haus" 'False HausdorffPerson
 
 main :: IO ()
 main = do
@@ -44,8 +55,6 @@ main = do
     @_
     @4321
     (Proxy @MandelbrotUser))
-
-
 
 
 

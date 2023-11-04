@@ -2,97 +2,80 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
-
--- {-# LANGUAGE PolyKinds #-}
--- {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE PolyKinds #-}
 
 module Main where
 
 import Data.Proxy
 import GHC.TypeLits
-import Data.Kind
 
-class Description (a :: *) where
-  describe :: Proxy (a :: *) -> String
+import Control.Monad.Reader
 
-instance Description Bool where
-  describe _ = "???"
 
-class BoolDescription (a :: Bool) where
-  describeBool
-    :: Proxy (a :: Bool)
-    -> String     -- on True
-    -> String     -- on False
-    -> String
-
-instance BoolDescription 'True where
-  describeBool _ onTrue _ = onTrue
-
-instance BoolDescription 'False where
-  describeBool _ _ onFalse = onFalse
-
+class Description (a :: any) where
+  describe :: Proxy a -> String
 
 data PersonType = Person
   { firstName :: Symbol
-  , lastName :: Symbol
+  , lastName  :: Symbol
   }
 
 data UserType = User
-  { login :: Symbol
+  { login    :: Symbol
   , verified :: Bool
-  , person :: PersonType
+  , person   :: PersonType
   }
 
+type HausdorffPerson = 'Person "Felix" "Hausdorff"
+type HausdorffUser   = 'User "haus" 'True HausdorffPerson
 
-type MandelbrotPerson = Person "Benoit" "Mandelbrot"
-type HausdorffPerson = Person "Felix" "Hausdorff"
-
-type MandelbrotUser = User "mandel" 'True MandelbrotPerson
-type HausdorffUser = User "haus" 'False HausdorffPerson
-
+type MandelbrotPerson = 'Person "Benoit" "Mandelbrot"
+type MandelbrotUser   = 'User "mandel" 'True MandelbrotPerson
 
 main :: IO ()
 main = do
-  pure ()
+  print (describe (Proxy @MandelbrotPerson))
 
-  -- print (describe (Proxy @MandelbrotPerson))
-
-  -- print (getUserDescription
-  --   @_
-  --   @4321
-  --   (Proxy @MandelbrotUser))
+  print (getUserDescription
+    @_
+    @4321
+    (Proxy @MandelbrotUser))
 
 
+instance Description 'True where
+  describe _ = "verified"
 
--- instance
---   (KnownSymbol fn, KnownSymbol ln) =>
---   Description (Person fn ln) where
---   describe _ =
---     symbolVal (Proxy @fn) <> " " <> symbolVal (Proxy @ln)
+instance Description 'False where
+  describe _ = "not verified"
 
--- instance
---   ( KnownSymbol login
---   , Description person
---   , BoolDescription verified
---   ) =>
---   Description (User login verified person) where
---   describe _ = symbolVal (Proxy @login)
---     <> " " <> describe (Proxy @person)
---     <> " (" <> describeBool (Proxy @verified) "verified" "not verified"
---     <> ")"
+instance
+  (KnownSymbol fn, KnownSymbol ln) =>
+  Description ('Person fn ln) where
+  describe _ =
+    symbolVal (Proxy @fn) <> " " <> symbolVal (Proxy @ln)
 
+instance
+  ( KnownSymbol login
+  , Description person
+  , Description verified
+  ) =>
+  Description ('User login verified person) where
+  describe _ = symbolVal (Proxy @login)
+    <> " " <> describe (Proxy @person)
+    <> " (" <> describe (Proxy @verified)
+    <> ")"
 
--- getUserDescription
---   :: forall login pincode verified person
---    . ( KnownSymbol login
---      , KnownNat pincode
---      , Description person
---      , BoolDescription verified
---      )
---   => Proxy (u :: UserType login verified person)
---   -> String
--- getUserDescription _
---      = "User: " <> symbolVal (Proxy @login)
---     <> "verified: " <>  describeBool (Proxy @verified) "verified" "not verified"
---     <> ", pincode: " <> show (natVal (Proxy @pincode))
---     <> ", Person: " <> describe (Proxy @person)
+getUserDescription
+  :: forall login pincode verified person
+   . ( KnownSymbol login
+     , KnownNat pincode
+     , Description person
+     , Description verified
+     )
+  => Proxy ('User login verified person)
+  -> String
+getUserDescription _
+     = "User: " <> symbolVal (Proxy @login)
+    <> "verified: " <>  describe (Proxy @verified)
+    <> ", pincode: " <> show (natVal (Proxy @pincode))
+    <> ", Person: " <> describe (Proxy @person)

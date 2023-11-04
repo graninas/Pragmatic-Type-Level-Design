@@ -7,13 +7,14 @@ import Cellular.Language.Board
 import Cellular.Language.Algorithm
 import Cellular.Language.Automaton
 import Cellular.Assets.Automata.Boards
+import Cellular.Assets.Automata.LifeLike
 
 
--- B3/S23
+-- Game of Life rule (B3/S23):
 type GoLStep = 'Step
-  '[ 'StateTransition 0 1 '[ 'CellsCount 1 '[3 ]]   -- "Born rule"
-   , 'StateTransition 1 1 '[ 'CellsCount 1 '[2,3]]  -- "Survive rule"
-   , 'DefaultTransition 0
+  '[ 'StateTransition D A '[ 'CellsCount A '[3  ]]
+   , 'StateTransition A A '[ 'CellsCount A '[2,3]]
+   , 'DefaultTransition D
    ]
 
 type GoLRule = 'Rule

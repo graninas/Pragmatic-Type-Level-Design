@@ -7,11 +7,13 @@ import Cellular.Language.Board
 import Cellular.Language.Algorithm
 import Cellular.Language.Automaton
 import Cellular.Assets.Automata.Boards
+import Cellular.Assets.Automata.LifeLike
+
 
 -- B2/S
 type SeedsStep = 'Step
-  '[ 'StateTransition 0 1 '[ 'CellsCount 1 '[2]]  -- "Born rule"
-   , 'DefaultTransition 0
+  '[ 'StateTransition D A '[ 'CellsCount A '[2]]  -- "Born rule"
+   , 'DefaultTransition D
    ]
 
 type SeedsRule = 'Rule

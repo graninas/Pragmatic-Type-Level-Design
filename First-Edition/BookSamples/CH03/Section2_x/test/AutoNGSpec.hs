@@ -19,11 +19,14 @@ import qualified Data.Map as Map
 
 type Open2StateBoard = SquareGrid Open         -- Type application to types
 
+type D = 0    -- Dead cell state
+type A = 1    -- Alive cell state
 
+-- Game of Life rule (B3/S23):
 type GoLStep = 'Step
-  '[ 'StateTransition 0 1 '[ 'CellsCount 1 '[3 ]]   -- "Born rule"
-   , 'StateTransition 1 1 '[ 'CellsCount 1 '[2,3]]  -- "Survive rule"
-   , 'DefaultTransition 0
+  '[ 'StateTransition D A '[ 'CellsCount A '[3  ]]
+   , 'StateTransition A A '[ 'CellsCount A '[2,3]]
+   , 'DefaultTransition D
    ]
 
 type GameOfLife = 'Rule

@@ -12,11 +12,17 @@ import GHC.TypeLits
 import Control.Monad.Reader
 
 
-class Description a where
+class Description (a :: any) where
   describe :: Proxy a -> String
 
 instance Description Bool where
   describe _ = "???"
+
+instance Description 'True where
+  describe _ = "verified"
+
+instance Description 'False where
+  describe _ = "not verified"
 
 class BoolDescription (a :: Bool) where
   describeBool
@@ -30,12 +36,6 @@ instance BoolDescription 'True where
 
 instance BoolDescription 'False where
   describeBool _ _ onFalse = onFalse
-
-instance Description 'True where
-  describe _ = "verified"
-
-instance Description 'False where
-  describe _ = "not verified"
 
 data Person (firstName :: Symbol) (lastName :: Symbol)
 data User

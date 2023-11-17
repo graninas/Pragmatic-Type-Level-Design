@@ -21,10 +21,6 @@ import GHC.TypeLits
 import qualified Data.Map as Map
 
 
-import Text.PrettyPrint
-
--- -------------------------------------------------
-
 type Coords = GenericCoords
 
 fillBoard2Dim

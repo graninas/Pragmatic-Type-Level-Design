@@ -24,8 +24,6 @@ import GHC.TypeLits
 import qualified Data.Map as Map
 
 
-import Text.PrettyPrint
-
 -- -------------------------------------------------
 
 fillBoard2Dim

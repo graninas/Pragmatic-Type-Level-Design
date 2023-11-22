@@ -32,6 +32,7 @@ printHelp = do
 main :: IO ()
 main = do
   putStrLn "Welcome to the world of cellular automata!"
+  putStrLn "\nN.B., only 2-dimensional automata supported now."
   _ <- printHelp
 
   worldsRef <- newIORef Map.empty

@@ -18,7 +18,6 @@ import App.Existential.Worlds as X (Worlds)
 import App.Action ( AppAction, continue, continueWithMsg )
 import Cellular.Automaton
 import Cellular.Language.Board
-import Cellular.Language.Algorithm
 import Cellular.Language.Automaton
 
 import qualified Data.Map as Map
@@ -28,7 +27,6 @@ import Data.Traversable (for)
 import Data.List (intercalate)
 import Control.Exception ( SomeException, try )
 import Text.Read (readMaybe)
-import Control.Monad (join)
 import System.Directory
 
 
@@ -41,39 +39,56 @@ printBoard board = do
         maxX = maximum xs
         minY = minimum ys
         maxY = maximum ys
-        printRow board coords@[_, x]
-            | x == maxX = putStrLn $ cellChar $ Map.findWithDefault 0 coords board
-            | otherwise = putStr   $ cellChar $ Map.findWithDefault 0 coords board
+        printRow b coords@[_, x]
+            | x == maxX = putStrLn $ cellChar $ Map.findWithDefault 0 coords b
+            | otherwise = putStr   $ cellChar $ Map.findWithDefault 0 coords b
+        printRow _ _ = error "Only 2 dimension automata supported yet."
+        cellChar 0 = "."
         cellChar 1 = "#"
-        cellChar 0  = "."
+        cellChar n = error $ "Char not supported: " <> show n
     mapM_ (printRow board) [[y, x] | y <- [minY..maxY], x <- [minX..maxX]]
 
 
-loadFromFile :: FilePath -> IO Board
-loadFromFile path = do
+loadFromFile2 :: FilePath -> IO Board
+loadFromFile2 path = do
   (content :: String) <- readFile path
 
   let (rows :: [String]) = lines content
   let (cells :: [[StateIdx]]) = map (map toCell) rows
 
-  pure (toBoard cells)
+  pure (toBoard2 cells)
   where
     toCell :: Char -> StateIdx
     toCell 'x' = 1
     toCell _ = 0
 
-    toBoard :: [[StateIdx]] -> Board
-    toBoard cells = error "not implemented"
+toBoard2 :: [[StateIdx]] -> Board
+toBoard2 cells
+  = Map.fromList
+  $ map (\((x,y), cell) -> ([x, y], cell))
+  $ toBoard2' cells
+
+toBoard2' :: [[StateIdx]] -> [((Int, Int), StateIdx)]
+toBoard2' cells = let
+  ixedCells :: [(Int, [(Int, StateIdx)])] = zip [1..] (map (zip [1..]) cells)
+  in foldr joinCells [] ixedCells
+  where
+    joinCells
+      :: (Int, [(Int, StateIdx)])
+      -> [((Int, Int), StateIdx)]
+      -> [((Int, Int), StateIdx)]
+    joinCells (i, rs) lst =
+      lst ++ map (\(j, cell) -> ((i, j), cell)) rs
 
 
-loadWorld
+loadWorld2
   :: forall rule        -- Brings `rule` into the scope of body
    . IAutomaton rule     -- Demands the `rule` to be automaton.
   => Proxy rule         -- Highlights what rule type was requrested by the caller.
   -> FilePath
   -> IO (Either String WorldInstance)
-loadWorld _ path = do
-  eBoard <- try (loadFromFile path)
+loadWorld2 _ path = do
+  eBoard <- try (loadFromFile2 path)
   case eBoard of
     Left (err :: SomeException) -> pure (Left (show err))
     Right board -> pure (Right (WI @rule 0 (CW board)))    -- specifying the automaton rule
@@ -153,7 +168,7 @@ processLoad worldsRef = do
       putStrLn "\nEnter world path:"
       path <- getLine
 
-      eWI <- loadWorld proxy path
+      eWI <- loadWorld2 proxy path
 
       case eWI of
         Left err  -> continueWithMsg ("Failed to load [" <> ruleCode <> "]: " <> err)
@@ -181,7 +196,7 @@ processLoadPredef worldsRef = do
       Nothing -> pure "Unknown rule."
       Just (RI proxy) -> do
         let file = execPath <> "/BookSamples/CH03/Section2p2" <> f
-        eWI <- loadWorld proxy file
+        eWI <- loadWorld2 proxy file
         case eWI of
           Left err  -> pure ("Failed to load [" <> c <> "]: " <> err)
           Right wi -> do

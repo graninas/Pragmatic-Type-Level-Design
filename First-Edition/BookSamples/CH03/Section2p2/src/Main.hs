@@ -22,6 +22,7 @@ printHelp = do
   putStrLn "quit   - exit"
   putStrLn "rules  - list supported rules"
   putStrLn "load   - load a world"
+  putStrLn "predef - load predefined worlds"
   putStrLn "worlds - list loaded worlds"
   putStrLn "step   - step a world once"
   putStrLn "print  - print a world"
@@ -47,6 +48,7 @@ go worldsRef = do
     "rules"  -> EApp.processListRuleCodes
     "worlds" -> EApp.processListWorlds worldsRef
     "load"   -> EApp.processLoad worldsRef
+    "predef" -> EApp.processLoadPredef worldsRef
     "step"   -> EApp.processStep worldsRef
     "print"  -> EApp.processPrint worldsRef
     _ -> continueWithMsg "Unknown command. Type `help` to see the list of commands."

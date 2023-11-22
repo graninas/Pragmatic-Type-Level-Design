@@ -5,6 +5,7 @@ module App.Existential.App
   , processListRuleCodes
   , processListWorlds
   , processLoad
+  , processLoadPredef
   , processPrint
   , processStep
   ) where
@@ -23,9 +24,12 @@ import Cellular.Language.Automaton
 import qualified Data.Map as Map
 import Data.Proxy ( Proxy(..) )
 import Data.IORef ( IORef, readIORef, writeIORef )
+import Data.Traversable (for)
+import Data.List (intercalate)
 import Control.Exception ( SomeException, try )
 import Text.Read (readMaybe)
 import Control.Monad (join)
+import System.Directory
 
 
 printBoard :: Board -> IO ()
@@ -160,3 +164,31 @@ processLoad worldsRef = do
           writeIORef worldsRef worlds'
           continueWithMsg ("Successfully loaded [" <> ruleCode <> "], index: " <> show idx)
 
+
+processLoadPredef :: IORef Worlds -> IO AppAction
+processLoadPredef worldsRef = do
+  let predefs = [ ("gol", "/data/GoL/glider.txt")
+                , ("seeds", "/data/Seeds/world1.txt")
+                ]
+
+  putStrLn "\nPredefined worlds to load:"
+  mapM_ (\(c, f) -> putStrLn $ "[" <> c <> "]: " <> f) predefs
+
+  execPath <- getCurrentDirectory     -- for some reason returns the stack.yaml containing folder
+
+  rs <- for predefs $ \(c, f) -> do
+    case Map.lookup c supportedRulesDict of
+      Nothing -> pure "Unknown rule."
+      Just (RI proxy) -> do
+        let file = execPath <> "/BookSamples/CH03/Section2p2" <> f
+        eWI <- loadWorld proxy file
+        case eWI of
+          Left err  -> pure ("Failed to load [" <> c <> "]: " <> err)
+          Right wi -> do
+            worlds <- readIORef worldsRef
+            let idx = Map.size worlds
+            let worlds' = Map.insert idx wi worlds
+            writeIORef worldsRef worlds'
+            pure ("Successfully loaded [" <> c <> "], index: " <> show idx)
+
+  continueWithMsg $ intercalate "\n" rs

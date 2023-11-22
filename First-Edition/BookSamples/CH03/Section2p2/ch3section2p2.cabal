@@ -53,6 +53,7 @@ library
     , bytestring
     , constraints
     , containers
+    , directory
     , free
     , lens
     , mtl
@@ -107,6 +108,7 @@ executable ch3section2p2
     , bytestring
     , constraints
     , containers
+    , directory
     , free
     , lens
     , mtl
@@ -150,6 +152,7 @@ test-suite functional
     , ch3section2p2
     , constraints
     , containers
+    , directory
     , free
     , hspec
     , lens

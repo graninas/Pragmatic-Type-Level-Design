@@ -36,6 +36,7 @@ dependencies:
 - random
 - lens
 - constraints
+- directory
 
 library:
   source-dirs:

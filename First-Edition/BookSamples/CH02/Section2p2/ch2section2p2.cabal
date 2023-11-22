@@ -29,7 +29,6 @@ library
       Domain.Automaton
       Domain.Board
       Domain.Cell
-      FightClub
       Main
   other-modules:
       Paths_ch2section2p2
@@ -85,7 +84,6 @@ executable ch2section2p2
       Domain.Automaton
       Domain.Board
       Domain.Cell
-      FightClub
       Paths_ch2section2p2
   hs-source-dirs:
       ./src

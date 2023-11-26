@@ -89,11 +89,11 @@ instance (ApplyTransition t, MakeCellUpdate ts) =>
       Nothing       -> makeCellUpdate (Proxy @ts) nsLookupF coords oldState
 
 instance
-  (ApplyConditions cs, KnownNat from, KnownNat to) =>
-  ApplyTransition ('StateTransition from to cs) where
+  (ApplyCondition cond, KnownNat from, KnownNat to) =>
+  ApplyTransition ('StateTransition from to cond) where
   applyTransition _ ns oldState =
     if oldState == fromIntegral (natVal (Proxy @from))
-      && applyConditions (Proxy @cs) ns
+      && applyCondition (Proxy @cond) ns
     then Just (fromIntegral (natVal (Proxy @to)))
     else Nothing
 
@@ -106,20 +106,9 @@ instance
     $ natVal
     $ Proxy @to
 
-
-instance ApplyConditions '[] where
-  applyConditions _ _ = True
-
-instance
-  (ApplyCondition c, ApplyConditions cs) =>
-  ApplyConditions (c ': cs) where
-  applyConditions _ ns =
-    applyCondition (Proxy @c) ns
-    && applyConditions (Proxy @cs) ns
-
 instance
   (KnownNat cellIdxNat, ToIntList counts) =>
-  ApplyCondition ('CellsCount cellIdxNat counts) where
+  ApplyCondition ('NeighborsCount cellIdxNat counts) where
   applyCondition _ ns =
     let
         target = fromIntegral $ natVal $ Proxy @cellIdxNat

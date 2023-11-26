@@ -49,8 +49,8 @@ cross2Expected = Map.fromList
   ]
 
 type B2S23Transitions =
-  '[ 'StateTransition D A '[ 'CellsCount A '[3  ]]
-   , 'StateTransition A A '[ 'CellsCount A '[2,3]]
+  '[ 'StateTransition D A ('NeighborsCount A '[3  ])
+   , 'StateTransition A A ('NeighborsCount A '[2,3])
    , 'DefaultTransition D
    ]
 

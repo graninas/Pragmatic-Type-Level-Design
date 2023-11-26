@@ -20,7 +20,6 @@ default-extensions:
 - InstanceSigs
 
 dependencies:
-- pretty
 - base >= 4.7 && < 5
 - bytestring
 - mtl
@@ -37,6 +36,7 @@ dependencies:
 - random
 - lens
 - constraints
+- directory
 
 library:
   source-dirs:

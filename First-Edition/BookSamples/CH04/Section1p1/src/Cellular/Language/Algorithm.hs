@@ -14,23 +14,23 @@ import Control.Monad (mapM)
 import Cellular.Language.Board
 
 
-type StateIdxNat = Nat
-type CountsNat = [Nat]
-
 data Neighborhood where
   AdjacentsLvl :: Nat -> Neighborhood
 
+type StateIdxNat = Nat
+type CountsNat = [Nat]
+
 data CellCondition
-  = CellsCount
-  { ccState :: StateIdxNat             -- what state to count
-  , ccQuantity :: CountsNat            -- how many cells of this state should be
-  }                                    -- to activate the condition
+  = NeighborsCount
+  { ccState :: StateIdxNat                  -- what state to count
+  , ccQuantity :: CountsNat                 -- how many cells of this state should be
+  }                                         -- to activate the condition
 
 data CustomStateTransition
   = StateTransition
   { cstFromState :: StateIdxNat             -- from state
-  , cstToState :: StateIdxNat               -- to state
-  , cstConditions :: [CellCondition]        -- neighbors count conditions
+  , cstToState   :: StateIdxNat             -- to state
+  , cstCondition :: CellCondition           -- condition
   }
   | DefaultTransition
   { cstDefaultState :: StateIdxNat

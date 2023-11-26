@@ -12,8 +12,8 @@ import Cellular.Assets.Automata.LifeLike
 
 -- Game of Life rule (B3/S23):
 type GoLStep = 'Step
-  '[ 'StateTransition D A '[ 'CellsCount A '[3  ]]
-   , 'StateTransition A A '[ 'CellsCount A '[2,3]]
+  '[ 'StateTransition D A ('NeighborsCount A '[3  ])
+   , 'StateTransition A A ('NeighborsCount A '[2,3])
    , 'DefaultTransition D
    ]
 

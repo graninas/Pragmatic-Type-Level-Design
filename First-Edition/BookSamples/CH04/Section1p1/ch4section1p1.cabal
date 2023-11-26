@@ -14,6 +14,21 @@ build-type:     Simple
 
 library
   exposed-modules:
+      App.Action
+      App.Existential.App
+      App.Existential.Rules
+      App.Existential.Worlds
+      Cellular.Assets.Automata.Boards
+      Cellular.Assets.Automata.GameOfLife
+      Cellular.Assets.Automata.LifeLike
+      Cellular.Assets.Automata.Replicator
+      Cellular.Assets.Automata.Seeds
+      Cellular.Automaton
+      Cellular.Implementation.Algorithm
+      Cellular.Language.Algorithm
+      Cellular.Language.Automaton
+      Cellular.Language.Board
+      Common.NatList
       Main
   other-modules:
       Paths_ch4section1p1
@@ -38,11 +53,11 @@ library
     , bytestring
     , constraints
     , containers
+    , directory
     , free
     , lens
     , mtl
     , newtype-generics
-    , pretty
     , random
     , scientific
     , template-haskell
@@ -56,6 +71,21 @@ library
 executable ch4section1p1
   main-is: Main.hs
   other-modules:
+      App.Action
+      App.Existential.App
+      App.Existential.Rules
+      App.Existential.Worlds
+      Cellular.Assets.Automata.Boards
+      Cellular.Assets.Automata.GameOfLife
+      Cellular.Assets.Automata.LifeLike
+      Cellular.Assets.Automata.Replicator
+      Cellular.Assets.Automata.Seeds
+      Cellular.Automaton
+      Cellular.Implementation.Algorithm
+      Cellular.Language.Algorithm
+      Cellular.Language.Automaton
+      Cellular.Language.Board
+      Common.NatList
       Paths_ch4section1p1
   hs-source-dirs:
       ./src
@@ -78,11 +108,11 @@ executable ch4section1p1
     , bytestring
     , constraints
     , containers
+    , directory
     , free
     , lens
     , mtl
     , newtype-generics
-    , pretty
     , random
     , scientific
     , template-haskell
@@ -97,6 +127,8 @@ test-suite functional
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      AutomatonSpec
+      TransitionsSpec
       Paths_ch4section1p1
   hs-source-dirs:
       test/
@@ -120,12 +152,12 @@ test-suite functional
     , ch4section1p1
     , constraints
     , containers
+    , directory
     , free
     , hspec
     , lens
     , mtl
     , newtype-generics
-    , pretty
     , random
     , scientific
     , template-haskell

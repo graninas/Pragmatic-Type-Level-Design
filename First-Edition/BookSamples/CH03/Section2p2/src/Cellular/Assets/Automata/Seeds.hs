@@ -12,7 +12,7 @@ import Cellular.Assets.Automata.LifeLike
 
 -- B2/S
 type SeedsStep = 'Step
-  '[ 'StateTransition D A '[ 'CellsCount A '[2]]  -- "Born rule"
+  '[ 'StateTransition D A ('NeighborsCount A '[2])  -- "Born rule"
    , 'DefaultTransition D
    ]
 

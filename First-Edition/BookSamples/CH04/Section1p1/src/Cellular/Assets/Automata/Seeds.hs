@@ -11,9 +11,8 @@ import Cellular.Assets.Automata.LifeLike
 
 
 -- B2/S
-type SeedsStep = 'Step
+type SeedsStep = 'Step ('DefState D)
   '[ 'StateTransition D A ('NeighborsCount A '[2])  -- "Born rule"
-   , 'DefaultTransition D
    ]
 
 type SeedsRule = 'Rule

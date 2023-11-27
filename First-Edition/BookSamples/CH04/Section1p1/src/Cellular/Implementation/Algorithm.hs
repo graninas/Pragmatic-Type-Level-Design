@@ -3,6 +3,7 @@
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE FlexibleInstances #-}
 module Cellular.Implementation.Algorithm where
 
 import GHC.TypeLits
@@ -35,6 +36,7 @@ class MakeStep (step :: CustomStep) where
 class MakeCellUpdate (ts :: [CustomStateTransition]) where
   makeCellUpdate
     :: Proxy ts
+    -> StateIdx                       -- def state
     -> (GenericCoords -> Cells)       -- neighborhood lookup
     -> GenericCoords                  -- current cell
     -> StateIdx                       -- current cell state
@@ -44,7 +46,7 @@ class ApplyTransition (t :: CustomStateTransition) where
   applyTransition
     :: Proxy t
     -> Cells
-    -> StateIdx
+    -> StateIdx                       -- current cell state
     -> Maybe StateIdx
 
 class ApplyConditions (cs :: [CellCondition]) where
@@ -55,41 +57,51 @@ class ApplyCondition (c :: CellCondition) where
 
 
 instance
-  KnownNat lvl =>
+  ( KnownNat lvl
+  ) =>
   MakeNeighborhoodLookup ('AdjacentsLvl lvl) where
   makeNeighborhoodLookup _ board coords = let
     ns = generateNeighborhood coords
           $ AdjacentsLvl
           $ fromIntegral
           $ natVal (Proxy @lvl)
-    in getCells ns 0 board        -- Default value
+    in getCells ns 0 board        -- FIXME: default value
 
 
 instance
-  MakeCellUpdate ts =>
-  MakeStep ('Step ts) where
+  ( MakeCellUpdate ts
+  , KnownNat def
+  ) =>
+  MakeStep ('Step ('DefState def) ts) where
   makeStep _ nProxy board = let
+    def = fromIntegral $ natVal $ Proxy @def
     nsLookupF = makeNeighborhoodLookup nProxy board
-    updateF = makeCellUpdate (Proxy @ts) nsLookupF
+    updateF = makeCellUpdate (Proxy @ts) def nsLookupF
     board' = Map.mapWithKey updateF board
     in board'
 
 -- Base case: No transition, return the default state
 instance MakeCellUpdate '[] where
-  makeCellUpdate _ _ _ _ = 0    -- Default state
+  makeCellUpdate _ def _ _ _ = def
 
 -- Inductive case: Try first transition and recur if it doesn't fit
-instance (ApplyTransition t, MakeCellUpdate ts) =>
+instance
+  ( ApplyTransition t
+  , MakeCellUpdate ts
+  ) =>
   MakeCellUpdate (t ': ts) where
-  makeCellUpdate _ nsLookupF coords oldState = let
+  makeCellUpdate _ def nsLookupF coords oldState = let
     ns = nsLookupF coords
     mbApplied = applyTransition (Proxy @t) ns oldState
     in case mbApplied of
       Just newState -> newState
-      Nothing       -> makeCellUpdate (Proxy @ts) nsLookupF coords oldState
+      Nothing       -> makeCellUpdate (Proxy @ts) def nsLookupF coords oldState
 
 instance
-  (ApplyCondition cond, KnownNat from, KnownNat to) =>
+  ( ApplyCondition cond
+  , KnownNat from
+  , KnownNat to
+  ) =>
   ApplyTransition ('StateTransition from to cond) where
   applyTransition _ ns oldState =
     if oldState == fromIntegral (natVal (Proxy @from))
@@ -98,16 +110,9 @@ instance
     else Nothing
 
 instance
-  KnownNat to =>
-  ApplyTransition ('DefaultTransition to) where
-  applyTransition _ _ _
-    = Just
-    $ fromIntegral
-    $ natVal
-    $ Proxy @to
-
-instance
-  (KnownNat cellIdxNat, ToIntList counts) =>
+  ( KnownNat cellIdxNat
+  , ToIntList counts
+  ) =>
   ApplyCondition ('NeighborsCount cellIdxNat counts) where
   applyCondition _ ns =
     let
@@ -115,16 +120,6 @@ instance
         cnt = length (filter (\(_,idx) -> idx == target) ns)
         counts = toIntList (Proxy @counts)
     in cnt `elem` counts
-
-
-neighbors
-  :: GenericCoords
-  -> Neighborhood
-  -> Board
-  -> Cells
-neighbors coords nsDef board = let
-  ns = generateNeighborhood coords nsDef
-  in getCells ns 0 board    -- TODO: default cell state
 
 generateNeighborhood
   :: GenericCoords

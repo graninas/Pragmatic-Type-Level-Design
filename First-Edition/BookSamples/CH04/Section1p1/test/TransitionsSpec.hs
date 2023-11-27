@@ -48,10 +48,9 @@ cross2Expected = Map.fromList
   , ([2,0],0),([2,1],0),([2,2],0)
   ]
 
-type B2S23Transitions =
+type B2S23Step = 'Step ('DefState D)
   '[ 'StateTransition D A ('NeighborsCount A '[3  ])
    , 'StateTransition A A ('NeighborsCount A '[2,3])
-   , 'DefaultTransition D
    ]
 
 
@@ -60,6 +59,7 @@ class ApplyTransition (t :: CustomStateTransition) where
     :: Proxy t
     -> Board
     -> Coords
+    -> Int           -- Old state
     -> Maybe Nat
 
 
@@ -67,45 +67,50 @@ class EvaluateTransitions (tsList :: [ts]) where
   evaluateTransitions
     :: Proxy tsList
     -> Board
+    -> Int        -- Default state
     -> Coords
-    -> Int
-    -> Int
+    -> Int        -- Old state
+    -> Int        -- New state
+
+class EvaluateStep (step :: CustomStep) where
+  evaluateStep
+    :: Proxy step
+    -> Board
+    -> Board
+
 
 instance ApplyTransition
   ('StateTransition x y ts) where
-  applyTransition _ _ _ = undefined
-
-instance ApplyTransition
-  ('DefaultTransition x) where
-  applyTransition _ _ _ = undefined
-
-
+  applyTransition _ _ _ _ = undefined
 
 instance EvaluateTransitions '[] where
-  evaluateTransitions _ _ _ oldCell = oldCell  -- FIXME: default case
+  evaluateTransitions _ _ def _ _ = def
 
 instance
   ( EvaluateTransitions ts
   , ApplyTransition t
   ) =>
   EvaluateTransitions (t ': ts) where
-  evaluateTransitions _ board coords oldCell =
-    case applyTransition (Proxy @t) board coords of
-      Nothing -> evaluateTransitions (Proxy @ts) board coords oldCell
-      Just newCell -> fromIntegral newCell
+  evaluateTransitions _ board def coords old =
+    case applyTransition (Proxy @t) board coords old of
+      Nothing -> evaluateTransitions (Proxy @ts) board def coords old
+      Just new -> fromIntegral new
 
-evaluateTransitions'
-    :: EvaluateTransitions ts
-    => Board
-    -> Proxy ts
-    -> Board
-evaluateTransitions' board proxy =
-  Map.mapWithKey (evaluateTransitions proxy board) board
+instance
+  ( EvaluateTransitions ts
+  , KnownNat def
+  ) =>
+  EvaluateStep ('Step ('DefState def) ts) where
+  evaluateStep proxy board =
+    let def = fromIntegral $ natVal $ Proxy @def
+    in Map.mapWithKey (evaluateTransitions (Proxy @ts) board def) board
+
+
 
 spec :: Spec
 spec = do
   describe "Case-driven design" $ do
     it "Cross test case" $ do
       pendingWith "Incomplete functionality"
-      let cross2 = evaluateTransitions' cross (Proxy @B2S23Transitions)
+      let cross2 = evaluateStep (Proxy @B2S23Step) cross
       cross2 `shouldBe` cross2Expected

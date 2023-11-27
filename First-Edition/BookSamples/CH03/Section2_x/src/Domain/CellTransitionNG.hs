@@ -19,7 +19,7 @@ type StateIdxNat = Nat
 type CountsNat = [Nat]
 
 data CellCondition where
-  CellsCount
+  NeighborsCount
     :: StateIdxNat    -- what state to count
     -> CountsNat      -- how many cells of this state should be
     -> CellCondition  -- to activate the condition
@@ -154,7 +154,7 @@ instance (KnownNat  c, ToIntList cs) => ToIntList (c ': cs) where
 
 instance
   (KnownNat cellIdxNat, ToIntList counts) =>
-  ApplyCondition ('CellsCount cellIdxNat counts) where
+  ApplyCondition ('NeighborsCount cellIdxNat counts) where
   applyCondition _ ns =
     let
         target = fromIntegral $ natVal $ Proxy @cellIdxNat

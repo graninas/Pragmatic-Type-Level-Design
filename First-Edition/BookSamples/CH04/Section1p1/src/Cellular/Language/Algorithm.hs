@@ -20,6 +20,9 @@ data Neighborhood where
 type StateIdxNat = Nat
 type CountsNat = [Nat]
 
+data DefaultState
+  = DefState StateIdxNat
+
 data CellCondition
   = NeighborsCount
   { ccState :: StateIdxNat                  -- what state to count
@@ -28,16 +31,14 @@ data CellCondition
 
 data CustomStateTransition
   = StateTransition
-  { cstFromState :: StateIdxNat             -- from state
-  , cstToState   :: StateIdxNat             -- to state
-  , cstCondition :: CellCondition           -- condition
-  }
-  | DefaultTransition
-  { cstDefaultState :: StateIdxNat
+  { cstFromState :: StateIdxNat
+  , cstToState   :: StateIdxNat
+  , cstCondition :: CellCondition
   }
 
 data CustomStep
   = Step
-  { csTransitions :: [CustomStateTransition]
+  { csDefaultState :: DefaultState
+  , csTransitions :: [CustomStateTransition]
   }
 

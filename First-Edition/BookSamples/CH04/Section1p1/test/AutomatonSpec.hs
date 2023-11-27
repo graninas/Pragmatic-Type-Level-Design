@@ -25,6 +25,14 @@ import qualified Data.Map as Map
 
 
 -- -------------------------------------------------
+neighbors
+  :: GenericCoords
+  -> Neighborhood
+  -> Board
+  -> Cells
+neighbors coords ns board = let
+  ns' = generateNeighborhood coords ns
+  in getCells ns' 0 board
 
 fillBoard2Dim
   :: GenericCoords

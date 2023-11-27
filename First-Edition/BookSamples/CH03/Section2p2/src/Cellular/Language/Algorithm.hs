@@ -28,9 +28,9 @@ data CellCondition
 
 data CustomStateTransition
   = StateTransition
-  { cstFromState :: StateIdxNat             -- from state
-  , cstToState   :: StateIdxNat             -- to state
-  , cstCondition :: CellCondition           -- condition
+  { cstFromState :: StateIdxNat
+  , cstToState   :: StateIdxNat
+  , cstCondition :: CellCondition
   }
   | DefaultTransition
   { cstDefaultState :: StateIdxNat

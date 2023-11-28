@@ -10,7 +10,7 @@ import Cellular.Assets.Automata.Boards
 import Cellular.Assets.Automata.LifeLike
 
 
--- B2/S
+-- Seeds (B2/S)
 type SeedsStep = 'Step
   '[ 'StateTransition D A ('NeighborsCount A '[2])  -- "Born rule"
    , 'DefaultTransition D
@@ -19,7 +19,7 @@ type SeedsStep = 'Step
 type SeedsRule = 'Rule
   "Seeds"
   "seeds"
-  Open2StateBoard
+  OpenBoard
   ('AdjacentsLvl 1)
   SeedsStep
 

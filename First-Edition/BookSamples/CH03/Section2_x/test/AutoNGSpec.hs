@@ -17,7 +17,7 @@ import qualified Data.Map as Map
 -- -------------------------------------------------
 
 
-type Open2StateBoard = SquareGrid Open         -- Type application to types
+type OpenBoard = SquareGrid Open         -- Type application to types
 
 type D = 0    -- Dead cell state
 type A = 1    -- Alive cell state

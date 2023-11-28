@@ -36,9 +36,14 @@ data CustomStateTransition
   , cstCondition :: CellCondition
   }
 
-data CustomStep
-  = Step
-  { csDefaultState :: DefaultState
-  , csTransitions :: [CustomStateTransition]
+data CustomState
+  = State
+  { csName     :: Symbol
+  , csStateIdx :: StateIdxNat
   }
 
+data CustomStep (states :: [CustomState])
+  = Step
+  { csDefaultState :: DefaultState
+  , csTransitions  :: [CustomStateTransition]
+  }

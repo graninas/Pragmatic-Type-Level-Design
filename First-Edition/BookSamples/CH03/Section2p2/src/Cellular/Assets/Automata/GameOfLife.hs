@@ -10,7 +10,7 @@ import Cellular.Assets.Automata.Boards
 import Cellular.Assets.Automata.LifeLike
 
 
--- Game of Life rule (B3/S23):
+-- Game of Life (B3/S23)
 type GoLStep = 'Step
   '[ 'StateTransition D A ('NeighborsCount A '[3  ])
    , 'StateTransition A A ('NeighborsCount A '[2,3])
@@ -20,6 +20,6 @@ type GoLStep = 'Step
 type GoLRule = 'Rule
   "Game of Life"
   "gol"
-  Open2StateBoard
+  OpenBoard
   ('AdjacentsLvl 1)
   GoLStep

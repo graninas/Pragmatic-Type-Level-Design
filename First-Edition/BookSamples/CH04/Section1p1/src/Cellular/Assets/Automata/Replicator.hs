@@ -1,6 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TypeApplications #-}
 module Cellular.Assets.Automata.Replicator where
 
 import Cellular.Language.Board
@@ -10,15 +11,16 @@ import Cellular.Assets.Automata.Boards
 import Cellular.Assets.Automata.LifeLike
 
 
--- B1357/S1357
+-- Replicator (B1357/S1357)
 type ReplicatorStep = 'Step ('DefState D)
   '[ 'StateTransition D A ('NeighborsCount A '[1,3,5,7])  -- "Born rule"
    , 'StateTransition A A ('NeighborsCount A '[1,3,5,7])  -- "Survive rule"
    ]
 
 type ReplicatorRule = 'Rule
+  @LifeLikeStates
   "Replicator"
   "repl"
-  Open2StateBoard
+  OpenBoard
   ('AdjacentsLvl 1)
   ReplicatorStep

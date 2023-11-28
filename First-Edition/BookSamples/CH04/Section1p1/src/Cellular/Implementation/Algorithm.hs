@@ -4,6 +4,11 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE PolyKinds #-}
+
+
+{-# LANGUAGE UndecidableInstances #-}
 module Cellular.Implementation.Algorithm where
 
 import GHC.TypeLits
@@ -16,6 +21,7 @@ import Common.NatList
 
 import Cellular.Language.Board
 import Cellular.Language.Algorithm
+import Cellular.Language.Integrity
 
 
 class MakeNeighborhoodLookup (n :: Neighborhood) where
@@ -25,7 +31,10 @@ class MakeNeighborhoodLookup (n :: Neighborhood) where
     -> GenericCoords
     -> Cells
 
-class MakeStep (step :: CustomStep) where
+class
+  ( Verify (StatesNotEmpty states)   -- FlexibleContexts
+  ) => MakeStep
+  (step :: CustomStep (states :: [CustomState])) where
   makeStep
     :: MakeNeighborhoodLookup neiborhood
     => Proxy step
@@ -71,8 +80,11 @@ instance
 instance
   ( MakeCellUpdate ts
   , KnownNat def
+  , Verify (StatesNotEmpty states)   -- FlexibleContexts used here
+  , Verify (AtLeastTwoStates states)
+  , Verify (StatesAreUnique states)
   ) =>
-  MakeStep ('Step ('DefState def) ts) where
+  MakeStep ('Step @states ('DefState def) ts) where
   makeStep _ nProxy board = let
     def = fromIntegral $ natVal $ Proxy @def
     nsLookupF = makeNeighborhoodLookup nProxy board

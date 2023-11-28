@@ -1,6 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TypeApplications #-}
 module Cellular.Assets.Automata.Seeds where
 
 import Cellular.Language.Board
@@ -10,15 +11,16 @@ import Cellular.Assets.Automata.Boards
 import Cellular.Assets.Automata.LifeLike
 
 
--- B2/S
+-- Seeds (B2/S)
 type SeedsStep = 'Step ('DefState D)
   '[ 'StateTransition D A ('NeighborsCount A '[2])  -- "Born rule"
    ]
 
 type SeedsRule = 'Rule
+  @LifeLikeStates
   "Seeds"
   "seeds"
-  Open2StateBoard
+  OpenBoard
   ('AdjacentsLvl 1)
   SeedsStep
 

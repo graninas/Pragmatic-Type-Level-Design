@@ -33,8 +33,11 @@ class IWorld
 
 
 instance
-  (MakeStep step, MakeNeighborhoodLookup neighborhood,
-   KnownSymbol name, KnownSymbol code) =>
+  ( MakeStep step
+  , MakeNeighborhoodLookup neighborhood
+  , KnownSymbol name
+  , KnownSymbol code
+  ) =>
   IAutomaton ('Rule name code board neighborhood step) where
   step = iterateWorld
   name _ = symbolVal (Proxy @name)

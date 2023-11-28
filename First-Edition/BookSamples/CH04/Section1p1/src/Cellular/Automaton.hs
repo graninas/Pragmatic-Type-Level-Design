@@ -19,6 +19,7 @@ import Cellular.Implementation.Algorithm
 
 class IAutomaton
   (rule :: CustomRule
+    (states :: [CustomState])
     (board :: CustomBoard)) where
   step :: CellWorld rule -> CellWorld rule
   name :: Proxy rule -> RuleName
@@ -27,14 +28,18 @@ class IAutomaton
 
 class IWorld
     (rule :: CustomRule
+      (states :: [CustomState])
       (board :: CustomBoard)) where
   initWorld :: CellWorld rule
   initWorld = CW Map.empty
 
 
 instance
-  (MakeStep step, MakeNeighborhoodLookup neighborhood,
-   KnownSymbol name, KnownSymbol code) =>
+  ( MakeStep step
+  , MakeNeighborhoodLookup neighborhood
+  , KnownSymbol name
+  , KnownSymbol code
+  ) =>
   IAutomaton ('Rule name code board neighborhood step) where
   step = iterateWorld
   name _ = symbolVal (Proxy @name)

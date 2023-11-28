@@ -34,12 +34,13 @@ data CustomBoard where
     -> CustomBoard
 
 data CustomRule
+  (states :: [CustomState])
   (board :: CustomBoard) where
   Rule
     :: RuleNameSymb
     -> RuleCodeSymb
     -> CustomBoard
     -> Neighborhood
-    -> CustomStep
-    -> CustomRule board
+    -> CustomStep states
+    -> CustomRule states board
 

@@ -28,6 +28,7 @@ library
       Cellular.Language.Algorithm
       Cellular.Language.Automaton
       Cellular.Language.Board
+      Cellular.Language.Integrity
       Common.NatList
       Main
   other-modules:
@@ -85,6 +86,7 @@ executable ch4section1p1
       Cellular.Language.Algorithm
       Cellular.Language.Automaton
       Cellular.Language.Board
+      Cellular.Language.Integrity
       Common.NatList
       Paths_ch4section1p1
   hs-source-dirs:
@@ -128,6 +130,7 @@ test-suite functional
   main-is: Spec.hs
   other-modules:
       AutomatonSpec
+      IntegritySpec
       TransitionsSpec
       Paths_ch4section1p1
   hs-source-dirs:

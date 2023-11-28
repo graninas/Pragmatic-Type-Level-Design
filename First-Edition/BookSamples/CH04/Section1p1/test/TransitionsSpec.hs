@@ -11,8 +11,10 @@ import Prelude hiding ((<>))
 
 import Cellular.Language.Board
 import Cellular.Language.Algorithm
+import Cellular.Language.Automaton
 import Cellular.Assets.Automata.GameOfLife
 import Cellular.Assets.Automata.LifeLike
+import Cellular.Assets.Automata.Boards
 
 
 import Test.Hspec
@@ -48,11 +50,18 @@ cross2Expected = Map.fromList
   , ([2,0],0),([2,1],0),([2,2],0)
   ]
 
-type B2S23Step = 'Step ('DefState D)
+type B2S23Step states = 'Step @states ('DefState D)
   '[ 'StateTransition D A ('NeighborsCount A '[3  ])
    , 'StateTransition A A ('NeighborsCount A '[2,3])
    ]
 
+type B2S23Rule = 'Rule
+  @LifeLikeStates
+  "Game of Life"
+  "gol"
+  OpenBoard
+  ('AdjacentsLvl 1)
+  (B2S23Step LifeLikeStates)
 
 class ApplyTransition (t :: CustomStateTransition) where
   applyTransition
@@ -72,7 +81,7 @@ class EvaluateTransitions (tsList :: [ts]) where
     -> Int        -- Old state
     -> Int        -- New state
 
-class EvaluateStep (step :: CustomStep) where
+class EvaluateStep (step :: CustomStep (states :: [CustomState])) where
   evaluateStep
     :: Proxy step
     -> Board
@@ -112,5 +121,5 @@ spec = do
   describe "Case-driven design" $ do
     it "Cross test case" $ do
       pendingWith "Incomplete functionality"
-      let cross2 = evaluateStep (Proxy @B2S23Step) cross
+      let cross2 = evaluateStep (Proxy @(B2S23Step LifeLikeStates)) cross
       cross2 `shouldBe` cross2Expected

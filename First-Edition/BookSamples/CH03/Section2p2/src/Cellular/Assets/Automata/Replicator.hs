@@ -10,7 +10,7 @@ import Cellular.Assets.Automata.Boards
 import Cellular.Assets.Automata.LifeLike
 
 
--- B1357/S1357
+-- Replicator (B1357/S1357)
 type ReplicatorStep = 'Step
   '[ 'StateTransition D A ('NeighborsCount A '[1,3,5,7])  -- "Born rule"
    , 'StateTransition A A ('NeighborsCount A '[1,3,5,7])  -- "Survive rule"
@@ -20,6 +20,6 @@ type ReplicatorStep = 'Step
 type ReplicatorRule = 'Rule
   "Replicator"
   "repl"
-  Open2StateBoard
+  OpenBoard
   ('AdjacentsLvl 1)
   ReplicatorStep

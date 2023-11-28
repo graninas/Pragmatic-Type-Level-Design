@@ -1,3 +1,5 @@
-App & tests:
-- Type-level customization eDSL for cellular rules
-- Extensible cellular automaton app
+Integrity verification and testing
+
+- Integrity verification interface: ../Language/Integrity.hs
+- Integrity checks for rules: ../Implementation/Algorithm.hs
+- Integrity tests: IntegritySpec.hs

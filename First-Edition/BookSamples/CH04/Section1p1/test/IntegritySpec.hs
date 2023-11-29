@@ -72,7 +72,8 @@ type B2S23Rule = 'Rule
   ('AdjacentsLvl 1)
   (B2S23Step States2)
 
--- Won't compile:
+
+-- Invalid, won't compile: declared states don't match
 -- Couldn't match kind: '[]
 --   with: '[ 'State "Alive" A, 'State "Dead" D]
 -- type InvalidRule1 = 'Rule
@@ -83,7 +84,8 @@ type B2S23Rule = 'Rule
 --   ('AdjacentsLvl 1)
 --   (B2S23Step '[])
 
--- Won't compile:
+
+-- Invalid, won't compile: declared states don't match
 -- Couldn't match kind: '[ 'State "Alive" A, 'State "Dead" D]
 --   with: '[]
 -- type InvalidRule2 = 'Rule
@@ -94,6 +96,8 @@ type B2S23Rule = 'Rule
 --   ('AdjacentsLvl 1)
 --   (B2S23Step States2)
 
+
+-- Invalid: empty states
 type InvalidRule3 = 'Rule
   @('[])
   "Game of Life"
@@ -103,7 +107,7 @@ type InvalidRule3 = 'Rule
   (B2S23Step '[])
 
 
-
+-- Invalid: only one state declared
 type SingleStates =
   '[ 'State "Single" D
    ]
@@ -117,8 +121,9 @@ type InvalidRule4 = 'Rule
   (B2S23Step SingleStates)
 
 
+-- Invalid: same states found
 type SameStates =
-  '[ 'State "D" D
+  '[ 'State "A" D
    , 'State "D" D
    ]
 
@@ -131,14 +136,44 @@ type InvalidRule5 = 'Rule
   (B2S23Step SameStates)
 
 
+-- Invalid: same names found
+type SameStateNames =
+  '[ 'State "D" A
+   , 'State "D" D
+   ]
+
+type InvalidRule6 = 'Rule
+  @SameStateNames
+  "Game of Life"
+  "gol"
+  OpenBoard
+  ('AdjacentsLvl 1)
+  (B2S23Step SameStateNames)
+
+
+-- Invalid: default state not declared
+type X = 222
+type InvalidDefaultStep states = 'Step @states ('DefState X)
+  '[ 'StateTransition D A ('NeighborsCount A '[3  ])
+   , 'StateTransition A A ('NeighborsCount A '[2,3])
+   ]
+type InvalidRule7 = 'Rule
+  @States2
+  "Game of Life"
+  "gol"
+  OpenBoard
+  ('AdjacentsLvl 1)
+  (InvalidDefaultStep States2)
+
+
 spec :: Spec
 spec = do
   describe "Integrity verification" $ do
-    -- it "States are empty - won't compile" $ do
-    --   verify (Proxy @(StatesNotEmpty '[])) `shouldBe` False
 
-    it "States not empty" $ do
-      verify (Proxy @(StatesNotEmpty LifeLikeStates)) `shouldBe` True
+    it "Successful verification" $ do
+      let world1 = CW cross :: CellWorld B2S23Rule
+      let CW board2 = iterateWorld world1
+      board2 `shouldBe` cross2Expected
 
     -- Won't compile:
     --   No instance for (Verify (StatesNotEmpty '[]))
@@ -148,11 +183,6 @@ spec = do
     --   let CW board2 = iterateWorld world1
     --   board2 `shouldBe` cross2Expected
 
-    it "Single state automata not allowed" $ do
-      let world1 = CW cross :: CellWorld B2S23Rule
-      let CW board2 = iterateWorld world1
-      board2 `shouldBe` cross2Expected
-
     -- Won't compile:
     --   No instance for (Verify (AtLeastTwoStates '[ 'State "Single" D]))
     -- it "At least two states" $ do
@@ -160,10 +190,23 @@ spec = do
     --   let CW board2 = iterateWorld world1
     --   board2 `shouldBe` cross2Expected
 
-    -- Won't compile (not a good message):
+    -- Won't compile (has a bad compiler message):
     --   Couldn't match type ‘'True’ with ‘'False’
     -- it "Two identical states not allowed" $ do
     --   let world1 = CW cross :: CellWorld InvalidRule5
     --   let CW board2 = iterateWorld world1
     --   board2 `shouldBe` cross2Expected
 
+    -- Won't compile (has a bad compiler message):
+    --   Couldn't match type ‘'True’ with ‘'False’
+    -- it "Two identical state names not allowed" $ do
+    --   let world1 = CW cross :: CellWorld InvalidRule6
+    --   let CW board2 = iterateWorld world1
+    --   board2 `shouldBe` cross2Expected
+
+    -- Won't compile (has a bad compiler message):
+    --   Couldn't match type ‘'True’ with ‘'False’
+    -- it "Unknown default state" $ do
+    --   let world1 = CW cross :: CellWorld InvalidRule7
+    --   let CW board2 = iterateWorld world1
+    --   board2 `shouldBe` cross2Expected

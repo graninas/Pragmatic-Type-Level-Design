@@ -7,6 +7,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE TypeFamilies #-}
 module Cellular.Language.Integrity where
 
 import GHC.TypeLits
@@ -22,27 +23,14 @@ import Common.NatList
 import Cellular.Language.Board
 import Cellular.Language.Algorithm
 
--- N.B., classes can be method-less
 
-
--- Integrity verification interface
+-- | Integrity verification interface
 class Verify tag where
-  verify :: Proxy tag -> Bool
 
--- Helper verification machinery
+-- | Helper verification machinery
 class Check tag where
 
--- Aux checks
-data NotInList it (l :: its)
-
-instance Check (NotInList it '[]) where
-
-instance
-  ( (it1 == it2) ~ 'False
-  , Check (NotInList it1 its)
-  ) => Check (NotInList it1 (it2 ': its)) where
-
--- Empty states list verification
+------- Empty states list verification
 data StatesNotEmpty (states :: [CustomState])
 
 -- No instance for empty state:
@@ -50,10 +38,9 @@ data StatesNotEmpty (states :: [CustomState])
 --   verify _ = False
 
 instance Verify (StatesNotEmpty (s ': ss)) where
-  verify _ = True
 
 
--- At least two states verification
+------- At least two states verification
 data AtLeastTwoStates (states :: [CustomState])
 
 -- No instances for single state and empty state:
@@ -63,33 +50,89 @@ data AtLeastTwoStates (states :: [CustomState])
 --   verify _ = True
 
 instance Verify (AtLeastTwoStates (s1 ': s2 ': ss)) where
-  verify _ = True
 
 
--- States uniqueness verification
+------- States uniqueness verification
+--  (no name check)
 data StatesAreUnique (states :: [CustomState])
 data StatesAreUniqueCheck
   (verified :: [CustomState])
   (toVerify :: [CustomState])
 
+-- Aux checks
+data StateNotInList st (l :: ss)
+
+instance Check (StateNotInList st '[]) where
+
+instance
+  ( (st1 == st2) ~ 'False
+  , Check (StateNotInList ('State n1 st1) ss)
+  ) => Check (StateNotInList ('State n1 st1) (('State n2 st2) ': ss)) where
+
 instance Verify (StatesAreUnique '[]) where
-  verify _ = True
 
 instance Verify (StatesAreUnique (s1 ': '[])) where
-  verify _ = True
 
 instance
   ( Check (StatesAreUniqueCheck '[s1] (s2 ': ss))
   ) => Verify (StatesAreUnique (s1 ': s2 ': ss)) where
-  verify _ = True
 
 instance
   Check (StatesAreUniqueCheck ss '[]) where
 
 instance
-  ( Check (NotInList s1 checked)
+  ( Check (StateNotInList s1 checked)
   , Check (StatesAreUniqueCheck (s1 ': checked) ss2)
   ) =>
   Check (StatesAreUniqueCheck checked (s1 ': ss2)) where
 
 
+------- State names uniqueness verification
+--  (no state check)
+data StateNamesAreUnique (states :: [CustomState])
+data StateNamesAreUniqueCheck
+  (verified :: [CustomState])
+  (toVerify :: [CustomState])
+
+-- Aux checks
+data StateNameNotInList st (l :: ss)
+
+instance Check (StateNameNotInList st '[]) where
+
+instance
+  ( (n1 == n2) ~ 'False
+  , Check (StateNameNotInList ('State n1 st1) ss)
+  ) => Check (StateNameNotInList ('State n1 st1) (('State n2 st2) ': ss)) where
+
+instance Verify (StateNamesAreUnique '[]) where
+
+instance Verify (StateNamesAreUnique (s1 ': '[])) where
+
+instance
+  ( Check (StateNamesAreUniqueCheck '[s1] (s2 ': ss))
+  ) => Verify (StateNamesAreUnique (s1 ': s2 ': ss)) where
+
+instance
+  Check (StateNamesAreUniqueCheck ss '[]) where
+
+instance
+  ( Check (StateNameNotInList s1 checked)
+  , Check (StateNamesAreUniqueCheck (s1 ': checked) ss2)
+  ) =>
+  Check (StateNamesAreUniqueCheck checked (s1 ': ss2)) where
+
+
+------- State is real verification
+data StateIsReal
+  (s :: StateIdxNat)
+  (states :: [CustomState])
+
+instance
+  ( StateIdxInList s ss ~ 'True
+  ) =>
+  Verify (StateIsReal s ss) where
+
+type family StateIdxInList (s :: StateIdxNat) (ss :: [CustomState]) :: Bool where
+    StateIdxInList _ '[]       = 'False
+    StateIdxInList s ('State n s ': _) = 'True
+    StateIdxInList s (_ ': ss) = StateIdxInList s ss

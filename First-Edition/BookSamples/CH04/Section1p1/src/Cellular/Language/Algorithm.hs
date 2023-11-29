@@ -14,21 +14,27 @@ import Control.Monad (mapM)
 import Cellular.Language.Board
 
 
+-- | Neighborhood level definition
 data Neighborhood where
   AdjacentsLvl :: Nat -> Neighborhood
 
+-- | Integer state identifier
 type StateIdxNat = Nat
+
+-- | List of quantities
 type CountsNat = [Nat]
 
-data DefaultState
-  = DefState StateIdxNat
+-- | Default state (acts like a newtype)
+data DefaultState = DefState StateIdxNat
 
+-- | Cell condition
 data CellCondition
   = NeighborsCount
   { ccState :: StateIdxNat                  -- what state to count
   , ccQuantity :: CountsNat                 -- how many cells of this state should be
   }                                         -- to activate the condition
 
+-- | Transition from cell to cell
 data CustomStateTransition
   = StateTransition
   { cstFromState :: StateIdxNat
@@ -36,12 +42,14 @@ data CustomStateTransition
   , cstCondition :: CellCondition
   }
 
+-- | Cell state definition
 data CustomState
   = State
   { csName     :: Symbol
   , csStateIdx :: StateIdxNat
   }
 
+-- | Automaton step definition
 data CustomStep (states :: [CustomState])
   = Step
   { csDefaultState :: DefaultState

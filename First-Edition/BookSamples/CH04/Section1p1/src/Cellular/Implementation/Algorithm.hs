@@ -83,6 +83,8 @@ instance
   , Verify (StatesNotEmpty states)   -- FlexibleContexts used here
   , Verify (AtLeastTwoStates states)
   , Verify (StatesAreUnique states)
+  , Verify (StateNamesAreUnique states)
+  , Verify (StateIsReal def states)
   ) =>
   MakeStep ('Step @states ('DefState def) ts) where
   makeStep _ nProxy board = let

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           ch4section1p1
+name:           ch4section1p1v1
 version:        1.0.0.0
 author:         Alexander Granin
 maintainer:     graninas@gmail.com
@@ -32,7 +32,7 @@ library
       Common.NatList
       Main
   other-modules:
-      Paths_ch4section1p1
+      Paths_ch4section1p1v1
   hs-source-dirs:
       src
   default-extensions:
@@ -69,7 +69,7 @@ library
     , void
   default-language: Haskell2010
 
-executable ch4section1p1
+executable ch4section1p1v1
   main-is: Main.hs
   other-modules:
       App.Action
@@ -88,7 +88,7 @@ executable ch4section1p1
       Cellular.Language.Board
       Cellular.Language.Integrity
       Common.NatList
-      Paths_ch4section1p1
+      Paths_ch4section1p1v1
   hs-source-dirs:
       ./src
   default-extensions:
@@ -132,7 +132,7 @@ test-suite functional
       AutomatonSpec
       IntegritySpec
       TransitionsSpec
-      Paths_ch4section1p1
+      Paths_ch4section1p1v1
   hs-source-dirs:
       test/
   default-extensions:
@@ -152,7 +152,7 @@ test-suite functional
   build-depends:
       base >=4.7 && <5
     , bytestring
-    , ch4section1p1
+    , ch4section1p1v1
     , constraints
     , containers
     , directory

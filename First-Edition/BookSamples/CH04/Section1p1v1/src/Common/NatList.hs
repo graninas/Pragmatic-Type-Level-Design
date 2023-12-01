@@ -18,8 +18,17 @@ class ToIntList (ns :: [Nat]) where
 instance ToIntList '[] where
   toIntList _ = []
 
-instance (KnownNat  c, ToIntList cs) =>
+instance
+  ( KnownNat c
+  , ToIntList cs
+  ) =>
   ToIntList (c ': cs) where
   toIntList _
-    = fromIntegral (natVal (Proxy @c))
+    = toInt' (Proxy @c)
     : toIntList (Proxy @cs)
+
+
+
+
+toInt' :: KnownNat p => Proxy p -> Int
+toInt' p = fromIntegral (natVal p)

@@ -32,9 +32,7 @@ class MakeNeighborhoodLookup (n :: Neighborhood) where
     -> Cells
 
 class
-  ( Verify (StatesNotEmpty states)   -- FlexibleContexts
-  ) => MakeStep
-  (step :: CustomStep (states :: [CustomState])) where
+  MakeStep (step :: CustomStep (states :: [CustomState])) where
   makeStep
     :: MakeNeighborhoodLookup neiborhood
     => Proxy step

@@ -18,8 +18,7 @@ import Cellular.Assets.Automata.Boards
 import Cellular.Assets.Automata.GameOfLife
 import Cellular.Assets.Automata.LifeLike
 import Cellular.Implementation.Algorithm
-
-
+import Common.NonEmptyList
 
 import Test.Hspec
 import Data.Proxy
@@ -54,14 +53,14 @@ cross2Expected = Map.fromList
   , ([2,0],0),([2,1],0),([2,2],0)
   ]
 
-type States2 =
-  '[ 'State "Alive" A
-   , 'State "Dead"  D
-   ]
+type States2 = 'List2
+  ('State "Alive" A)
+  ('State "Dead"  D)
+  '[]
 
 type B2S23Step states = 'Step @states ('DefState D)
-  '[ 'StateTransition D A ('NeighborsCount A '[3  ])
-   , 'StateTransition A A ('NeighborsCount A '[2,3])
+  '[ 'StateTransition D A ('NeighborsCount A ('List1 3 '[]))
+   , 'StateTransition A A ('NeighborsCount A ('List1 2 '[3]))
    ]
 
 type B2S23Rule = 'Rule
@@ -74,8 +73,6 @@ type B2S23Rule = 'Rule
 
 
 -- Invalid, won't compile: declared states don't match
--- Couldn't match kind: '[]
---   with: '[ 'State "Alive" A, 'State "Dead" D]
 -- type InvalidRule1 = 'Rule
 --   @States2
 --   "Game of Life"
@@ -86,8 +83,6 @@ type B2S23Rule = 'Rule
 
 
 -- Invalid, won't compile: declared states don't match
--- Couldn't match kind: '[ 'State "Alive" A, 'State "Dead" D]
---   with: '[]
 -- type InvalidRule2 = 'Rule
 --   @('[])
 --   "Game of Life"
@@ -97,35 +92,35 @@ type B2S23Rule = 'Rule
 --   (B2S23Step States2)
 
 
--- Invalid: empty states
-type InvalidRule3 = 'Rule
-  @('[])
-  "Game of Life"
-  "gol"
-  OpenBoard
-  ('AdjacentsLvl 1)
-  (B2S23Step '[])
+-- No way to construct: empty states
+-- type InvalidRule3 = 'Rule
+--   @('[])
+--   "Game of Life"
+--   "gol"
+--   OpenBoard
+--   ('AdjacentsLvl 1)
+--   (B2S23Step '[])
 
 
--- Invalid: only one state declared
-type SingleStates =
-  '[ 'State "Single" D
-   ]
+-- No way to construct: only one state declared
+-- type SingleStates =
+--   '[ 'State "Single" D
+--    ]
 
-type InvalidRule4 = 'Rule
-  @SingleStates
-  "Game of Life"
-  "gol"
-  OpenBoard
-  ('AdjacentsLvl 1)
-  (B2S23Step SingleStates)
+-- type InvalidRule4 = 'Rule
+--   @SingleStates
+--   "Game of Life"
+--   "gol"
+--   OpenBoard
+--   ('AdjacentsLvl 1)
+--   (B2S23Step SingleStates)
 
 
 -- Invalid: same states found
-type SameStates =
-  '[ 'State "A" D
-   , 'State "D" D
-   ]
+type SameStates = 'List2
+  ('State "A" D)
+  ('State "D" D)
+  '[]
 
 type InvalidRule5 = 'Rule
   @SameStates
@@ -135,12 +130,28 @@ type InvalidRule5 = 'Rule
   ('AdjacentsLvl 1)
   (B2S23Step SameStates)
 
+-- Invalid: same states found (test case 2)
+type SameStates_2 = 'List2
+  ('State "A" A)
+  ('State "D" D)
+  '[ 'State "X" 222
+   , 'State "Y" A
+   ]
+
+type InvalidRule5_2 = 'Rule
+  @SameStates_2
+  "Game of Life"
+  "gol"
+  OpenBoard
+  ('AdjacentsLvl 1)
+  (B2S23Step SameStates_2)
+
 
 -- Invalid: same names found
-type SameStateNames =
-  '[ 'State "D" A
-   , 'State "D" D
-   ]
+type SameStateNames = 'List2
+  ('State "D" A)
+  ('State "D" D)
+  '[]
 
 type InvalidRule6 = 'Rule
   @SameStateNames
@@ -151,12 +162,30 @@ type InvalidRule6 = 'Rule
   (B2S23Step SameStateNames)
 
 
--- Invalid: default state not declared
+-- Invalid: same names found
+type SameStateNames_2 = 'List2
+  ('State "A" A)
+  ('State "D" D)
+  '[ 'State "X" 222
+   , 'State "D" 333
+   ]
+
+type InvalidRule6_2 = 'Rule
+  @SameStateNames_2
+  "Game of Life"
+  "gol"
+  OpenBoard
+  ('AdjacentsLvl 1)
+  (B2S23Step SameStateNames_2)
+
+
+-- Invalid: unknown default state
 type X = 222
 type InvalidDefaultStep states = 'Step @states ('DefState X)
-  '[ 'StateTransition D A ('NeighborsCount A '[3  ])
-   , 'StateTransition A A ('NeighborsCount A '[2,3])
+  '[ 'StateTransition D A ('NeighborsCount A ('List1 3 '[]))
+   , 'StateTransition A A ('NeighborsCount A ('List1 2 '[3]))
    ]
+
 type InvalidRule7 = 'Rule
   @States2
   "Game of Life"
@@ -175,16 +204,13 @@ spec = do
       let CW board2 = iterateWorld world1
       board2 `shouldBe` cross2Expected
 
-    -- Won't compile:
-    --   No instance for (Verify (StatesNotEmpty '[]))
-    --   arising from a use of ‘iterateWorld’
+    -- No way to construct:
     -- it "Empty states not allowed" $ do
     --   let world1 = CW cross :: CellWorld InvalidRule3
     --   let CW board2 = iterateWorld world1
     --   board2 `shouldBe` cross2Expected
 
-    -- Won't compile:
-    --   No instance for (Verify (AtLeastTwoStates '[ 'State "Single" D]))
+    -- No way to construct:
     -- it "At least two states" $ do
     --   let world1 = CW cross :: CellWorld InvalidRule4
     --   let CW board2 = iterateWorld world1
@@ -192,15 +218,29 @@ spec = do
 
     -- Won't compile (has a bad compiler message):
     --   Couldn't match type ‘'True’ with ‘'False’
-    -- it "Two identical states not allowed" $ do
+    -- it "Two identical states not allowed (case 1)" $ do
     --   let world1 = CW cross :: CellWorld InvalidRule5
     --   let CW board2 = iterateWorld world1
     --   board2 `shouldBe` cross2Expected
 
     -- Won't compile (has a bad compiler message):
     --   Couldn't match type ‘'True’ with ‘'False’
-    -- it "Two identical state names not allowed" $ do
+    -- it "Two identical states not allowed (case 2)" $ do
+    --   let world1 = CW cross :: CellWorld InvalidRule5_2
+    --   let CW board2 = iterateWorld world1
+    --   board2 `shouldBe` cross2Expected
+
+    -- Won't compile (has a bad compiler message):
+    --   Couldn't match type ‘'True’ with ‘'False’
+    -- it "Two identical state names not allowed (case 1)" $ do
     --   let world1 = CW cross :: CellWorld InvalidRule6
+    --   let CW board2 = iterateWorld world1
+    --   board2 `shouldBe` cross2Expected
+
+    -- Won't compile (has a bad compiler message):
+    --   Couldn't match type ‘'True’ with ‘'False’
+    -- it "Two identical state names not allowed (case 2)" $ do
+    --   let world1 = CW cross :: CellWorld InvalidRule6_2
     --   let CW board2 = iterateWorld world1
     --   board2 `shouldBe` cross2Expected
 

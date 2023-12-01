@@ -60,14 +60,14 @@ data StatesAreUniqueCheck
   (toVerify :: [CustomState])
 
 -- Aux checks
-data StateNotInList st (l :: ss)
+data StateNotInList s (l :: ss)
 
-instance Check (StateNotInList st '[]) where
+instance Check (StateNotInList s '[]) where
 
 instance
-  ( (st1 == st2) ~ 'False
-  , Check (StateNotInList ('State n1 st1) ss)
-  ) => Check (StateNotInList ('State n1 st1) (('State n2 st2) ': ss)) where
+  ( (s1 == s2) ~ 'False
+  , Check (StateNotInList ('State n1 s1) ss)
+  ) => Check (StateNotInList ('State n1 s1) (('State n2 s2) ': ss)) where
 
 instance Verify (StatesAreUnique '[]) where
 
@@ -78,7 +78,7 @@ instance
   ) => Verify (StatesAreUnique (s1 ': s2 ': ss)) where
 
 instance
-  Check (StatesAreUniqueCheck ss '[]) where
+  Check (StatesAreUniqueCheck checked '[]) where
 
 instance
   ( Check (StateNotInList s1 checked)
@@ -101,8 +101,8 @@ instance Check (StateNameNotInList st '[]) where
 
 instance
   ( (n1 == n2) ~ 'False
-  , Check (StateNameNotInList ('State n1 st1) ss)
-  ) => Check (StateNameNotInList ('State n1 st1) (('State n2 st2) ': ss)) where
+  , Check (StateNameNotInList ('State n1 s1) ss)
+  ) => Check (StateNameNotInList ('State n1 s1) (('State n2 s2) ': ss)) where
 
 instance Verify (StateNamesAreUnique '[]) where
 
@@ -113,7 +113,7 @@ instance
   ) => Verify (StateNamesAreUnique (s1 ': s2 ': ss)) where
 
 instance
-  Check (StateNamesAreUniqueCheck ss '[]) where
+  Check (StateNamesAreUniqueCheck checked '[]) where
 
 instance
   ( Check (StateNameNotInList s1 checked)
@@ -125,7 +125,7 @@ instance
 ------- State is real verification
 data StateIsReal
   (s :: StateIdxNat)
-  (states :: [CustomState])
+  (ss :: [CustomState])
 
 instance
   ( StateIdxInList s ss ~ 'True
@@ -133,6 +133,6 @@ instance
   Verify (StateIsReal s ss) where
 
 type family StateIdxInList (s :: StateIdxNat) (ss :: [CustomState]) :: Bool where
-    StateIdxInList _ '[]       = 'False
+    StateIdxInList _ '[] = 'False
     StateIdxInList s ('State n s ': _) = 'True
     StateIdxInList s (_ ': ss) = StateIdxInList s ss

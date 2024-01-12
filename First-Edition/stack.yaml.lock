@@ -3,7 +3,14 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: strong-path-1.1.4.0@sha256:d43a7e9231055714cc21a596da245d9d0613623c1cf3624a4671bd1fb2cf76ea,2247
+    pantry-tree:
+      sha256: 5583603b1e33ce3e5bb0db32e54fbde6d28e64c2fc1b7e77192e5125087ac11e
+      size: 1368
+  original:
+    hackage: strong-path-1.1.4.0@sha256:d43a7e9231055714cc21a596da245d9d0613623c1cf3624a4671bd1fb2cf76ea,2247
 snapshots:
 - completed:
     sha256: 350737ef1c4c748f4c7ff56b6e74f2f6d15039a2f148662a8ec1aded016b80d0

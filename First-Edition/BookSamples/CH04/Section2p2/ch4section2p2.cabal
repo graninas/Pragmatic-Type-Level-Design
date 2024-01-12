@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           ch3section2p2
+name:           ch4section2p2
 version:        1.0.0.0
 author:         Alexander Granin
 maintainer:     graninas@gmail.com
@@ -27,10 +27,12 @@ library
       Cellular.Language.Algorithm
       Cellular.Language.Automaton
       Cellular.Language.Board
+      Cellular.Language.Integrity
       Common.NatList
+      Common.NonEmptyList
       Main
   other-modules:
-      Paths_ch3section2p2
+      Paths_ch4section2p2
   hs-source-dirs:
       src
   default-extensions:
@@ -59,6 +61,7 @@ library
     , newtype-generics
     , random
     , scientific
+    , strong-path
     , template-haskell
     , text
     , time
@@ -67,7 +70,7 @@ library
     , void
   default-language: Haskell2010
 
-executable ch3section2p2
+executable ch4section2p2
   main-is: Main.hs
   other-modules:
       App.Action
@@ -83,8 +86,10 @@ executable ch3section2p2
       Cellular.Language.Algorithm
       Cellular.Language.Automaton
       Cellular.Language.Board
+      Cellular.Language.Integrity
       Common.NatList
-      Paths_ch3section2p2
+      Common.NonEmptyList
+      Paths_ch4section2p2
   hs-source-dirs:
       ./src
   default-extensions:
@@ -113,6 +118,7 @@ executable ch3section2p2
     , newtype-generics
     , random
     , scientific
+    , strong-path
     , template-haskell
     , text
     , time
@@ -126,8 +132,9 @@ test-suite functional
   main-is: Spec.hs
   other-modules:
       AutomatonSpec
+      IntegritySpec
       TransitionsSpec
-      Paths_ch3section2p2
+      Paths_ch4section2p2
   hs-source-dirs:
       test/
   default-extensions:
@@ -147,7 +154,7 @@ test-suite functional
   build-depends:
       base >=4.7 && <5
     , bytestring
-    , ch3section2p2
+    , ch4section2p2
     , constraints
     , containers
     , directory
@@ -158,6 +165,7 @@ test-suite functional
     , newtype-generics
     , random
     , scientific
+    , strong-path
     , template-haskell
     , text
     , time

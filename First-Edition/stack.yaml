@@ -18,8 +18,15 @@ packages:
 - BookSamples/CH03/Section1p5
 - BookSamples/CH03/Section2p2
 
-- BookSamples/CH04/Section1p1v1
-- BookSamples/CH04/Section1p1v2
+- BookSamples/CH04/Section1p2
+- BookSamples/CH04/Section2p1
+- BookSamples/CH04/Section2p2
 
 - BookSamples/AppendixC_Haskell/FightClub
 
+allow-newer: true
+
+extra-deps:
+# - hashable-1.3.5.0@sha256:3a2beeafb220f9de706568a7e4a5b3c762cc4c9f25c94d7ef795b8c2d6a691d7,4240
+# - template-haskell-2.17.0.0@sha256:5a7c40bddd235aaf5d58632a63758bc0b5ebf98232d8dea7294b5ca5226ca577,2152
+- strong-path-1.1.4.0@sha256:d43a7e9231055714cc21a596da245d9d0613623c1cf3624a4671bd1fb2cf76ea,2247

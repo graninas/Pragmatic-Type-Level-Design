@@ -26,11 +26,11 @@ type RuleCode = String
 data CellWorld rule where
   CW :: Board -> CellWorld rule
 
-data CustomRule where
+data CustomRule (states :: [CustomState]) where
   Rule
     :: RuleNameSymb
     -> RuleCodeSymb
     -> Neighborhood
-    -> CustomStep
-    -> CustomRule
+    -> CustomStep states
+    -> CustomRule states
 

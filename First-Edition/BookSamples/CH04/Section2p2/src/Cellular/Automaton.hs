@@ -10,20 +10,25 @@ import GHC.TypeLits
 import Data.Proxy ( Proxy(..) )
 import qualified Data.Map as Map
 
+import Common.NonEmptyList
 import Cellular.Language.Board
 import Cellular.Language.Algorithm
 import Cellular.Language.Automaton
-
 import Cellular.Implementation.Algorithm
 
 
-class IAutomaton (rule :: CustomRule) where
+
+class IAutomaton
+  (rule :: CustomRule
+    (states :: CustomList2 CustomState)) where
   step :: CellWorld rule -> CellWorld rule
   name :: Proxy rule -> RuleName
   code :: Proxy rule -> RuleCode
 
 
-class IWorld (rule :: CustomRule) where
+class IWorld
+    (rule :: CustomRule
+      (states :: CustomList2 CustomState)) where
   initWorld :: CellWorld rule
   initWorld = CW Map.empty
 

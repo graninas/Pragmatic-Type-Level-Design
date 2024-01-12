@@ -17,13 +17,17 @@ import Cellular.Language.Automaton
 import Cellular.Implementation.Algorithm
 
 
-class IAutomaton (rule :: CustomRule) where
+class IAutomaton
+  (rule :: CustomRule
+    (states :: [CustomState])) where
   step :: CellWorld rule -> CellWorld rule
   name :: Proxy rule -> RuleName
   code :: Proxy rule -> RuleCode
 
 
-class IWorld (rule :: CustomRule) where
+class IWorld
+    (rule :: CustomRule
+      (states :: [CustomState])) where
   initWorld :: CellWorld rule
   initWorld = CW Map.empty
 

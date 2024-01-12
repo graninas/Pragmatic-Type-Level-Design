@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           ch3section2p2
+name:           ch4section2p1
 version:        1.0.0.0
 author:         Alexander Granin
 maintainer:     graninas@gmail.com
@@ -27,10 +27,11 @@ library
       Cellular.Language.Algorithm
       Cellular.Language.Automaton
       Cellular.Language.Board
+      Cellular.Language.Integrity
       Common.NatList
       Main
   other-modules:
-      Paths_ch3section2p2
+      Paths_ch4section2p1
   hs-source-dirs:
       src
   default-extensions:
@@ -67,7 +68,7 @@ library
     , void
   default-language: Haskell2010
 
-executable ch3section2p2
+executable ch4section2p1
   main-is: Main.hs
   other-modules:
       App.Action
@@ -83,8 +84,9 @@ executable ch3section2p2
       Cellular.Language.Algorithm
       Cellular.Language.Automaton
       Cellular.Language.Board
+      Cellular.Language.Integrity
       Common.NatList
-      Paths_ch3section2p2
+      Paths_ch4section2p1
   hs-source-dirs:
       ./src
   default-extensions:
@@ -126,8 +128,9 @@ test-suite functional
   main-is: Spec.hs
   other-modules:
       AutomatonSpec
+      IntegritySpec
       TransitionsSpec
-      Paths_ch3section2p2
+      Paths_ch4section2p1
   hs-source-dirs:
       test/
   default-extensions:
@@ -147,7 +150,7 @@ test-suite functional
   build-depends:
       base >=4.7 && <5
     , bytestring
-    , ch3section2p2
+    , ch4section2p1
     , constraints
     , containers
     , directory

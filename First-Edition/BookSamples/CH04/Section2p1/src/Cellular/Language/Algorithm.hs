@@ -58,3 +58,6 @@ data CustomStep (states :: [CustomState])
   { csDefaultState :: DefaultState
   , csTransitions  :: [CustomStateTransition]
   }
+
+-- | Alternatively, custom step as a tuple:
+type CustomStepTuple = '(DefaultState, [CustomStateTransition])

@@ -12,8 +12,10 @@ import Common.NonEmptyList
 
 
 -- Seeds (B2/S)
+type Neighbors2 = 'NeighborsCount A ('List1 2 '[])
+
 type SeedsStep = 'Step ('DefState D)
-  '[ 'StateTransition D A ('NeighborsCount A ('List1 2 '[]))
+  '[ 'StateTransition D A Neighbors2  -- "Born rule"
    ]
 
 type SeedsRule = 'Rule

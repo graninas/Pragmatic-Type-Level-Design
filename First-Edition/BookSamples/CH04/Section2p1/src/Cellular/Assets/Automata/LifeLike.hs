@@ -14,3 +14,4 @@ type LifeLikeStates =
   '[ Alive
    , Dead
    ]
+

@@ -12,8 +12,6 @@ import Prelude hiding ((<>))
 import Cellular.Language.Board
 import Cellular.Language.Algorithm
 import Cellular.Language.Automaton
-import Cellular.Assets.Automata.GameOfLife
-import Cellular.Assets.Automata.LifeLike
 import Common.NonEmptyList
 
 
@@ -50,9 +48,24 @@ cross2Expected = Map.fromList
   , ([2,0],0),([2,1],0),([2,2],0)
   ]
 
+-- N.B., complexity has increased
+type A = 1
+type D = 0
+
+type Alive = 'State "Alive" A
+type Dead  = 'State "Dead"  D
+
+type LifeLikeStates = 'List2
+  Alive
+  Dead
+  '[]
+
+type Neighbors3  = 'NeighborsCount A ('List1 3 '[])
+type Neighbors23 = 'NeighborsCount A ('List1 2 '[3])
+
 type B2S23Step states = 'Step @states ('DefState D)
-  '[ 'StateTransition D A ('NeighborsCount A ('List1 2 '[]))
-   , 'StateTransition A A ('NeighborsCount A ('List1 2 '[3]))
+  '[ 'StateTransition D A Neighbors3
+   , 'StateTransition A A Neighbors23
    ]
 
 type B2S23Rule = 'Rule

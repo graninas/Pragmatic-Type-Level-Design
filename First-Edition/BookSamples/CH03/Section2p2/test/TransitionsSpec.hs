@@ -48,8 +48,8 @@ cross2Expected = Map.fromList
   , ([2,0],0),([2,1],0),([2,2],0)
   ]
 
-type Neighbors3  = ('NeighborsCount A '[3  ])
-type Neighbors23 = ('NeighborsCount A '[2,3])
+type Neighbors3  = 'NeighborsCount A '[3  ]
+type Neighbors23 = 'NeighborsCount A '[2,3]
 
 type B2S23Transitions =
   '[ 'StateTransition D A Neighbors3

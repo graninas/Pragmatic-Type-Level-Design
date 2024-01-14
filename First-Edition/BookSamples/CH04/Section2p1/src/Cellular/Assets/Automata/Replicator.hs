@@ -11,9 +11,11 @@ import Cellular.Assets.Automata.LifeLike
 
 
 -- Replicator (B1357/S1357)
+type Neighbors1357 = 'NeighborsCount A '[1,3,5,7]
+
 type ReplicatorStep = 'Step ('DefState D)
-  '[ 'StateTransition D A ('NeighborsCount A '[1,3,5,7])  -- "Born rule"
-   , 'StateTransition A A ('NeighborsCount A '[1,3,5,7])  -- "Survive rule"
+  '[ 'StateTransition D A Neighbors1357  -- "Born rule"
+   , 'StateTransition A A Neighbors1357  -- "Survive rule"
    ]
 
 type ReplicatorRule = 'Rule

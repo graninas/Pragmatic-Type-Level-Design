@@ -11,9 +11,12 @@ import Cellular.Assets.Automata.LifeLike
 
 
 -- Game of Life (B3/S23)
+type Neighbors3  = 'NeighborsCount A '[3  ]
+type Neighbors23 = 'NeighborsCount A '[2,3]
+
 type GoLStep = 'Step ('DefState D)
-  '[ 'StateTransition D A ('NeighborsCount A '[3  ])
-   , 'StateTransition A A ('NeighborsCount A '[2,3])
+  '[ 'StateTransition D A Neighbors3
+   , 'StateTransition A A Neighbors23
    ]
 
 type GoLRule = 'Rule
@@ -22,3 +25,11 @@ type GoLRule = 'Rule
   "gol"
   ('AdjacentsLvl 1)
   GoLStep
+
+-- Alternative definition of the step with tuples:
+type GoLStepTuple =
+  '( 'DefState D
+   ,  '[ 'StateTransition D A Neighbors3
+       , 'StateTransition A A Neighbors23
+       ]
+   )

@@ -14,8 +14,6 @@ import Cellular.Language.Algorithm
 import Cellular.Language.Automaton
 import Cellular.Language.Integrity
 import Cellular.Automaton
-import Cellular.Assets.Automata.GameOfLife
-import Cellular.Assets.Automata.LifeLike
 import Cellular.Implementation.Algorithm
 
 import Test.Hspec
@@ -51,29 +49,38 @@ cross2Expected = Map.fromList
   , ([2,0],0),([2,1],0),([2,2],0)
   ]
 
-type GoLLikeStates =
-  '[ 'State "Alive" A
-   , 'State "Dead"  D
+type A = 1
+type D = 0
+
+type Alive = 'State "Alive" A
+type Dead  = 'State "Dead"  D
+
+type LifeLikeStates =
+  '[ Alive
+   , Dead
    ]
 
+type Neighbors3  = 'NeighborsCount A '[3  ]
+type Neighbors23 = 'NeighborsCount A '[2,3]
+
 type B2S23Step states = 'Step @states ('DefState D)
-  '[ 'StateTransition D A ('NeighborsCount A '[3  ])
-   , 'StateTransition A A ('NeighborsCount A '[2,3])
+  '[ 'StateTransition D A Neighbors3
+   , 'StateTransition A A Neighbors23
    ]
 
 type B2S23Rule = 'Rule
-  @GoLLikeStates
+  @LifeLikeStates
   "Game of Life"
   "gol"
   ('AdjacentsLvl 1)
-  (B2S23Step GoLLikeStates)
+  (B2S23Step LifeLikeStates)
 
 
 -- Invalid, won't compile: declared states don't match
 -- Couldn't match kind: '[]
 --   with: '[ 'State "Alive" A, 'State "Dead" D]
 -- type InvalidRule1 = 'Rule
---   @GoLLikeStates
+--   @LifeLikeStates
 --   "Game of Life"
 --   "gol"
 --   ('AdjacentsLvl 1)
@@ -88,7 +95,7 @@ type B2S23Rule = 'Rule
 --   "Game of Life"
 --   "gol"
 --   ('AdjacentsLvl 1)
---   (B2S23Step GoLLikeStates)
+--   (B2S23Step LifeLikeStates)
 
 
 -- Invalid: empty states
@@ -144,16 +151,16 @@ type InvalidRule6 = 'Rule
 -- Invalid: unknown default state
 type X = 222
 type InvalidDefaultStep states = 'Step @states ('DefState X)
-  '[ 'StateTransition D A ('NeighborsCount A '[3  ])
-   , 'StateTransition A A ('NeighborsCount A '[2,3])
+  '[ 'StateTransition D A Neighbors3
+   , 'StateTransition A A Neighbors23
    ]
 
 type InvalidRule7 = 'Rule
-  @GoLLikeStates
+  @LifeLikeStates
   "Game of Life"
   "gol"
   ('AdjacentsLvl 1)
-  (InvalidDefaultStep GoLLikeStates)
+  (InvalidDefaultStep LifeLikeStates)
 
 
 spec :: Spec

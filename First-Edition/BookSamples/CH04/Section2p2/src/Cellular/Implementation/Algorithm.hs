@@ -18,7 +18,6 @@ import qualified Data.Map as Map
 import Control.Monad (mapM)
 
 import Common.NatList
-import Common.NonEmptyList
 
 import Cellular.Language.Board
 import Cellular.Language.Algorithm
@@ -33,8 +32,7 @@ class MakeNeighborhoodLookup (n :: Neighborhood) where
     -> Cells
 
 class
-  MakeStep
-  (step :: CustomStep (states :: CustomList2 CustomState)) where
+  MakeStep (step :: CustomStep (states :: [CustomState])) where
   makeStep
     :: MakeNeighborhoodLookup neiborhood
     => Proxy step
@@ -80,7 +78,9 @@ instance
 instance
   ( MakeCellUpdate ts
   , KnownNat def
-  , Verify (StatesAreUnique states)      -- FlexibleContexts used here
+  , Verify (StatesNotEmpty states)   -- FlexibleContexts used here
+  , Verify (AtLeastTwoStates states)
+  , Verify (StatesAreUnique states)
   , Verify (StateNamesAreUnique states)
   , Verify (StateIsReal def states)
   ) =>
@@ -123,14 +123,14 @@ instance
 
 instance
   ( KnownNat cellIdxNat
-  , ToIntList ('CList1 counts)
+  , ToIntList counts
   ) =>
   ApplyCondition ('NeighborsCount cellIdxNat counts) where
   applyCondition _ ns =
     let
         target = fromIntegral $ natVal $ Proxy @cellIdxNat
         cnt = length (filter (\(_,idx) -> idx == target) ns)
-        counts = toIntList (Proxy @('CList1 counts))
+        counts = toIntList (Proxy @counts)
     in cnt `elem` counts
 
 generateNeighborhood

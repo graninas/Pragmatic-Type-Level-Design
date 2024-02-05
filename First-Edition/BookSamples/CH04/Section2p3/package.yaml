@@ -1,4 +1,4 @@
-name:                ch4section2p2
+name:                ch4section2p3
 version:             1.0.0.0
 license:             BSD3
 author:              "Alexander Granin"
@@ -37,6 +37,7 @@ dependencies:
 - lens
 - constraints
 - directory
+- strong-path
 
 library:
   source-dirs:
@@ -45,7 +46,7 @@ library:
   - -Wall
 
 executables:
-  ch4section2p2:
+  ch4section2p3:
     main:                Main.hs
     source-dirs:         ./src
     ghc-options:
@@ -65,4 +66,4 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - hspec
-    - ch4section2p2
+    - ch4section2p3

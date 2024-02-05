@@ -11,7 +11,6 @@ import Data.Maybe (fromMaybe)
 import qualified Data.Map as Map
 import Control.Monad (mapM)
 
-import Common.NonEmptyList
 import Cellular.Language.Board
 
 
@@ -26,10 +25,10 @@ type StateIdxNat = Nat
 type StateNameSymb = Symbol
 
 -- | List of quantities
-type CountsNat = CustomList1 Nat
+type CountsNat = [Nat]
 
 -- | Default state (acts like a newtype)
-data DefaultState = DefState StateIdxNat
+newtype DefaultState = DefState StateIdxNat
 
 -- | Cell condition
 data CellCondition
@@ -54,8 +53,11 @@ data CustomState
   }
 
 -- | Automaton step definition
-data CustomStep (states :: CustomList2 CustomState)
+data CustomStep (states :: [CustomState])
   = Step
   { csDefaultState :: DefaultState
   , csTransitions  :: [CustomStateTransition]
   }
+
+-- | Alternatively, custom step as a tuple:
+type CustomStepTuple = (DefaultState, [CustomStateTransition])

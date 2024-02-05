@@ -1,5 +1,2 @@
-Integrity verification and testing
-
-- Integrity verification interface: ../Language/Integrity.hs
-- Integrity checks for rules: ../Implementation/Algorithm.hs
-- Integrity tests: IntegritySpec.hs
+- CustomRule type
+- Strengtened CustomStateTransition, CustomState, CustomStep types

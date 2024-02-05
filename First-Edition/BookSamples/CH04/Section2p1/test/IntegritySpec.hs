@@ -12,7 +12,6 @@ import Prelude hiding ((<>))
 import Cellular.Language.Board
 import Cellular.Language.Algorithm
 import Cellular.Language.Automaton
-import Cellular.Language.Integrity
 import Cellular.Automaton
 import Cellular.Implementation.Algorithm
 
@@ -172,38 +171,37 @@ spec = do
       let CW board2 = iterateWorld world1
       board2 `shouldBe` cross2Expected
 
-    -- Won't compile:
-    --   No instance for (Verify (StatesNotEmpty '[]))
-    --   arising from a use of ‘iterateWorld’
-    -- it "Empty states not allowed" $ do
-    --   let world1 = CW cross :: CellWorld InvalidRule3
-    --   let CW board2 = iterateWorld world1
-    --   board2 `shouldBe` cross2Expected
+  -- Invalid cases that will compile but ideally
+  -- they shouldn't be allowed by the model.
+  -- Tests are switched off to indicate they don't
+  -- really test anything.
+  describe "Invalid cases that compile but shouldn't" $ do
+    it "Empty states not allowed" $ do
+      pendingWith "Invalid test case that shouldn't even compile"
+      let world1 = CW cross :: CellWorld InvalidRule3
+      let CW board2 = iterateWorld world1
+      board2 `shouldBe` cross2Expected
 
-    -- Won't compile:
-    --   No instance for (Verify (AtLeastTwoStates '[ 'State "Single" D]))
-    -- it "At least two states" $ do
-    --   let world1 = CW cross :: CellWorld InvalidRule4
-    --   let CW board2 = iterateWorld world1
-    --   board2 `shouldBe` cross2Expected
+    it "At least two states" $ do
+      pendingWith "Invalid test case that shouldn't even compile"
+      let world1 = CW cross :: CellWorld InvalidRule4
+      let CW board2 = iterateWorld world1
+      board2 `shouldBe` cross2Expected
 
-    -- Won't compile (has a bad compiler message):
-    --   Couldn't match type ‘'True’ with ‘'False’
-    -- it "Two identical states not allowed" $ do
-    --   let world1 = CW cross :: CellWorld InvalidRule5
-    --   let CW board2 = iterateWorld world1
-    --   board2 `shouldBe` cross2Expected
+    it "Two identical states not allowed" $ do
+      pendingWith "Invalid test case that shouldn't even compile"
+      let world1 = CW cross :: CellWorld InvalidRule5
+      let CW board2 = iterateWorld world1
+      board2 `shouldBe` cross2Expected
 
-    -- Won't compile (has a bad compiler message):
-    --   Couldn't match type ‘'True’ with ‘'False’
-    -- it "Two identical state names not allowed" $ do
-    --   let world1 = CW cross :: CellWorld InvalidRule6
-    --   let CW board2 = iterateWorld world1
-    --   board2 `shouldBe` cross2Expected
+    it "Two identical state names not allowed" $ do
+      pendingWith "Invalid test case that shouldn't even compile"
+      let world1 = CW cross :: CellWorld InvalidRule6
+      let CW board2 = iterateWorld world1
+      board2 `shouldBe` cross2Expected
 
-    -- Won't compile (has a bad compiler message):
-    --   Couldn't match type ‘'True’ with ‘'False’
-    -- it "Unknown default state" $ do
-    --   let world1 = CW cross :: CellWorld InvalidRule7
-    --   let CW board2 = iterateWorld world1
-    --   board2 `shouldBe` cross2Expected
+    it "Unknown default state" $ do
+      pendingWith "Invalid test case that shouldn't even compile"
+      let world1 = CW cross :: CellWorld InvalidRule7
+      let CW board2 = iterateWorld world1
+      board2 `shouldBe` cross2Expected

@@ -8,10 +8,11 @@ import Cellular.Language.Board
 import Cellular.Language.Algorithm
 import Cellular.Language.Automaton
 import Cellular.Assets.Automata.LifeLike
+import Common.NonEmptyList
 
 
 -- Seeds (B2/S)
-type Neighbors2 = 'NeighborsCount A '[2]
+type Neighbors2 = 'NeighborsCount A ('List1 2 '[])
 
 type SeedsStep = 'Step ('DefState D)
   '[ 'StateTransition D A Neighbors2  -- "Born rule"

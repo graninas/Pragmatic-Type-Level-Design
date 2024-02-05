@@ -12,6 +12,7 @@ import Data.Maybe (fromMaybe)
 import qualified Data.Map as Map
 import Control.Monad (mapM)
 
+import Common.NonEmptyList
 import Cellular.Language.Board
 import Cellular.Language.Algorithm
 
@@ -26,7 +27,8 @@ type RuleCode = String
 data CellWorld rule where
   CW :: Board -> CellWorld rule
 
-data CustomRule (states :: [CustomState]) where
+data CustomRule
+  (states :: CustomList2 CustomState) where
   Rule
     :: RuleNameSymb
     -> RuleCodeSymb

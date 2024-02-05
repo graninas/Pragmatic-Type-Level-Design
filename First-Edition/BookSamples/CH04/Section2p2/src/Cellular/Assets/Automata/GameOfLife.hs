@@ -8,12 +8,11 @@ import Cellular.Language.Board
 import Cellular.Language.Algorithm
 import Cellular.Language.Automaton
 import Cellular.Assets.Automata.LifeLike
-import Common.NonEmptyList
 
 
 -- Game of Life (B3/S23)
-type Neighbors3  = 'NeighborsCount A ('List1 3 '[])
-type Neighbors23 = 'NeighborsCount A ('List1 2 '[3])
+type Neighbors3  = 'NeighborsCount A '[3  ]
+type Neighbors23 = 'NeighborsCount A '[2,3]
 
 type GoLStep = 'Step ('DefState D)
   '[ 'StateTransition D A Neighbors3
@@ -34,3 +33,14 @@ type GoLStepTuple =
        , 'StateTransition A A Neighbors23
        ]
    )
+
+
+neighbors3, neighbors23 :: CellCondition
+neighbors3  = NeighborsCount 1 [3  ]
+neighbors23 = NeighborsCount 1 [2,3]
+
+goLStep :: CustomStep '[]
+goLStep = Step (DefState 0)
+  [ StateTransition 0 1 neighbors3
+  , StateTransition 1 1 neighbors23
+  ]

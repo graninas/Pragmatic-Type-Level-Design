@@ -27,7 +27,6 @@ library
       Cellular.Language.Algorithm
       Cellular.Language.Automaton
       Cellular.Language.Board
-      Cellular.Language.Integrity
       Common.NatList
       Main
   other-modules:
@@ -84,7 +83,6 @@ executable ch4section2p1
       Cellular.Language.Algorithm
       Cellular.Language.Automaton
       Cellular.Language.Board
-      Cellular.Language.Integrity
       Common.NatList
       Paths_ch4section2p1
   hs-source-dirs:

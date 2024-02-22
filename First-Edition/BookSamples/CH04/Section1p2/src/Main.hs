@@ -1,32 +1,39 @@
 module Main where
 
-import StrongPath (Path, System, Abs, Rel, File, Dir, (</>))
+import StrongPath (Path, System, Abs, Rel, File, Dir, (</>),
+  parseAbsDir, parseRelFile)
 import qualified StrongPath as SP
 
 import Data.Maybe (fromJust)
 
 data HomeDir
+type HomeAbsPath = Path System Abs (Dir HomeDir)
 
-getHomeDirPath :: IO (Path System Abs (Dir HomeDir))
-getHomeDirPath = getLine >>= pure . fromJust . SP.parseAbsDir
+getAbsHomeDirPath :: IO HomeAbsPath
+getAbsHomeDirPath = do
+  line <- getLine
+  pure (fromJust (parseAbsDir line))
 
 data UserFile
+type UserFileRelPath = Path System (Rel HomeDir) (File UserFile)
 
-getUserFilePath :: IO (Path System (Rel HomeDir) (File UserFile))
-getUserFilePath = getLine >>= pure . fromJust . SP.parseRelFile
+getRelUserFilePath :: IO UserFileRelPath
+getRelUserFilePath = do
+  line <- getLine
+  pure (fromJust (parseRelFile line))
 
-getFooBarFilePath :: IO (Path System (Rel HomeDir) (File UserFile))
-getFooBarFilePath = pure . fromJust . SP.parseRelFile $ "foo\\bar.txt"
+getRelFooBarFilePath :: IO (Path System (Rel HomeDir) (File UserFile))
+getRelFooBarFilePath = pure . fromJust . parseRelFile $ "foo\\bar.txt"
 
 main = do
-  absHomePath <- getHomeDirPath
+  absHomePath <- getAbsHomeDirPath
   print absHomePath
 
-  relUserFile <- getUserFilePath
+  relUserFile <- getRelUserFilePath
   print relUserFile
 
-  fooBarFile <- getFooBarFilePath
-  print fooBarFile
+  relFooBarFile <- getRelFooBarFilePath
+  print relFooBarFile
 
   let fullUserFilePath = absHomePath </> relUserFile
   print fullUserFilePath
@@ -35,6 +42,6 @@ main = do
   -- let invalidPath1 = absHomePath </> absHomePath
   -- print invalidPath1
 
-  -- Won't compile: rel path cannot preceed abs path
+  -- Won't compile: abs path cannot follow rel path
   -- let invalidPath2 = relUserFile </> absHomePath
   -- print invalidPath2

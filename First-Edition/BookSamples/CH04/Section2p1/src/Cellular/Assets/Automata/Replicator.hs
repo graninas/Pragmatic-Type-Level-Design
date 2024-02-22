@@ -19,7 +19,6 @@ type ReplicatorStep = 'Step ('DefState D)
    ]
 
 type ReplicatorRule = 'Rule
-  @LifeLikeStates
   "Replicator"
   "repl"
   ('AdjacentsLvl 1)

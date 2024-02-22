@@ -55,7 +55,6 @@ type B2S23Step states = 'Step @states ('DefState D)
    ]
 
 type B2S23Rule = 'Rule
-  @LifeLikeStates
   "Game of Life"
   "gol"
   ('AdjacentsLvl 1)

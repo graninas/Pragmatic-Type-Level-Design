@@ -18,16 +18,14 @@ import Cellular.Implementation.Algorithm
 
 
 class IAutomaton
-  (rule :: CustomRule
-    (states :: [CustomState])) where
+  (rule :: CustomRule) where
   step :: CellWorld rule -> CellWorld rule
   name :: Proxy rule -> RuleName
   code :: Proxy rule -> RuleCode
 
 
 class IWorld
-    (rule :: CustomRule
-      (states :: [CustomState])) where
+    (rule :: CustomRule) where
   initWorld :: CellWorld rule
   initWorld = CW Map.empty
 

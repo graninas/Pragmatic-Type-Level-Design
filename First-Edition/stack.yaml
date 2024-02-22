@@ -19,9 +19,9 @@ packages:
 - BookSamples/CH03/Section2p2
 
 - BookSamples/CH04/Section1p2
+- BookSamples/CH04/Section2
 - BookSamples/CH04/Section2p1
-- BookSamples/CH04/Section2p2
-- BookSamples/CH04/Section2p3
+- BookSamples/CH04/Section2p5
 
 - BookSamples/AppendixC_Haskell/FightClub
 

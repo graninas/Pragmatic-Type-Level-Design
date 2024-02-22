@@ -27,15 +27,11 @@ import Cellular.Language.Algorithm
 -- | Integrity verification interface
 class Verify tag where
 
--- | Helper verification machinery
-class Check tag where
-
 ------- Empty states list verification
 data StatesNotEmpty (states :: [CustomState])
 
 -- No instance for empty state:
 -- instance Verify (StatesNotEmpty '[]) where
---   verify _ = False
 
 instance Verify (StatesNotEmpty (s ': ss)) where
 
@@ -45,9 +41,7 @@ data AtLeastTwoStates (states :: [CustomState])
 
 -- No instances for single state and empty state:
 -- instance Verify (AtLeastTwoStates '[]) where
---   verify _ = True
 -- instance Verify (AtLeastTwoStates (s1 ': ss)) where
---   verify _ = True
 
 instance Verify (AtLeastTwoStates (s1 ': s2 ': ss)) where
 
@@ -62,29 +56,29 @@ data StatesAreUniqueCheck
 -- Aux checks
 data StateNotInList s (l :: ss)
 
-instance Check (StateNotInList s '[]) where
+instance Verify (StateNotInList s '[]) where
 
 instance
   ( (s1 == s2) ~ 'False
-  , Check (StateNotInList ('State n1 s1) ss)
-  ) => Check (StateNotInList ('State n1 s1) (('State n2 s2) ': ss)) where
+  , Verify (StateNotInList ('State n1 s1) ss)
+  ) => Verify (StateNotInList ('State n1 s1) (('State n2 s2) ': ss)) where
 
 instance Verify (StatesAreUnique '[]) where
 
 instance Verify (StatesAreUnique (s1 ': '[])) where
 
 instance
-  ( Check (StatesAreUniqueCheck '[s1] (s2 ': ss))
+  ( Verify (StatesAreUniqueCheck '[s1] (s2 ': ss))
   ) => Verify (StatesAreUnique (s1 ': s2 ': ss)) where
 
 instance
-  Check (StatesAreUniqueCheck checked '[]) where
+  Verify (StatesAreUniqueCheck checked '[]) where
 
 instance
-  ( Check (StateNotInList s1 checked)
-  , Check (StatesAreUniqueCheck (s1 ': checked) ss2)
+  ( Verify (StateNotInList s1 checked)
+  , Verify (StatesAreUniqueCheck (s1 ': checked) ss)
   ) =>
-  Check (StatesAreUniqueCheck checked (s1 ': ss2)) where
+  Verify (StatesAreUniqueCheck checked (s1 ': ss)) where
 
 
 ------- State names uniqueness verification
@@ -97,29 +91,29 @@ data StateNamesAreUniqueCheck
 -- Aux checks
 data StateNameNotInList st (l :: ss)
 
-instance Check (StateNameNotInList st '[]) where
+instance Verify (StateNameNotInList st '[]) where
 
 instance
   ( (n1 == n2) ~ 'False
-  , Check (StateNameNotInList ('State n1 s1) ss)
-  ) => Check (StateNameNotInList ('State n1 s1) (('State n2 s2) ': ss)) where
+  , Verify (StateNameNotInList ('State n1 s1) ss)
+  ) => Verify (StateNameNotInList ('State n1 s1) (('State n2 s2) ': ss)) where
 
 instance Verify (StateNamesAreUnique '[]) where
 
 instance Verify (StateNamesAreUnique (s1 ': '[])) where
 
 instance
-  ( Check (StateNamesAreUniqueCheck '[s1] (s2 ': ss))
+  ( Verify (StateNamesAreUniqueCheck '[s1] (s2 ': ss))
   ) => Verify (StateNamesAreUnique (s1 ': s2 ': ss)) where
 
 instance
-  Check (StateNamesAreUniqueCheck checked '[]) where
+  Verify (StateNamesAreUniqueCheck checked '[]) where
 
 instance
-  ( Check (StateNameNotInList s1 checked)
-  , Check (StateNamesAreUniqueCheck (s1 ': checked) ss2)
+  ( Verify (StateNameNotInList s1 checked)
+  , Verify (StateNamesAreUniqueCheck (s1 ': checked) ss)
   ) =>
-  Check (StateNamesAreUniqueCheck checked (s1 ': ss2)) where
+  Verify (StateNamesAreUniqueCheck checked (s1 ': ss)) where
 
 
 ------- State is real verification
@@ -132,7 +126,22 @@ instance
   ) =>
   Verify (StateIsReal s ss) where
 
-type family StateIdxInList (s :: StateIdxNat) (ss :: [CustomState]) :: Bool where
-    StateIdxInList _ '[] = 'False
-    StateIdxInList s ('State n s ': _) = 'True
-    StateIdxInList s (_ ': ss) = StateIdxInList s ss
+type family
+  StateIdxInList (s :: StateIdxNat) (ss :: [CustomState])
+  :: Bool where
+
+  StateIdxInList _ '[] = 'False
+  StateIdxInList s ('State n s ': _) = 'True
+  StateIdxInList s (_ ': ss) = StateIdxInList s ss
+
+
+------- Default state is real verification
+data DefaultStateIsReal
+  (d :: DefaultState)
+  (ss :: [CustomState])
+
+instance
+  ( Verify (StateIsReal defIdx ss)                         -- FlexibleContexts
+  ) =>
+  Verify (DefaultStateIsReal ('DefState defIdx) ss) where  -- FlexibleInstances
+

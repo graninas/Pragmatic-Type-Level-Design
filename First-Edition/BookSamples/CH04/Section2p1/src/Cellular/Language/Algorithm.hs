@@ -53,7 +53,7 @@ data CustomState
   }
 
 -- | Automaton step definition
-data CustomStep (states :: [CustomState])
+data CustomStep
   = Step
   { csDefaultState :: DefaultState
   , csTransitions  :: [CustomStateTransition]

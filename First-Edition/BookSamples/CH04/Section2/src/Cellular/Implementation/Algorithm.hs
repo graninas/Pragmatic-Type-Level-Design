@@ -77,18 +77,19 @@ instance
 
 instance
   ( MakeCellUpdate ts
-  , KnownNat def
   , Verify (StatesNotEmpty states)   -- FlexibleContexts used here
   , Verify (AtLeastTwoStates states)
   , Verify (StatesAreUnique states)
   , Verify (StateNamesAreUnique states)
-  , Verify (StateIsReal def states)
+  , Verify (DefaultStateIsReal def states)
+  , ('DefState defIdx) ~ def
+  , KnownNat defIdx
   ) =>
-  MakeStep ('Step @states ('DefState def) ts) where
+  MakeStep ('Step @states def ts) where
   makeStep _ nProxy board = let
-    def = fromIntegral $ natVal $ Proxy @def
+    defIdx = fromIntegral $ natVal $ Proxy @defIdx
     nsLookupF = makeNeighborhoodLookup nProxy board
-    updateF = makeCellUpdate (Proxy @ts) def nsLookupF
+    updateF = makeCellUpdate (Proxy @ts) defIdx nsLookupF
     board' = Map.mapWithKey updateF board
     in board'
 

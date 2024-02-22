@@ -18,7 +18,6 @@ type SeedsStep = 'Step ('DefState D)
    ]
 
 type SeedsRule = 'Rule
-  @LifeLikeStates
   "Seeds"
   "seeds"
   ('AdjacentsLvl 1)

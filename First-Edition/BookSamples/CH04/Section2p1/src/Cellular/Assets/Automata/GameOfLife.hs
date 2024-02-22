@@ -20,7 +20,6 @@ type GoLStep = 'Step ('DefState D)
    ]
 
 type GoLRule = 'Rule
-  @LifeLikeStates
   "Game of Life"
   "gol"
   ('AdjacentsLvl 1)
@@ -39,7 +38,7 @@ neighbors3, neighbors23 :: CellCondition
 neighbors3  = NeighborsCount 1 [3  ]
 neighbors23 = NeighborsCount 1 [2,3]
 
-goLStep :: CustomStep '[]
+goLStep :: CustomStep
 goLStep = Step (DefState 0)
   [ StateTransition 0 1 neighbors3
   , StateTransition 1 1 neighbors23

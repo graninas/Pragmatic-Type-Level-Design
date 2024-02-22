@@ -31,7 +31,7 @@ class MakeNeighborhoodLookup (n :: Neighborhood) where
     -> Cells
 
 class
-  MakeStep (step :: CustomStep (states :: [CustomState])) where
+  MakeStep (step :: CustomStep) where
   makeStep
     :: MakeNeighborhoodLookup neiborhood
     => Proxy step
@@ -78,7 +78,7 @@ instance
   ( MakeCellUpdate ts
   , KnownNat def
   ) =>
-  MakeStep ('Step @states ('DefState def) ts) where
+  MakeStep ('Step ('DefState def) ts) where
   makeStep _ nProxy board = let
     def = fromIntegral $ natVal $ Proxy @def
     nsLookupF = makeNeighborhoodLookup nProxy board

@@ -14,13 +14,12 @@ import Cellular.Assets.Automata.LifeLike
 type Neighbors3  = 'NeighborsCount A '[3  ]
 type Neighbors23 = 'NeighborsCount A '[2,3]
 
-type GoLStep = 'Step ('DefState D)
+type GoLStep = 'Step @LifeLikeStates ('DefState D)
   '[ 'StateTransition D A Neighbors3
    , 'StateTransition A A Neighbors23
    ]
 
 type GoLRule = 'Rule
-  @LifeLikeStates
   "Game of Life"
   "gol"
   ('AdjacentsLvl 1)

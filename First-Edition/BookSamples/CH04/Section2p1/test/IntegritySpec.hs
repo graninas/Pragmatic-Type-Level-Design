@@ -62,104 +62,16 @@ type LifeLikeStates =
 type Neighbors3  = 'NeighborsCount A '[3  ]
 type Neighbors23 = 'NeighborsCount A '[2,3]
 
-type B2S23Step states = 'Step @states ('DefState D)
+type B2S23Step = 'Step ('DefState D)
   '[ 'StateTransition D A Neighbors3
    , 'StateTransition A A Neighbors23
    ]
 
 type B2S23Rule = 'Rule
-  @LifeLikeStates
   "Game of Life"
   "gol"
   ('AdjacentsLvl 1)
-  (B2S23Step LifeLikeStates)
-
-
--- Invalid, won't compile: declared states don't match
--- Couldn't match kind: '[]
---   with: '[ 'State "Alive" A, 'State "Dead" D]
--- type InvalidRule1 = 'Rule
---   @LifeLikeStates
---   "Game of Life"
---   "gol"
---   ('AdjacentsLvl 1)
---   (B2S23Step '[])
-
-
--- Invalid, won't compile: declared states don't match
--- Couldn't match kind: '[ 'State "Alive" A, 'State "Dead" D]
---   with: '[]
--- type InvalidRule2 = 'Rule
---   @('[])
---   "Game of Life"
---   "gol"
---   ('AdjacentsLvl 1)
---   (B2S23Step LifeLikeStates)
-
-
--- Invalid: empty states
-type InvalidRule3 = 'Rule
-  @('[])
-  "Game of Life"
-  "gol"
-  ('AdjacentsLvl 1)
-  (B2S23Step '[])
-
-
--- Invalid: only one state declared
-type SingleStates =
-  '[ 'State "Single" D
-   ]
-
-type InvalidRule4 = 'Rule
-  @SingleStates
-  "Game of Life"
-  "gol"
-  ('AdjacentsLvl 1)
-  (B2S23Step SingleStates)
-
-
--- Invalid: same states found
-type SameStates =
-  '[ 'State "A" D
-   , 'State "D" D
-   ]
-
-type InvalidRule5 = 'Rule
-  @SameStates
-  "Game of Life"
-  "gol"
-  ('AdjacentsLvl 1)
-  (B2S23Step SameStates)
-
-
--- Invalid: same names found
-type SameStateNames =
-  '[ 'State "D" A
-   , 'State "D" D
-   ]
-
-type InvalidRule6 = 'Rule
-  @SameStateNames
-  "Game of Life"
-  "gol"
-  ('AdjacentsLvl 1)
-  (B2S23Step SameStateNames)
-
-
--- Invalid: unknown default state
-type X = 222
-type InvalidDefaultStep states = 'Step @states ('DefState X)
-  '[ 'StateTransition D A Neighbors3
-   , 'StateTransition A A Neighbors23
-   ]
-
-type InvalidRule7 = 'Rule
-  @LifeLikeStates
-  "Game of Life"
-  "gol"
-  ('AdjacentsLvl 1)
-  (InvalidDefaultStep LifeLikeStates)
+  B2S23Step
 
 
 spec :: Spec
@@ -171,37 +83,3 @@ spec = do
       let CW board2 = iterateWorld world1
       board2 `shouldBe` cross2Expected
 
-  -- Invalid cases that will compile but ideally
-  -- they shouldn't be allowed by the model.
-  -- Tests are switched off to indicate they don't
-  -- really test anything.
-  describe "Invalid cases that compile but shouldn't" $ do
-    it "Empty states not allowed" $ do
-      pendingWith "Invalid test case that shouldn't even compile"
-      let world1 = CW cross :: CellWorld InvalidRule3
-      let CW board2 = iterateWorld world1
-      board2 `shouldBe` cross2Expected
-
-    it "At least two states" $ do
-      pendingWith "Invalid test case that shouldn't even compile"
-      let world1 = CW cross :: CellWorld InvalidRule4
-      let CW board2 = iterateWorld world1
-      board2 `shouldBe` cross2Expected
-
-    it "Two identical states not allowed" $ do
-      pendingWith "Invalid test case that shouldn't even compile"
-      let world1 = CW cross :: CellWorld InvalidRule5
-      let CW board2 = iterateWorld world1
-      board2 `shouldBe` cross2Expected
-
-    it "Two identical state names not allowed" $ do
-      pendingWith "Invalid test case that shouldn't even compile"
-      let world1 = CW cross :: CellWorld InvalidRule6
-      let CW board2 = iterateWorld world1
-      board2 `shouldBe` cross2Expected
-
-    it "Unknown default state" $ do
-      pendingWith "Invalid test case that shouldn't even compile"
-      let world1 = CW cross :: CellWorld InvalidRule7
-      let CW board2 = iterateWorld world1
-      board2 `shouldBe` cross2Expected

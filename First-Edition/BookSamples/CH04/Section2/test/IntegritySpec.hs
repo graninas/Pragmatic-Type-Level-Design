@@ -69,38 +69,14 @@ type B2S23Step states = 'Step @states ('DefState D)
    ]
 
 type B2S23Rule = 'Rule
-  @LifeLikeStates
   "Game of Life"
   "gol"
   ('AdjacentsLvl 1)
   (B2S23Step LifeLikeStates)
 
 
--- Invalid, won't compile: declared states don't match
--- Couldn't match kind: '[]
---   with: '[ 'State "Alive" A, 'State "Dead" D]
--- type InvalidRule1 = 'Rule
---   @LifeLikeStates
---   "Game of Life"
---   "gol"
---   ('AdjacentsLvl 1)
---   (B2S23Step '[])
-
-
--- Invalid, won't compile: declared states don't match
--- Couldn't match kind: '[ 'State "Alive" A, 'State "Dead" D]
---   with: '[]
--- type InvalidRule2 = 'Rule
---   @('[])
---   "Game of Life"
---   "gol"
---   ('AdjacentsLvl 1)
---   (B2S23Step LifeLikeStates)
-
-
 -- Invalid: empty states
 type InvalidRule3 = 'Rule
-  @('[])
   "Game of Life"
   "gol"
   ('AdjacentsLvl 1)
@@ -113,7 +89,6 @@ type SingleStates =
    ]
 
 type InvalidRule4 = 'Rule
-  @SingleStates
   "Game of Life"
   "gol"
   ('AdjacentsLvl 1)
@@ -127,7 +102,6 @@ type SameStates =
    ]
 
 type InvalidRule5 = 'Rule
-  @SameStates
   "Game of Life"
   "gol"
   ('AdjacentsLvl 1)
@@ -141,7 +115,6 @@ type SameStateNames =
    ]
 
 type InvalidRule6 = 'Rule
-  @SameStateNames
   "Game of Life"
   "gol"
   ('AdjacentsLvl 1)
@@ -156,7 +129,6 @@ type InvalidDefaultStep states = 'Step @states ('DefState X)
    ]
 
 type InvalidRule7 = 'Rule
-  @LifeLikeStates
   "Game of Life"
   "gol"
   ('AdjacentsLvl 1)
@@ -207,3 +179,15 @@ spec = do
     --   let world1 = CW cross :: CellWorld InvalidRule7
     --   let CW board2 = iterateWorld world1
     --   board2 `shouldBe` cross2Expected
+
+
+
+-- Value-level invalid usage:
+
+neighbors3  = NeighborsCount 1 [3  ]
+neighbors23 = NeighborsCount 1 [2,3]
+
+invalidStepConstant = Step @LifeLikeStates (DefState 0)
+  [ StateTransition 0 1 neighbors3
+  , StateTransition 0 1 neighbors23
+  ]

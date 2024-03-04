@@ -26,7 +26,8 @@ import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 -- Extensions implementation
 
 -- Dynamic (runtime) value. For now hardcoded by can be obtained from any source.
-instance Eval Impl.AsImplMoneyConst (L.DynVal' "202 min bid") (IO T.Money) where
+type MinBid202 = 'L.ValNameS "202 min bid"
+instance Eval Impl.AsImplMoneyConst (L.DynVal' MinBid202) (IO T.Money) where
   eval _ _ = pure 20000
 
 -- Payload

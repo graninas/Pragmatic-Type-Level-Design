@@ -4,22 +4,15 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 232745059e4e96b8bc6dc1b5c09dec281fedbeecd842f9e3e3578db4ca854e25
+-- hash: 5a21e248a0cfd04dfef8c55160af2acfbc4fd87da2e4202c2d7465aff0ed0657
 
 name:           ptld-lib
 version:        0.0.0.1
-homepage:       https://github.com/graninas/Pragmatic-Type-Level-Design#readme
-bug-reports:    https://github.com/graninas/Pragmatic-Type-Level-Design/issues
 author:         Alexander Granin
 maintainer:     graninas@gmail.com
-copyright:      Granin A.S. 2021
+copyright:      Granin A.S. 2024
 license:        BSD3
 build-type:     Simple
-
-source-repository head
-  type: git
-  location: https://github.com/graninas/Pragmatic-Type-Level-Design
-  subdir: lib
 
 library
   exposed-modules:

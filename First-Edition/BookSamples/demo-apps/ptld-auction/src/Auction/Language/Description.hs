@@ -33,14 +33,16 @@ data MinBid
 
 -- eDSL
 
-data DynVal' (name :: Symbol)
+newtype ValNameSymb = ValNameS Symbol
+
+data DynVal' (name :: ValNameSymb)
 
 data MoneyVal' (val :: Symbol)
 
 data Info' (name :: Symbol) (holder :: Symbol)
 
 data Lot' (name :: Symbol)
-          (descr :: Symbol)
+          (description :: Symbol)
           (payload :: LotPayloadTag p)
           (currency :: CurrencyTag a)
           (censorship :: CensorshipTag c)
@@ -72,7 +74,7 @@ type family MkBid         (a :: *)   :: BidTag a
 type NoCensorship                 = MkCensorship NoCensorship'
 type Info name holder             = MkAuctionInfo (Info' name holder)
 type MoneyVal (val :: Symbol)     = MkMoneyConst (MoneyVal' val)
-type MoneyDynVal (name :: Symbol) = MkMoneyConst (DynVal' name)
+type MoneyDynVal (valName :: ValNameSymb) = MkMoneyConst (DynVal' valName)
 type Censorship c                 = MkCensorship c
 type LotPayload p                 = MkLotPayload p
 type Currency c                   = MkCurrency c

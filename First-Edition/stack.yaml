@@ -23,6 +23,9 @@ packages:
 - BookSamples/CH04/Section2p1
 - BookSamples/CH04/Section2p5
 
+- BookSamples/demo-apps/ptld-lib
+- BookSamples/demo-apps/ptld-auction
+
 - BookSamples/AppendixC_Haskell/FightClub
 
 allow-newer: true

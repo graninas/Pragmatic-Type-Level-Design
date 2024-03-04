@@ -1,10 +1,9 @@
 name:                ptld-auction
 version:             0.0.0.1
-github:              "graninas/Pragmatic-Type-Level-Design/demo-apps/auction"
 license:             BSD3
 author:              "Alexander Granin"
 maintainer:          "graninas@gmail.com"
-copyright:           "Granin A.S. 2021"
+copyright:           "Granin A.S. 2024"
 
 
 default-extensions:
@@ -46,7 +45,6 @@ dependencies:
 - filepath
 - fmt
 - generic-lens
-- gloss
 - lens
 - MonadRandom
 - mtl
@@ -76,7 +74,7 @@ library:
 
 
 tests:
-  auction-tests:
+  ptld-auction-tests:
     main: Spec.hs
     source-dirs:
     - test/

@@ -60,8 +60,9 @@ import Control.Monad (void)
 type UKOnly  = Censorship (ExtL.AllowedCountries "UK only" '[UK])
 type UKAndUS = Censorship (ExtL.AllowedCountries "UK & US" '[UK, US])
 
+type MinBid202 = 'ValNameS "202 min bid"
 type PayloadLot1 = LotPayload (ExtL.EFLotPayload (MoneyVal "1000"))
-type PayloadLot2 = LotPayload (ExtL.EFLotPayload (MoneyDynVal "202 min bid"))
+type PayloadLot2 = LotPayload (ExtL.EFLotPayload (MoneyDynVal MinBid202))
 type PayloadLot3 = LotPayload (ExtL.EFLotPayload (MoneyVal "40000"))
 
 -- Auction algorithm

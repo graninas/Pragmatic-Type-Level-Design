@@ -1,24 +1,16 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.35.0.
 --
 -- see: https://github.com/sol/hpack
---
--- hash: f1c8dc9f74fdb9831975c506e1ea7a7ff24f1f8590cc00812cfa0510c7912867
 
 name:           ptld-auction
 version:        0.0.0.1
-homepage:       https://github.com/graninas/Pragmatic-Type-Level-Design/demo-apps/auction#readme
-bug-reports:    https://github.com/graninas/Pragmatic-Type-Level-Design/demo-apps/auction/issues
 author:         Alexander Granin
 maintainer:     graninas@gmail.com
-copyright:      Granin A.S. 2021
+copyright:      Granin A.S. 2024
 license:        BSD3
 build-type:     Simple
-
-source-repository head
-  type: git
-  location: https://github.com/graninas/Pragmatic-Type-Level-Design/demo-apps/auction
 
 library
   exposed-modules:
@@ -43,7 +35,31 @@ library
       Paths_ptld_auction
   hs-source-dirs:
       src
-  default-extensions: GADTs RankNTypes DeriveFunctor DeriveGeneric OverloadedStrings LambdaCase MultiParamTypeClasses ExplicitNamespaces TypeApplications ScopedTypeVariables TypeOperators TypeFamilies DataKinds FlexibleContexts FlexibleInstances PatternSynonyms PolyKinds DefaultSignatures ConstraintKinds NamedFieldPuns TupleSections ViewPatterns MultiWayIf RecordWildCards
+  default-extensions:
+      GADTs
+      RankNTypes
+      DeriveFunctor
+      DeriveGeneric
+      OverloadedStrings
+      LambdaCase
+      MultiParamTypeClasses
+      ExplicitNamespaces
+      TypeApplications
+      ScopedTypeVariables
+      TypeOperators
+      TypeFamilies
+      DataKinds
+      FlexibleContexts
+      FlexibleInstances
+      PatternSynonyms
+      PolyKinds
+      DefaultSignatures
+      ConstraintKinds
+      NamedFieldPuns
+      TupleSections
+      ViewPatterns
+      MultiWayIf
+      RecordWildCards
   ghc-options: -Wall
   build-depends:
       MonadRandom
@@ -59,7 +75,6 @@ library
     , filepath
     , fmt
     , generic-lens
-    , gloss
     , lens
     , mtl
     , newtype-generics
@@ -80,7 +95,7 @@ library
     , void
   default-language: Haskell2010
 
-test-suite auction-tests
+test-suite ptld-auction-tests
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
@@ -91,7 +106,31 @@ test-suite auction-tests
       Paths_ptld_auction
   hs-source-dirs:
       test/
-  default-extensions: GADTs RankNTypes DeriveFunctor DeriveGeneric OverloadedStrings LambdaCase MultiParamTypeClasses ExplicitNamespaces TypeApplications ScopedTypeVariables TypeOperators TypeFamilies DataKinds FlexibleContexts FlexibleInstances PatternSynonyms PolyKinds DefaultSignatures ConstraintKinds NamedFieldPuns TupleSections ViewPatterns MultiWayIf RecordWildCards
+  default-extensions:
+      GADTs
+      RankNTypes
+      DeriveFunctor
+      DeriveGeneric
+      OverloadedStrings
+      LambdaCase
+      MultiParamTypeClasses
+      ExplicitNamespaces
+      TypeApplications
+      ScopedTypeVariables
+      TypeOperators
+      TypeFamilies
+      DataKinds
+      FlexibleContexts
+      FlexibleInstances
+      PatternSynonyms
+      PolyKinds
+      DefaultSignatures
+      ConstraintKinds
+      NamedFieldPuns
+      TupleSections
+      ViewPatterns
+      MultiWayIf
+      RecordWildCards
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       MonadRandom
@@ -107,7 +146,6 @@ test-suite auction-tests
     , filepath
     , fmt
     , generic-lens
-    , gloss
     , hspec
     , lens
     , mtl

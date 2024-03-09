@@ -27,6 +27,7 @@ packages:
 - BookSamples/demo-apps/ptld-auction
 
 - BookSamples/AppendixC_Haskell/FightClub
+- BookSamples/AppendixD
 
 allow-newer: true
 

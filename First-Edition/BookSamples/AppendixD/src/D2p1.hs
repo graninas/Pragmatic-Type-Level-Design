@@ -1,6 +1,6 @@
 {-# LANGUAGE DataKinds     #-}
 
-module CH01.S01_02 where
+module D2p1 where
 
 import Data.Vector.Indexed (Vector, ParseError (..), merge, fromString)
 

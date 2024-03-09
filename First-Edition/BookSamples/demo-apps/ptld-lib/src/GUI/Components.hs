@@ -16,18 +16,23 @@ import GHC.TypeLits
 import Data.Proxy
 
 
--- | TextBox
+-- N.B. Not a real library, just a demo interface.
+
+-- | It’s a TextBox.
 data TextBox (n :: Nat) (str :: Symbol)
   deriving Show
 
--- | ColumnLayout
-data ColumnLayout (its :: [*])
+-- | It's a RowLayout.
+data RowLayout (items :: [*])
 
--- | TextField
+-- | It's a ColumnLayout.
+data ColumnLayout (items :: [*])
+
+-- | It's a TextField.
 data TextField (cid :: Symbol) (cap :: Symbol)
 
--- | TextField
+-- | It's a TextField.
 data TextFieldWithMode (cid :: Symbol) (cap :: Symbol) (m :: *)
 
--- TextField password mode
+-- | TextField password mode.
 data PasswordEchoOnEdit

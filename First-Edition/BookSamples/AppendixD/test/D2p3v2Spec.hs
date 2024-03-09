@@ -8,9 +8,9 @@
 {-# LANGUAGE FlexibleInstances        #-}
 {-# LANGUAGE ScopedTypeVariables      #-}
 
-module CH01_04_2Spec where
+module D2p3v2Spec where
 
-import CH01.S01_04_2
+import D2p3v2
 
 import           Test.Hspec
 import           Data.Proxy (Proxy(..))
@@ -61,12 +61,14 @@ transferMoney from to currency amount =
   (\token -> Deposit to token)
 
 -- Double Withdrawing is prohibited, this won't compile:
--- transferMoney2 :: Wallet -> Wallet -> Currency -> Amount -> WalletAPI (Result ())
--- transferMoney2 from to currency amount =
---   (Withdraw from currency amount
---     `AndThen` (\token -> Deposit to token))
---   `AndThen`
---   (\token -> Deposit to token)
+-- invalidDoubleWithdraw :: Wallet -> Wallet -> Currency -> Amount -> WalletAPI (Result ())
+-- invalidDoubleWithdraw from to currency amount =
+--   (Withdraw from currency amount                       -- 1st withdraw
+--     `AndThen` (\_ -> Withdraw from currency amount     -- 2nd withdraw
+--               `AndThen` (\token -> Deposit to token)
+--               )
+--   )
+--   `AndThen` (\token -> Deposit to token)               -- no match: previous deposit returned ()
 
 spec :: Spec
 spec =

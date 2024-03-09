@@ -1,7 +1,7 @@
 {-# LANGUAGE DataKinds     #-}
 {-# LANGUAGE GADTs         #-}
 
-module CH01.S01_04_2 where
+module D2p3v2 where
 
 type Wallet = String
 type Currency = String

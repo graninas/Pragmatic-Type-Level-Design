@@ -8,9 +8,9 @@
 {-# LANGUAGE FlexibleInstances        #-}
 {-# LANGUAGE ScopedTypeVariables      #-}
 
-module CH01_04_1Spec where
+module D2p3v1Spec where
 
-import CH01.S01_04_1
+import D2p3v1
 
 import           Test.Hspec
 import           Data.Proxy (Proxy(..))
@@ -77,12 +77,11 @@ transferMoney from to currency amount =
   `AndThen`
   (Deposit to currency amount)
 
-transferMoney2 :: Wallet -> Wallet -> Currency -> Amount -> WalletAPI
-transferMoney2 from to currency amount =
+invalidDoubleWithdraw :: Wallet -> Wallet -> Currency -> Amount -> WalletAPI
+invalidDoubleWithdraw from to currency amount =
   (Withdraw from currency amount
      `AndThen` Withdraw from currency amount)
-  `AndThen`
-  (Deposit to currency amount)
+  `AndThen` Deposit to currency amount
 
 
 -- Possible improvements

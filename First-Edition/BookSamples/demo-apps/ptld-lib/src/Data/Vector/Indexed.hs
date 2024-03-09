@@ -14,6 +14,9 @@ import Prelude
 import GHC.TypeNats
 import Data.Proxy
 
+
+-- N.B. Not a real library, just a demo interface.
+
 data Vector (n :: Nat) a
   deriving Show
 

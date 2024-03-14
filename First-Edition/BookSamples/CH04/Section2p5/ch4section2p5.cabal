@@ -61,7 +61,6 @@ library
     , newtype-generics
     , random
     , scientific
-    , strong-path
     , template-haskell
     , text
     , time
@@ -118,7 +117,6 @@ executable ch4section2p5
     , newtype-generics
     , random
     , scientific
-    , strong-path
     , template-haskell
     , text
     , time
@@ -165,7 +163,6 @@ test-suite functional
     , newtype-generics
     , random
     , scientific
-    , strong-path
     , template-haskell
     , text
     , time

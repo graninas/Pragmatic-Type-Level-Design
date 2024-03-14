@@ -182,8 +182,8 @@ processLoad worldsRef = do
 
 processLoadPredef :: IORef Worlds -> IO AppAction
 processLoadPredef worldsRef = do
-  let predefs = [ ("gol", "/data/GoL/glider.txt")
-                , ("seeds", "/data/Seeds/world1.txt")
+  let predefs = [ ("gol", "./data/GoL/glider.txt")
+                , ("seeds", "./data/Seeds/world1.txt")
                 ]
 
   putStrLn "\nPredefined worlds to load:"
@@ -195,7 +195,7 @@ processLoadPredef worldsRef = do
     case Map.lookup c supportedRulesDict of
       Nothing -> pure "Unknown rule."
       Just (RI proxy) -> do
-        let file = execPath <> "/BookSamples/CH03/Section2p2" <> f
+        let file = execPath <> "/BookSamples/CH03/Section2p2/" <> f
         eWI <- loadWorld2 proxy file
         case eWI of
           Left err  -> pure ("Failed to load [" <> c <> "]: " <> err)

@@ -37,7 +37,6 @@ dependencies:
 - lens
 - constraints
 - directory
-- strong-path
 
 library:
   source-dirs:

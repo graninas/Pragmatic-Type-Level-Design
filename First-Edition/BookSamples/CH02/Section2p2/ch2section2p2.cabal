@@ -14,21 +14,21 @@ build-type:     Simple
 
 library
   exposed-modules:
-      App.Action
-      App.Existential.App
-      App.Existential.Rules
-      App.Existential.Valuefy
-      App.Existential.Worlds
-      App.Valuefied.App
-      App.Valuefied.Rules
-      App.Valuefied.Worlds
-      Assets.Automata.GameOfLife
-      Assets.Automata.Replicator
-      Assets.Automata.Seeds
-      Assets.WorldsSample
-      Domain.Automaton
-      Domain.Board
-      Domain.Cell
+      Cellular.App.Action
+      Cellular.App.Existential.App
+      Cellular.App.Existential.Rules
+      Cellular.App.Existential.Valuefy
+      Cellular.App.Existential.Worlds
+      Cellular.App.Valuefied.App
+      Cellular.App.Valuefied.Rules
+      Cellular.App.Valuefied.Worlds
+      Cellular.Assets.Automata.GameOfLife
+      Cellular.Assets.Automata.Replicator
+      Cellular.Assets.Automata.Seeds
+      Cellular.Assets.WorldsSample
+      Cellular.Domain.Automaton
+      Cellular.Domain.Board
+      Cellular.Domain.Cell
       Main
   other-modules:
       Paths_ch2section2p2
@@ -69,21 +69,21 @@ library
 executable ch2section2p2
   main-is: Main.hs
   other-modules:
-      App.Action
-      App.Existential.App
-      App.Existential.Rules
-      App.Existential.Valuefy
-      App.Existential.Worlds
-      App.Valuefied.App
-      App.Valuefied.Rules
-      App.Valuefied.Worlds
-      Assets.Automata.GameOfLife
-      Assets.Automata.Replicator
-      Assets.Automata.Seeds
-      Assets.WorldsSample
-      Domain.Automaton
-      Domain.Board
-      Domain.Cell
+      Cellular.App.Action
+      Cellular.App.Existential.App
+      Cellular.App.Existential.Rules
+      Cellular.App.Existential.Valuefy
+      Cellular.App.Existential.Worlds
+      Cellular.App.Valuefied.App
+      Cellular.App.Valuefied.Rules
+      Cellular.App.Valuefied.Worlds
+      Cellular.Assets.Automata.GameOfLife
+      Cellular.Assets.Automata.Replicator
+      Cellular.Assets.Automata.Seeds
+      Cellular.Assets.WorldsSample
+      Cellular.Domain.Automaton
+      Cellular.Domain.Board
+      Cellular.Domain.Cell
       Paths_ch2section2p2
   hs-source-dirs:
       ./src

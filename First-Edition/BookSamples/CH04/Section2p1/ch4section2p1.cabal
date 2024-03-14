@@ -14,10 +14,10 @@ build-type:     Simple
 
 library
   exposed-modules:
-      App.Action
-      App.Existential.App
-      App.Existential.Rules
-      App.Existential.Worlds
+      Cellular.App.Action
+      Cellular.App.Existential.App
+      Cellular.App.Existential.Rules
+      Cellular.App.Existential.Worlds
       Cellular.Assets.Automata.GameOfLife
       Cellular.Assets.Automata.LifeLike
       Cellular.Assets.Automata.Replicator
@@ -70,10 +70,10 @@ library
 executable ch4section2p1
   main-is: Main.hs
   other-modules:
-      App.Action
-      App.Existential.App
-      App.Existential.Rules
-      App.Existential.Worlds
+      Cellular.App.Action
+      Cellular.App.Existential.App
+      Cellular.App.Existential.Rules
+      Cellular.App.Existential.Worlds
       Cellular.Assets.Automata.GameOfLife
       Cellular.Assets.Automata.LifeLike
       Cellular.Assets.Automata.Replicator

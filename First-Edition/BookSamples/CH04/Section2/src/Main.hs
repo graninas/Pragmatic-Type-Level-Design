@@ -2,17 +2,15 @@
 {-# LANGUAGE GADTs #-}
 module Main where
 
-import qualified App.Existential.App as EApp
-
-import qualified Data.Map as Map
-import Data.IORef ( IORef, newIORef )
-import App.Action (AppAction (..), continue, finish, continueWithMsg)
-
-import Data.Proxy
-
+import qualified Cellular.App.Existential.App as EApp
+import Cellular.App.Action (AppAction (..), continue, finish, continueWithMsg)
 import Cellular.Assets.Automata.GameOfLife
 import Cellular.Assets.Automata.Seeds
 import Cellular.Assets.Automata.Replicator
+
+import qualified Data.Map as Map
+import Data.IORef ( IORef, newIORef )
+import Data.Proxy
 
 
 printHelp :: IO AppAction

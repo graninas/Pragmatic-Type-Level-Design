@@ -15,6 +15,7 @@ build-type:     Simple
 library
   exposed-modules:
       App.Action
+      App.Config
       App.Existential.App
       App.Existential.Rules
       App.Existential.Worlds
@@ -49,7 +50,8 @@ library
       InstanceSigs
   ghc-options: -Wall
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
     , bytestring
     , constraints
     , containers
@@ -72,6 +74,7 @@ executable ch5
   main-is: Main.hs
   other-modules:
       App.Action
+      App.Config
       App.Existential.App
       App.Existential.Rules
       App.Existential.Worlds
@@ -104,7 +107,8 @@ executable ch5
       InstanceSigs
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
     , bytestring
     , constraints
     , containers
@@ -148,7 +152,8 @@ test-suite functional
       InstanceSigs
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
     , bytestring
     , ch5
     , constraints

@@ -37,6 +37,7 @@ dependencies:
 - lens
 - constraints
 - directory
+- aeson
 
 library:
   source-dirs:

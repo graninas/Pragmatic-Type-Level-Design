@@ -2,19 +2,18 @@
 {-# LANGUAGE GADTs #-}
 module Main where
 
-import qualified App.Valuefied.App as VApp
-import qualified App.Existential.App as EApp
+import qualified Cellular.App.Valuefied.App as VApp
+import qualified Cellular.App.Existential.App as EApp
+import Cellular.App.Action (AppAction (..), continue, finish, continueWithMsg)
+import Cellular.Domain.Automaton
+import Cellular.Assets.Automata.GameOfLife
+import Cellular.Assets.Automata.Seeds
+import Cellular.Assets.Automata.Replicator
 
 import qualified Data.Map as Map
 import Data.IORef ( IORef, newIORef )
-import App.Action (AppAction (..), continue, finish, continueWithMsg)
-
 import Data.Proxy
 
-import Domain.Automaton
-import Assets.Automata.GameOfLife
-import Assets.Automata.Seeds
-import Assets.Automata.Replicator
 
 -- Won't compile:
 

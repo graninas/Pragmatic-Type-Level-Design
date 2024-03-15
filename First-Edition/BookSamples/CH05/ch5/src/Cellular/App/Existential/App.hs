@@ -83,7 +83,7 @@ toBoard2' cells = let
 
 loadWorld2
   :: forall rule        -- Brings `rule` into the scope of body
-   . IAutomaton rule     -- Demands the `rule` to be automaton.
+   . IAutomaton rule    -- Demands the `rule` to be automaton.
   => Proxy rule         -- Highlights what rule type was requrested by the caller.
   -> FilePath
   -> IO (Either String WorldInstance)

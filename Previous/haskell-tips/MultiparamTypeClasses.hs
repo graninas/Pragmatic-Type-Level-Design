@@ -7,7 +7,9 @@
 module MultiparamTypeClasses where
 import Data.Data (Proxy)
 
--- The order of parameters of multiparam type classes.
+
+-- This snippet demonstrates the sensitivity of multiparam
+-- type classes to the order of parameters.
 
 
 data Type1 where

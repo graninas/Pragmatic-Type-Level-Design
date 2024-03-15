@@ -23,7 +23,7 @@ packages:
 - BookSamples/CH04/Section2p1
 - BookSamples/CH04/Section2p5
 
-# - BookSamples/CH05/ch5
+- BookSamples/CH05/ch5
 
 - BookSamples/demo-apps/ptld-lib
 - BookSamples/demo-apps/ptld-auction

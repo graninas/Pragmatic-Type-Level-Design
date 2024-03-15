@@ -1,5 +1,8 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE GADTs #-}
+
+{-# LANGUAGE DataKinds #-}
+
 module Main where
 
 import qualified Cellular.App.Existential.App as EApp
@@ -11,6 +14,14 @@ import Cellular.Assets.Automata.Replicator
 import qualified Data.Map as Map
 import Data.IORef (IORef, newIORef)
 import Data.Proxy
+import System.Environment (getArgs)
+import System.Directory (getCurrentDirectory)
+
+
+import Cellular.Automaton
+import Cellular.Language.Automaton (RuleCode)
+import Cellular.App.Config
+import Cellular.App.Existential.Rules
 
 
 printHelp :: IO AppAction
@@ -27,13 +38,39 @@ printHelp = do
   continue
 
 
+
+
+
+makeRule :: Config -> (RuleCode, RuleImpl)
+makeRule (Cfg (CfgRule c d t) r) = (c, existRule)
+  where
+    existRule = RI (Proxy :: Proxy SeedsRule)
+
+
 main :: IO ()
 main = do
   putStrLn "Welcome to the world of cellular automata!"
-  putStrLn "\nN.B., only 2-dimensional automata supported now."
-  _ <- printHelp
 
-  worldsRef <- newIORef Map.empty
+  -- _ <- printHelp
+
+  args <- getArgs
+
+  worldsRef <- case args of
+    (cfgFile : []) -> do
+      let cfgFile' = "./BookSamples/CH05/ch5/" <> cfgFile
+      putStrLn $ "Cfg file: " <> cfgFile'
+
+      cfgStr <- readFile cfgFile'
+      let (cfg :: Config) = read cfgStr
+      print cfg
+
+      let existRule = makeRule cfg
+
+      worldsRef <- newIORef Map.empty
+
+      pure worldsRef
+    _ -> newIORef Map.empty
+
   go worldsRef
 
 go :: IORef EApp.Worlds -> IO ()

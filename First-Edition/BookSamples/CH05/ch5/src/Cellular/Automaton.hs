@@ -25,7 +25,7 @@ class IAutomaton
 
 
 class IWorld
-    (rule :: CustomRule) where
+  (rule :: CustomRule) where
   initWorld :: CellWorld rule
   initWorld = CW Map.empty
 

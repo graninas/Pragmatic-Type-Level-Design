@@ -1,13 +1,9 @@
 {-# LANGUAGE GADTs #-}
 module Cellular.App.Existential.Worlds where
 
-import Cellular.Domain.Board (Board)
-import Cellular.Domain.Cell (Cell(..))
-import Cellular.Domain.Automaton ( iterateWorld, loadFromFile, saveToFile, name, Automaton, CellWorld (..) )
-import Cellular.App.Existential.Rules ( RuleImpl )
+import Cellular.Domain.Automaton (Automaton, CellWorld)
 
 import qualified Data.Map as Map
-import Data.Proxy ( Proxy )
 
 
 type Generation = Int
@@ -17,6 +13,9 @@ data WorldInstance where
      => Generation
      -> CellWorld rule
      -> WorldInstance
+
+type WorldIndex = Int
+type Worlds = Map.Map WorldIndex WorldInstance
 
   -- There is some difference between that ^ and this V
   --
@@ -34,8 +33,5 @@ data WorldInstance where
   --     ...
   --
   -- It says "Automaton should be defined for WorldInstance"
-
-type WorldIndex = Int
-type Worlds = Map.Map WorldIndex WorldInstance
 
 

@@ -19,9 +19,11 @@ library
       Cellular.App.Existential.Rules
       Cellular.App.Existential.Worlds
       Cellular.App.Package.Rule
+      Cellular.App.State
       Cellular.Assets.Automata.GameOfLife
       Cellular.Assets.Automata.LifeLike
       Cellular.Assets.Automata.Replicator
+      Cellular.Assets.Automata.Rules
       Cellular.Assets.Automata.Seeds
       Cellular.Automaton
       Cellular.Implementation.Algorithm
@@ -79,9 +81,11 @@ executable ch5
       Cellular.App.Existential.Rules
       Cellular.App.Existential.Worlds
       Cellular.App.Package.Rule
+      Cellular.App.State
       Cellular.Assets.Automata.GameOfLife
       Cellular.Assets.Automata.LifeLike
       Cellular.Assets.Automata.Replicator
+      Cellular.Assets.Automata.Rules
       Cellular.Assets.Automata.Seeds
       Cellular.Automaton
       Cellular.Implementation.Algorithm

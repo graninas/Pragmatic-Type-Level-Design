@@ -20,12 +20,14 @@ import System.Directory (getCurrentDirectory)
 
 import Cellular.Automaton
 import Cellular.Language.Automaton
-import Cellular.App.Config
 import Cellular.App.Existential.Rules
+import qualified Cellular.App.Package.Rule as Package
 
 
 printHelp :: IO AppAction
 printHelp = do
+  putStrLn "\nOptional arg: path_to_external_rule"
+
   putStrLn "\nCommands:"
   putStrLn "help   - this help message"
   putStrLn "quit   - exit"
@@ -38,30 +40,27 @@ printHelp = do
   continue
 
 
-makeRule :: Config -> (RuleCode, RuleImpl)
-makeRule (Cfg (CfgRule c d t) r) = (c, existRule)
-  where
-    existRule = error "TODO"
-
+makeExistentialRule :: Package.Rule -> RuleImpl
+makeExistentialRule rule = DynRI (Package.toDynamicRule rule)
 
 main :: IO ()
 main = do
   putStrLn "Welcome to the world of cellular automata!"
 
-  -- _ <- printHelp
+  _ <- printHelp
 
   args <- getArgs
 
   worldsRef <- case args of
-    (cfgFile : []) -> do
-      let cfgFile' = "./BookSamples/CH05/ch5/" <> cfgFile
-      putStrLn $ "Cfg file: " <> cfgFile'
+    (ruleFile : []) -> do
+      let ruleFile' = "./BookSamples/CH05/ch5/data/packages" <> ruleFile
+      putStrLn $ "Rule file: " <> ruleFile'
 
-      cfgStr <- readFile cfgFile'
-      let (cfg :: Config) = read cfgStr
-      print cfg
+      ruleStr <- readFile ruleFile'
+      let rule = read ruleStr
+      print rule
 
-      let existRule = makeRule cfg
+      let existRule = makeExistentialRule rule
 
       worldsRef <- newIORef Map.empty
 

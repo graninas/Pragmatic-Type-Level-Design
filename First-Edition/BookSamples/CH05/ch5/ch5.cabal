@@ -15,16 +15,17 @@ build-type:     Simple
 library
   exposed-modules:
       Cellular.App.Action
-      Cellular.App.Config
       Cellular.App.Existential.App
       Cellular.App.Existential.Rules
       Cellular.App.Existential.Worlds
+      Cellular.App.Package.Rule
       Cellular.Assets.Automata.GameOfLife
       Cellular.Assets.Automata.LifeLike
       Cellular.Assets.Automata.Replicator
       Cellular.Assets.Automata.Seeds
       Cellular.Automaton
       Cellular.Implementation.Algorithm
+      Cellular.Language
       Cellular.Language.Algorithm
       Cellular.Language.Automaton
       Cellular.Language.Board
@@ -74,16 +75,17 @@ executable ch5
   main-is: Main.hs
   other-modules:
       Cellular.App.Action
-      Cellular.App.Config
       Cellular.App.Existential.App
       Cellular.App.Existential.Rules
       Cellular.App.Existential.Worlds
+      Cellular.App.Package.Rule
       Cellular.Assets.Automata.GameOfLife
       Cellular.Assets.Automata.LifeLike
       Cellular.Assets.Automata.Replicator
       Cellular.Assets.Automata.Seeds
       Cellular.Automaton
       Cellular.Implementation.Algorithm
+      Cellular.Language
       Cellular.Language.Algorithm
       Cellular.Language.Automaton
       Cellular.Language.Board

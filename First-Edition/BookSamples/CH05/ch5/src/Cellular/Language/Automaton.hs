@@ -27,10 +27,22 @@ data CellWorld rule where
   CW :: Board -> CellWorld rule
 
 data CustomRule where
+  -- | Static type-level rule
   Rule
     :: RuleNameSymb
     -> RuleCodeSymb
     -> Neighborhood
     -> CustomStep states   -- N.B., `states` can be absent in the rule itself
     -> CustomRule
+  -- | Dynamic value-level rule
+  DynRule
+    :: CustomRule
+
+data DynamicRule where
+  DynamicRule
+    :: RuleName
+    -> RuleCode
+    -> Neighborhood
+    -> DynamicStep
+    -> DynamicRule
 

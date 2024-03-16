@@ -19,7 +19,7 @@ import System.Directory (getCurrentDirectory)
 
 
 import Cellular.Automaton
-import Cellular.Language.Automaton (RuleCode)
+import Cellular.Language.Automaton
 import Cellular.App.Config
 import Cellular.App.Existential.Rules
 
@@ -38,13 +38,10 @@ printHelp = do
   continue
 
 
-
-
-
 makeRule :: Config -> (RuleCode, RuleImpl)
 makeRule (Cfg (CfgRule c d t) r) = (c, existRule)
   where
-    existRule = RI (Proxy :: Proxy SeedsRule)
+    existRule = error "TODO"
 
 
 main :: IO ()

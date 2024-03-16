@@ -4,6 +4,8 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+
 module Cellular.Automaton where
 
 import GHC.TypeLits
@@ -18,16 +20,25 @@ import Cellular.Implementation.Algorithm
 
 
 class IAutomaton
+  payload
   (rule :: CustomRule) where
-  step :: CellWorld rule -> CellWorld rule
-  name :: Proxy rule -> RuleName
-  code :: Proxy rule -> RuleCode
+  step :: payload -> CellWorld rule -> CellWorld rule
+  name :: payload -> Proxy rule -> RuleName
+  code :: payload -> Proxy rule -> RuleCode
 
 
 class IWorld
+  payload
   (rule :: CustomRule) where
-  initWorld :: CellWorld rule
-  initWorld = CW Map.empty
+  initWorld :: payload -> CellWorld rule
+  initWorld _ = CW Map.empty
+
+
+instance
+  IAutomaton DynamicRule 'DynRule where
+  step dynRule = iterateWorldDyn dynRule
+  name (DynamicRule n _ _ _) _ = n
+  code (DynamicRule _ c _ _) _ = c
 
 
 instance
@@ -36,12 +47,15 @@ instance
   , KnownSymbol name
   , KnownSymbol code
   ) =>
-  IAutomaton ('Rule name code neighborhood step) where
-  step = iterateWorld
-  name _ = symbolVal (Proxy @name)
-  code _ = symbolVal (Proxy @code)
+  IAutomaton () ('Rule name code neighborhood step) where
+  step _ = iterateWorld
+  name _ _ = symbolVal (Proxy @name)
+  code _ _ = symbolVal (Proxy @code)
 
-instance IWorld ('Rule name code neighborhood step) where
+instance IWorld () ('Rule name code neighborhood step) where
+  {- empty -}
+
+instance IWorld DynamicRule 'DynRule where
   {- empty -}
 
 iterateWorld
@@ -52,5 +66,15 @@ iterateWorld
 iterateWorld (CW board) = let
   stepF = makeStep (Proxy @step) (Proxy @neighborhood)
   in CW (stepF board)
+
+iterateWorldDyn
+  :: DynamicRule
+  -> CellWorld 'DynRule
+  -> CellWorld 'DynRule
+iterateWorldDyn (DynamicRule _ _ _ _) (CW board) = let
+  -- TODO
+  -- stepF = makeStep (Proxy @step) (Proxy @neighborhood)
+  -- in CW (stepF board)
+  in CW board
 
 

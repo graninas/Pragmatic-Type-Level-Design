@@ -73,10 +73,10 @@ spec :: Spec
 spec = do
   describe "Automata eDSL tests" $ do
     it "2 state board init" $ do
-      let CW board = initWorld :: CellWorld GoLRule
+      let CW board = initWorld () :: CellWorld GoLRule
       board `shouldBe` Map.empty
     it "2 state board neighbors" $ do
-      let CW board = initWorld :: CellWorld GoLRule
+      let CW board = initWorld () :: CellWorld GoLRule
 
       let ns = neighbors
                 [0,0]

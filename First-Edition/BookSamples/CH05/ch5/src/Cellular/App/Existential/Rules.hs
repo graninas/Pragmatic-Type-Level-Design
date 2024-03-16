@@ -1,5 +1,9 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeApplications #-}
+
 module Cellular.App.Existential.Rules where
 
 import Cellular.Automaton
@@ -13,7 +17,14 @@ import Data.Proxy (Proxy(..))
 
 
 data RuleImpl where
-  RI :: IAutomaton rule => Proxy rule -> RuleImpl
+  RI
+    :: IAutomaton () rule
+    => Proxy rule
+    -> RuleImpl
+  DynRI
+    :: IAutomaton DynamicRule 'DynRule
+     => DynamicRule
+     -> RuleImpl
 
 supportedRules :: [(RuleCode, RuleImpl)]
 supportedRules = map (\ri -> (getCode ri, ri))
@@ -24,9 +35,10 @@ supportedRules = map (\ri -> (getCode ri, ri))
 
 getCode :: RuleImpl -> RuleCode
 getCode (RI proxy) = getCode' proxy
+getCode (DynRI dynRule) = code dynRule (Proxy @'DynRule)
 
-getCode' :: IAutomaton rule => Proxy rule -> RuleCode
-getCode' proxy = code proxy
+getCode' :: IAutomaton () rule => Proxy rule -> RuleCode
+getCode' proxy = code () proxy
 
 supportedRulesDict :: Map.Map RuleCode RuleImpl
 supportedRulesDict = Map.fromList supportedRules

@@ -71,10 +71,8 @@ iterateWorldDyn
   :: DynamicRule
   -> CellWorld 'DynRule
   -> CellWorld 'DynRule
-iterateWorldDyn (DynamicRule _ _ _ _) (CW board) = let
-  -- TODO
-  -- stepF = makeStep (Proxy @step) (Proxy @neighborhood)
-  -- in CW (stepF board)
-  in CW board
+iterateWorldDyn dynRule (CW board) = let
+  stepF = makeStepDyn dynRule
+  in CW (stepF board)
 
 

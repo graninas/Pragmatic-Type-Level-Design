@@ -198,7 +198,7 @@ processLoad appState@(AppState rulesRef worldsRef) = do
   case Map.lookup ruleCode rules of
     Nothing -> continueWithMsg "Unknown rule."
     Just (RI proxy) -> do
-      putStrLn "\nEnter world path:"
+      putStrLn "\nEnter absolute world path:"
       file <- getLine
 
       eWI <- loadWorld2 proxy file
@@ -214,7 +214,7 @@ processLoad appState@(AppState rulesRef worldsRef) = do
 
 
     Just (DynRI dynRule) -> do
-      putStrLn "\nEnter world path:"
+      putStrLn "\nEnter absolute world path:"
       file <- getLine
 
       eWI <- loadWorld2Dyn file dynRule

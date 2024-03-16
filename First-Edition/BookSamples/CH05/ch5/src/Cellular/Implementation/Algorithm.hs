@@ -21,12 +21,14 @@ import Common.NatList
 
 import Cellular.Language.Board
 import Cellular.Language.Algorithm
+import Cellular.Language.Automaton
 import Cellular.Language.Integrity
 
 
 class MakeNeighborhoodLookup (n :: Neighborhood) where
   makeNeighborhoodLookup
     :: Proxy n
+    -> Int
     -> Board
     -> GenericCoords
     -> Cells
@@ -67,12 +69,12 @@ instance
   ( KnownNat lvl
   ) =>
   MakeNeighborhoodLookup ('AdjacentsLvl lvl) where
-  makeNeighborhoodLookup _ board coords = let
+  makeNeighborhoodLookup _ defIdx board coords = let
     ns = generateNeighborhood coords
           $ AdjacentsLvl
           $ fromIntegral
           $ natVal (Proxy @lvl)
-    in getCells ns 0 board        -- FIXME: default value
+    in getCells ns defIdx board
 
 
 instance
@@ -88,7 +90,7 @@ instance
   MakeStep ('Step @states def ts) where
   makeStep _ nProxy board = let
     defIdx = fromIntegral $ natVal $ Proxy @defIdx
-    nsLookupF = makeNeighborhoodLookup nProxy board
+    nsLookupF = makeNeighborhoodLookup nProxy defIdx board
     updateF = makeCellUpdate (Proxy @ts) defIdx nsLookupF
     board' = Map.mapWithKey updateF board
     in board'
@@ -152,3 +154,45 @@ getCells ns def board =
   map (\coord ->
     (coord, fromMaybe def (Map.lookup coord board))) ns
 
+
+------- Dynamic rule step ------
+
+
+makeStepDyn
+  :: DynamicRule
+  -> Board
+  -> Board
+makeStepDyn (DynamicRule _ _ nhDef (DynamicStep defState ts)) board = let
+  DefState defIdxNat = defState
+  defIdx = fromIntegral defIdxNat
+  nsLookupF = makeNeighborhoodLookupDyn defIdx board
+  updateF = makeCellUpdateDyn ts defIdx nsLookupF
+  board' = Map.mapWithKey updateF board
+  in board'
+
+  where
+
+  makeNeighborhoodLookupDyn defIdx board coords = let
+    nh = generateNeighborhood coords nhDef
+    in getCells nh defIdx board
+
+  makeCellUpdateDyn [] def _ _ oldState = def
+  makeCellUpdateDyn (t:ts) def nsLookupF coords oldState = let
+    ns = nsLookupF coords
+    mbApplied = applyTransitionDyn t ns oldState
+    in case mbApplied of
+      Just newState -> newState
+      Nothing       -> makeCellUpdateDyn ts def nsLookupF coords oldState
+
+  applyTransitionDyn (StateTransition fromIdxNat toIdxNat cond) ns oldState =
+    if oldState == fromIntegral fromIdxNat
+      && applyConditionDyn cond ns
+    then Just (fromIntegral toIdxNat)
+    else Nothing
+
+  applyConditionDyn (NeighborsCount cellIdxNat countsNatList) ns =
+    let
+        target = fromIntegral cellIdxNat
+        cnt = length (filter (\(_,idx) -> idx == target) ns)
+        counts = map fromIntegral countsNatList
+    in cnt `elem` counts

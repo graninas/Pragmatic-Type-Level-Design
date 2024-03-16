@@ -68,6 +68,7 @@ main = do
 
       ruleStr <- readFile ruleFile'
       let rule = read ruleStr
+      print rule
 
       let existRule = makeExistentialRule rule
 

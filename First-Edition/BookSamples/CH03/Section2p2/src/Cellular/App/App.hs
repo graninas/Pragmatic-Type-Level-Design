@@ -1,6 +1,6 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE PolyKinds #-}
-module Cellular.App.Existential.App
+module Cellular.App.App
   ( module X
   , processListRuleCodes
   , processListWorlds
@@ -10,11 +10,11 @@ module Cellular.App.Existential.App
   , processStep
   ) where
 
-import Cellular.App.Existential.Rules
+import Cellular.App.Storage.Rules
     ( RuleImpl(RI), supportedRules, supportedRulesDict )
-import Cellular.App.Existential.Worlds
+import Cellular.App.Storage.Worlds
     ( Worlds, WorldIndex, WorldInstance(..), Generation )
-import Cellular.App.Existential.Worlds as X (Worlds)
+import Cellular.App.Storage.Worlds as X (Worlds)
 import Cellular.App.Action ( AppAction, continue, continueWithMsg )
 import Cellular.Automaton
 import Cellular.Language.Board

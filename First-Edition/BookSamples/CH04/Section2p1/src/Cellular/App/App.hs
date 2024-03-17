@@ -1,8 +1,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE PolyKinds #-}
-module Cellular.App.Existential.App
-  ( module X
-  , processListRuleCodes
+module Cellular.App.App
+  ( processListRuleCodes
   , processListWorlds
   , processLoad
   , processLoadPredef
@@ -10,11 +9,10 @@ module Cellular.App.Existential.App
   , processStep
   ) where
 
-import Cellular.App.Existential.Rules
+import Cellular.App.Storage.Rules
     ( RuleImpl(RI), supportedRules, supportedRulesDict )
-import Cellular.App.Existential.Worlds
+import Cellular.App.Storage.Worlds
     ( Worlds, WorldIndex, WorldInstance(..), Generation )
-import Cellular.App.Existential.Worlds as X (Worlds)
 import Cellular.App.Action ( AppAction, continue, continueWithMsg )
 import Cellular.Automaton
 import Cellular.Language.Board
@@ -195,7 +193,7 @@ processLoadPredef worldsRef = do
     case Map.lookup c supportedRulesDict of
       Nothing -> pure "Unknown rule."
       Just (RI proxy) -> do
-        let file = execPath <> "/BookSamples/CH04/Section2/" <> f
+        let file = execPath <> "/BookSamples/CH04/Section2p1/" <> f
         eWI <- loadWorld2 proxy file
         case eWI of
           Left err  -> pure ("Failed to load [" <> c <> "]: " <> err)

@@ -2,7 +2,8 @@
 {-# LANGUAGE GADTs #-}
 module Main where
 
-import qualified Cellular.App.Existential.App as EApp
+import qualified Cellular.App.App as EApp
+import Cellular.App.Storage.Worlds
 import Cellular.App.Action (AppAction (..), continue, finish, continueWithMsg)
 import Cellular.Assets.Automata.GameOfLife
 import Cellular.Assets.Automata.Seeds
@@ -36,7 +37,7 @@ main = do
   worldsRef <- newIORef Map.empty
   go worldsRef
 
-go :: IORef EApp.Worlds -> IO ()
+go :: IORef Worlds -> IO ()
 go worldsRef = do
   putStrLn "\nType a command:"
   cmd <- getLine

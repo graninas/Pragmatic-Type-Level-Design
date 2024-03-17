@@ -2,7 +2,7 @@
 {-# LANGUAGE GADTs #-}
 module Main where
 
-import qualified Cellular.App.Existential.App as EApp
+import qualified Cellular.App.App as EApp
 import Cellular.App.Action (AppAction (..), continue, finish, continueWithMsg)
 
 import Cellular.Assets.Automata.GameOfLife

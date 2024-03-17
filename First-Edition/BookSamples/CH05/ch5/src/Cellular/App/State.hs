@@ -1,11 +1,13 @@
 module Cellular.App.State where
 
-import Cellular.App.Existential.Rules
-import Cellular.App.Existential.Worlds
+import Cellular.App.Storage.Rules
+import Cellular.App.Storage.Worlds
 
 import qualified Data.Map as Map
 import Data.IORef (IORef, readIORef, writeIORef)
 
+
+-- | Application state.
 
 data AppState = AppState
   { asRulesRef  :: IORef Rules

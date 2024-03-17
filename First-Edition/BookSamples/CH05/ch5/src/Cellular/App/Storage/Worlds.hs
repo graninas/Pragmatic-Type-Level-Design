@@ -3,13 +3,15 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 
-module Cellular.App.Existential.Worlds where
+module Cellular.App.Storage.Worlds where
 
 import Cellular.Automaton (IAutomaton)
 import Cellular.Language.Automaton (CellWorld, DynamicRule, CustomRule(..))
 
 import qualified Data.Map as Map
 
+
+-- | Existential data type for storing worlds.
 
 type Generation = Int
 

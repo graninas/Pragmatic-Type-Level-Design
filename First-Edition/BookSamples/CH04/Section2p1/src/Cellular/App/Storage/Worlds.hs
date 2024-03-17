@@ -1,12 +1,14 @@
 {-# LANGUAGE GADTs #-}
 
-module Cellular.App.Existential.Worlds where
+module Cellular.App.Storage.Worlds where
 
 import Cellular.Automaton (IAutomaton)
 import Cellular.Language.Automaton (CellWorld)
 
 import qualified Data.Map as Map
 
+
+-- | Existential data type for storing worlds.
 
 type Generation = Int
 

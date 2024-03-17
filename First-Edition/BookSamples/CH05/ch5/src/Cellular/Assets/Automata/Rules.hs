@@ -1,7 +1,7 @@
 module Cellular.Assets.Automata.Rules where
 
 import Cellular.Language.Automaton
-import Cellular.App.Existential.Rules
+import Cellular.App.Storage.Rules
 import Cellular.Assets.Automata.GameOfLife
 import Cellular.Assets.Automata.Seeds
 import Cellular.Assets.Automata.Replicator

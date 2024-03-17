@@ -5,7 +5,7 @@
 
 module Main where
 
-import qualified Cellular.App.Existential.App as EApp
+import qualified Cellular.App.App as EApp
 import Cellular.App.State (AppState(..), addRule)
 import Cellular.App.Action (AppAction (..), continue, finish, continueWithMsg)
 import Cellular.Assets.Automata.GameOfLife
@@ -22,7 +22,7 @@ import System.Directory (getCurrentDirectory)
 
 import Cellular.Automaton
 import Cellular.Language.Automaton
-import Cellular.App.Existential.Rules
+import Cellular.App.Storage.Rules
 import qualified Cellular.App.Package.Rule as Package
 
 

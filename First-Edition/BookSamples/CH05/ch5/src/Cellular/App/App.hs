@@ -1,8 +1,10 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE PolyKinds #-}
-module Cellular.App.Existential.App
-  ( module X
-  , processListRuleCodes
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+
+module Cellular.App.App
+  ( processListRuleCodes
   , processListWorlds
   , processLoad
   , processLoadPredef
@@ -10,11 +12,10 @@ module Cellular.App.Existential.App
   , processStep
   ) where
 
-import Cellular.App.Existential.Rules
-    ( RuleImpl(RI), supportedRules, supportedRulesDict )
-import Cellular.App.Existential.Worlds
+import Cellular.App.Storage.Rules (RuleImpl(..))
+import Cellular.App.Storage.Worlds
     ( Worlds, WorldIndex, WorldInstance(..), Generation )
-import Cellular.App.Existential.Worlds as X (Worlds)
+import Cellular.App.State (AppState(..))
 import Cellular.App.Action ( AppAction, continue, continueWithMsg )
 import Cellular.Automaton
 import Cellular.Language.Board
@@ -82,9 +83,9 @@ toBoard2' cells = let
 
 
 loadWorld2
-  :: forall rule        -- Brings `rule` into the scope of body
-   . IAutomaton rule     -- Demands the `rule` to be automaton.
-  => Proxy rule         -- Highlights what rule type was requrested by the caller.
+  :: forall rule           -- Brings `rule` into the scope of body
+   . IAutomaton () rule    -- Demands the `rule` to be automaton.
+  => Proxy rule            -- Highlights what rule type was requrested by the caller.
   -> FilePath
   -> IO (Either String WorldInstance)
 loadWorld2 _ path = do
@@ -94,19 +95,33 @@ loadWorld2 _ path = do
     Right board -> pure (Right (WI @rule 0 (CW board)))    -- specifying the automaton rule
 
 
+loadWorld2Dyn
+  :: FilePath
+  -> DynamicRule
+  -> IO (Either String WorldInstance)
+loadWorld2Dyn path dynRule = do
+  eBoard <- try (loadFromFile2 path)
+  case eBoard of
+    Left (err :: SomeException) -> pure (Left (show err))
+    Right board -> pure (Right (DynWI dynRule 0 (CW board)))
+
 -- App interface
 
-processListRuleCodes :: IO AppAction
-processListRuleCodes = do
+processListRuleCodes :: AppState -> IO AppAction
+processListRuleCodes (AppState rulesRef _) = do
+  rules <- readIORef rulesRef
   putStrLn "\nSupported rules ([code] name):"
-  mapM_ f supportedRules
+  mapM_ f $ Map.toList rules
   continue
   where
-    f (ruleCode, RI proxy) = putStrLn ("[" <> ruleCode <> "] " <> name proxy)
+    f (ruleCode, RI proxy) =
+      putStrLn ("[" <> ruleCode <> "] (static) " <> name () proxy)
+    f (ruleCode, DynRI dynRule) =
+      putStrLn ("[" <> ruleCode <> "] (dynamic) " <> name dynRule (Proxy @'DynRule))
 
 
-processListWorlds :: IORef Worlds -> IO AppAction
-processListWorlds worldsRef = do
+processListWorlds :: AppState -> IO AppAction
+processListWorlds (AppState _ worldsRef) = do
   worlds <- readIORef worldsRef
   putStrLn ("\nWorlds available: " <> show (Map.size worlds))
   let ws = Map.toAscList worlds
@@ -115,18 +130,23 @@ processListWorlds worldsRef = do
   where
     f :: (WorldIndex, WorldInstance) -> IO ()
     f (idx, WI gen cw) = f' idx gen cw
+    f (idx, DynWI dynRule gen cw) = fDyn' dynRule idx gen cw
     f' :: forall rule
-        . IAutomaton rule
+        . IAutomaton () rule
        => WorldIndex
        -> Generation
        -> CellWorld rule
        -> IO ()
     f' idx gen _ = do
-      let strCode = code (Proxy @rule)
+      let strCode = code () (Proxy @rule)
       putStrLn (show idx <> ") [" <> strCode <> "], gen: " <> show gen)
 
-processStep :: IORef Worlds -> IO AppAction
-processStep worldsRef = do
+    fDyn' dynRule idx gen _ = do
+      let strCode = code dynRule (Proxy @'DynRule)
+      putStrLn (show idx <> ") [" <> strCode <> "], gen: " <> show gen)
+
+processStep :: AppState -> IO AppAction
+processStep (AppState _ worldsRef) = do
   putStrLn "\nEnter world index to step:"
   idxStr <- getLine
   case readMaybe idxStr of
@@ -136,14 +156,20 @@ processStep worldsRef = do
       case Map.lookup idx worlds of
         Nothing -> continueWithMsg "Index doesn't exist."
         Just (WI gen world) -> do
-          let world' = step world
+          let world' = step () world
           let wi = WI (gen + 1) world'
           let worlds' = Map.insert idx wi worlds
           writeIORef worldsRef worlds'
           continue
+        Just (DynWI dynRule gen world) -> do
+          let world' = step dynRule world
+          let wi = DynWI dynRule (gen + 1) world'
+          let worlds' = Map.insert idx wi worlds
+          writeIORef worldsRef worlds'
+          continue
 
-processPrint :: IORef Worlds -> IO AppAction
-processPrint worldsRef = do
+processPrint :: AppState -> IO AppAction
+processPrint (AppState _ worldsRef) = do
   putStrLn "\nEnter world index to print:"
   idxStr <- getLine
   case readMaybe idxStr of
@@ -155,20 +181,25 @@ processPrint worldsRef = do
         Just (WI _ (CW board)) -> do
           printBoard board
           continue
+        Just (DynWI _ _ (CW board)) -> do
+          printBoard board
+          continue
 
-processLoad :: IORef Worlds -> IO AppAction
-processLoad worldsRef = do
-  _ <- processListRuleCodes
+processLoad :: AppState -> IO AppAction
+processLoad appState@(AppState rulesRef worldsRef) = do
+  _ <- processListRuleCodes appState
   putStrLn "\nEnter rule code:"
   ruleCode <- getLine
 
-  case Map.lookup ruleCode supportedRulesDict of
+  rules <- readIORef rulesRef
+
+  case Map.lookup ruleCode rules of
     Nothing -> continueWithMsg "Unknown rule."
     Just (RI proxy) -> do
-      putStrLn "\nEnter world path:"
-      path <- getLine
+      putStrLn "\nEnter absolute world path:"
+      file <- getLine
 
-      eWI <- loadWorld2 proxy path
+      eWI <- loadWorld2 proxy file
 
       case eWI of
         Left err  -> continueWithMsg ("Failed to load [" <> ruleCode <> "]: " <> err)
@@ -180,8 +211,24 @@ processLoad worldsRef = do
           continueWithMsg ("Successfully loaded [" <> ruleCode <> "], index: " <> show idx)
 
 
-processLoadPredef :: IORef Worlds -> IO AppAction
-processLoadPredef worldsRef = do
+    Just (DynRI dynRule) -> do
+      putStrLn "\nEnter absolute world path:"
+      file <- getLine
+
+      eWI <- loadWorld2Dyn file dynRule
+
+      case eWI of
+        Left err  -> continueWithMsg ("Failed to load [" <> ruleCode <> "]: " <> err)
+        Right wi -> do
+          worlds <- readIORef worldsRef
+          let idx = Map.size worlds
+          let worlds' = Map.insert idx wi worlds
+          writeIORef worldsRef worlds'
+          continueWithMsg ("Successfully loaded [" <> ruleCode <> "], index: " <> show idx)
+
+
+processLoadPredef :: AppState -> IO AppAction
+processLoadPredef (AppState rulesRef worldsRef) = do
   let predefs = [ ("gol", "./data/GoL/glider.txt")
                 , ("seeds", "./data/Seeds/world1.txt")
                 ]
@@ -191,12 +238,27 @@ processLoadPredef worldsRef = do
 
   execPath <- getCurrentDirectory     -- for some reason returns the stack.yaml containing folder
 
+  rules <- readIORef rulesRef
+
   rs <- for predefs $ \(c, f) -> do
-    case Map.lookup c supportedRulesDict of
+    case Map.lookup c rules of
       Nothing -> pure "Unknown rule."
+
       Just (RI proxy) -> do
-        let file = execPath <> "/BookSamples/CH04/Section2p5/" <> f
+        let file = execPath <> "/BookSamples/CH05/ch5/" <> f
         eWI <- loadWorld2 proxy file
+        case eWI of
+          Left err  -> pure ("Failed to load [" <> c <> "]: " <> err)
+          Right wi -> do
+            worlds <- readIORef worldsRef
+            let idx = Map.size worlds
+            let worlds' = Map.insert idx wi worlds
+            writeIORef worldsRef worlds'
+            pure ("Successfully loaded [" <> c <> "], index: " <> show idx)
+
+      Just (DynRI dynRule) -> do
+        let file = execPath <> "/BookSamples/CH05/ch5/" <> f
+        eWI <- loadWorld2Dyn file dynRule
         case eWI of
           Left err  -> pure ("Failed to load [" <> c <> "]: " <> err)
           Right wi -> do

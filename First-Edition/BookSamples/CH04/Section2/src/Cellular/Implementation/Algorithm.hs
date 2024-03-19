@@ -56,9 +56,6 @@ class ApplyTransition (t :: CustomStateTransition) where
     -> StateIdx                       -- current cell state
     -> Maybe StateIdx
 
-class ApplyConditions (cs :: [CellCondition]) where
-  applyConditions :: Proxy cs -> Cells -> Bool
-
 class ApplyCondition (c :: CellCondition) where
   applyCondition :: Proxy c -> Cells -> Bool
 

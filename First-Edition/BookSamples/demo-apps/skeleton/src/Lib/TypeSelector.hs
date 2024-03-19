@@ -1,7 +1,9 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module Lib.TypeSelector where
 
+import GHC.TypeLits
 
 
 -- | Granular TypeSelector design pattern.

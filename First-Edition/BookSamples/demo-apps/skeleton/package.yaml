@@ -6,18 +6,11 @@ maintainer:          "graninas@gmail.com"
 copyright:           "Granin A.S. 2023"
 
 default-extensions:
-- DeriveFunctor
-- DeriveGeneric
 - OverloadedStrings
-- ScopedTypeVariables
 - LambdaCase
-- ExplicitNamespaces
 - NamedFieldPuns
-- TupleSections
-- ViewPatterns
-- MultiWayIf
-- RecordWildCards
-- InstanceSigs
+- GADTs
+- GHC2021
 
 dependencies:
 - base >= 4.7 && < 5

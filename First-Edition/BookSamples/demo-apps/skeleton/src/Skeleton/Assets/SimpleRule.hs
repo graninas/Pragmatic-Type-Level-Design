@@ -2,13 +2,13 @@
 
 module Skeleton.Assets.SimpleRule where
 
-import Skeleton.Language
+import Skeleton.Machine.Language
 
 
 
 
 
-type SimpleRule = 'Rule 0
+type SimpleRule = 'Rule "Simple rule" 0
   '[ 'State 0 "0"
       '[ 'Match "A" ('Write "B") 'L 1
        , 'AnyMatch 'WriteMatched 'L 1

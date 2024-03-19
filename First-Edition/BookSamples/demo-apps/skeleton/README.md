@@ -1,8 +1,3 @@
+Skeleton for typed applications
 
-
-
-
-Dilemma:
-
-- Make domain type parametrized with logic (CellWorld rule)
-- Make logic type parametrized with domain
+Represents the implementation of the Turing Machine.

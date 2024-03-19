@@ -2,7 +2,7 @@
 
 module Skeleton.Assets.BinaryIncrement where
 
-import Skeleton.Language
+import Skeleton.Machine.Language
 
 {-
 Binary Increment

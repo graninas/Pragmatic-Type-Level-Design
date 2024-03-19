@@ -1,0 +1,145 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.35.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           skeleton
+version:        1.0.0.0
+author:         Alexander Granin
+maintainer:     graninas@gmail.com
+copyright:      Granin A.S. 2023
+license:        BSD3
+build-type:     Simple
+
+library
+  exposed-modules:
+      Lib.TypeSelector
+      Main
+      Skeleton.App.Action
+      Skeleton.App.App
+      Skeleton.App.Package.Thing
+      Skeleton.App.State
+      Skeleton.App.Storage
+      Skeleton.Assets.BinaryIncrement
+      Skeleton.Assets.SimpleRule
+      Skeleton.Machine.Interface
+      Skeleton.Machine.Language
+      Skeleton.Machine.Language.Rule
+      Skeleton.Machine.Language.Tape
+      Skeleton.Machine.Runner.Static
+  other-modules:
+      Paths_skeleton
+  hs-source-dirs:
+      src
+  default-extensions:
+      OverloadedStrings
+      LambdaCase
+      NamedFieldPuns
+      GADTs
+      GHC2021
+  ghc-options: -Wall
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , constraints
+    , containers
+    , directory
+    , free
+    , lens
+    , mtl
+    , newtype-generics
+    , random
+    , scientific
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , uuid
+    , void
+  default-language: Haskell2010
+
+executable skeleton
+  main-is: Main.hs
+  other-modules:
+      Lib.TypeSelector
+      Skeleton.App.Action
+      Skeleton.App.App
+      Skeleton.App.Package.Thing
+      Skeleton.App.State
+      Skeleton.App.Storage
+      Skeleton.Assets.BinaryIncrement
+      Skeleton.Assets.SimpleRule
+      Skeleton.Machine.Interface
+      Skeleton.Machine.Language
+      Skeleton.Machine.Language.Rule
+      Skeleton.Machine.Language.Tape
+      Skeleton.Machine.Runner.Static
+      Paths_skeleton
+  hs-source-dirs:
+      ./src
+  default-extensions:
+      OverloadedStrings
+      LambdaCase
+      NamedFieldPuns
+      GADTs
+      GHC2021
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , constraints
+    , containers
+    , directory
+    , free
+    , lens
+    , mtl
+    , newtype-generics
+    , random
+    , scientific
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , uuid
+    , void
+  default-language: Haskell2010
+
+test-suite functional
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_skeleton
+  hs-source-dirs:
+      test/
+  default-extensions:
+      OverloadedStrings
+      LambdaCase
+      NamedFieldPuns
+      GADTs
+      GHC2021
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , constraints
+    , containers
+    , directory
+    , free
+    , hspec
+    , lens
+    , mtl
+    , newtype-generics
+    , random
+    , scientific
+    , skeleton
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , uuid
+    , void
+  default-language: Haskell2010

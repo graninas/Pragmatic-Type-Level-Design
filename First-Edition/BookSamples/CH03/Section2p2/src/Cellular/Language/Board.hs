@@ -1,4 +1,3 @@
-{-# LANGUAGE GADTs #-}
 module Cellular.Language.Board where
 
 import qualified Data.Map as Map

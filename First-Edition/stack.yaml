@@ -27,6 +27,7 @@ packages:
 
 - BookSamples/demo-apps/ptld-lib
 - BookSamples/demo-apps/ptld-auction
+- BookSamples/demo-apps/skeleton
 
 - BookSamples/AppendixC_Haskell/FightClub
 - BookSamples/AppendixD

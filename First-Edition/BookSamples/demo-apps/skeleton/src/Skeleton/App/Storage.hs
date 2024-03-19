@@ -1,7 +1,7 @@
 module Skeleton.App.Storage where
 
-import Skeleton.Interface (IInterface)
-import Skeleton.Language.Thing (Thing)
+import Skeleton.Machine.Interface (IMachine)
+import Skeleton.Machine.Language
 
 import qualified Data.Map as Map
 

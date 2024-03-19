@@ -1,4 +1,5 @@
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE DataKinds #-}
 
 -- | Domain types that describe logic.
 module Skeleton.Machine.Language.Rule where
@@ -8,56 +9,62 @@ import GHC.TypeLits
 
 -- Turing Machine rules language
 
-data CustomRule where
-  Rule
-    :: (ruleName :: Symbol)
-    -> (initState :: Nat)
-    -> [CustomState]
-    -> CustomRule
+data CustomRule
+  = Rule
+    { crRuleName :: Symbol
+    , crInitState :: Nat
+    , crStates :: [CustomState]
+    }
 
-data CustomState where
-  State
-    :: (stateIdx :: Nat)
-    -> (stateName :: Symbol)
-    -> [CustomCondition]
-    -> CustomState
-  FinishState
-    :: (stateIdx :: Nat)
-    -> (stateName :: Symbol)
-    -> CustomState
+data CustomState
+  = State
+    { csStateIdx :: Nat
+    , csStateName :: Symbol
+    , csConditions :: [CustomCondition]
+    }
+  | FinishState
+    { csStateIdx :: Nat
+    , csStateName :: Symbol
+    }
 
-data CustomCondition where
+data CustomCondition
 
   -- | Matches specific symbol.
-  Match
-    :: (symbol :: Symbol)
-    -> CustomWriteAction
-    -> CustomMoveAction
-    -> (stateIdx :: Nat)
-    -> CustomCondition
+  = Match
+    { ccSymbol :: Symbol
+    , ccWriteAction :: CustomWriteAction
+    , ccMoveAction :: CustomMoveAction
+    , ccStateIdx :: Nat
+    }
 
   -- | Matches any symbol.
-  AnyMatch
-    :: CustomWriteAction
-    -> CustomMoveAction
-    -> (stateIdx :: Nat)
-    -> CustomCondition
+  | AnyMatch
+    { ccWriteAction :: CustomWriteAction
+    , ccMoveAction :: CustomMoveAction
+    , ccStateIdx :: Nat
+    }
 
   -- | Matches any symbol and stops the evaluation.
-  FailWith
-    :: (msg :: Symbol)
-    -> CustomCondition
+  | FailWith
+    { ccFailMessage :: Symbol
+    }
 
-data CustomWriteAction where
-  Write :: (symbol :: Symbol) -> CustomWriteAction
-  WriteMatched :: CustomWriteAction
-  Skip :: CustomWriteAction           -- Same as WriteMatched
+data CustomWriteAction
+  = Write
+    { cwaSymbol :: Symbol
+    }
+  | WriteMatched
+  | Skip           -- Same as WriteMatched
 
-data CustomMoveAction where
-  Ln :: (steps :: Nat) -> CustomMoveAction
-  L  :: CustomMoveAction              -- Same as L 1
-  Rn :: (steps :: Nat) -> CustomMoveAction
-  R  :: CustomMoveAction              -- Same as R 1
-  Stay :: CustomMoveAction
+data CustomMoveAction
+  = Ln
+    { smaSteps :: Nat
+    }
+  | L              -- Same as L 1
+  | Rn
+    { cmaSteps :: Nat
+    }
+  | R              -- Same as R 1
+  | Stay
 
 

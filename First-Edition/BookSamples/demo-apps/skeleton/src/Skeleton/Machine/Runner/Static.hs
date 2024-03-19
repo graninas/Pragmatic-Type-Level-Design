@@ -1,39 +1,42 @@
-module Skeleton.Machine.Static where
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
 
-import Skeleton.Machine.Static
+module Skeleton.Machine.Runner.Static where
 
 import Skeleton.Machine.Language
 
 import GHC.TypeLits
+import Data.Proxy ( Proxy(..) )
+import Data.Maybe (fromMaybe)
+import qualified Data.Map as Map
+import Data.Type.Equality
+import Control.Monad (mapM)
 
 
 
-class Runner (rule :: CustomRule) where
-  run
+class RuleRunner (rule :: CustomRule) where
+  runRule
     :: Proxy rule
-    -> Int
+    -> Int          -- ^ Max number of steps
     -> Tape
     -> Tape
 
 
-instance Runner ('Rule states) where
-  run _ n tape =
-    if n <= 0
-    then tape
-    else
+instance RuleRunner ('Rule ruleName curState '[]) where
+  runRule _ _ tape = tape
+
+instance
+  ( (curState == stIdx) ~ 'True
+  ) =>
+  RuleRunner
+    ('Rule
+      ruleName
+      curState
+      ('State stIdx stName conds ': states)
+    ) where
+  runRule _ n tape | n <= 0 = tape
+  runRule _ n tape = let
+
+    in tape   --- TODO
 
 
-instance MakeTransform 'Finish where
-  makeTransform _ s = s
-
-instance MakeTransform ('Take (n :: Nat) next) where
-  makeTransform _ s = let
-    n = fromIntegral (natVal (Proxy @n))
-    s' = take n s
-    in makeTransform (Proxy @next) s'
-
-instance MakeTransform ('Drop (n :: Nat) next) where
-  makeTransform _ s = let
-    n = fromIntegral (natVal (Proxy @n))
-    s' = take n s
-    in makeTransform (Proxy @next) s'

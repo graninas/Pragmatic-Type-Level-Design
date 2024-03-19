@@ -1,11 +1,15 @@
+{-# LANGUAGE DataKinds #-}
+
 module Skeleton.Machine.Interface
   ( IMachine
   , run
   ) where
 
 import Skeleton.Machine.Language
+import Skeleton.Machine.Runner.Static
 
 import GHC.TypeLits
+import Data.Proxy (Proxy(..))
 
 
 class IMachine
@@ -14,13 +18,15 @@ class IMachine
   run :: payload -> Proxy rule -> Int -> Tape -> Tape
 
 
-instance IMachine () rule where
+instance
+  ( RuleRunner rule
+  ) =>
+  IMachine () rule where
   run () = runStaticRule
 
 
 runStaticRule
-  :: forall rule
-   . Runner rule
+  :: RuleRunner rule
   => Proxy rule
   -> Int
   -> Tape

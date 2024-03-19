@@ -1,4 +1,4 @@
-module Skeleton.App.Action where
+module Turing.App.Action where
 
 type AppMessage = String
 

@@ -1,8 +1,8 @@
 {-# LANGUAGE DataKinds #-}
 
-module Skeleton.Assets.SimpleRule where
+module Turing.Assets.SimpleRule where
 
-import Skeleton.Machine.Language
+import Turing.Machine.Language
 
 
 

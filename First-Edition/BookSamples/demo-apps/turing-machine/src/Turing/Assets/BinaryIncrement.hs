@@ -1,8 +1,8 @@
 {-# LANGUAGE DataKinds #-}
 
-module Skeleton.Assets.BinaryIncrement where
+module Turing.Assets.BinaryIncrement where
 
-import Skeleton.Machine.Language
+import Turing.Machine.Language
 
 {-
 Binary Increment
@@ -59,7 +59,7 @@ Rule
 
 
 
-type BinaryIncrement = 'Rule "Binary Increment" 1
+type BinaryIncrement = 'Rule "Binary Increment" 2
   '[ 'State 1 "Start"
       '[ 'Match "0" 'Skip 'R 2
        , 'Match "1" 'Skip 'R 2

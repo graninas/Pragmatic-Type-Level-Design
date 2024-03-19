@@ -1,7 +1,7 @@
-module Skeleton.App.Storage where
+module Turing.App.Storage where
 
-import Skeleton.Machine.Interface (IMachine)
-import Skeleton.Machine.Language
+import Turing.Machine.Interface (IMachine)
+import Turing.Machine.Language
 
 import qualified Data.Map as Map
 

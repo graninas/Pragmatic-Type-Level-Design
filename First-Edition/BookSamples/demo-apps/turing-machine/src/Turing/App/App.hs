@@ -1,4 +1,4 @@
-module Skeleton.App.App where
+module Turing.App.App where
   -- ( processListRuleCodes
   -- , processListWorlds
   -- , processLoad
@@ -7,11 +7,11 @@ module Skeleton.App.App where
   -- , processStep
   -- ) where
 
-import Skeleton.App.Storage
-import Skeleton.App.State (AppState(..))
-import Skeleton.App.Action ( AppAction, continue, continueWithMsg )
-import Skeleton.Machine.Interface
-import Skeleton.Machine.Language
+import Turing.App.Storage
+import Turing.App.State (AppState(..))
+import Turing.App.Action ( AppAction, continue, continueWithMsg )
+import Turing.Machine.Interface
+import Turing.Machine.Language
 
 import qualified Data.Map as Map
 import Data.Proxy ( Proxy(..) )

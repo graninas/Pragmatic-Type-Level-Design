@@ -1,6 +1,6 @@
-module Skeleton.App.State where
+module Turing.App.State where
 
-import Skeleton.App.Storage
+import Turing.App.Storage
 
 import qualified Data.Map as Map
 import Data.IORef (IORef, readIORef, writeIORef)

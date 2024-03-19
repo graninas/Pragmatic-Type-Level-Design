@@ -1,13 +1,13 @@
 module Main where
 
-import Skeleton.App.App
-import Skeleton.App.State
-import Skeleton.App.Action
-import Skeleton.Machine.Interface
-import Skeleton.Machine.Language
-import Skeleton.App.Storage
-import Skeleton.Assets.BinaryIncrement
-import Skeleton.Assets.SimpleRule
+import Turing.App.App
+import Turing.App.State
+import Turing.App.Action
+import Turing.Machine.Interface
+import Turing.Machine.Language
+import Turing.App.Storage
+import Turing.Assets.BinaryIncrement
+import Turing.Assets.SimpleRule
 
 import qualified Data.Map as Map
 import Data.IORef (IORef, newIORef)

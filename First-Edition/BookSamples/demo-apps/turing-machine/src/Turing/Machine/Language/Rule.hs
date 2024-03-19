@@ -2,13 +2,14 @@
 {-# LANGUAGE DataKinds #-}
 
 -- | Domain types that describe logic.
-module Skeleton.Machine.Language.Rule where
+module Turing.Machine.Language.Rule where
 
 import GHC.TypeLits
 
 
 -- Turing Machine rules language
 
+-- | Rule for the Turing Machine.
 data CustomRule
   = Rule
     { crRuleName :: Symbol
@@ -16,6 +17,7 @@ data CustomRule
     , crStates :: [CustomState]
     }
 
+-- | State and state transition.
 data CustomState
   = State
     { csStateIdx :: Nat
@@ -27,6 +29,7 @@ data CustomState
     , csStateName :: Symbol
     }
 
+-- | Matching tape symbols type for conditional state transition.
 data CustomCondition
 
   -- | Matches specific symbol.
@@ -49,6 +52,7 @@ data CustomCondition
     { ccFailMessage :: Symbol
     }
 
+-- | Tape writing action.
 data CustomWriteAction
   = Write
     { cwaSymbol :: Symbol
@@ -56,6 +60,7 @@ data CustomWriteAction
   | WriteMatched
   | Skip           -- Same as WriteMatched
 
+-- | Tape head moving action.
 data CustomMoveAction
   = Ln
     { smaSteps :: Nat

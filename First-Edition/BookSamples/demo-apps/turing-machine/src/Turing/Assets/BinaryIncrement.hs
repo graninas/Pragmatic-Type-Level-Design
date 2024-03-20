@@ -59,7 +59,7 @@ Rule
 
 
 
-type BinaryIncrement = 'Rule "Binary Increment" 2
+type BinaryIncrement = 'Rule "Binary Increment" 1
   '[ 'State 1 "Start"
       '[ 'Match "0" 'Skip 'R 2
        , 'Match "1" 'Skip 'R 2
@@ -68,7 +68,7 @@ type BinaryIncrement = 'Rule "Binary Increment" 2
    , 'State 2 "Find the Rightmost Digit"
       '[ 'Match "0" 'Skip 'R 2
        , 'Match "1" 'Skip 'R 2
-       , 'Match "B" 'Skip 'L 3
+       , 'MatchBlank 'Skip 'L 3
        ]
    , 'State 3 "Handle Increment"
       '[ 'Match "1" ('Write "0") 'L 4
@@ -77,12 +77,12 @@ type BinaryIncrement = 'Rule "Binary Increment" 2
    , 'State 4 "Carry the One"
       '[ 'Match "1" ('Write "0") 'L 4
        , 'Match "0" ('Write "1") 'L 5
-       , 'Match "B" ('Write "1") 'Stay 6
+       , 'MatchBlank ('Write "1") 'Stay 6
        ]
    , 'State 5 "Find the Leftmost Digit"
       '[ 'Match "0" ('Write "0") 'L 5
        , 'Match "1" ('Write "1") 'L 5
-       , 'Match "B" ('Write "B") 'R 6
+       , 'MatchBlank 'Skip 'R 6
        ]
    , 'FinishState 6 "Success"
    ]

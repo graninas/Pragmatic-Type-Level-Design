@@ -23,11 +23,11 @@ library
       Turing.App.Storage
       Turing.Assets.BinaryIncrement
       Turing.Assets.SimpleRule
+      Turing.Machine.Implementation.Static
       Turing.Machine.Interface
       Turing.Machine.Language
       Turing.Machine.Language.Rule
       Turing.Machine.Language.Tape
-      Turing.Machine.Runner.Static
   other-modules:
       Paths_turing_machine
   hs-source-dirs:
@@ -71,11 +71,11 @@ executable turing-machine
       Turing.App.Storage
       Turing.Assets.BinaryIncrement
       Turing.Assets.SimpleRule
+      Turing.Machine.Implementation.Static
       Turing.Machine.Interface
       Turing.Machine.Language
       Turing.Machine.Language.Rule
       Turing.Machine.Language.Tape
-      Turing.Machine.Runner.Static
       Paths_turing_machine
   hs-source-dirs:
       ./src

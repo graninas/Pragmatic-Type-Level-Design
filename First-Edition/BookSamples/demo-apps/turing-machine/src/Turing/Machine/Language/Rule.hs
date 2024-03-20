@@ -7,7 +7,7 @@ module Turing.Machine.Language.Rule where
 import GHC.TypeLits
 
 
--- Turing Machine rules language
+-- Turing Machine rules language.
 
 -- | Rule for the Turing Machine.
 data CustomRule
@@ -31,19 +31,25 @@ data CustomState
 
 -- | Matching tape symbols type for conditional state transition.
 data CustomCondition
-
   -- | Matches specific symbol.
   = Match
     { ccSymbol :: Symbol
     , ccWriteAction :: CustomWriteAction
-    , ccMoveAction :: CustomMoveAction
+    , ccMoveAction :: CustomMoveHeadAction
     , ccStateIdx :: Nat
     }
 
   -- | Matches any symbol.
-  | AnyMatch
+  | MatchAny
     { ccWriteAction :: CustomWriteAction
-    , ccMoveAction :: CustomMoveAction
+    , ccMoveAction :: CustomMoveHeadAction
+    , ccStateIdx :: Nat
+    }
+
+  -- | Matches empty cell.
+  | MatchBlank
+    { ccWriteAction :: CustomWriteAction
+    , ccMoveAction :: CustomMoveHeadAction
     , ccStateIdx :: Nat
     }
 
@@ -61,7 +67,7 @@ data CustomWriteAction
   | Skip           -- Same as WriteMatched
 
 -- | Tape head moving action.
-data CustomMoveAction
+data CustomMoveHeadAction
   = Ln
     { smaSteps :: Nat
     }

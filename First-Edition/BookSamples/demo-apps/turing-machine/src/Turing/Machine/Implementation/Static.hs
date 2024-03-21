@@ -4,10 +4,20 @@
 module Turing.Machine.Implementation.Static where
 
 import Turing.Machine.Language
+import Turing.Machine.Interface
 
 import GHC.TypeLits
 import Data.Proxy ( Proxy(..) )
 
+
+instance
+  ( RuleRunner rule
+  , rule ~ 'Rule name idx ss
+  , KnownSymbol name
+  ) =>
+  IMachine () rule where
+  run () = runRule
+  name () _ = symbolVal $ Proxy @name
 
 -- TODO: MaxSteps can be type-level
 type MaxSteps = Int
@@ -86,7 +96,6 @@ class MoveActionRunner (moveAct :: CustomMoveHeadAction) where
     -> Tape
     -> Tape
 
-
 --------------- Implementation ---------------
 
 -- Initial runner.
@@ -99,15 +108,15 @@ instance
 -- Starting the run with the init state idx as a current state
 instance
   ( KnownNat initStateIdx
-  , RuleRunnerImpl ('Rule name initStateIdx (state ': states))
+  , RuleRunnerImpl ('Rule name ('InitState initStateIdx) (s ': ss))
   ) =>
-  RuleRunner ('Rule name initStateIdx (state ': states)) where
+  RuleRunner ('Rule name ('InitState initStateIdx) (s ': ss)) where
   runRule ruleProxy tape = let
     initStateIdx = fromIntegral $ natVal $ Proxy @initStateIdx
     in runRule' ruleProxy initStateIdx tape
 
 
--- Actual rule runner
+-- Actual step-by-step recursive rule runner.
 
 instance
   ( StatesRunner states

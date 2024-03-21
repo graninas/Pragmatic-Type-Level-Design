@@ -6,7 +6,7 @@
 module Main where
 
 import qualified Cellular.App.App as EApp
-import Cellular.App.State (AppState(..), addRule)
+import Cellular.App.State (AppState(..), addRule, createAppState)
 import Cellular.App.Action (AppAction (..), continue, finish, continueWithMsg)
 import Cellular.Assets.Automata.GameOfLife
 import Cellular.Assets.Automata.Seeds
@@ -44,12 +44,6 @@ printHelp = do
 
 makeExistentialRule :: Package.Rule -> RuleImpl
 makeExistentialRule rule = DynRI (Package.toDynamicRule rule)
-
-createAppState :: IO AppState
-createAppState = do
-  rulesRef <- newIORef Map.empty
-  worldsRef <- newIORef Map.empty
-  pure $ AppState rulesRef worldsRef
 
 main :: IO ()
 main = do

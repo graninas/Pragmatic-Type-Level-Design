@@ -14,7 +14,7 @@ module Cellular.App.App
 
 import Cellular.App.Storage.Rules (RuleImpl(..))
 import Cellular.App.Storage.Worlds
-    ( Worlds, WorldIndex, WorldInstance(..), Generation )
+    ( WorldIndex, WorldInstance(..), Generation )
 import Cellular.App.State (AppState(..))
 import Cellular.App.Action ( AppAction, continue, continueWithMsg )
 import Cellular.Automaton
@@ -23,7 +23,7 @@ import Cellular.Language.Automaton
 
 import qualified Data.Map as Map
 import Data.Proxy ( Proxy(..) )
-import Data.IORef ( IORef, readIORef, writeIORef )
+import Data.IORef ( readIORef, writeIORef )
 import Data.Traversable (for)
 import Data.List (intercalate)
 import Control.Exception ( SomeException, try )

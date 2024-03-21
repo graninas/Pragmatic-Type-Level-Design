@@ -3,17 +3,17 @@
 module Turing.Machine.Interface
   ( IMachine
   , run
+  , name
   ) where
 
 import Turing.Machine.Language
 
--- TODO: this is a strange dependency.
--- Interface should not depend on the implementation.
-import Turing.Machine.Implementation.Static (RuleRunner, runRule)
-
 import GHC.TypeLits
 import Data.Proxy (Proxy(..))
 
+
+-- | Interface for Turing Machines.
+-- This interface is needed to unify static implementations.
 
 class IMachine
   payload
@@ -23,13 +23,8 @@ class IMachine
     -> Proxy rule
     -> Tape
     -> Either String Tape
+  name
+    :: payload
+    -> Proxy rule
+    -> String
 
-
-
--- TODO: this is a strange dependency.
--- Interface should not depend on the implementation.
-instance
-  ( RuleRunner rule
-  ) =>
-  IMachine () rule where
-  run () = runRule

@@ -9,11 +9,17 @@ import GHC.TypeLits
 
 -- Turing Machine rules language.
 
+-- | Init state.
+
+newtype InitState = InitState Nat
+type RuleName = Symbol
+type StateName = Symbol
+
 -- | Rule for the Turing Machine.
 data CustomRule
   = Rule
-    { crRuleName :: Symbol
-    , crInitState :: Nat
+    { crRuleName :: RuleName
+    , crInitState :: InitState
     , crStates :: [CustomState]
     }
 
@@ -21,12 +27,12 @@ data CustomRule
 data CustomState
   = State
     { csStateIdx :: Nat
-    , csStateName :: Symbol
+    , csStateName :: StateName
     , csConditions :: [CustomCondition]
     }
   | FinishState
     { csStateIdx :: Nat
-    , csStateName :: Symbol
+    , csStateName :: StateName
     }
 
 -- | Matching tape symbols type for conditional state transition.

@@ -26,7 +26,7 @@ import Turing.Machine.Language
 -- "AB"  | "_BB"
 --  ^    |  ^
 
-type SimpleRule = 'Rule "Simple rule" 0
+type SimpleRule = 'Rule "Simple rule" ('InitState 0)
   '[ 'State 0 "0"
       '[ 'Match "A" ('Write "B") 'L 1
        , 'MatchAny 'WriteMatched 'L 1

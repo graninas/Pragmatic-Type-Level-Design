@@ -18,10 +18,12 @@ library
       Main
       Turing.App.Action
       Turing.App.App
+      Turing.App.Commands
       Turing.App.Package.Thing
       Turing.App.State
       Turing.App.Storage
       Turing.Assets.BinaryIncrement
+      Turing.Assets.Rules
       Turing.Assets.SimpleRule
       Turing.Machine.Implementation.Static
       Turing.Machine.Interface
@@ -66,10 +68,12 @@ executable turing-machine
       Lib.TypeSelector
       Turing.App.Action
       Turing.App.App
+      Turing.App.Commands
       Turing.App.Package.Thing
       Turing.App.State
       Turing.App.Storage
       Turing.Assets.BinaryIncrement
+      Turing.Assets.Rules
       Turing.Assets.SimpleRule
       Turing.Machine.Implementation.Static
       Turing.Machine.Interface

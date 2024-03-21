@@ -3,14 +3,14 @@ module Main where
 import Turing.App.App
 import Turing.App.State
 import Turing.App.Action
+import Turing.App.Commands
+import Turing.App.Storage
 import Turing.Machine.Interface
 import Turing.Machine.Language
-import Turing.App.Storage
 import Turing.Assets.BinaryIncrement
 import Turing.Assets.SimpleRule
 
 import qualified Data.Map as Map
-import Data.IORef (IORef, newIORef)
 import Data.Proxy
 import System.Environment (getArgs)
 import System.Directory (getCurrentDirectory)
@@ -19,27 +19,13 @@ import System.Directory (getCurrentDirectory)
 printHelp :: IO AppAction
 printHelp = do
   putStrLn "\nOptional arg: path_to_external_rule"
-
-  putStrLn "\nCommands:"
-  putStrLn "help    - this help message"
-  putStrLn "quit    - exit"
-  putStrLn "rules   - list available rules"
-  putStrLn "load    - load a rule"
-  putStrLn "predef  - load predefined machines"
-  putStrLn "machines - list active machines"
-  putStrLn "run     - run a machine"
-  putStrLn "print   - print a machine"
+  printCommandsHelp
   continue
 
 
 -- makeExistentialRule :: Package.Rule -> RuleImpl
 -- makeExistentialRule rule = DynRI (Package.toDynamicRule rule)
 
--- createAppState :: IO AppState
--- createAppState = do
---   rulesRef  <- newIORef Map.empty
---   worldsRef <- newIORef Map.empty
---   pure $ AppState rulesRef worldsRef
 
 main :: IO ()
 main = do
@@ -47,10 +33,9 @@ main = do
 
   _ <- printHelp
 
+  appState <- createAppState
+
   pure ()
-
-  -- appState <- createAppState
-
   -- args <- getArgs
 
   -- case args of

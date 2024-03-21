@@ -59,7 +59,7 @@ Rule
 
 
 
-type BinaryIncrement = 'Rule "Binary Increment" 1
+type BinaryIncrement = 'Rule "Binary Increment" ('InitState 1)
   '[ 'State 1 "Start"
       '[ 'Match "0" 'Skip 'R 2
        , 'Match "1" 'Skip 'R 2

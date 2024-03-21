@@ -1,10 +1,12 @@
+-- | Types for rules and tapes storage.
+
 module Turing.App.Storage where
 
-import Turing.Machine.Interface (IMachine)
+import Turing.Machine.Interface
 import Turing.Machine.Language
 
 import qualified Data.Map as Map
-
+import Data.Proxy (Proxy)
 
 -- type Generation = Int
 
@@ -21,28 +23,30 @@ import qualified Data.Map as Map
 --     -> CellWorld 'DynRule
 --     -> WorldInstance
 
-
 -- type WorldIndex = Int
 -- type Worlds = Map.Map WorldIndex WorldInstance
 
-
--- data RuleImpl where
---   RI
---     :: IAutomaton () rule
---     => Proxy rule
---     -> RuleImpl
---   DynRI
---     :: IAutomaton DynamicRule 'DynRule
---      => DynamicRule
---      -> RuleImpl
-
--- type Rules = Map.Map RuleCode RuleImpl
+type TapeIndex = Int
+type Tapes = Map.Map TapeIndex Tape
 
 
--- getCode :: RuleImpl -> RuleCode
--- getCode (RI proxy) = getCode' proxy
--- getCode (DynRI dynRule) = code dynRule (Proxy @'DynRule)
+data RuleImpl where
+  RI
+    :: IMachine () rule
+    => Proxy rule
+    -> RuleImpl
+  -- DynRI
+  --   :: IMachine DynamicRule 'DynRule
+  --    => DynamicRule
+  --    -> RuleImpl
 
--- getCode' :: IAutomaton () rule => Proxy rule -> RuleCode
--- getCode' proxy = code () proxy
+type Rules = Map.Map String RuleImpl
 
+
+
+getName :: RuleImpl -> String
+getName (RI proxy) = name () proxy
+-- getName (DynRI dynRule) = code dynRule (Proxy @'DynRule)
+
+-- getName' :: IMachine () rule => Proxy rule -> RuleName
+-- getName' proxy = name () proxy

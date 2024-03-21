@@ -5,8 +5,26 @@ module Turing.Assets.SimpleRule where
 import Turing.Machine.Language
 
 
+-- Simple Turing Machine rule.
+-- If "A", changes "A" to "B".
+-- Moves left.
+-- If "B", changes "B" to "C".
+-- Finishes on the last cell.
 
+-- "BA"  | "CB"
+--   ^   |  ^
 
+-- "BB"  | "CB"
+--   ^   |  ^
+
+-- "CB"  | "CB"
+--   ^   |  ^
+
+-- "BA"  | "_BA"
+--  ^    |  ^
+
+-- "AB"  | "_BB"
+--  ^    |  ^
 
 type SimpleRule = 'Rule "Simple rule" 0
   '[ 'State 0 "0"

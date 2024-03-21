@@ -36,6 +36,10 @@ instance InitTape String where
   initTape [] = Tape [] (Left Blank) []
   initTape (ch : s) = Tape [] (Right ch) (map Right s)
 
+instance InitTape [TapeSymbol] where
+  initTape [] = Tape [] (Left Blank) []
+  initTape (ch : s) = Tape [] ch s
+
 readTape :: Tape -> TapeSymbol
 readTape (Tape _ curS _) = curS
 

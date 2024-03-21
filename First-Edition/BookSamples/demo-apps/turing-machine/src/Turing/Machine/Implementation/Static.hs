@@ -7,7 +7,6 @@ import Turing.Machine.Language
 
 import GHC.TypeLits
 import Data.Proxy ( Proxy(..) )
-import Data.Type.Equality
 
 
 -- TODO: MaxSteps can be type-level
@@ -117,7 +116,7 @@ instance
   runRule' ruleProxy curStateIdx tape1 = let
     res = runStates (Proxy @states) curStateIdx tape1
     in case res of
-      FailedWith errMsg -> Left errMsg
+      FailedWith errMsg -> Left $ "[" <> show curStateIdx <> "] " <> errMsg
       Finished tape2 -> Right tape2
       Successful nextStateIdx tape2 ->
         runRule' ruleProxy nextStateIdx tape2

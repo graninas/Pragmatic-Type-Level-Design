@@ -26,5 +26,5 @@ spec = do
     it "Binary Increment" $ do
       let tape1  = initTape ("100101" :: String)
       let tape2' = initTape ("100110" :: String)
-      let tape2 = run () (Proxy @BinaryIncrement) tape1
-      shrinkBlanks tape2 `shouldBe` tape2'
+      let eTape2 = run () (Proxy @BinaryIncrement) tape1
+      (shrinkBlanks <$> eTape2) `shouldBe` Right tape2'

@@ -22,7 +22,7 @@ class IMachine
     :: payload
     -> Proxy rule
     -> Tape
-    -> Tape
+    -> Either String Tape
 
 
 

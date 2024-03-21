@@ -19,14 +19,14 @@ class RuleRunner (rule :: CustomRule) where
   runRule
     :: Proxy rule
     -> Tape
-    -> Tape
+    -> Either String Tape
 
 class RuleRunnerImpl (rule :: CustomRule) where
   runRule'
     :: Proxy rule
     -> CurrentStateIdx
     -> Tape
-    -> Tape
+    -> Either String Tape
 
 
 data Result
@@ -59,11 +59,17 @@ class StatesRunner (states :: [CustomState]) where
     -> Tape
     -> Result
 
+
+-- | Transition conditions runner.
+
 class ConditionsRunner (conds :: [CustomCondition]) where
   runConditions
     :: Proxy conds
     -> Tape
     -> Result
+
+
+-- | Writing to tape action runner.
 
 class WriteActionRunner (writeAct :: CustomWriteAction) where
   runWrite
@@ -71,6 +77,9 @@ class WriteActionRunner (writeAct :: CustomWriteAction) where
     -> TapeSymbol
     -> Tape
     -> Tape
+
+
+-- | Moving the tape head runner.
 
 class MoveActionRunner (moveAct :: CustomMoveHeadAction) where
   runMove
@@ -86,7 +95,7 @@ class MoveActionRunner (moveAct :: CustomMoveHeadAction) where
 -- No states provided - finishing.
 instance
   RuleRunner ('Rule n stIdx '[]) where
-  runRule _ tape = tape
+  runRule _ tape = Right tape
 
 -- Starting the run with the init state idx as a current state
 instance
@@ -108,8 +117,8 @@ instance
   runRule' ruleProxy curStateIdx tape1 = let
     res = runStates (Proxy @states) curStateIdx tape1
     in case res of
-      FailedWith errMsg -> error errMsg       -- TODO: proper error
-      Finished tape2 -> tape2
+      FailedWith errMsg -> Left errMsg
+      Finished tape2 -> Right tape2
       Successful nextStateIdx tape2 ->
         runRule' ruleProxy nextStateIdx tape2
 

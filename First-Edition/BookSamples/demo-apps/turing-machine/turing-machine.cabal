@@ -19,10 +19,11 @@ library
       Turing.App.Action
       Turing.App.App
       Turing.App.Commands
-      Turing.App.Package.Thing
+      Turing.App.Package.Rule
       Turing.App.State
       Turing.App.Storage
       Turing.Assets.BinaryIncrement
+      Turing.Assets.Packages.SimpleRule
       Turing.Assets.Rules
       Turing.Assets.SimpleRule
       Turing.Machine.Implementation.Static
@@ -69,10 +70,11 @@ executable turing-machine
       Turing.App.Action
       Turing.App.App
       Turing.App.Commands
-      Turing.App.Package.Thing
+      Turing.App.Package.Rule
       Turing.App.State
       Turing.App.Storage
       Turing.Assets.BinaryIncrement
+      Turing.Assets.Packages.SimpleRule
       Turing.Assets.Rules
       Turing.Assets.SimpleRule
       Turing.Machine.Implementation.Static

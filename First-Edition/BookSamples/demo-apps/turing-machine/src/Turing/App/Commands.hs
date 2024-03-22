@@ -22,7 +22,7 @@ printCommandsHelp = do
   putStrLn "Rules - list available rules"
   putStrLn "Tapes - list available tapes"
   putStrLn "NewTape contents - create tape from string"
-  putStrLn "LoadRule path - load a dynamic rule"
+  putStrLn "LoadRule path - load a rule"
   putStrLn "LoadTape path - load a tape"
   putStrLn "Run ruleIdx tapeIdx  - run a rule on a tape"
   putStrLn "Print tapeIdx - print a tape"

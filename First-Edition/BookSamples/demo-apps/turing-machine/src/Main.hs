@@ -14,8 +14,6 @@ import Turing.Assets.Rules
 import qualified Data.Map as Map
 import Data.Proxy
 import Text.Read (readMaybe)
-import System.Environment (getArgs)
-import System.Directory (getCurrentDirectory)
 
 
 printHelp :: IO AppAction
@@ -25,9 +23,6 @@ printHelp = do
   continue
 
 
--- makeExistentialRule :: Package.Rule -> RuleImpl
--- makeExistentialRule rule = DynRI (Package.toDynamicRule rule)
-
 
 main :: IO ()
 main = do
@@ -35,27 +30,7 @@ main = do
 
   _ <- printHelp
 
-
   appState <- createAppState' supportedRulesDict
-
-  args <- getArgs
-
-  case args of
-    (ruleFile : []) -> do
-      -- let ruleFile' = "./BookSamples/CH05/ch5/data/packages" <> ruleFile
-      -- putStrLn $ "\nRule file: " <> ruleFile'
-
-      -- ruleStr <- readFile ruleFile'
-      -- let rule = read ruleStr
-      -- print rule
-
-      -- let existRule = makeExistentialRule rule
-
-      -- addRule appState existRule
-
-      -- putStrLn "Rule added."
-      pure ()
-    _ -> pure ()
 
   go appState
 
@@ -66,7 +41,7 @@ go appState = do
 
   appAction <- case readMaybe line of
     Just cmd -> runCommand cmd appState
-    _ -> continueWithMsg "Unknown command. Type `help` to see the list of commands."
+    _ -> continueWithMsg "Unknown command. Type `Help` to see the list of commands."
 
   case appAction of
     AppFinish (Just msg) -> putStrLn msg

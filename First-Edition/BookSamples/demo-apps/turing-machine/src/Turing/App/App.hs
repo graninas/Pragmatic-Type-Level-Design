@@ -4,6 +4,7 @@ import Turing.App.Storage
 import Turing.App.Commands
 import Turing.App.State
 import Turing.App.Action ( AppAction, continue, continueWithMsg, finish )
+import qualified Turing.App.Package.Rule as R
 import Turing.Machine.Interface
 import Turing.Machine.Language
 
@@ -14,6 +15,7 @@ import Data.Traversable (for)
 import Data.List (intercalate)
 import Control.Exception ( SomeException, try )
 import System.Directory
+import Text.Read (readMaybe)
 
 
 -- data Command
@@ -34,6 +36,7 @@ runCommand Rules st = processListRules st
 runCommand Tapes st = processListTapes st
 runCommand (NewTape str) st = processNewTape st str
 runCommand (PrintTape tapeIdx) st = processPrintTape st tapeIdx
+runCommand (LoadRule str) st = processLoadRule st str
 runCommand (Run ruleIdx tapeIdx) st = processRun st ruleIdx tapeIdx
 
 -- printBoard :: Board -> IO ()
@@ -192,30 +195,21 @@ processPrintTape (AppState _ tapesRef) tapeIdx = do
       printTape' (tapeIdx, tape)
       continue
 
--- processLoad :: AppState -> IO AppAction
--- processLoad appState@(AppState rulesRef worldsRef) = do
---   _ <- processListRuleCodes appState
---   putStrLn "\nEnter rule code:"
---   ruleCode <- getLine
+processLoadRule :: AppState -> String -> IO AppAction
+processLoadRule appState@(AppState rulesRef _) rulePath = do
+  rules <- readIORef rulesRef
 
---   rules <- readIORef rulesRef
+  ruleStr <- readFile rulePath
 
---   case Map.lookup ruleCode rules of
---     Nothing -> continueWithMsg "Unknown rule."
---     Just (RI proxy) -> do
---       putStrLn "\nEnter absolute world path:"
---       file <- getLine
-
---       eWI <- loadWorld2 proxy file
-
---       case eWI of
---         Left err  -> continueWithMsg ("Failed to load [" <> ruleCode <> "]: " <> err)
---         Right wi -> do
---           worlds <- readIORef worldsRef
---           let idx = Map.size worlds
---           let worlds' = Map.insert idx wi worlds
---           writeIORef worldsRef worlds'
---           continueWithMsg ("Successfully loaded [" <> ruleCode <> "], index: " <> show idx)
+  case readMaybe ruleStr of
+    Nothing -> continueWithMsg "Failed to parse the rule."
+    Just (rule :: R.Rule) -> do
+      continueWithMsg "Parsed." -- TODO
+      -- worlds <- readIORef worldsRef
+      -- let idx = Map.size worlds
+      -- let worlds' = Map.insert idx wi worlds
+      -- writeIORef worldsRef worlds'
+      -- continueWithMsg ("Successfully loaded [" <> ruleCode <> "], index: " <> show idx)
 
 
 --     Just (DynRI dynRule) -> do

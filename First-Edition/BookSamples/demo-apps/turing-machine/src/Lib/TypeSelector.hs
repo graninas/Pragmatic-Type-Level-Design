@@ -23,3 +23,4 @@ type family IntType (lvl :: Level) where
 type family CharType (lvl :: Level) where
   CharType 'TypeLevel  = Symbol
   CharType 'ValueLevel = Char
+

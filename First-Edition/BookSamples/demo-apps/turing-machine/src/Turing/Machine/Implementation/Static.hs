@@ -5,6 +5,7 @@ module Turing.Machine.Implementation.Static where
 
 import Turing.Machine.Language
 import Turing.Machine.Interface
+import Turing.Machine.Implementation.Common
 
 import Lib.TypeSelector
 import GHC.TypeLits
@@ -20,10 +21,6 @@ instance
   run () = runRule
   name () _ = symbolVal $ Proxy @name
 
--- TODO: MaxSteps can be type-level
-type MaxSteps = Int
-type StateIdx = Int
-type CurrentStateIdx = StateIdx
 
 class RuleRunner (rule :: CustomRule 'TypeLevel) where
   runRule
@@ -38,11 +35,6 @@ class RuleRunnerImpl (rule :: CustomRule 'TypeLevel) where
     -> Tape
     -> Either String Tape
 
-
-data Result
-  = FailedWith String
-  | Finished Tape
-  | Successful StateIdx Tape
 
 -- | States recursive runner.
 

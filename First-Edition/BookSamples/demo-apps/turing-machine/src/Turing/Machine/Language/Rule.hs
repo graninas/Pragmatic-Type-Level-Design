@@ -18,6 +18,7 @@ data CustomRule (lvl :: Level)
     , crInitState :: IntType lvl
     , crStates :: [CustomState lvl]
     }
+  | DynamicRule
 
 -- | State and state transition.
 data CustomState (lvl :: Level)

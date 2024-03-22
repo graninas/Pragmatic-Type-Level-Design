@@ -26,6 +26,8 @@ library
       Turing.Assets.Packages.SimpleRule
       Turing.Assets.Rules
       Turing.Assets.SimpleRule
+      Turing.Machine.Implementation.Common
+      Turing.Machine.Implementation.Dynamic
       Turing.Machine.Implementation.Static
       Turing.Machine.Interface
       Turing.Machine.Language
@@ -77,6 +79,8 @@ executable turing-machine
       Turing.Assets.Packages.SimpleRule
       Turing.Assets.Rules
       Turing.Assets.SimpleRule
+      Turing.Machine.Implementation.Common
+      Turing.Machine.Implementation.Dynamic
       Turing.Machine.Implementation.Static
       Turing.Machine.Interface
       Turing.Machine.Language

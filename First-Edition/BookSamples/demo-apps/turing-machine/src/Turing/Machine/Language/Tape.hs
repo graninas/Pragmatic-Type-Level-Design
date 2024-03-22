@@ -31,6 +31,9 @@ class WriteTape s where
 class InitTape s where
   initTape :: s -> Tape
 
+class ToTypeSymbol ch where
+  toTapeSymbol :: ch -> TapeSymbol
+
 instance InitTape String where
   initTape [] = Tape [] (Left Blank) []
   initTape (ch : s) = Tape [] (Right ch) (map Right s)
@@ -59,6 +62,16 @@ instance SameTapeSymbol String TapeSymbol where
   sameTapeSymbol _ (Left _) = False
   sameTapeSymbol [] _ = False
   sameTapeSymbol (ch2 : _) (Right ch1) = ch1 == ch2
+
+-- Compares the tape symbol and the char
+instance SameTapeSymbol TapeSymbol Char where
+  sameTapeSymbol (Left _) _ = False
+  sameTapeSymbol (Right ch1) ch2 = ch1 == ch2
+
+instance SameTapeSymbol Char TapeSymbol where
+  sameTapeSymbol _ (Left _) = False
+  sameTapeSymbol ch2 (Right ch1) = ch1 == ch2
+
 
 -- Compares the tape symbol and the 1st char of the string
 instance SameTapeSymbol TapeSymbol TapeSymbol where
@@ -104,9 +117,12 @@ moveHeadRight tape n = moveHeadRight (shiftHeadRight tape) $ n - 1
 
 -- | Converts the 1st symbol of the string to the type symbol.
 -- Converts to blank if the string is empty.
-toTapeSymbol :: String -> TapeSymbol
-toTapeSymbol [] = Left Blank
-toTapeSymbol (ch : _) = Right ch
+instance ToTypeSymbol String where
+  toTapeSymbol [] = Left Blank
+  toTapeSymbol (ch : _) = Right ch
+
+instance ToTypeSymbol Char where
+  toTapeSymbol = Right
 
 -- | Removes trailing blank symbols.
 shrinkBlanks :: Tape -> Tape

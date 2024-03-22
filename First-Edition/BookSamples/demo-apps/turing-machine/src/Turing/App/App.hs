@@ -197,14 +197,20 @@ processPrintTape (AppState _ tapesRef) tapeIdx = do
 
 processLoadRule :: AppState -> String -> IO AppAction
 processLoadRule appState@(AppState rulesRef _) rulePath = do
-  rules <- readIORef rulesRef
-
   ruleStr <- readFile rulePath
-
   case readMaybe ruleStr of
     Nothing -> continueWithMsg "Failed to parse the rule."
+
+    -- TODO: validation
     Just (rule :: R.Rule) -> do
-      continueWithMsg "Parsed." -- TODO
+      let rule' = R.toDynamicRule rule
+      let ri = DynRI rule'
+      rules <- readIORef rulesRef
+      let idx = Map.size rules
+      let rules' = Map.insert idx ri rules
+      writeIORef rulesRef rules'
+      continueWithMsg $ "Rule loaded: " <> show idx
+
       -- worlds <- readIORef worldsRef
       -- let idx = Map.size worlds
       -- let worlds' = Map.insert idx wi worlds

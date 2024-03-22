@@ -1,8 +1,20 @@
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE DataKinds #-}
 
 module Turing.App.Package.Rule where
 
+import qualified Turing.Machine.Language as L
+
+import Lib.TypeSelector
+
 -- | External rule & data package definitions: packaged rule.
+
+data Rule = Rule
+  { name :: String
+  , initState :: Int
+  , states :: [State]
+  }
+  deriving (Read, Show, Eq, Ord)
 
 data State
   = State
@@ -58,26 +70,41 @@ data MoveHeadAction
   | Stay
   deriving (Read, Show, Eq, Ord)
 
-data Rule = Rule
-  { name :: String
-  , initState :: Int
-  , states :: [State]
-  }
-  deriving (Read, Show, Eq, Ord)
+toDynamicWriteAction :: WriteAction -> L.CustomWriteAction 'ValueLevel
+toDynamicWriteAction (Write ch) = L.Write ch
+toDynamicWriteAction WriteMatched = L.WriteMatched
+toDynamicWriteAction Skip = L.Skip
 
+toDynamicMoveAction :: MoveHeadAction -> L.CustomMoveHeadAction 'ValueLevel
+toDynamicMoveAction (Ln s) = L.Ln s
+toDynamicMoveAction (Rn s) = L.Rn s
+toDynamicMoveAction L  = L.L
+toDynamicMoveAction R = L.R
+toDynamicMoveAction Stay = L.Stay
 
--- toCustomStateTransition :: Transition -> L.CustomStateTransition
--- toCustomStateTransition (Transition from to (NeighborsCount st qs)) = let
---     qs' = map fromIntegral qs
---     cond' = L.NeighborsCount (fromIntegral st) qs'
---   in L.StateTransition (fromIntegral from) (fromIntegral to) cond'
+toDynamicCondition :: Condition -> L.CustomCondition 'ValueLevel
+toDynamicCondition (Match ch wAct mAct idx) = let
+  wAct' = toDynamicWriteAction wAct
+  mAct' = toDynamicMoveAction mAct
+  in L.Match ch wAct' mAct' idx
+toDynamicCondition (MatchAny wAct mAct idx) = let
+  wAct' = toDynamicWriteAction wAct
+  mAct' = toDynamicMoveAction mAct
+  in L.MatchAny wAct' mAct' idx
+toDynamicCondition (MatchBlank wAct mAct idx) = let
+  wAct' = toDynamicWriteAction wAct
+  mAct' = toDynamicMoveAction mAct
+  in L.MatchBlank wAct' mAct' idx
+toDynamicCondition (FailWith msg) =
+  L.FailWith msg
 
--- toDynamicRule :: Rule -> L.DynamicRule
--- toDynamicRule (Rule n c (AdjacentsLvl lvl) ds ts) = let
---   nh' = L.AdjacentsLvl (fromIntegral lvl)
---   ds' = L.DefState (fromIntegral ds)
---   ts' = map toCustomStateTransition ts
+toDynamicState :: State -> L.CustomState 'ValueLevel
+toDynamicState (State idx n conds) =
+  L.State idx n (map toDynamicCondition conds)
+toDynamicState (FinishState idx n) =
+  L.FinishState idx n
 
---   dynStep = L.DynamicStep ds' ts'
---   in L.DynamicRule n c nh' dynStep
+toDynamicRule :: Rule -> L.CustomRule 'ValueLevel
+toDynamicRule (Rule n sIdx ss) =
+  L.Rule n sIdx (map toDynamicState ss)
 

@@ -4,6 +4,8 @@ module Turing.Assets.BinaryIncrement where
 
 import Turing.Machine.Language
 
+import Lib.TypeSelector
+
 {-
 Binary Increment
 
@@ -59,7 +61,7 @@ Rule
 
 
 
-type BinaryIncrement = 'Rule "Binary Increment" ('InitState 1)
+type BinaryIncrement = 'Rule @TypeLevel "Binary Increment" 1
   '[ 'State 1 "Start"
       '[ 'Match "0" 'Skip 'R 2
        , 'Match "1" 'Skip 'R 2

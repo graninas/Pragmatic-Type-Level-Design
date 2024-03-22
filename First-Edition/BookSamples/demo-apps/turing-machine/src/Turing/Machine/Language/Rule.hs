@@ -4,82 +4,78 @@
 -- | Domain types that describe logic.
 module Turing.Machine.Language.Rule where
 
+import Lib.TypeSelector
+
 import GHC.TypeLits
 
 
 -- Turing Machine rules language.
 
--- | Init state.
-
-newtype InitState = InitState Nat
-type RuleName = Symbol
-type StateName = Symbol
-
 -- | Rule for the Turing Machine.
-data CustomRule
+data CustomRule (lvl :: Level)
   = Rule
-    { crRuleName :: RuleName
-    , crInitState :: InitState
-    , crStates :: [CustomState]
+    { crRuleName :: StringType lvl
+    , crInitState :: IntType lvl
+    , crStates :: [CustomState lvl]
     }
 
 -- | State and state transition.
-data CustomState
+data CustomState (lvl :: Level)
   = State
-    { csStateIdx :: Nat
-    , csStateName :: StateName
-    , csConditions :: [CustomCondition]
+    { csStateIdx :: IntType lvl
+    , csStateName :: StringType lvl
+    , csConditions :: [CustomCondition lvl]
     }
   | FinishState
-    { csStateIdx :: Nat
-    , csStateName :: StateName
+    { csStateIdx :: IntType lvl
+    , csStateName :: StringType lvl
     }
 
 -- | Matching tape symbols type for conditional state transition.
-data CustomCondition
+data CustomCondition (lvl :: Level)
   -- | Matches specific symbol.
   = Match
-    { ccSymbol :: Symbol
-    , ccWriteAction :: CustomWriteAction
-    , ccMoveAction :: CustomMoveHeadAction
-    , ccStateIdx :: Nat
+    { ccSymbol :: CharType lvl
+    , ccWriteAction :: CustomWriteAction lvl
+    , ccMoveAction :: CustomMoveHeadAction lvl
+    , ccStateIdx :: IntType lvl
     }
 
   -- | Matches any symbol.
   | MatchAny
-    { ccWriteAction :: CustomWriteAction
-    , ccMoveAction :: CustomMoveHeadAction
-    , ccStateIdx :: Nat
+    { ccWriteAction :: CustomWriteAction lvl
+    , ccMoveAction :: CustomMoveHeadAction lvl
+    , ccStateIdx :: IntType lvl
     }
 
   -- | Matches empty cell.
   | MatchBlank
-    { ccWriteAction :: CustomWriteAction
-    , ccMoveAction :: CustomMoveHeadAction
-    , ccStateIdx :: Nat
+    { ccWriteAction :: CustomWriteAction lvl
+    , ccMoveAction :: CustomMoveHeadAction lvl
+    , ccStateIdx :: IntType lvl
     }
 
   -- | Matches any symbol and stops the evaluation.
   | FailWith
-    { ccFailMessage :: Symbol
+    { ccFailMessage :: StringType lvl
     }
 
 -- | Tape writing action.
-data CustomWriteAction
+data CustomWriteAction (lvl :: Level)
   = Write
-    { cwaSymbol :: Symbol
+    { cwaSymbol :: CharType lvl
     }
   | WriteMatched
   | Skip           -- Same as WriteMatched
 
 -- | Tape head moving action.
-data CustomMoveHeadAction
+data CustomMoveHeadAction (lvl :: Level)
   = Ln
-    { smaSteps :: Nat
+    { smaSteps :: IntType lvl
     }
   | L              -- Same as L 1
   | Rn
-    { cmaSteps :: Nat
+    { cmaSteps :: IntType lvl
     }
   | R              -- Same as R 1
   | Stay

@@ -13,11 +13,10 @@ import Data.Proxy (Proxy(..))
 
 
 -- | Interface for Turing Machines.
--- This interface is needed to unify static implementations.
 
 class IMachine
   payload
-  (rule :: CustomRule) where
+  (rule :: CustomRule lvl) where
   run
     :: payload
     -> Proxy rule

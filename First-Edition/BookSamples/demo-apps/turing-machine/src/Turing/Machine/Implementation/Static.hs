@@ -6,6 +6,7 @@ module Turing.Machine.Implementation.Static where
 import Turing.Machine.Language
 import Turing.Machine.Interface
 
+import Lib.TypeSelector
 import GHC.TypeLits
 import Data.Proxy ( Proxy(..) )
 
@@ -24,13 +25,13 @@ type MaxSteps = Int
 type StateIdx = Int
 type CurrentStateIdx = StateIdx
 
-class RuleRunner (rule :: CustomRule) where
+class RuleRunner (rule :: CustomRule 'TypeLevel) where
   runRule
     :: Proxy rule
     -> Tape
     -> Either String Tape
 
-class RuleRunnerImpl (rule :: CustomRule) where
+class RuleRunnerImpl (rule :: CustomRule 'TypeLevel) where
   runRule'
     :: Proxy rule
     -> CurrentStateIdx
@@ -61,7 +62,7 @@ data Result
 -- These instances overlap.
 -- Moving the matching of the states to the value level solves this.
 
-class StatesRunner (states :: [CustomState]) where
+class StatesRunner (states :: [CustomState 'TypeLevel]) where
   runStates
     :: Proxy states
     -> CurrentStateIdx
@@ -71,7 +72,7 @@ class StatesRunner (states :: [CustomState]) where
 
 -- | Transition conditions runner.
 
-class ConditionsRunner (conds :: [CustomCondition]) where
+class ConditionsRunner (conds :: [CustomCondition 'TypeLevel]) where
   runConditions
     :: Proxy conds
     -> Tape
@@ -80,7 +81,7 @@ class ConditionsRunner (conds :: [CustomCondition]) where
 
 -- | Writing to tape action runner.
 
-class WriteActionRunner (writeAct :: CustomWriteAction) where
+class WriteActionRunner (writeAct :: CustomWriteAction 'TypeLevel) where
   runWrite
     :: Proxy writeAct
     -> TapeSymbol
@@ -90,7 +91,7 @@ class WriteActionRunner (writeAct :: CustomWriteAction) where
 
 -- | Moving the tape head runner.
 
-class MoveActionRunner (moveAct :: CustomMoveHeadAction) where
+class MoveActionRunner (moveAct :: CustomMoveHeadAction 'TypeLevel) where
   runMove
     :: Proxy moveAct
     -> Tape
@@ -108,9 +109,9 @@ instance
 -- Starting the run with the init state idx as a current state
 instance
   ( KnownNat initStateIdx
-  , RuleRunnerImpl ('Rule name ('InitState initStateIdx) (s ': ss))
+  , RuleRunnerImpl ('Rule name initStateIdx (s ': ss))
   ) =>
-  RuleRunner ('Rule name ('InitState initStateIdx) (s ': ss)) where
+  RuleRunner ('Rule name initStateIdx (s ': ss)) where
   runRule ruleProxy tape = let
     initStateIdx = fromIntegral $ natVal $ Proxy @initStateIdx
     in runRule' ruleProxy initStateIdx tape

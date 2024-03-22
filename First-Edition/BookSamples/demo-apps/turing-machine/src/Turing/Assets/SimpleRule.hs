@@ -4,6 +4,7 @@ module Turing.Assets.SimpleRule where
 
 import Turing.Machine.Language
 
+import Lib.TypeSelector
 
 -- Simple Turing Machine rule.
 -- If "A", changes "A" to "B".
@@ -26,7 +27,7 @@ import Turing.Machine.Language
 -- "AB"  | "_BB"
 --  ^    |  ^
 
-type SimpleRule = 'Rule "Simple rule" ('InitState 0)
+type SimpleRule = 'Rule @TypeLevel "Simple rule" 0
   '[ 'State 0 "0"
       '[ 'Match "A" ('Write "B") 'L 1
        , 'MatchAny 'WriteMatched 'L 1

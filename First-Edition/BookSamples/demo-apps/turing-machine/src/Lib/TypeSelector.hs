@@ -16,6 +16,10 @@ type family StringType (lvl :: Level) where
   StringType 'TypeLevel  = Symbol
   StringType 'ValueLevel = String
 
-type family IntegerType (lvl :: Level) where
-  IntegerType 'TypeLevel  = Nat
-  IntegerType 'ValueLevel = Int
+type family IntType (lvl :: Level) where
+  IntType 'TypeLevel  = Nat
+  IntType 'ValueLevel = Int
+
+type family CharType (lvl :: Level) where
+  CharType 'TypeLevel  = Symbol
+  CharType 'ValueLevel = Char

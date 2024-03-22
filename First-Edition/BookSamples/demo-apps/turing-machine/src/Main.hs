@@ -9,9 +9,11 @@ import Turing.Machine.Interface
 import Turing.Machine.Language
 import Turing.Assets.BinaryIncrement
 import Turing.Assets.SimpleRule
+import Turing.Assets.Rules
 
 import qualified Data.Map as Map
 import Data.Proxy
+import Text.Read (readMaybe)
 import System.Environment (getArgs)
 import System.Directory (getCurrentDirectory)
 
@@ -33,49 +35,43 @@ main = do
 
   _ <- printHelp
 
-  appState <- createAppState
 
-  pure ()
-  -- args <- getArgs
+  appState <- createAppState' supportedRulesDict
 
-  -- case args of
-  --   (ruleFile : []) -> do
-  --     let ruleFile' = "./BookSamples/CH05/ch5/data/packages" <> ruleFile
-  --     putStrLn $ "\nRule file: " <> ruleFile'
+  args <- getArgs
 
-  --     ruleStr <- readFile ruleFile'
-  --     let rule = read ruleStr
-  --     print rule
+  case args of
+    (ruleFile : []) -> do
+      -- let ruleFile' = "./BookSamples/CH05/ch5/data/packages" <> ruleFile
+      -- putStrLn $ "\nRule file: " <> ruleFile'
 
-  --     let existRule = makeExistentialRule rule
+      -- ruleStr <- readFile ruleFile'
+      -- let rule = read ruleStr
+      -- print rule
 
-  --     addRule appState existRule
+      -- let existRule = makeExistentialRule rule
 
-  --     putStrLn "Rule added."
-  --   _ -> pure ()
+      -- addRule appState existRule
 
-  -- go appState
+      -- putStrLn "Rule added."
+      pure ()
+    _ -> pure ()
 
--- go :: AppState -> IO ()
--- go appState = do
---   putStrLn "\nType a command:"
---   cmd <- getLine
+  go appState
 
---   appAction <- case filter (/=' ') cmd of
---     "quit"   -> finish
---     "help"   -> printHelp
---     "rules"  -> EApp.processListRuleCodes appState
---     "worlds" -> EApp.processListWorlds appState
---     "load"   -> EApp.processLoad appState
---     "predef" -> EApp.processLoadPredef appState
---     "step"   -> EApp.processStep appState
---     "print"  -> EApp.processPrint appState
---     _ -> continueWithMsg "Unknown command. Type `help` to see the list of commands."
+go :: AppState -> IO ()
+go appState = do
+  putStrLn "\nType a command:"
+  line <- getLine
 
---   case appAction of
---     AppFinish (Just msg) -> putStrLn msg
---     AppFinish _ -> pure ()
---     AppContinue (Just msg) -> do
---       putStrLn msg
---       go appState
---     AppContinue _ -> go appState
+  appAction <- case readMaybe line of
+    Just cmd -> runCommand cmd appState
+    _ -> continueWithMsg "Unknown command. Type `help` to see the list of commands."
+
+  case appAction of
+    AppFinish (Just msg) -> putStrLn msg
+    AppFinish _ -> pure ()
+    AppContinue (Just msg) -> do
+      putStrLn msg
+      go appState
+    AppContinue _ -> go appState

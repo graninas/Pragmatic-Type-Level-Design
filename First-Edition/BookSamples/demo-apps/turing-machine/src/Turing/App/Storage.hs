@@ -40,7 +40,8 @@ data RuleImpl where
   --    => DynamicRule
   --    -> RuleImpl
 
-type Rules = Map.Map String RuleImpl
+type RuleIndex = Int
+type Rules = Map.Map RuleIndex RuleImpl
 
 
 

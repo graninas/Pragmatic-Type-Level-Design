@@ -1,8 +1,7 @@
 -- | Domain types that describe data.
 module Turing.Machine.Language.Tape where
 
-import GHC.TypeLits
-
+import Control.Monad (join)
 
 
 -- Simplest tape possible.
@@ -40,9 +39,11 @@ instance InitTape [TapeSymbol] where
   initTape [] = Tape [] (Left Blank) []
   initTape (ch : s) = Tape [] ch s
 
+-- | Returns the current symbol.
 readTape :: Tape -> TapeSymbol
 readTape (Tape _ curS _) = curS
 
+-- | Tests the cell for emptiness.
 isBlank :: TapeSymbol -> Bool
 isBlank (Left Blank) = True
 isBlank _ = False
@@ -81,19 +82,22 @@ instance WriteTape ServiceSymbol where
 instance WriteTape TapeSymbol where
   writeTape (Tape l _ r) s = Tape l s r
 
-
+-- | Moves the head left 1 cell.
 shiftHeadLeft :: Tape -> Tape
 shiftHeadLeft (Tape [] s rs)     = Tape [] (Left Blank) (s : rs)
 shiftHeadLeft (Tape (l:ls) s rs) = Tape ls l (s : rs)
 
+-- | Moves the head right 1 cell.
 shiftHeadRight :: Tape -> Tape
 shiftHeadRight (Tape ls s [])       = Tape (s : ls) (Left Blank) []
 shiftHeadRight (Tape ls s (r : rs)) = Tape (s : ls) r rs
 
+-- | Moves the head left n cells.
 moveHeadLeft :: Tape -> Int -> Tape
 moveHeadLeft tape n | n <= 0 = tape
 moveHeadLeft tape n = moveHeadLeft (shiftHeadLeft tape) $ n - 1
 
+-- | Moves the head right n cells.
 moveHeadRight :: Tape -> Int -> Tape
 moveHeadRight tape n | n <= 0 = tape
 moveHeadRight tape n = moveHeadRight (shiftHeadRight tape) $ n - 1
@@ -104,9 +108,19 @@ toTapeSymbol :: String -> TapeSymbol
 toTapeSymbol [] = Left Blank
 toTapeSymbol (ch : _) = Right ch
 
-
+-- | Removes trailing blank symbols.
 shrinkBlanks :: Tape -> Tape
 shrinkBlanks (Tape l cur r) = let
   l' = reverse $ dropWhile isBlank $ reverse l
   r' = reverse $ dropWhile isBlank $ reverse r
   in Tape l' cur r'
+
+
+printTape :: Tape -> String
+printTape (Tape l cur r)
+  = join (map f l)
+  <> (">" <> f cur <> "<")
+  <> join (map f r)
+  where
+    f (Left Blank) = "#"
+    f (Right ch) = [ch]

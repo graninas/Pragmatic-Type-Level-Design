@@ -1,15 +1,9 @@
 module Turing.App.App where
-  -- ( processListRuleCodes
-  -- , processListWorlds
-  -- , processLoad
-  -- , processLoadPredef
-  -- , processPrint
-  -- , processStep
-  -- ) where
 
 import Turing.App.Storage
-import Turing.App.State (AppState(..))
-import Turing.App.Action ( AppAction, continue, continueWithMsg )
+import Turing.App.Commands
+import Turing.App.State
+import Turing.App.Action ( AppAction, continue, continueWithMsg, finish )
 import Turing.Machine.Interface
 import Turing.Machine.Language
 
@@ -19,9 +13,28 @@ import Data.IORef ( IORef, readIORef, writeIORef )
 import Data.Traversable (for)
 import Data.List (intercalate)
 import Control.Exception ( SomeException, try )
-import Text.Read (readMaybe)
 import System.Directory
 
+
+-- data Command
+--   = Help
+--   | Quit
+--   | Rules
+--   | Tapes
+--   | LoadRule String
+--   | LoadTape String
+--   | Run Int Int
+--   | PrintTape Int
+--   deriving (Show, Eq, Read, Ord)
+
+runCommand :: Command -> AppState -> IO AppAction
+runCommand Help _ = printCommandsHelp >> continue
+runCommand Quit _ = finish
+runCommand Rules st = processListRules st
+runCommand Tapes st = processListTapes st
+runCommand (NewTape str) st = processNewTape st str
+runCommand (PrintTape tapeIdx) st = processPrintTape st tapeIdx
+runCommand (Run ruleIdx tapeIdx) st = processRun st ruleIdx tapeIdx
 
 -- printBoard :: Board -> IO ()
 -- printBoard board = do
@@ -99,83 +112,85 @@ import System.Directory
 
 -- -- App interface
 
--- processListRuleCodes :: AppState -> IO AppAction
--- processListRuleCodes (AppState rulesRef _) = do
---   rules <- readIORef rulesRef
---   putStrLn "\nSupported rules ([code] name):"
---   mapM_ f $ Map.toList rules
---   continue
---   where
---     f (ruleCode, RI proxy) =
---       putStrLn ("[" <> ruleCode <> "] (static) " <> name () proxy)
---     f (ruleCode, DynRI dynRule) =
---       putStrLn ("[" <> ruleCode <> "] (dynamic) " <> name dynRule (Proxy @'DynRule))
+processListRules :: AppState -> IO AppAction
+processListRules (AppState rulesRef _) = do
+  rules <- readIORef rulesRef
+  putStrLn "\nSupported rules ([idx] name):"
+  mapM_ f $ Map.toList rules
+  continue
+  where
+    f (ruleIdx, RI proxy) =
+      putStrLn ("[" <> show ruleIdx <> "] (static) " <> name () proxy)
+    -- f (ruleIdx, DynRI dynRule) =
+      -- putStrLn ("[" <> ruleIdx <> "] (dynamic) " <> name dynRule (Proxy @'DynRule))
+
+printTape' :: (TapeIndex, Tape) -> IO ()
+printTape' (idx, tape) = do
+  putStrLn $ "[" <> show idx <> "] \"" <> printTape tape <> "\""
 
 
--- processListWorlds :: AppState -> IO AppAction
--- processListWorlds (AppState _ worldsRef) = do
---   worlds <- readIORef worldsRef
---   putStrLn ("\nWorlds available: " <> show (Map.size worlds))
---   let ws = Map.toAscList worlds
---   mapM_ f ws
---   continue
---   where
---     f :: (WorldIndex, WorldInstance) -> IO ()
---     f (idx, WI gen cw) = f' idx gen cw
---     f (idx, DynWI dynRule gen cw) = fDyn' dynRule idx gen cw
---     f' :: forall rule
---         . IAutomaton () rule
---        => WorldIndex
---        -> Generation
---        -> CellWorld rule
---        -> IO ()
---     f' idx gen _ = do
---       let strCode = code () (Proxy @rule)
---       putStrLn (show idx <> ") [" <> strCode <> "], gen: " <> show gen)
+processListTapes :: AppState -> IO AppAction
+processListTapes (AppState _ tapesRef) = do
+  tapes <- readIORef tapesRef
+  putStrLn ("\nTapes available: " <> show (Map.size tapes))
+  let ts = Map.toAscList tapes
+  mapM_ printTape' ts
+  continue
+    -- f :: (WorldIndex, WorldInstance) -> IO ()
+    -- f (idx, WI gen cw) = f' idx gen cw
+    -- f (idx, DynWI dynRule gen cw) = fDyn' dynRule idx gen cw
+    -- f' :: forall rule
+    --     . IAutomaton () rule
+    --    => WorldIndex
+    --    -> Generation
+    --    -> CellWorld rule
+    --    -> IO ()
+    -- f' idx gen _ = do
+    --   let strCode = code () (Proxy @rule)
+    --   putStrLn (show idx <> ") [" <> strCode <> "], gen: " <> show gen)
 
 --     fDyn' dynRule idx gen _ = do
 --       let strCode = code dynRule (Proxy @'DynRule)
 --       putStrLn (show idx <> ") [" <> strCode <> "], gen: " <> show gen)
 
--- processStep :: AppState -> IO AppAction
--- processStep (AppState _ worldsRef) = do
---   putStrLn "\nEnter world index to step:"
---   idxStr <- getLine
---   case readMaybe idxStr of
---     Nothing -> continueWithMsg "Invalid index."
---     Just idx -> do
---       worlds <- readIORef worldsRef
---       case Map.lookup idx worlds of
---         Nothing -> continueWithMsg "Index doesn't exist."
---         Just (WI gen world) -> do
---           let world' = step () world
---           let wi = WI (gen + 1) world'
---           let worlds' = Map.insert idx wi worlds
---           writeIORef worldsRef worlds'
---           continue
---         Just (DynWI dynRule gen world) -> do
---           let world' = step dynRule world
---           let wi = DynWI dynRule (gen + 1) world'
---           let worlds' = Map.insert idx wi worlds
---           writeIORef worldsRef worlds'
---           continue
+processNewTape :: AppState -> String -> IO AppAction
+processNewTape st str = do
+  idx <- addTape st $ initTape str
+  continueWithMsg $ "Tape idx: " <> show idx
 
--- processPrint :: AppState -> IO AppAction
--- processPrint (AppState _ worldsRef) = do
---   putStrLn "\nEnter world index to print:"
---   idxStr <- getLine
---   case readMaybe idxStr of
---     Nothing -> continueWithMsg "Invalid index."
---     Just idx -> do
---       worlds <- readIORef worldsRef
---       case Map.lookup idx worlds of
---         Nothing -> continueWithMsg "Index doesn't exist."
---         Just (WI _ (CW board)) -> do
---           printBoard board
---           continue
---         Just (DynWI _ _ (CW board)) -> do
---           printBoard board
---           continue
+
+processRun :: AppState -> RuleIndex -> TapeIndex -> IO AppAction
+processRun (AppState rulesRef tapesRef) ruleIdx tapeIdx = do
+  rules <- readIORef rulesRef
+  tapes <- readIORef tapesRef
+  case (Map.lookup ruleIdx rules, Map.lookup tapeIdx tapes) of
+    (Nothing, _) -> continueWithMsg "Rule doesn't exist."
+    (_, Nothing) -> continueWithMsg "Tape doesn't exist."
+    (Nothing, Nothing) -> continueWithMsg "Rule and tape don't exist."
+    (Just (RI proxy), Just tape1) -> do
+      let eTape2 = run () proxy tape1
+      case eTape2 of
+        Left err -> continueWithMsg err
+        Right tape2 -> do
+          let tapes' = Map.insert tapeIdx tape2 tapes
+          writeIORef tapesRef tapes'
+          printTape' (tapeIdx, tape2)
+          continue
+      -- Just (DynWI dynRule gen world) -> do
+      --   let world' = step dynRule world
+      --   let wi = DynWI dynRule (gen + 1) world'
+      --   let worlds' = Map.insert idx wi worlds
+      --   writeIORef worldsRef worlds'
+      --   continue
+
+processPrintTape :: AppState -> TapeIndex -> IO AppAction
+processPrintTape (AppState _ tapesRef) tapeIdx = do
+  tapes <- readIORef tapesRef
+  case Map.lookup tapeIdx tapes of
+    Nothing -> continueWithMsg "Tape doesn't exist."
+    Just tape -> do
+      printTape' (tapeIdx, tape)
+      continue
 
 -- processLoad :: AppState -> IO AppAction
 -- processLoad appState@(AppState rulesRef worldsRef) = do

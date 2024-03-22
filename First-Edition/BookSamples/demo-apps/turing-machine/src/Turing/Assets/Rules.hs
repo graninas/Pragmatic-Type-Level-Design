@@ -13,10 +13,10 @@ import qualified Data.Map as Map
 import Data.Proxy (Proxy(..))
 
 
-supportedRules :: [(String, RuleImpl)]
-supportedRules = map (\ri -> (getName ri, ri))
-  [ RI (Proxy @BinaryIncrement)
-  , RI (Proxy @SimpleRule)
+supportedRules :: [(RuleIndex, RuleImpl)]
+supportedRules =
+  [ (0, RI (Proxy @BinaryIncrement))
+  , (1, RI (Proxy @SimpleRule))
   ]
 
 supportedRulesDict :: Rules

@@ -4,8 +4,7 @@ module Turing.Machine.Language.Tape where
 import Control.Monad (join)
 
 
--- Simplest tape possible.
-
+-- | Simplest tape implementation possible.
 
 data Tape = Tape
   { tLeftTape :: [TapeSymbol]
@@ -14,12 +13,10 @@ data Tape = Tape
   }
   deriving (Show, Eq, Ord)
 
-
 type TapeSymbol = Either ServiceSymbol Char
 
 data ServiceSymbol = Blank
   deriving (Show, Eq, Ord)
-
 
 
 class SameTapeSymbol s1 s2 where
@@ -72,11 +69,9 @@ instance SameTapeSymbol Char TapeSymbol where
   sameTapeSymbol _ (Left _) = False
   sameTapeSymbol ch2 (Right ch1) = ch1 == ch2
 
-
 -- Compares the tape symbol and the 1st char of the string
 instance SameTapeSymbol TapeSymbol TapeSymbol where
   sameTapeSymbol c1 c2 = c1 == c2
-
 
 -- Writes the 1st char of the string.
 -- If the string is empty, writes blank.
@@ -131,7 +126,9 @@ shrinkBlanks (Tape l cur r) = let
   r' = reverse $ dropWhile isBlank $ reverse r
   in Tape l' cur r'
 
-
+-- | Prints the tape.
+-- Current symbol is denoted between the inequality signs: '>A<'.
+-- '#' denotes the blank symbol.
 printTape :: Tape -> String
 printTape (Tape l cur r)
   = join (map f l)

@@ -1,4 +1,4 @@
-# Turing Machine demo application.
+# Turing Machine demo application
 
 The application is an implementation of the Turing Machine
 that has the following features:

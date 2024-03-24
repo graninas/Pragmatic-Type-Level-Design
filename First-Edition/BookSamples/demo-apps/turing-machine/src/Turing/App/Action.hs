@@ -1,5 +1,6 @@
 module Turing.App.Action where
 
+
 type AppMessage = String
 
 data AppAction

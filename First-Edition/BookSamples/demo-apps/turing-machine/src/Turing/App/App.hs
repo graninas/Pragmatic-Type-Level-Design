@@ -35,7 +35,7 @@ runCommand LoadPredefRules st = processLoadPredefRules st
 runCommand (Run ruleIdx tapeIdx) st = processRun st ruleIdx tapeIdx
 
 
--- -- App interface
+-- App interface
 
 processListRules :: AppState -> IO AppAction
 processListRules (AppState rulesRef _) = do
@@ -52,7 +52,6 @@ processListRules (AppState rulesRef _) = do
 printTape' :: (TapeIndex, Tape) -> IO ()
 printTape' (idx, tape) = do
   putStrLn $ "[" <> show idx <> "] \"" <> printTape tape <> "\""
-
 
 processListTapes :: AppState -> IO AppAction
 processListTapes (AppState _ tapesRef) = do
@@ -93,7 +92,6 @@ processRun (AppState rulesRef tapesRef) ruleIdx tapeIdx = do
           writeIORef tapesRef tapes'
           printTape' (tapeIdx, tape2)
           continue
-
 
 processPrintTape :: AppState -> TapeIndex -> IO AppAction
 processPrintTape (AppState _ tapesRef) tapeIdx = do

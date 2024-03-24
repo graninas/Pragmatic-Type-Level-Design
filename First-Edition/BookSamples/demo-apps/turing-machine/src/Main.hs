@@ -18,8 +18,6 @@ printHelp = do
   printCommandsHelp
   continue
 
-
-
 main :: IO ()
 main = do
   putStrLn "Welcome to the world of things!"

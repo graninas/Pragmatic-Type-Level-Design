@@ -17,6 +17,7 @@ instance
   run rule _ = runDynamicRule rule
   name (Rule n _ _) _ = n
 
+
 --------------- Implementation ---------------
 
 runDynamicRule

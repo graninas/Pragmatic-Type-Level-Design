@@ -6,6 +6,7 @@ import Turing.Machine.Language
 
 import Lib.TypeSelector
 
+
 -- Simple Turing Machine rule.
 -- If "A", changes "A" to "B".
 -- Moves left.

@@ -31,6 +31,5 @@ type RuleIndex = Int
 type Rules = Map.Map RuleIndex RuleImpl
 
 
-
 getName :: RuleImpl -> String
 getName (RI proxy) = name () proxy

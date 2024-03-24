@@ -56,10 +56,7 @@ Rule
   FindLeftmost: B. Write B. Right. Halt.
 
 6. Halt
-
 -}
-
-
 
 type BinaryIncrement = 'Rule @TypeLevel "Binary Increment" 1
   '[ 'State 1 "Start"

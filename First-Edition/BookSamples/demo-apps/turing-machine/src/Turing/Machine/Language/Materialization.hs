@@ -2,6 +2,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
 
+-- | Materializes the static model into dynamic one.
 module Turing.Machine.Language.Materialization where
 
 import Turing.Machine.Language.Rule
@@ -22,7 +23,7 @@ class MaterializeList payload l b
     matList :: payload -> Proxy l -> b
 
 
--- Rule materializer
+-- Helper tags for list collections.
 
 data ConditionsTag cs
 data StatesTag ss
@@ -204,119 +205,3 @@ instance
 instance
   Materialize () 'Stay CustomMoveHeadActionVL where
   mat _ _ = Stay
-
-
-
-
-
--- instance
---   ( RuleRunner rule
---   , rule ~ 'Rule name idx ss
---   , KnownSymbol name
---   ) =>
---   IMachine () rule where
---   run () = runRule
---   name () _ = symbolVal $ Proxy @name
-
-
--- class RuleRunner (rule :: CustomRule 'TypeLevel) where
---   runRule
---     :: Proxy rule
---     -> Tape
---     -> Either String Tape
-
--- class RuleRunnerImpl (rule :: CustomRule 'TypeLevel) where
---   runRule'
---     :: Proxy rule
---     -> CurrentStateIdx
---     -> Tape
---     -> Either String Tape
-
-
--- -- | States recursive runner.
-
--- -- | Applies the state if it matches the current state.
--- -- N.B. This is the overlapping instances workaround.
--- --   We can't have 2 instances of RuleRunner:
--- -- instance
--- --   ( (curState == stIdx) ~ 'True
--- --   ) =>
--- --   RuleRunner ...
--- --
--- -- instance
--- --   ( (curState == stIdx) ~ 'False
--- --   ) =>
--- --   RuleRunner ...
--- --
--- -- These instances overlap.
--- -- Moving the matching of the states to the value level solves this.
-
--- class StatesRunner (states :: [CustomState 'TypeLevel]) where
---   runStates
---     :: Proxy states
---     -> CurrentStateIdx
---     -> Tape
---     -> Result
-
-
--- -- | Transition conditions runner.
-
--- class Materialize (conds :: [CustomCondition 'TypeLevel]) where
---   runConditions
---     :: Proxy conds
---     -> Tape
---     -> Result
-
-
--- -- | Writing to tape action runner.
-
--- class WriteActionRunner (writeAct :: CustomWriteAction 'TypeLevel) where
---   runWrite
---     :: Proxy writeAct
---     -> TapeSymbol
---     -> Tape
---     -> Tape
-
-
--- -- | Moving the tape head runner.
-
--- class MoveActionRunner (moveAct :: CustomMoveHeadAction 'TypeLevel) where
---   runMove
---     :: Proxy moveAct
---     -> Tape
---     -> Tape
-
--- --------------- Implementation ---------------
-
--- -- Initial runner.
-
--- -- No states provided - finishing.
--- instance
---   RuleRunner ('Rule n stIdx '[]) where
---   runRule _ tape = Right tape
-
--- -- Starting the run with the init state idx as a current state
--- instance
---   ( KnownNat initStateIdx
---   , RuleRunnerImpl ('Rule name initStateIdx (s ': ss))
---   ) =>
---   RuleRunner ('Rule name initStateIdx (s ': ss)) where
---   runRule ruleProxy tape = let
---     initStateIdx = fromIntegral $ natVal $ Proxy @initStateIdx
---     in runRule' ruleProxy initStateIdx tape
-
-
--- -- Actual step-by-step recursive rule runner.
-
--- instance
---   ( StatesRunner states
---   ) =>
---   RuleRunnerImpl ('Rule n stIdx states) where
---   runRule' ruleProxy curStateIdx tape1 = let
---     res = runStates (Proxy @states) curStateIdx tape1
---     in case res of
---       FailedWith errMsg -> Left $ "[" <> show curStateIdx <> "] " <> errMsg
---       Finished tape2 -> Right tape2
---       Successful nextStateIdx tape2 ->
---         runRule' ruleProxy nextStateIdx tape2
-

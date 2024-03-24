@@ -1,4 +1,4 @@
-Turing Machine demo application.
+# Turing Machine demo application.
 
 The application is an implementation of the Turing Machine
 that has the following features:
@@ -11,7 +11,7 @@ that has the following features:
 - Running a rule on tape
 - Listing rules and tapes
 
-The code demonstrates the following concepts:
+### The code demonstrates the following concepts:
 
 - The application architecture in the presence of type-level subsystem
 - Separation of eDSLs, interfaces and implementation
@@ -28,6 +28,6 @@ The code demonstrates the following concepts:
 - Testing possibilities for rules
 
 
-Build with stack and run:
+### Build with stack and run:
 
 > stack exec turing-machine

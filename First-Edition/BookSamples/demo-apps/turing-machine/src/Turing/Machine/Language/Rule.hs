@@ -18,9 +18,9 @@ data CustomRule (lvl :: Level)
     , crInitState :: IntType lvl
     , crStates :: [CustomState lvl]
     }
-  | DynRule
+  | DynamicRuleTag
 
-type DynamicRule = 'DynRule @'ValueLevel
+type DynamicRule = 'DynamicRuleTag @'ValueLevel
 
 -- | State and state transition.
 data CustomState (lvl :: Level)
@@ -68,6 +68,7 @@ data CustomWriteAction (lvl :: Level)
   = Write
     { cwaSymbol :: CharType lvl
     }
+  | WriteBlank
   | WriteMatched
   | Skip           -- Same as WriteMatched
 
@@ -83,4 +84,21 @@ data CustomMoveHeadAction (lvl :: Level)
   | R              -- Same as R 1
   | Stay
 
+
+-- Short aliaces.
+
+type CustomMoveHeadActionTL = CustomMoveHeadAction 'TypeLevel
+type CustomMoveHeadActionVL = CustomMoveHeadAction 'ValueLevel
+
+type CustomWriteActionTL = CustomWriteAction 'TypeLevel
+type CustomWriteActionVL = CustomWriteAction 'ValueLevel
+
+type CustomConditionTL = CustomCondition 'TypeLevel
+type CustomConditionVL = CustomCondition 'ValueLevel
+
+type CustomStateTL = CustomState 'TypeLevel
+type CustomStateVL = CustomState 'ValueLevel
+
+type CustomRuleTL = CustomRule 'TypeLevel
+type CustomRuleVL = CustomRule 'ValueLevel
 

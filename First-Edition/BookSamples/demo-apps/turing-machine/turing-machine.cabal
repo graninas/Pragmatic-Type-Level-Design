@@ -32,6 +32,7 @@ library
       Turing.Machine.Implementation.Static
       Turing.Machine.Interface
       Turing.Machine.Language
+      Turing.Machine.Language.Materialization
       Turing.Machine.Language.Rule
       Turing.Machine.Language.Tape
   other-modules:
@@ -86,6 +87,7 @@ executable turing-machine
       Turing.Machine.Implementation.Static
       Turing.Machine.Interface
       Turing.Machine.Language
+      Turing.Machine.Language.Materialization
       Turing.Machine.Language.Rule
       Turing.Machine.Language.Tape
       Paths_turing_machine

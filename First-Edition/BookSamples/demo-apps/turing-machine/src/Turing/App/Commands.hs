@@ -11,6 +11,7 @@ data Command
   | Rules
   | LoadPredefRules
   | LoadRule String
+  | Materialize
   | Run Int Int
   | PrintTape Int
   deriving (Show, Eq, Read, Ord)
@@ -28,5 +29,6 @@ printCommandsHelp = do
   putStrLn "Rules - list available rules"
   putStrLn "LoadRule path - load a rule"
   putStrLn "LoadPredefRules - load hardcoded rules"
+  putStrLn "Materialize - Materialize static rules to dynamic ones\n  (for demo purposes)"
   putStrLn "Run ruleIdx tapeIdx  - run a rule on a tape"
   putStrLn "Print tapeIdx - print a tape"

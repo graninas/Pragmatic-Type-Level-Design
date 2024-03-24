@@ -220,6 +220,10 @@ instance
   runWrite _ matchedSymb tape = writeTape tape matchedSymb
 
 instance
+  WriteActionRunner 'WriteBlank where
+  runWrite _ _ tape = writeTape @String tape ""
+
+instance
   WriteActionRunner 'Skip where
   runWrite _ _ tape = tape
 

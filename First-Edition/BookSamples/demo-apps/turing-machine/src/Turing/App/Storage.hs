@@ -19,9 +19,12 @@ type Tapes = Map.Map TapeIndex Tape
 
 data RuleImpl where
   RI
-    :: IMachine () rule
-    => Proxy rule
-    -> RuleImpl
+    :: ( IMachine () (rule :: CustomRuleTL)
+
+        -- N.B., Materialization requirement here is to showcase the pattern.
+       , Materialize () rule CustomRuleVL
+    ) => Proxy rule
+      -> RuleImpl
   DynRI
     :: IMachine (CustomRule 'ValueLevel) DynamicRule
     => CustomRule 'ValueLevel
@@ -33,3 +36,8 @@ type Rules = Map.Map RuleIndex RuleImpl
 
 getName :: RuleImpl -> String
 getName (RI proxy) = name () proxy
+getName (DynRI rule) = name rule $ Proxy @DynamicRule
+
+isStatic :: RuleImpl -> Bool
+isStatic (RI _) = True
+isStatic _ = False

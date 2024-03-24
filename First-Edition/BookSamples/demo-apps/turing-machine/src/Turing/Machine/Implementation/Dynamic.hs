@@ -16,6 +16,7 @@ instance
   IMachine (CustomRule 'ValueLevel) DynamicRule where
   run rule _ = runDynamicRule rule
   name (Rule n _ _) _ = n
+  name DynamicRuleTag _ = error "DynamicRuleTag placeholder doesn't have name."
 
 
 --------------- Implementation ---------------
@@ -24,6 +25,7 @@ runDynamicRule
   :: CustomRule 'ValueLevel
   -> Tape
   -> Either String Tape
+runDynamicRule DynamicRuleTag _ = error "DynamicRuleTag placeholder can't be run."
 runDynamicRule (Rule _ _ []) tape = Right tape
 runDynamicRule r@(Rule _ initStateIdx _) tape =
   runDynamicRule' r initStateIdx tape
@@ -33,6 +35,7 @@ runDynamicRule'
   -> Int
   -> Tape
   -> Either String Tape
+runDynamicRule' DynamicRuleTag _ _ = error "DynamicRuleTag placeholder can't be run."
 runDynamicRule' r@(Rule _ stIdx states) curStateIdx tape1 = let
   res = runDynamicStates states curStateIdx tape1
   in case res of
@@ -71,7 +74,7 @@ runDynamicConditions (Match symb writeAct moveAct nextStateIdx : conds) tape1 = 
       in Successful nextStateIdx tape3
     False -> runDynamicConditions conds tape1
 
-runDynamicConditions (MatchAny writeAct moveAct nextStateIdx : conds) tape1 = let
+runDynamicConditions (MatchAny writeAct moveAct nextStateIdx : _) tape1 = let
   curSymb = readTape tape1
   tape2 = runDynamicWrite writeAct curSymb tape1
   tape3 = runDynamicMove moveAct tape2
@@ -97,7 +100,9 @@ runDynamicWrite
   -> Tape
   -> Tape
 runDynamicWrite (Write symb) _ tape = writeTape tape symb
-runDynamicWrite WriteMatched matchedSymb tape = writeTape tape matchedSymb
+runDynamicWrite WriteMatched matchedSymb tape =
+  writeTape tape matchedSymb
+runDynamicWrite WriteBlank _ tape = writeTape @String tape ""
 runDynamicWrite Skip _ tape = tape
 
 

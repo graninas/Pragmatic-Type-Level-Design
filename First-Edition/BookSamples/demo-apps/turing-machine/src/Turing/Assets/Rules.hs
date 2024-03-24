@@ -3,8 +3,6 @@
 module Turing.Assets.Rules where
 
 import Turing.Machine.Language
-import Turing.Machine.Interface
-import Turing.Machine.Implementation.Static
 import Turing.App.Storage
 import Turing.Assets.BinaryIncrement
 import Turing.Assets.SimpleRule

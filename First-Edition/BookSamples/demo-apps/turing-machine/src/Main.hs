@@ -7,9 +7,6 @@ import Turing.App.Commands
 import Turing.App.Storage
 import Turing.Machine.Interface
 import Turing.Machine.Language
-import Turing.Assets.BinaryIncrement
-import Turing.Assets.SimpleRule
-import Turing.Assets.Rules
 
 import qualified Data.Map as Map
 import Data.Proxy
@@ -18,7 +15,6 @@ import Text.Read (readMaybe)
 
 printHelp :: IO AppAction
 printHelp = do
-  putStrLn "\nOptional arg: path_to_external_rule"
   printCommandsHelp
   continue
 
@@ -30,7 +26,7 @@ main = do
 
   _ <- printHelp
 
-  appState <- createAppState' supportedRulesDict
+  appState <- createAppState
 
   go appState
 

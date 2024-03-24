@@ -18,7 +18,9 @@ data CustomRule (lvl :: Level)
     , crInitState :: IntType lvl
     , crStates :: [CustomState lvl]
     }
-  | DynamicRule
+  | DynRule
+
+type DynamicRule = 'DynRule @'ValueLevel
 
 -- | State and state transition.
 data CustomState (lvl :: Level)

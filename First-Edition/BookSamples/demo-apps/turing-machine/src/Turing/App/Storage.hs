@@ -23,7 +23,7 @@ data RuleImpl where
     => Proxy rule
     -> RuleImpl
   DynRI
-    :: IMachine (CustomRule 'ValueLevel) 'DynamicRule
+    :: IMachine (CustomRule 'ValueLevel) DynamicRule
     => CustomRule 'ValueLevel
     -> RuleImpl
 

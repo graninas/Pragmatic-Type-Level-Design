@@ -13,13 +13,16 @@ import Data.Proxy ( Proxy(..) )
 
 
 instance
-  IMachine (CustomRule 'ValueLevel) 'DynamicRule where
+  IMachine (CustomRule 'ValueLevel) DynamicRule where
   run rule _ = runDynamicRule rule
   name (Rule n _ _) _ = n
 
 --------------- Implementation ---------------
 
-runDynamicRule :: CustomRule 'ValueLevel -> Tape -> Either String Tape
+runDynamicRule
+  :: CustomRule 'ValueLevel
+  -> Tape
+  -> Either String Tape
 runDynamicRule (Rule _ _ []) tape = Right tape
 runDynamicRule r@(Rule _ initStateIdx _) tape =
   runDynamicRule' r initStateIdx tape

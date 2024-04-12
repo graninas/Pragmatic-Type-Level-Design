@@ -1,10 +1,13 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module Turing.Machine.Implementation.Static where
+-- | Dynamic implementation of the IMachine type class interface.
+-- Addresses static type-level hardcoded rules.
+
+module Turing.Machine.Implementation.TypeClass.Static where
 
 import Turing.Machine.Language
-import Turing.Machine.Interface
+import Turing.Machine.Interface.TypeClass
 import Turing.Machine.Implementation.Common
 
 import Lib.TypeSelector

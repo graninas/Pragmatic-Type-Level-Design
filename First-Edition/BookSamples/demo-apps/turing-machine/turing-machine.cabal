@@ -19,6 +19,7 @@ library
       Turing.App.Action
       Turing.App.App
       Turing.App.Commands
+      Turing.App.InterfacingSwitch
       Turing.App.Package.Rule
       Turing.App.State
       Turing.App.Storage
@@ -29,8 +30,11 @@ library
       Turing.Assets.Tapes
       Turing.Machine.Implementation.Common
       Turing.Machine.Implementation.Dynamic
-      Turing.Machine.Implementation.Static
-      Turing.Machine.Interface
+      Turing.Machine.Implementation.FreeMonad
+      Turing.Machine.Implementation.TypeClass.Dynamic
+      Turing.Machine.Implementation.TypeClass.Static
+      Turing.Machine.Interface.FreeMonad
+      Turing.Machine.Interface.TypeClass
       Turing.Machine.Language
       Turing.Machine.Language.Materialization
       Turing.Machine.Language.Rule
@@ -74,6 +78,7 @@ executable turing-machine
       Turing.App.Action
       Turing.App.App
       Turing.App.Commands
+      Turing.App.InterfacingSwitch
       Turing.App.Package.Rule
       Turing.App.State
       Turing.App.Storage
@@ -84,8 +89,11 @@ executable turing-machine
       Turing.Assets.Tapes
       Turing.Machine.Implementation.Common
       Turing.Machine.Implementation.Dynamic
-      Turing.Machine.Implementation.Static
-      Turing.Machine.Interface
+      Turing.Machine.Implementation.FreeMonad
+      Turing.Machine.Implementation.TypeClass.Dynamic
+      Turing.Machine.Implementation.TypeClass.Static
+      Turing.Machine.Interface.FreeMonad
+      Turing.Machine.Interface.TypeClass
       Turing.Machine.Language
       Turing.Machine.Language.Materialization
       Turing.Machine.Language.Rule

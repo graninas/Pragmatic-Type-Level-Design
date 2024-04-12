@@ -2,13 +2,16 @@
 module Turing.App.App where
 
 import Turing.App.Storage
-import Turing.App.Commands
+import qualified Turing.App.Commands as Cmds
+import Turing.App.InterfacingSwitch
 import Turing.App.State
 import Turing.App.Action ( AppAction, continue, continueWithMsg, finish )
 import qualified Turing.App.Package.Rule as R
-import Turing.Machine.Interface
+import Turing.Machine.Interface.TypeClass
+import Turing.Machine.Interface.FreeMonad
 import Turing.Machine.Language
 import Turing.Machine.Language.Materialization
+import Turing.Machine.Implementation.FreeMonad
 import Turing.Assets.Rules
 import Turing.Assets.Tapes
 
@@ -23,34 +26,29 @@ import System.Directory
 import Text.Read (readMaybe)
 
 
-runCommand :: Command -> AppState -> IO AppAction
-runCommand Help _ = printCommandsHelp >> continue
-runCommand Quit _ = finish
-runCommand Tapes st = processListTapes st
-runCommand (NewTape str) st = processNewTape st str
-runCommand (LoadTape str) st = processLoadTape st str
-runCommand (PrintTape tapeIdx) st = processPrintTape st tapeIdx
-runCommand Rules st = processListRules st
-runCommand LoadPredefTapes st = processLoadPredefTapes st
-runCommand (LoadRule str) st = processLoadRule st str
-runCommand LoadPredefRules st = processLoadPredefRules st
-runCommand Materialize st = processMaterialize st
-runCommand (Run ruleIdx tapeIdx) st = processRun st ruleIdx tapeIdx
+-- | Running a command.
+-- Interface switch defines what interfacing mechanism
+-- should be used for demo.
+runCommand
+  :: InterfacingSwitch
+  -> Cmds.Command
+  -> AppState
+  -> IO AppAction
+runCommand _ Cmds.Help _ = Cmds.printCommandsHelp >> continue
+runCommand _ Cmds.Quit _ = finish
+runCommand _ Cmds.Tapes st = processListTapes st
+runCommand _ (Cmds.NewTape str) st = processNewTape st str
+runCommand _ (Cmds.LoadTape str) st = processLoadTape st str
+runCommand _ (Cmds.PrintTape tapeIdx) st = processPrintTape st tapeIdx
+runCommand _ Cmds.LoadPredefTapes st = processLoadPredefTapes st
+runCommand _ Cmds.Rules st = processListRules st
+runCommand iSwitch (Cmds.LoadRule str) st = processLoadRule iSwitch st str
+runCommand _ Cmds.LoadPredefRules st = processLoadPredefRules st
+runCommand iSwitch Cmds.Materialize st = processMaterialize iSwitch st
+runCommand _ (Cmds.Run ruleIdx tapeIdx) st = processRun st ruleIdx tapeIdx
 
 
 -- App interface
-
-processListRules :: AppState -> IO AppAction
-processListRules (AppState rulesRef _) = do
-  rules <- readIORef rulesRef
-  putStrLn "\nSupported rules ([idx] name):"
-  mapM_ f $ Map.toList rules
-  continue
-  where
-    f (ruleIdx, ri) = do
-      let ruleKind = if isStatic ri then "static" else "dynamic"
-      putStrLn ("[" <> show ruleIdx <> "] (" <>
-        ruleKind <> ") " <> getName ri)
 
 printTape' :: (TapeIndex, Tape) -> IO ()
 printTape' (idx, tape) = do
@@ -88,38 +86,6 @@ processPrintTape (AppState _ tapesRef) tapeIdx = do
       printTape' (tapeIdx, tape)
       continue
 
-processLoadRule :: AppState -> String -> IO AppAction
-processLoadRule appState@(AppState rulesRef _) rulePath = do
-  ruleStr <- readFile rulePath
-  case readMaybe ruleStr of
-    Nothing -> continueWithMsg "Failed to parse the rule."
-    -- TODO: validation
-    Just (rule :: R.Rule) -> do
-      let rule' = R.toDynamicRule rule
-      let ri = DynRI rule'
-      rules <- readIORef rulesRef
-      let idx = Map.size rules
-      let rules' = Map.insert idx ri rules
-      writeIORef rulesRef rules'
-      continueWithMsg $ "Rule loaded: ["
-        <> show idx <> "] (dynamic) "
-        <> getName ri
-
-processLoadPredefRules :: AppState -> IO AppAction
-processLoadPredefRules appState@(AppState rulesRef _) = do
-  mapM_ f supportedRules
-  continueWithMsg "Predefined rules loaded."
-  where
-    f (_, ri) = do
-      let ruleKind = if isStatic ri then "static" else "dynamic"
-      rules <- readIORef rulesRef
-      let idx = Map.size rules
-      let rules' = Map.insert idx ri rules
-      writeIORef rulesRef rules'
-      putStrLn $ "Rule loaded: [" <> show idx <> "] ("
-        <> ruleKind <> ") "
-        <> getName ri
-
 processLoadPredefTapes :: AppState -> IO AppAction
 processLoadPredefTapes appState@(AppState _ tapesRef) = do
   mapM_ f predefinedTapes
@@ -132,21 +98,84 @@ processLoadPredefTapes appState@(AppState _ tapesRef) = do
       writeIORef tapesRef tapes'
       putStrLn $ "Tape loaded: [" <> show idx <> "] " <> n
 
+processListRules :: AppState -> IO AppAction
+processListRules (AppState rulesRef _) = do
+  rules <- readIORef rulesRef
+  putStrLn "\nSupported rules ([idx] name):"
+  mapM_ f $ Map.toList rules
+  continue
+  where
+    f (ruleIdx, (ri, ruleKind)) = do
+      putStrLn ("[" <> show ruleIdx <> "] (" <>
+        ruleKind <> ") " <> getName ri)
+
+makeDynRuleImpl
+  :: InterfacingSwitch
+  -> Bool
+  -> CustomRuleVL
+  -> (RuleImpl, String)
+makeDynRuleImpl TypeClass materialized rule =
+  (TypeClassDynRI rule,
+  if materialized then "materialized" else "dynamic" <> ", type class")
+makeDynRuleImpl FreeMonad materialized rule =
+  (FreeMonadRI (ruleInterpreter rule),
+  if materialized then "materialized" else "dynamic" <> ", free monad")
+
+processLoadRule
+  :: InterfacingSwitch -> AppState -> String -> IO AppAction
+processLoadRule iSwitch appState@(AppState rulesRef _) rulePath = do
+  ruleStr <- readFile rulePath
+  case readMaybe ruleStr of
+    Nothing -> continueWithMsg "Failed to parse the rule."
+    -- TODO: validation
+    Just (rule :: R.Rule) -> do
+      let (ri, ruleKind) = makeDynRuleImpl iSwitch False (R.toDynamicRule rule)
+      rules <- readIORef rulesRef
+      let idx = Map.size rules
+      let rules' = Map.insert idx (ri, ruleKind) rules
+      writeIORef rulesRef rules'
+
+      case iSwitch of
+        TypeClass -> continueWithMsg $ "Rule loaded: ["
+            <> show idx <> "] (dynamic, type class) "
+            <> getName ri
+        FreeMonad -> continueWithMsg $ "Rule loaded: ["
+            <> show idx <> "] (dynamic, free monad) "
+            <> getName ri
+
+processLoadPredefRules
+  :: AppState -> IO AppAction
+processLoadPredefRules appState@(AppState rulesRef _) = do
+  mapM_ f supportedRules
+  continueWithMsg "Predefined rules loaded."
+  where
+    f (_, (ri, ruleKind)) = do
+      rules <- readIORef rulesRef
+      let idx = Map.size rules
+      let rules' = Map.insert idx (ri, ruleKind) rules
+      writeIORef rulesRef rules'
+      putStrLn $ "Rule loaded: [" <> show idx <> "] ("
+        <> ruleKind <> ") "
+        <> getName ri
+
 processMaterialize
-  :: AppState
+  :: InterfacingSwitch
+  -> AppState
   -> IO AppAction
-processMaterialize (AppState rulesRef _) = do
+processMaterialize iSwitch (AppState rulesRef _) = do
   rules <- readIORef rulesRef
   mapM_ f $ Map.toList rules
   continue
   where
-    f (idx, (DynRI _)) = pure ()
-    f (idx, r@(RI proxy)) = do
+    f (idx, (TypeClassDynRI _, _)) = pure ()
+    f (idx, (FreeMonadRI _, _)) = pure ()
+    f (idx, r@(TypeClassRI proxy, _)) = do
       let rule = mat () proxy
+      let (ri, ruleKind) = makeDynRuleImpl iSwitch True rule
       rules' <- readIORef rulesRef
-      writeIORef rulesRef $ Map.insert idx (DynRI rule) rules'
+      writeIORef rulesRef $ Map.insert idx (ri, ruleKind) rules'
       putStrLn $ "Materialized: [" <> show idx
-        <> "] " <> getName r
+        <> "] " <> getName ri
 
 processRun :: AppState -> RuleIndex -> TapeIndex -> IO AppAction
 processRun (AppState rulesRef tapesRef) ruleIdx tapeIdx = do
@@ -155,7 +184,8 @@ processRun (AppState rulesRef tapesRef) ruleIdx tapeIdx = do
   case (Map.lookup ruleIdx rules, Map.lookup tapeIdx tapes) of
     (Nothing, _) -> continueWithMsg "Rule doesn't exist."
     (_, Nothing) -> continueWithMsg "Tape doesn't exist."
-    (Just (RI proxy), Just tape1) -> do
+    (Just (ri@(TypeClassRI proxy), ruleKind), Just tape1) -> do
+      putStrLn $ "Running: " <> getName ri <> " (" <> ruleKind <> ")"
       let eTape2 = run () proxy tape1
       case eTape2 of
         Left err -> continueWithMsg err
@@ -164,8 +194,19 @@ processRun (AppState rulesRef tapesRef) ruleIdx tapeIdx = do
           writeIORef tapesRef tapes'
           printTape' (tapeIdx, tape2)
           continue
-    (Just (DynRI rule), Just tape1) -> do
+    (Just (ri@(TypeClassDynRI rule), ruleKind), Just tape1) -> do
+      putStrLn $ "Running: " <> getName ri <> " (" <> ruleKind <> ")"
       let eTape2 = run rule (Proxy @DynamicRule) tape1
+      case eTape2 of
+        Left err -> continueWithMsg err
+        Right tape2 -> do
+          let tapes' = Map.insert tapeIdx tape2 tapes
+          writeIORef tapesRef tapes'
+          printTape' (tapeIdx, tape2)
+          continue
+    (Just (ri@(FreeMonadRI ruleInterpreter), ruleKind), Just tape1) -> do
+      putStrLn $ "Running: " <> getName ri <> " (" <> ruleKind <> ")"
+      let eTape2 = ruleInterpreter (runFM tape1)
       case eTape2 of
         Left err -> continueWithMsg err
         Right tape2 -> do

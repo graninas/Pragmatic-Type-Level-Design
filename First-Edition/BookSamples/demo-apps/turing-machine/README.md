@@ -4,6 +4,7 @@ The application is an implementation of the Turing Machine
 that has the following features:
 
 - Simple command-line interface
+- Type Class or Free Monad interfacing showcase selection
 - Loading predefined tapes
 - Loading tapes from files and command line
 - Loading predefined rules
@@ -15,6 +16,8 @@ that has the following features:
 
 - The application architecture in the presence of type-level subsystem
 - Separation of eDSLs, interfaces and implementation
+- Type class interfacing showcase
+- Free monad interfacing showcase
 - Type-level and value-level rule eDSLs
 - Granular TypeSelector design pattern used to empower
   the rule langauge to have two representations:
@@ -30,4 +33,10 @@ that has the following features:
 
 ### Build with stack and run:
 
+*Running with type class interfacing (default):*
+
 > stack exec turing-machine
+
+*Running with free monad interfacing:*
+
+> stack exec turing-machine "free-monad"

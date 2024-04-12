@@ -15,14 +15,6 @@ data AppState = AppState
   }
 
 
-addRule :: AppState -> RuleImpl -> IO RuleIndex
-addRule (AppState rulesRef _) rule = do
-  rules <- readIORef rulesRef
-  let idx = Map.size rules
-  let rules' = Map.insert idx rule rules
-  writeIORef rulesRef rules'
-  pure idx
-
 addTape :: AppState -> Tape -> IO TapeIndex
 addTape (AppState _ tapesRef) tape = do
   tapes <- readIORef tapesRef

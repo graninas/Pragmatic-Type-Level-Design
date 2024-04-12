@@ -10,8 +10,8 @@ module MachineSpec where
 import Prelude hiding ((<>))
 
 import Turing.Machine.Language
-import Turing.Machine.Interface
-import Turing.Machine.Implementation.Static
+import Turing.Machine.Interface.TypeClass
+import Turing.Machine.Implementation.TypeClass.Static
 import Turing.Assets.SimpleRule
 import Turing.Assets.BinaryIncrement
 

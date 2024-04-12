@@ -1,10 +1,12 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE UndecidableInstances #-}
 
+-- | Dynamic implementation of the Turing machine itself.
+-- Addresses dynamic value-level rules.
+
 module Turing.Machine.Implementation.Dynamic where
 
 import Turing.Machine.Language
-import Turing.Machine.Interface
 import Turing.Machine.Implementation.Common
 
 import Lib.TypeSelector
@@ -12,17 +14,11 @@ import GHC.TypeLits
 import Data.Proxy ( Proxy(..) )
 
 
-instance
-  IMachine (CustomRule 'ValueLevel) DynamicRule where
-  run rule _ = runDynamicRule rule
-  name (Rule n _ _) _ = n
-  name DynamicRuleTag _ = error "DynamicRuleTag placeholder doesn't have name."
-
 
 --------------- Implementation ---------------
 
 runDynamicRule
-  :: CustomRule 'ValueLevel
+  :: CustomRuleVL
   -> Tape
   -> Either String Tape
 runDynamicRule DynamicRuleTag _ = error "DynamicRuleTag placeholder can't be run."
@@ -31,7 +27,7 @@ runDynamicRule r@(Rule _ initStateIdx _) tape =
   runDynamicRule' r initStateIdx tape
 
 runDynamicRule'
-  :: CustomRule 'ValueLevel
+  :: CustomRuleVL
   -> Int
   -> Tape
   -> Either String Tape
@@ -48,7 +44,7 @@ runDynamicRule' r@(Rule _ stIdx states) curStateIdx tape1 = let
 -- States runner
 
 runDynamicStates
-  :: [CustomState 'ValueLevel]
+  :: [CustomStateVL]
   -> Int
   -> Tape
   -> Result
@@ -63,7 +59,7 @@ runDynamicStates (State _ _ conds : _) _ tape
 
 -- Conditions runner
 
-runDynamicConditions :: [CustomCondition 'ValueLevel] -> Tape -> Result
+runDynamicConditions :: [CustomConditionVL] -> Tape -> Result
 runDynamicConditions [] _ = FailedWith "No matching conditions found"
 runDynamicConditions (Match symb writeAct moveAct nextStateIdx : conds) tape1 = let
   curSymb = readTape tape1
@@ -95,7 +91,7 @@ runDynamicConditions (FailWith msg : _) _ = FailedWith msg
 -- Write action runner
 
 runDynamicWrite
-  :: CustomWriteAction 'ValueLevel
+  :: CustomWriteActionVL
   -> TapeSymbol
   -> Tape
   -> Tape
@@ -109,7 +105,7 @@ runDynamicWrite Skip _ tape = tape
 -- Move action runner
 
 runDynamicMove
-  :: CustomMoveHeadAction 'ValueLevel
+  :: CustomMoveHeadActionVL
   -> Tape
   -> Tape
 runDynamicMove L tape = moveHeadLeft tape 1

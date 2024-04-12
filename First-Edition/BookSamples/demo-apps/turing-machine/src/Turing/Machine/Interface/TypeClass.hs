@@ -1,6 +1,9 @@
 {-# LANGUAGE DataKinds #-}
 
-module Turing.Machine.Interface
+{- This module demonstrates type class as an interface-like
+abstraction. -}
+
+module Turing.Machine.Interface.TypeClass
   ( IMachine
   , run
   , name
@@ -12,7 +15,7 @@ import GHC.TypeLits
 import Data.Proxy (Proxy(..))
 
 
--- | Interface for Turing Machines.
+-- | Interface for Turing Machines based on a type class.
 
 class IMachine
   payload

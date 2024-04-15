@@ -4,7 +4,7 @@ Code and materials for my book [Pragmatic Type Level Design](https://leanpub.com
 
 <p float="left">
   <a href="https://leanpub.com/pragmatic-type-level-design">
-    <img src="https://github.com/graninas/pragmatic-type-level-design/blob/28e0776b8a26a3c344b678101431891a7ed542a4/First-Edition/PTLD cover.png" width="200"></a>
+    <img src="https://github.com/graninas/Pragmatic-Type-Level-Design/blob/39afc1d112fb8507dfdb412274b82c532ac4980c/PTLD%20cover.png" width="200"></a>
 </p>
 
 **Pragmatic Type-Level Design** is a deep book that explores practical concepts of type-level design in various statically typed FP languages, especially Haskell, F#, OCaml, Scala.

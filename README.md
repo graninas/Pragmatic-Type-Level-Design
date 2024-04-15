@@ -15,6 +15,13 @@ Haskell is a model language, but the book will contain the Rosetta Stone part th
 
 **Pragmatic Type-Level Design** best works in pair with **Functional Design and Architecture** ([First Edition, self-published](https://www.manning.com/books/functional-design-and-architecture), [Second Edition, Manning Publications](https://leanpub.com/functional-design-and-architecture)), another my fundamental book about software desigin in functional languages.
 
+<p float="left">
+  <a href="https://www.manning.com/books/functional-design-and-architecture">
+    <img src="https://github.com/graninas/functional-declarative-design-methodology/blob/5a994d49d2de738105601f6dc3572df4b5a197d2/images/FDaA_cover.png" width="200"></a>
+  <a href="https://leanpub.com/functional-design-and-architecture">
+    <img src="https://github.com/graninas/functional-declarative-design-methodology/blob/9942840a5cb11c8844afa452a579031548d16225/images/FDaA_FE_cover.png" width="200"></a>
+</p>
+
 Both FDaA and PTLD provide a consistent, pragmatic and structured set of knowledge never seen before in the functional world.
 
 Buy both and learn a lot of great ideas presented in academism-free mature style. You'll likely won't see anything better than my books anywhere else in the field.

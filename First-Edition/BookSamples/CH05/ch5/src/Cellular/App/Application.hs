@@ -3,7 +3,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 
-module Cellular.App.App
+module Cellular.App.Application
   ( processListRuleCodes
   , processListWorlds
   , processLoad

@@ -17,7 +17,7 @@ library
       Lib.TypeSelector
       Main
       Turing.App.Action
-      Turing.App.App
+      Turing.App.Application
       Turing.App.Commands
       Turing.App.InterfacingSwitch
       Turing.App.Package.Rule
@@ -76,7 +76,7 @@ executable turing-machine
   other-modules:
       Lib.TypeSelector
       Turing.App.Action
-      Turing.App.App
+      Turing.App.Application
       Turing.App.Commands
       Turing.App.InterfacingSwitch
       Turing.App.Package.Rule

@@ -36,6 +36,7 @@ that has the following features:
 *Running with type class interfacing (default):*
 
 > stack exec turing-machine
+> stack exec turing-machine "type-class"
 
 *Running with free monad interfacing:*
 

@@ -1,5 +1,5 @@
 {-# LANGUAGE DataKinds #-}
-module Turing.App.App where
+module Turing.App.Application where
 
 import Turing.App.Storage
 import qualified Turing.App.Commands as Cmds

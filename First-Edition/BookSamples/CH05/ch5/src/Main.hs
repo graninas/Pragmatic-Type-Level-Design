@@ -5,7 +5,7 @@
 
 module Main where
 
-import qualified Cellular.App.App as EApp
+import qualified Cellular.App.Application as EApp
 import Cellular.App.State (AppState(..), addRule, createAppState)
 import Cellular.App.Action (AppAction (..), continue, finish, continueWithMsg)
 import Cellular.Assets.Automata.GameOfLife

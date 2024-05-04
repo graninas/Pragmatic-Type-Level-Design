@@ -1,6 +1,6 @@
 module Main where
 
-import Turing.App.App
+import Turing.App.Application
 import Turing.App.State
 import Turing.App.Action
 import Turing.App.Commands

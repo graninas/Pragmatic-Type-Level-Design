@@ -15,7 +15,7 @@ build-type:     Simple
 library
   exposed-modules:
       Cellular.App.Action
-      Cellular.App.App
+      Cellular.App.Application
       Cellular.App.Package.Rule
       Cellular.App.State
       Cellular.App.Storage.Rules
@@ -77,7 +77,7 @@ executable ch5
   main-is: Main.hs
   other-modules:
       Cellular.App.Action
-      Cellular.App.App
+      Cellular.App.Application
       Cellular.App.Package.Rule
       Cellular.App.State
       Cellular.App.Storage.Rules

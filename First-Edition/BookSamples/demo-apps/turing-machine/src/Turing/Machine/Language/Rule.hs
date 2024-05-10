@@ -12,6 +12,8 @@ import GHC.TypeLits
 -- Turing Machine rules language.
 
 -- | Rule for the Turing Machine.
+-- Supports both dynamic and static models
+-- with Granular Type Selector pattern.
 data CustomRule (lvl :: Level)
   = Rule
     { crRuleName :: StringType lvl
@@ -20,9 +22,12 @@ data CustomRule (lvl :: Level)
     }
   | DynamicRuleTag
 
+-- | Tag for dynamic rule machinery.
 type DynamicRule = 'DynamicRuleTag @'ValueLevel
 
 -- | State and state transition.
+-- Supports both dynamic and static models
+-- with Granular Type Selector pattern.
 data CustomState (lvl :: Level)
   = State
     { csStateIdx :: IntType lvl
@@ -35,6 +40,8 @@ data CustomState (lvl :: Level)
     }
 
 -- | Matching tape symbols type for conditional state transition.
+-- Supports both dynamic and static models
+-- with Granular Type Selector pattern.
 data CustomCondition (lvl :: Level)
   -- | Matches specific symbol.
   = Match
@@ -64,6 +71,8 @@ data CustomCondition (lvl :: Level)
     }
 
 -- | Tape writing action.
+-- Supports both dynamic and static models
+-- with Granular Type Selector pattern.
 data CustomWriteAction (lvl :: Level)
   = Write
     { cwaSymbol :: CharType lvl
@@ -73,6 +82,8 @@ data CustomWriteAction (lvl :: Level)
   | Skip           -- Same as WriteMatched
 
 -- | Tape head moving action.
+-- Supports both dynamic and static models
+-- with Granular Type Selector pattern.
 data CustomMoveHeadAction (lvl :: Level)
   = Ln
     { smaSteps :: IntType lvl

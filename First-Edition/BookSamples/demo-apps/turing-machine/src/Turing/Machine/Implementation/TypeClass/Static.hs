@@ -1,7 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE UndecidableInstances #-}
 
--- | Dynamic implementation of the IMachine type class interface.
+-- | Static implementation of the IMachine type class interface.
 -- Addresses static type-level hardcoded rules.
 
 module Turing.Machine.Implementation.TypeClass.Static where
@@ -25,13 +25,13 @@ instance
   name () _ = symbolVal $ Proxy @name
 
 
-class RuleRunner (rule :: CustomRule 'TypeLevel) where
+class RuleRunner (rule :: CustomRuleTL) where
   runRule
     :: Proxy rule
     -> Tape
     -> Either String Tape
 
-class RuleRunnerImpl (rule :: CustomRule 'TypeLevel) where
+class RuleRunnerImpl (rule :: CustomRuleTL) where
   runRule'
     :: Proxy rule
     -> CurrentStateIdx
@@ -57,7 +57,7 @@ class RuleRunnerImpl (rule :: CustomRule 'TypeLevel) where
 -- These instances overlap.
 -- Moving the matching of the states to the value level solves this.
 
-class StatesRunner (states :: [CustomState 'TypeLevel]) where
+class StatesRunner (states :: [CustomStateTL]) where
   runStates
     :: Proxy states
     -> CurrentStateIdx
@@ -67,7 +67,7 @@ class StatesRunner (states :: [CustomState 'TypeLevel]) where
 
 -- | Transition conditions runner.
 
-class ConditionsRunner (conds :: [CustomCondition 'TypeLevel]) where
+class ConditionsRunner (conds :: [CustomConditionTL]) where
   runConditions
     :: Proxy conds
     -> Tape
@@ -76,7 +76,7 @@ class ConditionsRunner (conds :: [CustomCondition 'TypeLevel]) where
 
 -- | Writing to tape action runner.
 
-class WriteActionRunner (writeAct :: CustomWriteAction 'TypeLevel) where
+class WriteActionRunner (writeAct :: CustomWriteActionTL) where
   runWrite
     :: Proxy writeAct
     -> TapeSymbol
@@ -86,7 +86,7 @@ class WriteActionRunner (writeAct :: CustomWriteAction 'TypeLevel) where
 
 -- | Moving the tape head runner.
 
-class MoveActionRunner (moveAct :: CustomMoveHeadAction 'TypeLevel) where
+class MoveActionRunner (moveAct :: CustomMoveHeadActionTL) where
   runMove
     :: Proxy moveAct
     -> Tape

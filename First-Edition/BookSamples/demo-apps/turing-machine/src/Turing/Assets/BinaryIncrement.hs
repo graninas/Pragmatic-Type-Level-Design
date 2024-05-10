@@ -7,7 +7,7 @@ import Turing.Machine.Language
 import Lib.TypeSelector
 
 {-
-Binary Increment
+Binary Increment rule (static type-level)
 
 Turing machine designed to increment a binary number by one.
 
@@ -84,4 +84,36 @@ type BinaryIncrement = 'Rule @TypeLevel "Binary Increment" 1
        , 'MatchBlank 'Skip 'R 6
        ]
    , 'FinishState 6 "Success"
+   ]
+
+
+-- | Binary Increment rule (dynamic value-level)
+
+binaryIncrement :: CustomRule 'ValueLevel
+binaryIncrement = Rule "Binary Increment" 1
+  [ State 1 "Start"
+      [ Match '0' Skip R 2
+      , Match '1' Skip R 2
+      , FailWith "Rule should start from a digit."
+      ]
+   , State 2 "Find the Rightmost Digit"
+      [ Match '0' Skip R 2
+      , Match '1' Skip R 2
+      , MatchBlank Skip L 3
+      ]
+   , State 3 "Handle Increment"
+      [ Match '1' (Write '0') L 4
+      , Match '0' (Write '1') L 5
+      ]
+   , State 4 "Carry the One"
+      [ Match '1' (Write '0') L 4
+      , Match '0' (Write '1') L 5
+      , MatchBlank (Write '1') Stay 6
+      ]
+   , State 5 "Find the Leftmost Digit"
+      [  Match '0' (Write '0') L 5
+      , Match '1' (Write '1') L 5
+      , MatchBlank Skip R 6
+      ]
+   , FinishState 6 "Success"
    ]

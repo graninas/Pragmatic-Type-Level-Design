@@ -9,7 +9,8 @@ import Turing.Machine.Interface.FreeMonad
 import Turing.Machine.Language
 import Turing.Machine.Implementation.TypeClass.Static
 import Turing.Machine.Implementation.TypeClass.Dynamic
-import Turing.Machine.Implementation.FreeMonad
+import Turing.Machine.Implementation.FreeMonad.Static
+import Turing.Machine.Implementation.FreeMonad.Dynamic
 
 import Lib.TypeSelector
 import qualified Data.Map as Map

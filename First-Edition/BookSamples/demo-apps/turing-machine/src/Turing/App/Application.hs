@@ -11,7 +11,8 @@ import Turing.Machine.Interface.TypeClass
 import Turing.Machine.Interface.FreeMonad
 import Turing.Machine.Language
 import Turing.Machine.Language.Materialization
-import Turing.Machine.Implementation.FreeMonad
+import Turing.Machine.Implementation.FreeMonad.Static
+import Turing.Machine.Implementation.FreeMonad.Dynamic
 import Turing.Assets.Rules
 import Turing.Assets.Tapes
 
@@ -111,15 +112,13 @@ processListRules (AppState rulesRef _) = do
 
 makeDynRuleImpl
   :: InterfacingSwitch
-  -> Bool
+  -> String
   -> CustomRuleVL
   -> (RuleImpl, String)
-makeDynRuleImpl TypeClass materialized rule =
-  (TypeClassDynRI rule,
-  if materialized then "materialized" else "dynamic" <> ", type class")
-makeDynRuleImpl FreeMonad materialized rule =
-  (FreeMonadRI (ruleInterpreter rule),
-  if materialized then "materialized" else "dynamic" <> ", free monad")
+makeDynRuleImpl TypeClass kind rule =
+  (TypeClassDynRI rule, kind <> ", type class")
+makeDynRuleImpl FreeMonad kind rule =
+  (FreeMonadRI (dynamicRuleInterpreter rule), kind <> ", free monad")
 
 processLoadRule
   :: InterfacingSwitch -> AppState -> String -> IO AppAction
@@ -129,18 +128,13 @@ processLoadRule iSwitch appState@(AppState rulesRef _) rulePath = do
     Nothing -> continueWithMsg "Failed to parse the rule."
     -- TODO: validation
     Just (rule :: R.Rule) -> do
-      let (ri, ruleKind) = makeDynRuleImpl iSwitch False (R.toDynamicRule rule)
+      let (ri, ruleKind) = makeDynRuleImpl iSwitch "from file/dynamic" (R.toDynamicRule rule)
       rules <- readIORef rulesRef
       let idx = Map.size rules
       let rules' = Map.insert idx (ri, ruleKind) rules
       writeIORef rulesRef rules'
-
-      case iSwitch of
-        TypeClass -> continueWithMsg $ "Rule loaded: ["
-            <> show idx <> "] (dynamic, type class) "
-            <> getName ri
-        FreeMonad -> continueWithMsg $ "Rule loaded: ["
-            <> show idx <> "] (dynamic, free monad) "
+      continueWithMsg $ "Rule loaded: ["
+            <> show idx <> "] " <> ruleKind <> " "
             <> getName ri
 
 processLoadPredefRules
@@ -171,7 +165,7 @@ processMaterialize iSwitch (AppState rulesRef _) = do
     f (idx, (FreeMonadRI _, _)) = pure ()
     f (idx, r@(TypeClassRI proxy, _)) = do
       let rule = mat () proxy
-      let (ri, ruleKind) = makeDynRuleImpl iSwitch True rule
+      let (ri, ruleKind) = makeDynRuleImpl iSwitch "materialized/dynamic" rule
       rules' <- readIORef rulesRef
       writeIORef rulesRef $ Map.insert idx (ri, ruleKind) rules'
       putStrLn $ "Materialized: [" <> show idx

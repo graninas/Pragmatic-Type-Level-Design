@@ -30,7 +30,9 @@ library
       Turing.Assets.Tapes
       Turing.Machine.Implementation.Common
       Turing.Machine.Implementation.Dynamic
-      Turing.Machine.Implementation.FreeMonad
+      Turing.Machine.Implementation.FreeMonad.Dynamic
+      Turing.Machine.Implementation.FreeMonad.Static
+      Turing.Machine.Implementation.Static
       Turing.Machine.Implementation.TypeClass.Dynamic
       Turing.Machine.Implementation.TypeClass.Static
       Turing.Machine.Interface.FreeMonad
@@ -89,7 +91,9 @@ executable turing-machine
       Turing.Assets.Tapes
       Turing.Machine.Implementation.Common
       Turing.Machine.Implementation.Dynamic
-      Turing.Machine.Implementation.FreeMonad
+      Turing.Machine.Implementation.FreeMonad.Dynamic
+      Turing.Machine.Implementation.FreeMonad.Static
+      Turing.Machine.Implementation.Static
       Turing.Machine.Implementation.TypeClass.Dynamic
       Turing.Machine.Implementation.TypeClass.Static
       Turing.Machine.Interface.FreeMonad

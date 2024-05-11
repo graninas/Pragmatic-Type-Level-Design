@@ -5,8 +5,8 @@ module Turing.Assets.Rules where
 import Turing.Machine.Language
 import Turing.Machine.Language.Materialization
 import Turing.App.Storage
-import Turing.Machine.Implementation.Dynamic
-import Turing.Machine.Implementation.FreeMonad
+import Turing.Machine.Implementation.FreeMonad.Dynamic
+import Turing.Machine.Implementation.FreeMonad.Static
 import Turing.Assets.BinaryIncrement
 import Turing.Assets.SimpleRule
 
@@ -17,15 +17,15 @@ import Data.Proxy (Proxy(..))
 supportedRules :: [(RuleIndex, (RuleImpl, String))]
 supportedRules =
   [ (0, (TypeClassRI (Proxy @BinaryIncrement), "static, type class"))
-  , (1, (TypeClassRI (Proxy @SimpleRule), "static, type class"))
-  , (2,
-      (FreeMonadRI $ ruleInterpreter $ mat () $ Proxy @BinaryIncrement
-      , "materialized, free monad"
+  , (1, (TypeClassDynRI (mat () $ Proxy @BinaryIncrement), "materialized/dynamic, type class"))
+  , (3,
+      (FreeMonadRI $ staticRuleInterpreter (Proxy @BinaryIncrement)
+      , "static, free monad"
       )
     )
-  , (3,
-      (FreeMonadRI $ ruleInterpreter $ mat () $ Proxy @SimpleRule
-      , "materialized, free monad"
+  , (4,
+      (FreeMonadRI $ dynamicRuleInterpreter $ mat () $ Proxy @BinaryIncrement
+      , "materialized/dynamic, free monad"
       )
     )
   ]

@@ -5,4 +5,5 @@ module Turing.App.InterfacingSwitch where
 data InterfacingSwitch
   = TypeClass
   | FreeMonad
+  deriving (Show, Eq, Read, Ord)
 

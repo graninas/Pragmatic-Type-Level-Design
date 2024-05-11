@@ -29,6 +29,6 @@ printCommandsHelp = do
   putStrLn "Rules               - list available rules"
   putStrLn "LoadRule path       - load a rule"
   putStrLn "LoadPredefRules     - load hardcoded rules"
-  putStrLn "Materialize         - Materialize static rules to dynamic ones\n  (for demo purposes)"
+  putStrLn "Materialize         - Materialize static rules to dynamic ones\n  Uses the current interfacing mechanism"
   putStrLn "Run ruleIdx tapeIdx - run a rule on a tape"
   putStrLn "Print tapeIdx       - print a tape"

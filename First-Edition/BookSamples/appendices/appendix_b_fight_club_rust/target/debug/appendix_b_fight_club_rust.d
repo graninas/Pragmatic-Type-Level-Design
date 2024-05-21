@@ -1,0 +1,1 @@
+/home/alexander/workspace/Pragmatic-Type-Level-Design/First-Edition/BookSamples/appendices/appendix_b_fight_club_rust/target/debug/appendix_b_fight_club_rust: /home/alexander/workspace/Pragmatic-Type-Level-Design/First-Edition/BookSamples/appendices/appendix_b_fight_club_rust/src/main.rs

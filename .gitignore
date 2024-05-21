@@ -1,3 +1,6 @@
+.vscode/
+
+# Haskell
 dist
 dist-*
 cabal-dev
@@ -25,3 +28,27 @@ cabal.project.local~
 **/src/Main
 AppendixB_FightClub_CPP_exist_program
 AppendixB_FightClub_CPP_OOP_program
+
+
+# Rust
+
+/target/
+
+# Ignoring files related to editor configurations and temporary files
+**/*.rs.bk
+**/*.swp
+**/*.swo
+*.bak
+*.tmp
+*.swp
+*.swo
+*.bak
+*.tmp
+
+*.dSYM/
+*.profdata
+*.gcda
+*.gcno
+
+*.log
+*.out

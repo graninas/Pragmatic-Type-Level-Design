@@ -23,3 +23,5 @@ cabal.project.local~
 .ghc.environment.*
 .bin/
 **/src/Main
+AppendixB_FightClub_CPP_exist_program
+AppendixB_FightClub_CPP_OOP_program

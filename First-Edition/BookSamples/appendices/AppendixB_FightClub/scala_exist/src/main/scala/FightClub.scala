@@ -1,4 +1,3 @@
-trait FightClubRule {
-  def explain: String
+trait FightClubRule[R] {
+  def explain(rule: R): String
 }
-

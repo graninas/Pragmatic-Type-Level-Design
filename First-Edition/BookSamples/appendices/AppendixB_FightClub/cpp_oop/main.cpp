@@ -71,5 +71,16 @@ int main()
     std::cout << rule.explain() << std::endl;
   }
 
+  std::vector<std::shared_ptr<FightClubRule>> rules_direct = {
+    std::make_shared<FirstRule>(),
+    std::make_shared<SecondRule>(),
+    std::make_shared<ThirdRule>()
+  };
+
+  for (const auto &rule : rules_direct)
+  {
+    std::cout << rule->explain() << std::endl;
+  }
+
   return 0;
 }

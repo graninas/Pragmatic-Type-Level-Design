@@ -40,6 +40,8 @@ rules = [ Secrecy (Proxy @FirstRule)
         , Secrecy (Proxy @ThirdRule)
         ]
 
+explainRule :: Secrecy -> IO ()
+explainRule (Secrecy proxy) = print (explain proxy)
 
 main :: IO ()
-main = mapM_ (\(Secrecy proxy) -> putStrLn $ explain proxy) rules
+main = mapM_ explainRule rules

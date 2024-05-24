@@ -26,13 +26,17 @@ cabal.project.local~
 .ghc.environment.*
 .bin/
 **/src/Main
+
+
+# C++
+
 AppendixB_FightClub_CPP_exist_program
 AppendixB_FightClub_CPP_OOP_program
 
 
 # Rust
 
-/target/
+rust*/target/
 
 # Ignoring files related to editor configurations and temporary files
 **/*.rs.bk
@@ -52,3 +56,36 @@ AppendixB_FightClub_CPP_OOP_program
 
 *.log
 *.out
+
+# Scala
+
+# sbt-specific files
+scala*/target/
+scala*/project/target/
+scala*/project/project/
+
+# Scala specific files
+scala*/*.class
+scala*/*.log
+scala*/*.lock
+
+# sbt specific files
+scala*/lib_managed/
+scala*/src_managed/
+scala*/.stsworkspace
+scala*/.ensime
+scala*/.ensime_cache
+scala*/.idea_modules/
+scala*/.history
+scala*/.cache/
+scala*/lib_managed/
+scala*/src_managed/
+scala*/dist/
+scala*/tmp/
+
+# Logs
+scala*/logs/
+scala*/*.log
+
+# Temporary files
+scala*/tmp/

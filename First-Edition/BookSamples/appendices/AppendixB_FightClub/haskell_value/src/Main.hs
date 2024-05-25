@@ -4,9 +4,9 @@ module Main where
 
 import Data.Proxy ( Proxy(..) )
 
--- Existential Fight Club in Haskell
+-- Valuefied Fight Club in Haskell
 
--- Demonstration of the existential wrapping approach.
+-- Demonstration of the valuefied wrapping approach.
 
 
 -- Type class interface
@@ -29,19 +29,23 @@ instance FightClubRule ThirdRule where
   explain _ = "If someone says stop, goes limp, or taps out, the fight is over."
 
 
--- Existential wrapper
+-- Valuefied wrapper
 data Secrecy where
-  Secrecy :: FightClubRule rule => Proxy rule -> Secrecy
+  Secrecy :: (() -> String) -> Secrecy
 
--- Forming a list of opaque existential values
+-- Forming a list of opaque valuefied rules
+makeValuefied :: FightClubRule rule => Proxy rule -> Secrecy
+makeValuefied proxy = Secrecy (\_ -> explain proxy)
+
 rules :: [Secrecy]
-rules = [ Secrecy (Proxy @FirstRule)
-        , Secrecy (Proxy @SecondRule)
-        , Secrecy (Proxy @ThirdRule)
+rules = [ makeValuefied (Proxy @FirstRule)
+        , makeValuefied (Proxy @SecondRule)
+        , makeValuefied (Proxy @ThirdRule)
         ]
 
+-- Accessing the rule's description
 explainRule :: Secrecy -> IO ()
-explainRule (Secrecy proxy) = print (explain proxy)
+explainRule (Secrecy f) = print (f ())
 
 main :: IO ()
 main = mapM_ explainRule rules

@@ -1,0 +1,6 @@
+[package]
+name = "appendix_b_fight_club_rust_value"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]

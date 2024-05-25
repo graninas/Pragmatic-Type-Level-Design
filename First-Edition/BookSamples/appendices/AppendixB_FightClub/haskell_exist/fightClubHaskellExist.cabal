@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           fightClubHaskell
+name:           fightClubHaskellExist
 version:        1.0.0.0
 author:         Alexander Granin
 maintainer:     graninas@gmail.com
@@ -16,7 +16,7 @@ library
   exposed-modules:
       Main
   other-modules:
-      Paths_fightClubHaskell
+      Paths_fightClubHaskellExist
   hs-source-dirs:
       src
   default-extensions:
@@ -51,10 +51,10 @@ library
     , void
   default-language: Haskell2010
 
-executable fightClubHaskell
+executable fightClubHaskellExist
   main-is: Main.hs
   other-modules:
-      Paths_fightClubHaskell
+      Paths_fightClubHaskellExist
   hs-source-dirs:
       ./src
   default-extensions:

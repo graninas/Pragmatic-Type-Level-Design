@@ -1,31 +1,31 @@
 
-object FirstRule {
-  case object Rule
-  implicit val firstRuleInstance: FightClubRule[Rule.type] = new FightClubRule[Rule.type] {
-    def explain(rule: Rule.type): String = "You do not talk about Fight Club."
-  }
-}
+object Rules {
+  case object FirstRule
+  case object SecondRule
+  case object ThirdRule
 
-object SecondRule {
-  case object Rule
-  implicit val secondRuleInstance: FightClubRule[Rule.type] = new FightClubRule[Rule.type] {
-    def explain(rule: Rule.type): String = "You DO NOT talk about Fight Club."
-  }
-}
+  implicit val firstRuleInstance:
+    FightClubRule[FirstRule.type] = new FightClubRule[FirstRule.type] {
 
-object ThirdRule {
-  case object Rule
-  implicit val thirdRuleInstance: FightClubRule[Rule.type] = new FightClubRule[Rule.type] {
-    def explain(rule: Rule.type): String = "If someone says stop, goes limp, or taps out, the fight is over."
+    def explain(rule: FirstRule.type): String =
+      "You do not talk about Fight Club."
+  }
+
+  implicit val secondRuleInstance: FightClubRule[SecondRule.type] = new FightClubRule[SecondRule.type] {
+    def explain(rule: SecondRule.type): String = "You DO NOT talk about Fight Club."
+  }
+
+  implicit val thirdRuleInstance: FightClubRule[ThirdRule.type] = new FightClubRule[ThirdRule.type] {
+    def explain(rule: ThirdRule.type): String = "If someone says stop, goes limp, or taps out, the fight is over."
   }
 }
 
 object Main extends App {
 
   val rules: List[Secrecy[_]] = List(
-    Secrecy(FirstRule.Rule),
-    Secrecy(SecondRule.Rule),
-    Secrecy(ThirdRule.Rule)
+    new Secrecy(Rules.FirstRule),
+    new Secrecy(Rules.SecondRule),
+    new Secrecy(Rules.ThirdRule)
   )
 
   rules.foreach { secrecy =>

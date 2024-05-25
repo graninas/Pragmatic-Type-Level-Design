@@ -29,7 +29,8 @@ packages:
 - BookSamples/demo-apps/ptld-auction
 - BookSamples/demo-apps/turing-machine
 
-- BookSamples/appendices/AppendixB_FightClub/haskell
+- BookSamples/appendices/AppendixB_FightClub/haskell_exist
+- BookSamples/appendices/AppendixB_FightClub/haskell_value
 - BookSamples/appendices/AppendixC_MythologizedCorrectness
 
 allow-newer: true

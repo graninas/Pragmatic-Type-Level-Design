@@ -1,114 +1,66 @@
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
+
 module Main where
 
-import Data.Proxy ( Proxy(..) )
+import CPrelude
 
+import TypeLevel.ZeplrogOOP.Static.Model
 
--- Implement Rust's OOP, not Java's
+import GHC.TypeLits
+import TypeSelector.Granular
 
--- Can't be an ADT because of the ListTypeTag.
--- It's not clear how to uniformly provide arbitrary types
--- without a type variable.
--- data TypeTag
---   = StringTypeTag
---   | SpecialTypeTag Symbol
---   | ByteArrayTypeTag
---   | DateTypeTag
---   | ListTypeTag  ?????
+type EColor         = Ess @TypeLevel "color"
+type EColorWhite    = Ess @TypeLevel "color:white"
+type EColorRed      = Ess @TypeLevel "color:red"
+type EColorGreen    = Ess @TypeLevel "color:green"
+type EColorBlue     = Ess @TypeLevel "color:blue"
+type EColorRef      = Ess @TypeLevel "ref:color"
 
+type EAvailableColors = Ess @TypeLevel "available colors"
+type EAbstractLamp    = Ess @TypeLevel "lamp:abstract"
+type EIsOn            = Ess @TypeLevel "is on"
 
+type EDaylightLamp    = Ess @TypeLevel "lamp:daylight"
+type ETableLamp       = Ess @TypeLevel "lamp:table"
 
-data StringTypeTag
-data IntefaceTypeTag iface
-data ByteArrayTypeTag
-data DateTypeTag
-data ListTypeTag objType
+type Color = StaticProp (Group EColor)
 
+type ColorWhite = StaticProp (GroupRoot EColorWhite Color)
+type ColorRed   = StaticProp (GroupRoot EColorRed Color)
+type ColorGreen = StaticProp (GroupRoot EColorGreen Color)
+type ColorBlue  = StaticProp (GroupRoot EColorBlue Color)
 
+type ColorPath = '[ EAvailableColors, EColorWhite ]
 
-data PropertyType lvl
-  = Property
-    { ptName :: StringType lvl
-    , ptType :: TypeTag
-    }
+type AbstractLamp = AbstractProp (Group EAbstractLamp)
+  '[ PropKeyVal EIsOn (OwnVal (BoolValue False))
 
+   , PropKeyBag EAvailableColors
+      '[ OwnProp ColorWhite                   -- let's test
+                                              -- two ways of specifying static props
+       , OwnProp (StaticPropRef ColorRed)
+       , OwnProp (StaticPropRef ColorGreen)
+       , OwnProp (StaticPropRef ColorBlue)
+       ]
 
-data StructType lvl
-  = Struct
-    { stProperties :: [PropertyType lvl]
-    }
+   -- | Current color. Points to a possible color.
+   , PropKeyVal EColor (OwnVal (PathValue ColorPath))
+   ]
 
+type DaylightLamp = DerivedProp EDaylightLamp AbstractLamp
+  '[
+  ]
 
-type IMime = Inteface
-  '[ Method "Prepare" '[ Argument EMailData ]
+type TableLamp = DerivedProp ETableLamp AbstractLamp
+  '[
   ]
 
 
-
-data AttachmentTag
-
-type AttachmentData = Struct AttachmentTag
-  '[ Property "name" StringTypeTag
-  --  , Property "mime" (SpecialTypeTag "mime")
-  --  , Property "mime"  (IntefaceTypeTag IMime)
-   , Property "blob" ByteArrayTypeTag
-   ]
-
-type AttachmentImpl = Impl AttachmentTag
-  '[
-
-   ]
-
-type EMailData = Struct
-  '[ Property "source" StringTypeTag
-   , Property "date" DateTypeTag
-   , Property "subject" StringTypeTag
-   , Property "text" StringTypeTag
-   , Property "attachments" (ListTypeTag AttachmentData)
-   ]
-
-
-type IEmail = Inteface
-  '[ Method "Prepare" '[ Argument EMailData ]
-   , Method "AddAttachment"
-      '[ Argument AttachmentData
-       ]
-   , Method "Send" '[]
-   ]
-
-
-
-
--- -- | Abstract door. Should not be directely materialized.
--- type AbstractDoor = AbstractProp (Group EAbstractDoor)
---   '[ PropKeyVal EIcon (OwnProp (IconVal "+"))   -- TODO: open and close door with own icons
---    , PropKeyVal EHP   (OwnProp (HPVal 50))
---    , PropKeyVal EPos  (OwnProp DerivedPosVal)
-
---     -- | Possible states
---    , PropKeyBag EStates
---       '[ OwnProp (StaticPropRef StateOpen)
---        , OwnProp (StaticPropRef StateClose)
---        ]
-
---     -- | Current state. Points to a close/open state
---    , PropKeyVal EState (OwnProp StatePropRefVal)
-
---     -- | Abilities to react to effects
---    , PropKeyBag EAbilities
---       '[ SharedProp (PropScript (Group EPushable)
---                     PushableScript)
---        ]
---    ]
-
-
--- -- | Specific door with a specific icon.
--- type SpecificDoor = DerivedProp ESpecificDoor AbstractDoor
---   '[ PropKeyVal EIcon (OwnProp (IconVal "?"))   -- TODO: open and close door with own icons
---    , PropKeyVal EHP   (OwnProp (HPVal 100))
---    , PropKeyVal EPos  (OwnProp (PosVal 2 3))
---    ]
 
 main :: IO ()
 main = pure ()

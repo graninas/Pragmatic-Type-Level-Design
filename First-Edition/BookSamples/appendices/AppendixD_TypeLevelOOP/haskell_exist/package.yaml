@@ -35,6 +35,7 @@ dependencies:
 - void
 - random
 - lens
+- ptld-lib
 
 library:
   source-dirs:

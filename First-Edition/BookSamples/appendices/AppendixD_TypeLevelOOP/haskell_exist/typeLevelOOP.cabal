@@ -3,115 +3,98 @@ cabal-version: 1.12
 -- This file has been generated from package.yaml by hpack version 0.35.0.
 --
 -- see: https://github.com/sol/hpack
---
--- hash: e4a50618b0818c0f141c6db8ddf57a3d8dd962de0a3635082d352a1df25975a5
 
-name:           ptld-lib
-version:        0.0.0.1
+name:           typeLevelOOP
+version:        1.0.0.0
 author:         Alexander Granin
 maintainer:     graninas@gmail.com
-copyright:      Granin A.S. 2024
+copyright:      Granin A.S. 2023
 license:        BSD3
 build-type:     Simple
 
 library
   exposed-modules:
-      CPrelude
-      Data.Vector.Indexed
-      GUI.Components
-      TypeLevelDSL.Context
-      TypeLevelDSL.Dyn
-      TypeLevelDSL.Eval
-      TypeLevelDSL.Implementation
-      TypeLevelDSL.Implementation.Action
-      TypeLevelDSL.Implementation.DataActions
-      TypeLevelDSL.Language
-      TypeLevelDSL.Language.Action
-      TypeLevelDSL.Language.DataActions
-      TypeLevelDSL.StateContext
-      TypeLevelDSL.Testing.Environment
-      TypeSelector.Granular
+      Main
+      TypeLevel.ZeplrogOOP.Static.Model
+      TypeLevel.ZeplrogOOP.Static.Model.Common
+      TypeLevel.ZeplrogOOP.Static.Model.Property
+      TypeLevel.ZeplrogOOP.Static.Model.Script
   other-modules:
-      Paths_ptld_lib
+      Paths_typeLevelOOP
   hs-source-dirs:
       src
   default-extensions:
       DeriveFunctor
       DeriveGeneric
       OverloadedStrings
-      LambdaCase
-      MultiParamTypeClasses
       ScopedTypeVariables
+      LambdaCase
       ExplicitNamespaces
       NamedFieldPuns
       TupleSections
       ViewPatterns
       MultiWayIf
       RecordWildCards
+      InstanceSigs
   ghc-options: -Wall
   build-depends:
-      aeson
-    , base >=4.7 && <5
+      base >=4.7 && <5
     , bytestring
     , containers
     , free
-    , hspec
-    , lens
-    , mtl
-    , newtype-generics
-    , random
-    , scientific
-    , stm
-    , template-haskell
-    , text
-    , time
-    , transformers
-    , universum
-    , uuid
-    , void
-  default-language: Haskell2010
-
-test-suite ptld-lib-tests
-  type: exitcode-stdio-1.0
-  main-is: Spec.hs
-  other-modules:
-      TypeLevelDSL.TLSpec
-      Paths_ptld_lib
-  hs-source-dirs:
-      test/
-  default-extensions:
-      DeriveFunctor
-      DeriveGeneric
-      OverloadedStrings
-      LambdaCase
-      MultiParamTypeClasses
-      ScopedTypeVariables
-      ExplicitNamespaces
-      NamedFieldPuns
-      TupleSections
-      ViewPatterns
-      MultiWayIf
-      RecordWildCards
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      aeson
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , free
-    , hspec
     , lens
     , mtl
     , newtype-generics
     , ptld-lib
     , random
     , scientific
-    , stm
     , template-haskell
     , text
     , time
     , transformers
-    , universum
+    , uuid
+    , void
+  default-language: Haskell2010
+
+executable typeLevelOOP
+  main-is: Main.hs
+  other-modules:
+      TypeLevel.ZeplrogOOP.Static.Model
+      TypeLevel.ZeplrogOOP.Static.Model.Common
+      TypeLevel.ZeplrogOOP.Static.Model.Property
+      TypeLevel.ZeplrogOOP.Static.Model.Script
+      Paths_typeLevelOOP
+  hs-source-dirs:
+      ./src
+  default-extensions:
+      DeriveFunctor
+      DeriveGeneric
+      OverloadedStrings
+      ScopedTypeVariables
+      LambdaCase
+      ExplicitNamespaces
+      NamedFieldPuns
+      TupleSections
+      ViewPatterns
+      MultiWayIf
+      RecordWildCards
+      InstanceSigs
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , containers
+    , free
+    , lens
+    , mtl
+    , newtype-generics
+    , ptld-lib
+    , random
+    , scientific
+    , template-haskell
+    , text
+    , time
+    , transformers
     , uuid
     , void
   default-language: Haskell2010

@@ -27,6 +27,12 @@ import qualified Data.Map.Strict as Map
 
 ---------- Static property materialization --------------
 
+-- Turns a static type-level model into a static value-level model.
+-- The resulting model represents a concrete domain with all the entities
+-- fully described, all derivings made, and all static properties
+-- ready to be used as templates for actual dynamic objects of a game.
+-- Static materialization resembles a macro mechanism in languages.
+
 data SrcPropKVs propKVs
 data PropOwns propOwns
 data Props props

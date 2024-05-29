@@ -16,6 +16,7 @@ library
   exposed-modules:
       Main
       TypeLevel.System.Debug
+      TypeLevel.ZeplrogOOP.Static.Description
       TypeLevel.ZeplrogOOP.Static.Materialization
       TypeLevel.ZeplrogOOP.Static.Materialization.Common
       TypeLevel.ZeplrogOOP.Static.Materialization.Materializer
@@ -68,6 +69,7 @@ executable typeLevelOOP
   main-is: Main.hs
   other-modules:
       TypeLevel.System.Debug
+      TypeLevel.ZeplrogOOP.Static.Description
       TypeLevel.ZeplrogOOP.Static.Materialization
       TypeLevel.ZeplrogOOP.Static.Materialization.Common
       TypeLevel.ZeplrogOOP.Static.Materialization.Materializer
@@ -122,6 +124,7 @@ test-suite functional
       TypeLevel.ZeplrogOOP.OOPSpec
       TypeLevel.ZeplrogOOP.QuerySpec
       TypeLevel.ZeplrogOOP.Testing.KnowledgeBase
+      TypeLevel.ZeplrogOOP.Testing.Utils
       Paths_typeLevelOOP
   hs-source-dirs:
       test/

@@ -14,7 +14,9 @@ import CPrelude
 import TypeLevel.ZeplrogOOP.Static.Model
 import TypeLevel.ZeplrogOOP.Static.Query
 import TypeLevel.ZeplrogOOP.Static.Materialization
+import qualified TypeLevel.ZeplrogOOP.Static.Description as SPrint
 
+import TypeLevel.ZeplrogOOP.Testing.Utils
 import TypeLevel.System.Debug
 
 import GHC.TypeLits
@@ -24,6 +26,7 @@ import           Test.Hspec
 import           Data.Proxy (Proxy(..))
 import           Data.IORef
 import qualified Data.Map as Map
+import qualified Prelude as P (unlines)
 
 
 
@@ -73,6 +76,17 @@ type TableLamp = DerivedProp ETableLamp AbstractLamp
   '[
   ]
 
+eDaylightLamp = sMatEss @EDaylightLamp
+eAbstractLamp = sMatEss @EAbstractLamp
+
+abstractLamp :: PropertyVL
+abstractLamp = AbstractProp (GroupId eAbstractLamp (StaticPropertyId 1)) []
+
+daylightLampExpected :: PropertyVL
+daylightLampExpected = PropDict
+  (GroupRootId eDaylightLamp (StaticPropertyId 2) abstractLamp)
+  []
+
 
 
 spec :: Spec
@@ -83,11 +97,14 @@ spec =
 
       lamp <- sMat' sEnv () $ Proxy @DaylightLamp
 
+      let lampDescr = SPrint.describe lamp
+      putStrLn $ P.unlines lampDescr
+
       statProps <- readTVarIO $ seStaticPropertiesVar sEnv
       statEsss  <- readTVarIO $ seStaticEssencesVar sEnv
 
-      print $ "Stat props: " <> show (Map.keys statProps)
-      print $ "Stat essences: " <> show (Map.keys statEsss)
+      -- print $ "Stat props: " <> show (Map.keys statProps)
+      -- print $ "Stat essences: " <> show (Map.keys statEsss)
 
       case lamp of
         PropDict group props -> do

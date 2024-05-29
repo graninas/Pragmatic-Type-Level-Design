@@ -26,6 +26,10 @@ data PropertyGroup (lvl :: Level) where
   Group     :: EssenceTL -> PropertyGroupTL
   GroupRoot :: EssenceTL -> PropertyTL -> PropertyGroupTL
 
+  -- | Property groups and id for static value-level representation.
+  GroupId      :: EssenceVL -> StaticPropertyId -> PropertyGroupVL
+  GroupRootId  :: EssenceVL -> StaticPropertyId -> PropertyVL -> PropertyGroupVL
+
 -- | Property owning
 data PropertyOwning (lvl :: Level) where
   -- | Own value. Will be materialized for each parent prop.

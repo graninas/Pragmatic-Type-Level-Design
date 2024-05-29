@@ -10,6 +10,7 @@ module Main where
 import CPrelude
 
 import TypeLevel.ZeplrogOOP.Static.Model
+import TypeLevel.ZeplrogOOP.Static.Materialization
 
 import GHC.TypeLits
 import TypeSelector.Granular

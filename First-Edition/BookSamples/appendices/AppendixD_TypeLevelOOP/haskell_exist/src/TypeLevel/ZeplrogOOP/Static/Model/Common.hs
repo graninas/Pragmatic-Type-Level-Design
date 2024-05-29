@@ -23,6 +23,11 @@ data Essence (lvl :: Level) where
 
 type EssencePath (lvl :: Level) = [Essence lvl]
 
+-- | Real Id of a property (for value-level usage only)
+
+newtype StaticPropertyId = StaticPropertyId Int
+  deriving (Show, Eq, Ord)
+
 -- | Value definition with a default value
 
 data ValDef (lvl :: Level) where

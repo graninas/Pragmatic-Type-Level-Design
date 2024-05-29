@@ -15,10 +15,17 @@ build-type:     Simple
 library
   exposed-modules:
       Main
+      TypeLevel.ZeplrogOOP.Static.Materialization
+      TypeLevel.ZeplrogOOP.Static.Materialization.Common
+      TypeLevel.ZeplrogOOP.Static.Materialization.Materializer
+      TypeLevel.ZeplrogOOP.Static.Materialization.Property
+      TypeLevel.ZeplrogOOP.Static.Materialization.Script
       TypeLevel.ZeplrogOOP.Static.Model
       TypeLevel.ZeplrogOOP.Static.Model.Common
       TypeLevel.ZeplrogOOP.Static.Model.Property
       TypeLevel.ZeplrogOOP.Static.Model.Script
+      TypeLevel.ZeplrogOOP.Static.Query
+      TypeLevel.ZeplrogOOP.System.Debug
   other-modules:
       Paths_typeLevelOOP
   hs-source-dirs:
@@ -36,6 +43,7 @@ library
       MultiWayIf
       RecordWildCards
       InstanceSigs
+      NoImplicitPrelude
   ghc-options: -Wall
   build-depends:
       base >=4.7 && <5
@@ -59,10 +67,17 @@ library
 executable typeLevelOOP
   main-is: Main.hs
   other-modules:
+      TypeLevel.ZeplrogOOP.Static.Materialization
+      TypeLevel.ZeplrogOOP.Static.Materialization.Common
+      TypeLevel.ZeplrogOOP.Static.Materialization.Materializer
+      TypeLevel.ZeplrogOOP.Static.Materialization.Property
+      TypeLevel.ZeplrogOOP.Static.Materialization.Script
       TypeLevel.ZeplrogOOP.Static.Model
       TypeLevel.ZeplrogOOP.Static.Model.Common
       TypeLevel.ZeplrogOOP.Static.Model.Property
       TypeLevel.ZeplrogOOP.Static.Model.Script
+      TypeLevel.ZeplrogOOP.Static.Query
+      TypeLevel.ZeplrogOOP.System.Debug
       Paths_typeLevelOOP
   hs-source-dirs:
       ./src
@@ -79,6 +94,7 @@ executable typeLevelOOP
       MultiWayIf
       RecordWildCards
       InstanceSigs
+      NoImplicitPrelude
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
   build-depends:
       base >=4.7 && <5

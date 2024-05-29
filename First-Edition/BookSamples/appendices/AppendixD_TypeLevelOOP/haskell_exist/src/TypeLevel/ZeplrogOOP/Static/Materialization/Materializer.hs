@@ -8,7 +8,7 @@ module TypeLevel.ZeplrogOOP.Static.Materialization.Materializer where
 
 import CPrelude
 
-import TypeLevel.ZeplrogOOP.System.Debug
+import TypeLevel.System.Debug
 import TypeLevel.ZeplrogOOP.Static.Model
 
 import TypeSelector.Granular

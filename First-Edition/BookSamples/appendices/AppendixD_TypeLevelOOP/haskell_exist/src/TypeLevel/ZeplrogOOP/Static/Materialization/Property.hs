@@ -12,7 +12,7 @@ module TypeLevel.ZeplrogOOP.Static.Materialization.Property where
 
 import CPrelude
 
-import TypeLevel.ZeplrogOOP.System.Debug
+import TypeLevel.System.Debug
 import TypeLevel.ZeplrogOOP.Static.Model
 import TypeLevel.ZeplrogOOP.Static.Materialization.Materializer
 import TypeLevel.ZeplrogOOP.Static.Materialization.Common
@@ -32,9 +32,6 @@ data PropOwns propOwns
 data Props props
 
 type ResPropKVs = [PropertyKeyValueVL]
-
-
-
 
 withSingletonProperty
   :: SMat () group PropertyGroupVL
@@ -243,6 +240,15 @@ instance
     pure $ propOwn : propOwns
 
 -- Statically materialize property owning
+
+instance
+  ( SMat () val ValDefVL
+  ) =>
+  SMat () ('OwnVal @'TypeLevel val)
+          PropertyOwningVL where
+  sMat () _ = do
+    val <- sMat () $ Proxy @val
+    pure $ OwnVal val
 
 instance
   ( SMat () prop PropertyVL

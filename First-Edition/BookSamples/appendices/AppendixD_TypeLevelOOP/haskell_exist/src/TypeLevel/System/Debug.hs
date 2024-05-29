@@ -1,4 +1,4 @@
-module TypeLevel.ZeplrogOOP.System.Debug where
+module TypeLevel.System.Debug where
 
 import CPrelude
 

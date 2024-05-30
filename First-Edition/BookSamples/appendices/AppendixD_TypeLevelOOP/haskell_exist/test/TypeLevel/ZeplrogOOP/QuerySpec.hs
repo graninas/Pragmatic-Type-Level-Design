@@ -27,12 +27,15 @@ type IconVal icon = StringValue @TypeLevel icon
 type TestIconOwning = OwnVal (IconVal "+")
 type TestPropKeyVal = PropKeyVal KB.EIcon TestIconOwning
 
-type TestProp = PropDict (Group KB.EIntrinsics)
+type EAny = Ess @TypeLevel "prop:any"
+type AnyProp = AbstractProp (Group EAny) '[]
+
+type TestProp = DerivedProp KB.EIntrinsics AnyProp
   '[ TestPropKeyVal
    ]
 
 
-type Wall = PropDict (Group KB.EWall)
+type Wall = DerivedProp KB.EWall AnyProp
   '[ PropKeyVal KB.EIcon (OwnVal (IconVal "#"))
    ]
 

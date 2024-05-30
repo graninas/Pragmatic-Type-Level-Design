@@ -4,6 +4,8 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
 
+-- | Static property model.
+-- Can work as a static type-level or static value-level model.
 
 module TypeLevel.ZeplrogOOP.Static.Model.Property where
 
@@ -16,11 +18,22 @@ import GHC.TypeLits
 import qualified Text.Show as T
 
 
------- Property -----
+-- | Tag property group for hierarchies.
+data TagPropertyGroup (lvl :: Level) where
+  -- | Tag property groups for static type-level representation.
+  TagGroup     :: Essence lvl -> TagPropertyGroup lvl
+  TagGroupRoot :: Essence lvl -> TagProperty lvl -> TagPropertyGroup lvl
+
+-- | Tag property: immutable, reference-only,
+--   one instance, only for grouping.
+data TagProperty (lvl :: Level) where
+  -- | Tag prop for static type-level and
+  --   dynamic value-level representation.
+  TagProp
+    :: TagPropertyGroup lvl
+    -> TagProperty lvl
 
 -- | Used to make static property hierarchies.
--- Essence arg: own essence
--- Property arg: parent property
 data PropertyGroup (lvl :: Level) where
   -- | Property groups for static type-level representation.
   Group     :: EssenceTL -> PropertyGroupTL
@@ -47,61 +60,61 @@ data PropertyKeyValue (lvl :: Level) where
   -- | Separate property
   PropKeyVal :: Essence lvl -> PropertyOwning lvl -> PropertyKeyValue lvl
 
--- | Static property that must be stat and dyn materialized.
-data Property (lvl :: Level) where
-
-  -- | Static prop hierarchy for static type-level and
-  --   static value-level representation.
-  StaticProp
-    :: PropertyGroup lvl
-    -> Property lvl
-
-  -- | Static prop reference for dynamic value-level representation.
-  StaticPropRef
-    :: StaticPropertyId
-    -> Property lvl
-
-  -- | Compound property.
-  -- Each prop in the bag is a mutable reference.
-  -- Each prop can be replaced by some other prop in the dyn model.
-  PropDict
-    :: PropertyGroup lvl
-    -> [PropertyKeyValue lvl]
-    -> Property lvl
-
-  -- | Abstract property (identical to PropDict).
+  -- | Abstract property.
   --   Provides the shape for the derived properties.
   --   Should not be dynamically materialized.
+data AbstractProperty (lvl :: Level) where
+  -- | Regular abstract property with fields.
   AbstractProp
     :: PropertyGroup lvl
     -> [PropertyKeyValue lvl]
+    -> AbstractProperty lvl
+
+-- | Static property that must be stat and dyn materialized.
+data Property (lvl :: Level) where
+  -- | Tag prop reference.
+  TagPropRef
+    :: TagProperty lvl
     -> Property lvl
 
-  -- | Derived property.
-  --    Will take the shape of the parent, with certain props
-  --    (of the 1st level) replaced.
+  -- | Derived property from any abstract property.
+  --    Will take the shape of the parent.
   --    After static materialization, becomes PropDict.
-  --    No value-type static or dynamic props correspond to it.
   DerivedProp
     :: Essence lvl
-    -> Property lvl
+    -> AbstractProperty lvl
     -> [PropertyKeyValue lvl]
     -> Property lvl
 
-  -- -- | Property script.
-  -- PropScript
-  --   :: PropertyGroup lvl
-  --   -> Script lvl
-  --   -> Property lvl
+  -- | Compound property for static value-level and dynamic
+  -- value-level representation.
+  -- Can't be static type-level; use Abstract and Derived only
+  -- (make Abstract for a root object like Any in Scala
+  -- and derive everything from it to describe usual properties.
+
+  -- ??? Each prop in the bag is a mutable reference.
+  -- ??? Each prop can be replaced by some other prop in the dyn model.
+  PropDict
+    :: PropertyGroupVL
+    -> [PropertyKeyValueVL]
+    -> PropertyVL
 
 
 ------ Short identifiers ----------
+type TagPropertyGroupTL = TagPropertyGroup 'TypeLevel
+type TagPropertyGroupVL = TagPropertyGroup 'ValueLevel
 
-type PropertyTL = Property 'TypeLevel
-type PropertyVL = Property 'ValueLevel
+type TagPropertyTL = TagProperty 'TypeLevel
+type TagPropertyVL = TagProperty 'ValueLevel
 
 type PropertyGroupTL = PropertyGroup 'TypeLevel
 type PropertyGroupVL = PropertyGroup 'ValueLevel
+
+type AbstractPropertyTL = AbstractProperty 'TypeLevel
+type AbstractPropertyVL = AbstractProperty 'ValueLevel
+
+type PropertyTL = Property 'TypeLevel
+type PropertyVL = Property 'ValueLevel
 
 type PropertyKeyValueTL = PropertyKeyValue 'TypeLevel
 type PropertyKeyValueVL = PropertyKeyValue 'ValueLevel

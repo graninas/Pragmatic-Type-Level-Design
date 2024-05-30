@@ -15,11 +15,9 @@ getEssenceFromKV (PropKeyBag ess _) = ess
 getEssenceFromKV (PropKeyVal ess _) = ess
 
 getGroup :: PropertyVL -> PropertyGroupVL
-getGroup (StaticProp group) = group
 getGroup (PropDict group _) = group
-getGroup (StaticPropRef _) = error "getGroup (StaticPropRef _) not implemented"
--- getGroup (PropScript group _) = group
-
+getGroup (DerivedProp _ _ _) = error "getGroup not implemented for DerivedProp"
+getGroup (TagPropRef _) = error "getGroup not implemented for TagPropRef"
 
 getStringValue :: ValDefVL -> Maybe String
 getStringValue (StringValue str) = Just str
@@ -30,18 +28,10 @@ getStringValue _ = Nothing
 -- TODO: move to the Query language.
 queryStringValue :: EssencePathVL -> PropertyVL -> Maybe String
 queryStringValue [] _ = Nothing
-queryStringValue _ (StaticProp _) =
-  error "queryStringValue not implemented for StaticProp"
-queryStringValue _ (StaticPropRef _) =
-  error "queryStringValue not implemented for StaticPropRef"
--- queryStringValue (ess:[]) (PropVal group valDef) = let
---   (ess', _) = getComboPropertyId group
---   in if ess == ess'
---         then getStringValue valDef
---         else Nothing
 queryStringValue _ (DerivedProp _ _ _) =
   error "queryStringValue not implemented for DerivedProp"
--- queryStringValue _ (PropScript _ _) = Nothing
+queryStringValue _ (TagPropRef _) =
+  error "queryStringValue not implemented for TagPropRef"
 queryStringValue (ess:esss) (PropDict group kvs) = let
   (ess', _) = getComboPropertyId group
   in case ess == ess' of
@@ -54,13 +44,10 @@ queryStringValue (ess:esss) (PropDict group kvs) = let
 -- TODO: move to the Query language.
 queryStringValueRelative :: EssencePathVL -> PropertyVL -> Maybe String
 queryStringValueRelative [] _ = Nothing
-queryStringValueRelative _ (StaticProp _) =
-  error "queryStringValueRelative not implemented for StaticProp"
-queryStringValueRelative _ (StaticPropRef _) =
-  error "queryStringValueRelative not implemented for StaticPropRef"
+queryStringValueRelative _ (TagPropRef _) =
+  error "queryStringValueRelative not implemented for TagPropRef"
 queryStringValueRelative _ (DerivedProp _ _ _) =
   error "queryStringValueRelative not implemented for DerivedProp"
--- queryStringValueRelative _ (PropScript _ _) = Nothing
 queryStringValueRelative esss (PropDict group kvs) =
   queryStringValueForKeyVals esss kvs
 

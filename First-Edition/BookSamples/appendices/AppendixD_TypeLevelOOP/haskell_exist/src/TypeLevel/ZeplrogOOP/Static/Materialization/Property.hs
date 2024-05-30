@@ -39,56 +39,56 @@ data Props props
 
 type ResPropKVs = [PropertyKeyValueVL]
 
-withSingletonProperty
-  :: SMat () group PropertyGroupVL
-  => Proxy group
-  -> (PropertyGroupVL -> SMaterializer PropertyVL)
-  -> SMaterializer PropertyVL
-withSingletonProperty groupProxy matPropF = do
-  sEnv <- ask
+-- withSingletonProperty
+--   :: SMat () group PropertyGroupVL
+--   => Proxy group
+--   -> (PropertyGroupVL -> SMaterializer PropertyVL)
+--   -> SMaterializer PropertyVL
+-- withSingletonProperty groupProxy matPropF = do
+--   sEnv <- ask
 
-  -- N.B. This routine will result in some staticPropertyIds
-  --   to be dropped when a singleton property is already present.
-  group <- sMat () groupProxy
-  let (ess, statPropId) = getComboPropertyId group
+--   -- N.B. This routine will result in some staticPropertyIds
+--   --   to be dropped when a singleton property is already present.
+--   group <- sMat () groupProxy
+--   let (ess, statPropId) = getComboPropertyId group
 
-  esss <- readTVarIO $ seStaticEssencesVar sEnv
+--   esss <- readTVarIO $ seStaticEssencesVar sEnv
 
-  case Map.lookup ess esss of
-    Just [(sId, prop)] -> do
-      sTraceDebug $ "Singleton static property found: "
-                  <> show (ess, sId)
-      pure prop
+--   case Map.lookup ess esss of
+--     Just [(sId, prop)] -> do
+--       sTraceDebug $ "Singleton static property found: "
+--                   <> show (ess, sId)
+--       pure prop
 
-    Just (_:_:_) ->
-      error $ "Multiple properties for singleton prop found, ess: " <> show ess
+--     Just (_:_:_) ->
+--       error $ "Multiple properties for singleton prop found, ess: " <> show ess
 
-    _ -> do
-      sTraceDebug $ "New singleton static property to introduce: "
-        <> show ess <> ", sId: " <> show statPropId
-      prop <- matPropF group
-      addStaticProperty (statPropId, ess, prop)
-      sTraceDebug $ show ess <> ": created: " <> show statPropId
-      pure prop
+--     _ -> do
+--       sTraceDebug $ "New singleton static property to introduce: "
+--         <> show ess <> ", sId: " <> show statPropId
+--       prop <- matPropF group
+--       addStaticProperty (statPropId, ess, prop)
+--       sTraceDebug $ show ess <> ": created: " <> show statPropId
+--       pure prop
 
 
-withProperty
-  :: SMat () group PropertyGroupVL
-  => Proxy group
-  -> (PropertyGroupVL -> SMaterializer PropertyVL)
-  -> SMaterializer PropertyVL
-withProperty groupProxy matPropF = do
-  sEnv <- ask
+-- withProperty
+--   :: SMat () group PropertyGroupVL
+--   => Proxy group
+--   -> (PropertyGroupVL -> SMaterializer PropertyVL)
+--   -> SMaterializer PropertyVL
+-- withProperty groupProxy matPropF = do
+--   sEnv <- ask
 
-  group <- sMat () groupProxy
-  let (ess, statPropId) = getComboPropertyId group
+--   group <- sMat () groupProxy
+--   let (ess, statPropId) = getComboPropertyId group
 
-  esss <- readTVarIO $ seStaticEssencesVar sEnv
-  sTraceDebug $ "Static property to introduce: " <> show ess
-  prop <- matPropF group
-  addStaticProperty (statPropId, ess, prop)
-  sTraceDebug $ show ess <> ": created: " <> show statPropId
-  pure prop
+--   esss <- readTVarIO $ seStaticEssencesVar sEnv
+--   sTraceDebug $ "Static property to introduce: " <> show ess
+--   prop <- matPropF group
+--   addStaticProperty (statPropId, ess, prop)
+--   sTraceDebug $ show ess <> ": created: " <> show statPropId
+--   pure prop
 
 -- Statically materialize property group
 
@@ -114,46 +114,88 @@ instance
     prop <- sMat () $ Proxy @prop
     pure $ GroupRootId ess sId prop
 
+-- -- Statically materialize abstract property
+
+-- instance
+--   ( SMat () (SrcPropKVs propKVs) ResPropKVs
+--   , SMat () group PropertyGroupVL
+--   ) =>
+--   SMat () ('AbstractProp @'TypeLevel group propKVs)
+--           PropertyVL where
+--   sMat () _ = withSingletonProperty (Proxy @group) $ \group -> do
+--     propKVs <- sMat () $ Proxy @(SrcPropKVs propKVs)
+--     pure $ AbstractProp group propKVs
+
+
 -- Statically materialize property
 
 instance
-  ( SMat () (SrcPropKVs propKVs) ResPropKVs
-  , SMat () group PropertyGroupVL
+  ( SMat () tagProp TagPropertyVL
   ) =>
-  SMat () ('PropDict @'TypeLevel group propKVs)
+    SMat () ('TagPropRef @'TypeLevel tagProp)
           PropertyVL where
-  sMat () _ = withProperty (Proxy @group) $ \group -> do
-    propKVs <- sMat () $ Proxy @(SrcPropKVs propKVs)
-    pure $ PropDict group propKVs
+  sMat () _ = do
+    tagProp <- sMat () $ Proxy @tagProp
+    pure $ TagPropRef tagProp
 
+-- Deriving mechanism for properties.
+
+newtype APropPrepared = APropPrepared PropertyVL
+
+-- Abstract properties will turn into special PropDict properties
+--  only once to avoid multiple property preparation.
 instance
-  ( SMat () (SrcPropKVs propKVs) ResPropKVs
-  , SMat () group PropertyGroupVL
+  ( SMat () group PropertyGroupVL
+  , SMat () (SrcPropKVs propKVs) ResPropKVs
   ) =>
   SMat () ('AbstractProp @'TypeLevel group propKVs)
-          PropertyVL where
-  sMat () _ = withSingletonProperty (Proxy @group) $ \group -> do
-    propKVs <- sMat () $ Proxy @(SrcPropKVs propKVs)
-    pure $ AbstractProp group propKVs
+          APropPrepared where
+  sMat () _ = do
+    sEnv <- ask
 
--- | Deriving mechanism for abstract properties.
+    -- N.B. This routine will result in some staticPropertyIds
+    --   to be dropped when a singleton property is already present.
+    group <- sMat () $ Proxy @group
+    let (ess, statPropId) = getComboPropertyId group
+
+    esss <- readTVarIO $ seStaticEssencesVar sEnv
+
+    case Map.lookup ess esss of
+      Just [(sId, prop)] -> do
+        sTraceDebug $ "Prepared abstract property found: "
+                    <> show (ess, sId)
+        pure $ APropPrepared prop
+
+      Just (_:_:_) ->
+        error $ "Multiple prepared properties for abstract prop found, ess: " <> show ess
+
+      _ -> do
+        sTraceDebug $ "New prepared abstract property to introduce: "
+          <> show ess <> ", sId: " <> show statPropId
+        propKVs <- sMat () $ Proxy @(SrcPropKVs propKVs)
+        let prop = PropDict group propKVs
+        addStaticProperty (statPropId, ess, prop)
+        sTraceDebug $ show ess <> ": prepared: " <> show statPropId
+        pure $ APropPrepared prop
+
 instance
   ( SMat () ess EssenceVL
-  , SMat () abstractProp PropertyVL
+  , SMat () abstractProp APropPrepared
   , SMat () (SrcPropKVs propKVs) ResPropKVs
   ) =>
   SMat () ('DerivedProp @'TypeLevel ess abstractProp propKVs)
           PropertyVL where
   sMat () _ = do
+
     ess <- sMat () $ Proxy @ess
+    sTraceDebug $ "Property to derive: " <> show ess
 
-    sTraceDebug $ "Deriving property: " <> show ess
+    sTraceDebug $ "Preparing abstract property for deriving"
+    APropPrepared aPropPrepared <- sMat () $ Proxy @abstractProp
 
-    abstractProp <- sMat () $ Proxy @abstractProp
-
-    case abstractProp of
-      AbstractProp group abstractPropKVs -> do
-        let aId@(abstractPropEss, abstractPropSId) = getComboPropertyId group
+    case aPropPrepared of
+      PropDict aGroup abstractPropKVs -> do
+        let aId@(abstractPropEss, abstractPropSId) = getComboPropertyId aGroup
         sTraceDebug $ "Abstract property to derive: " <> show aId
 
         statPropId <- getNextStaticPropertyId
@@ -161,29 +203,46 @@ instance
         propKVs <- sMat () $ Proxy @(SrcPropKVs propKVs)
         let propKVs' = mergePropKVs propKVs abstractPropKVs
 
-        let prop = PropDict (GroupRootId ess statPropId abstractProp) propKVs'
+        let prop = PropDict (GroupRootId ess statPropId aPropPrepared) propKVs'
         addStaticProperty (statPropId, ess, prop)
         sTraceDebug $ show ess <> ": new property is derived: "
                    <> show statPropId
         pure prop
 
-      _ -> error "non-abstract props are not supported yet."
+      _ -> error "Invalid prepared property (not PropDict)."
 
--- instance
---   SMat () ('StaticPropRef @'TypeLevel statPropId)
---           PropertyVL where
---   sMat () _ = do
---     prop <- sMat () $ Proxy @prop
---     pure $ StaticPropRef prop
+-- Statically materialize tag property group
 
 instance
-  ( SMat () group PropertyGroupVL
+  ( SMat () ess EssenceVL
   ) =>
-  SMat () ('StaticProp @'TypeLevel group)
-          PropertyVL where
-  sMat () _ =
-    withSingletonProperty (Proxy @group) $ \group -> do
-      pure $ StaticProp group
+  SMat () ('TagGroup @'TypeLevel ess)
+          TagPropertyGroupVL where
+  sMat () _ = do
+    ess <- sMat () $ Proxy @ess
+    pure $ TagGroup ess
+
+instance
+  ( SMat () ess EssenceVL
+  , SMat () tagProp TagPropertyVL
+  ) =>
+  SMat () ('TagGroupRoot @'TypeLevel ess tagProp)
+          TagPropertyGroupVL where
+  sMat () _ = do
+    ess      <- sMat () $ Proxy @ess
+    tagProp  <- sMat () $ Proxy @tagProp
+    pure $ TagGroupRoot ess tagProp
+
+-- Statically materialize tag property
+
+instance
+  ( SMat () tagGroup TagPropertyGroupVL
+  ) =>
+  SMat () ('TagProp @'TypeLevel tagGroup)
+          TagPropertyVL where
+  sMat () _ = do
+    tagGroup <- sMat () $ Proxy @tagGroup
+    pure $ TagProp tagGroup
 
 -- Statically materialize property key value list
 

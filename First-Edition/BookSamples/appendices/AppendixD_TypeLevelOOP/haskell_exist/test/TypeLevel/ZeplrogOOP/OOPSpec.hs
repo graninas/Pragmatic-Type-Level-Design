@@ -44,12 +44,11 @@ type EIsOn            = Ess @TypeLevel "is on"
 type EDaylightLamp    = Ess @TypeLevel "lamp:daylight"
 type ETableLamp       = Ess @TypeLevel "lamp:table"
 
-type Color = StaticProp (Group EColor)
-
-type ColorWhite = StaticProp (GroupRoot EColorWhite Color)
-type ColorRed   = StaticProp (GroupRoot EColorRed Color)
-type ColorGreen = StaticProp (GroupRoot EColorGreen Color)
-type ColorBlue  = StaticProp (GroupRoot EColorBlue Color)
+type Color      = TagProp (TagGroup EColor)
+type ColorWhite = TagProp (TagGroupRoot EColorWhite Color)
+type ColorRed   = TagProp (TagGroupRoot EColorRed Color)
+type ColorGreen = TagProp (TagGroupRoot EColorGreen Color)
+type ColorBlue  = TagProp (TagGroupRoot EColorBlue Color)
 
 type ColorPath = '[ EAvailableColors, EColorWhite ]
 
@@ -57,10 +56,10 @@ type AbstractLamp = AbstractProp (Group EAbstractLamp)
   '[ PropKeyVal EIsOn (OwnVal (BoolValue False))
 
    , PropKeyBag EAvailableColors
-      '[ OwnProp ColorWhite
-       , OwnProp ColorRed
-       , OwnProp ColorGreen
-       , OwnProp ColorBlue
+      '[ OwnProp (TagPropRef ColorWhite)
+       , OwnProp (TagPropRef ColorRed)
+       , OwnProp (TagPropRef ColorGreen)
+       , OwnProp (TagPropRef ColorBlue)
        ]
 
    -- | Current color. Points to a possible color.
@@ -78,12 +77,12 @@ type TableLamp = DerivedProp ETableLamp AbstractLamp
 eDaylightLamp = sMatEss @EDaylightLamp
 eAbstractLamp = sMatEss @EAbstractLamp
 
-abstractLamp :: PropertyVL
-abstractLamp = AbstractProp (GroupId eAbstractLamp (StaticPropertyId 1)) []
+lampParent :: PropertyVL
+lampParent = PropDict (GroupId eAbstractLamp (StaticPropertyId 1)) []
 
 daylightLampExpected :: PropertyVL
 daylightLampExpected = PropDict
-  (GroupRootId eDaylightLamp (StaticPropertyId 2) abstractLamp)
+  (GroupRootId eDaylightLamp (StaticPropertyId 2) lampParent)
   []
 
 

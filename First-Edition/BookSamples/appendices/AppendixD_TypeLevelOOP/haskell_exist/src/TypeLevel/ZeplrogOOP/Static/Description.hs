@@ -67,29 +67,41 @@ sub item = do
   sPrint item
   unless r deIndent
 
-instance SPrint PropertyVL where
-  sPrint (StaticProp group) = do
-    push "StaticProp "
-    sub group
+instance SPrint TagPropertyGroupVL where
+  sPrint (TagGroup ess) = do
+    push "TagGroup "
+    add ess
 
-  sPrint (StaticPropRef prop) = do
-    push "StaticPropRef"
-    sub prop
+  sPrint (TagGroupRoot ess tagProp) = do
+    push "TagGroupRoot "
+    add ess
+    sub tagProp
 
-  sPrint (PropDict group kvs) = do
-    push "PropDict "
-    sub group
-    sub kvs
+instance SPrint TagPropertyVL where
+  sPrint (TagProp singGroup) = do
+    push "TagProp "
+    sub singGroup
 
+instance SPrint AbstractPropertyVL where
   sPrint (AbstractProp group kvs) = do
     push "AbstractProp "
-    sub group
-    sub kvs
+    add group
+    mapM_ sub kvs
+
+instance SPrint PropertyVL where
+  sPrint (TagPropRef sProp) = do
+    push "TagPropRef"
+    sub sProp
 
   sPrint (DerivedProp ess prop kvs) = do
     push "DerivedProp "
     add ess
     sub prop
+    sub kvs
+
+  sPrint (PropDict group kvs) = do
+    push "PropDict "
+    sub group
     sub kvs
 
 instance SPrint PropertyGroupVL where

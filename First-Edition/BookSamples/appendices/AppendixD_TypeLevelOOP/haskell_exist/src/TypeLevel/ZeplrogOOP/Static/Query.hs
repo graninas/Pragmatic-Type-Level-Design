@@ -16,8 +16,8 @@ getEssenceFromKV (PropKeyVal ess _) = ess
 
 getGroup :: PropertyVL -> PropertyGroupVL
 getGroup (StaticProp group) = group
-getGroup (StaticPropRef prop) = getGroup prop
 getGroup (PropDict group _) = group
+getGroup (StaticPropRef _) = error "getGroup (StaticPropRef _) not implemented"
 -- getGroup (PropScript group _) = group
 
 

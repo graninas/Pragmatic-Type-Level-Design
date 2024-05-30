@@ -169,14 +169,12 @@ instance
 
       _ -> error "non-abstract props are not supported yet."
 
-instance
-  ( SMat () prop PropertyVL
-  ) =>
-  SMat () ('StaticPropRef @'TypeLevel prop)
-          PropertyVL where
-  sMat () _ = do
-    prop <- sMat () $ Proxy @prop
-    pure $ StaticPropRef prop
+-- instance
+--   SMat () ('StaticPropRef @'TypeLevel statPropId)
+--           PropertyVL where
+--   sMat () _ = do
+--     prop <- sMat () $ Proxy @prop
+--     pure $ StaticPropRef prop
 
 instance
   ( SMat () group PropertyGroupVL
@@ -185,7 +183,6 @@ instance
           PropertyVL where
   sMat () _ =
     withSingletonProperty (Proxy @group) $ \group -> do
-    -- pure $ StaticPropRef $ StaticProp group    --  ???
       pure $ StaticProp group
 
 -- Statically materialize property key value list

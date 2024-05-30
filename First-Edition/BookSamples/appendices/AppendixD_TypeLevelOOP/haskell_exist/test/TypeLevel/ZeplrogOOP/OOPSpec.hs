@@ -57,11 +57,10 @@ type AbstractLamp = AbstractProp (Group EAbstractLamp)
   '[ PropKeyVal EIsOn (OwnVal (BoolValue False))
 
    , PropKeyBag EAvailableColors
-      '[ OwnProp ColorWhite                   -- let's test
-                                              -- two ways of specifying static props
-       , OwnProp (StaticPropRef ColorRed)
-       , OwnProp (StaticPropRef ColorGreen)
-       , OwnProp (StaticPropRef ColorBlue)
+      '[ OwnProp ColorWhite
+       , OwnProp ColorRed
+       , OwnProp ColorGreen
+       , OwnProp ColorBlue
        ]
 
    -- | Current color. Points to a possible color.

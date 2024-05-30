@@ -50,20 +50,15 @@ data PropertyKeyValue (lvl :: Level) where
 -- | Static property that must be stat and dyn materialized.
 data Property (lvl :: Level) where
 
-  -- | Static properties hierarchy.
-  --   Can only be 1 instance of each.
-  --   Static props can be referenced by StaticPropertyId
-  --     OR by EssenceVL which should be unique to them.
-  --   These properties can't be dyn materialized.
+  -- | Static prop hierarchy for static type-level and
+  --   static value-level representation.
   StaticProp
     :: PropertyGroup lvl
     -> Property lvl
 
-  -- | Static prop reference.
-  --   When StaticPropRef is dyn materialized,
-  --   becomes own dyn prop with a reference to the static prop.
+  -- | Static prop reference for dynamic value-level representation.
   StaticPropRef
-    :: Property lvl
+    :: StaticPropertyId
     -> Property lvl
 
   -- | Compound property.

@@ -107,8 +107,8 @@ spec =
       case lamp of
         PropDict group props -> do
           let (ess, sId) = getComboPropertyId group
-          length props `shouldBe` 3                   -- these numbers may be incorrect.
-          length statProps `shouldBe` 7               -- needs double-checking.
+          length props `shouldBe` 3
+          length statProps `shouldBe` 2
           ess `shouldBe` Ess "lamp:daylight"
           Map.member ess statEsss `shouldBe` True
         _ -> error "invalid materialization result"

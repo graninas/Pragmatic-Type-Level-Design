@@ -203,7 +203,10 @@ instance
         propKVs <- sMat () $ Proxy @(SrcPropKVs propKVs)
         let propKVs' = mergePropKVs propKVs abstractPropKVs
 
-        let prop = PropDict (GroupRootId ess statPropId aPropPrepared) propKVs'
+        -- It seems we don't need to show service-only prepared abstract prop
+        -- as a parent of the new static prop.
+        -- let prop = PropDict (GroupRootId ess statPropId aPropPrepared) propKVs'
+        let prop = PropDict (GroupId ess statPropId) propKVs'
         addStaticProperty (statPropId, ess, prop)
         sTraceDebug $ show ess <> ": new property is derived: "
                    <> show statPropId

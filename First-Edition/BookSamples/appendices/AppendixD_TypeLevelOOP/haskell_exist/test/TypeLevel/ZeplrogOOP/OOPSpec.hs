@@ -14,6 +14,8 @@ import CPrelude
 import TypeLevel.ZeplrogOOP.Static.Model
 import TypeLevel.ZeplrogOOP.Static.Query
 import TypeLevel.ZeplrogOOP.Static.Materialization
+import qualified TypeLevel.ZeplrogOOP.Dynamic.Model as DMod
+import qualified TypeLevel.ZeplrogOOP.Dynamic.Instantiation as DInst
 import qualified TypeLevel.ZeplrogOOP.Static.Description as SPrint
 
 import TypeLevel.ZeplrogOOP.Testing.Utils
@@ -56,10 +58,10 @@ type AbstractLamp = AbstractProp (Group EAbstractLamp)
   '[ PropKeyVal EIsOn (OwnVal (BoolValue False))
 
    , PropKeyBag EAvailableColors
-      '[ OwnProp (TagPropRef ColorWhite)
-       , OwnProp (TagPropRef ColorRed)
-       , OwnProp (TagPropRef ColorGreen)
-       , OwnProp (TagPropRef ColorBlue)
+      '[ TagPropRef ColorWhite
+       , TagPropRef ColorRed
+       , TagPropRef ColorGreen
+       , TagPropRef ColorBlue
        ]
 
    -- | Current color. Points to a possible color.
@@ -90,7 +92,7 @@ daylightLampExpected = PropDict
 spec :: Spec
 spec =
   describe "Abstract property deriving test" $ do
-    it "Test" $ do
+    it "Static materialization test" $ do
       sEnv <- makeSEnv DebugDisabled
 
       lamp <- sMat' sEnv () $ Proxy @DaylightLamp
@@ -112,3 +114,18 @@ spec =
           ess `shouldBe` Ess "lamp:daylight"
           Map.member ess statEsss `shouldBe` True
         _ -> error "invalid materialization result"
+
+    it "Dynamic instantiation test" $ do
+      (sEnv, dEnv) <- DInst.makeEnvs DebugDisabled
+
+      lampStat <- sMat' sEnv () $ Proxy @DaylightLamp
+      lamp <- DInst.dInstParent dEnv Nothing lampStat
+
+      -- props <- readTVarIO $ DInst.dePropertiesVar dEnv
+      -- print $ "All props: " <> show (Map.keys props)
+
+      -- Map.size props `shouldBe` 4
+
+      case lamp of
+        DMod.Prop _ _ _ _ -> pure ()
+        _ -> error "Invalid prop"

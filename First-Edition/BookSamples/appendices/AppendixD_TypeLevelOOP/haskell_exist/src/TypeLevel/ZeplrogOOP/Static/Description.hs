@@ -93,12 +93,6 @@ instance SPrint PropertyVL where
     push "TagPropRef"
     sub sProp
 
-  sPrint (DerivedProp ess prop kvs) = do
-    push "DerivedProp "
-    add ess
-    sub prop
-    sub kvs
-
   sPrint (PropDict group kvs) = do
     push "PropDict "
     sub group

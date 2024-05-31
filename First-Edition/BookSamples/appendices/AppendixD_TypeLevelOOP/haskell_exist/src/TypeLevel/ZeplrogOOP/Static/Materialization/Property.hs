@@ -39,56 +39,6 @@ data Props props
 
 type ResPropKVs = [PropertyKeyValueVL]
 
--- withSingletonProperty
---   :: SMat () group PropertyGroupVL
---   => Proxy group
---   -> (PropertyGroupVL -> SMaterializer PropertyVL)
---   -> SMaterializer PropertyVL
--- withSingletonProperty groupProxy matPropF = do
---   sEnv <- ask
-
---   -- N.B. This routine will result in some staticPropertyIds
---   --   to be dropped when a singleton property is already present.
---   group <- sMat () groupProxy
---   let (ess, statPropId) = getComboPropertyId group
-
---   esss <- readTVarIO $ seStaticEssencesVar sEnv
-
---   case Map.lookup ess esss of
---     Just [(sId, prop)] -> do
---       sTraceDebug $ "Singleton static property found: "
---                   <> show (ess, sId)
---       pure prop
-
---     Just (_:_:_) ->
---       error $ "Multiple properties for singleton prop found, ess: " <> show ess
-
---     _ -> do
---       sTraceDebug $ "New singleton static property to introduce: "
---         <> show ess <> ", sId: " <> show statPropId
---       prop <- matPropF group
---       addStaticProperty (statPropId, ess, prop)
---       sTraceDebug $ show ess <> ": created: " <> show statPropId
---       pure prop
-
-
--- withProperty
---   :: SMat () group PropertyGroupVL
---   => Proxy group
---   -> (PropertyGroupVL -> SMaterializer PropertyVL)
---   -> SMaterializer PropertyVL
--- withProperty groupProxy matPropF = do
---   sEnv <- ask
-
---   group <- sMat () groupProxy
---   let (ess, statPropId) = getComboPropertyId group
-
---   esss <- readTVarIO $ seStaticEssencesVar sEnv
---   sTraceDebug $ "Static property to introduce: " <> show ess
---   prop <- matPropF group
---   addStaticProperty (statPropId, ess, prop)
---   sTraceDebug $ show ess <> ": created: " <> show statPropId
---   pure prop
 
 -- Statically materialize property group
 
@@ -113,19 +63,6 @@ instance
     sId <- getNextStaticPropertyId
     prop <- sMat () $ Proxy @prop
     pure $ GroupRootId ess sId prop
-
--- -- Statically materialize abstract property
-
--- instance
---   ( SMat () (SrcPropKVs propKVs) ResPropKVs
---   , SMat () group PropertyGroupVL
---   ) =>
---   SMat () ('AbstractProp @'TypeLevel group propKVs)
---           PropertyVL where
---   sMat () _ = withSingletonProperty (Proxy @group) $ \group -> do
---     propKVs <- sMat () $ Proxy @(SrcPropKVs propKVs)
---     pure $ AbstractProp group propKVs
-
 
 -- Statically materialize property
 
@@ -183,7 +120,7 @@ instance
   , SMat () abstractProp APropPrepared
   , SMat () (SrcPropKVs propKVs) ResPropKVs
   ) =>
-  SMat () ('DerivedProp @'TypeLevel ess abstractProp propKVs)
+  SMat () ('DerivedProp ess abstractProp propKVs)
           PropertyVL where
   sMat () _ = do
 
@@ -278,14 +215,14 @@ instance
 
 instance
   ( SMat () ess EssenceVL
-  , SMat () (PropOwns propOwns) [PropertyOwningVL]
+  , SMat () (Props props) [PropertyVL]
   ) =>
-  SMat () ('PropKeyBag @'TypeLevel ess propOwns)
+  SMat () ('PropKeyBag @'TypeLevel ess props)
          PropertyKeyValueVL where
   sMat () _ = do
-    ess      <- sMat () $ Proxy @ess
-    propOwns <- sMat () $ Proxy @(PropOwns propOwns)
-    pure $ PropKeyBag ess propOwns
+    ess   <- sMat () $ Proxy @ess
+    props <- sMat () $ Proxy @(Props props)
+    pure $ PropKeyBag ess props
 
 -- Statically materialize property ownings
 

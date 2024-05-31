@@ -18,7 +18,9 @@ import GHC.TypeLits
 import qualified Text.Show as T
 
 
--- | Tag property group for hierarchies.
+-- | Tag property is always static.
+--   Used to tag and group notions.
+--   Can be hierarchical.
 data TagPropertyGroup (lvl :: Level) where
   -- | Tag property groups for static type-level representation.
   TagGroup     :: Essence lvl -> TagPropertyGroup lvl
@@ -55,8 +57,7 @@ data PropertyOwning (lvl :: Level) where
 -- | Key-value pair for a property
 data PropertyKeyValue (lvl :: Level) where
   -- | Implicit dictionary of properties.
-  -- When materialized, becomes a dict with keys taken from properties
-  PropKeyBag :: Essence lvl -> [PropertyOwning lvl] -> PropertyKeyValue lvl
+  PropKeyBag :: Essence lvl -> [Property lvl] -> PropertyKeyValue lvl
   -- | Separate property
   PropKeyVal :: Essence lvl -> PropertyOwning lvl -> PropertyKeyValue lvl
 
@@ -72,7 +73,7 @@ data AbstractProperty (lvl :: Level) where
 
 -- | Static property that must be stat and dyn materialized.
 data Property (lvl :: Level) where
-  -- | Tag prop reference.
+  -- | Tag property reference.
   TagPropRef
     :: TagProperty lvl
     -> Property lvl
@@ -81,19 +82,16 @@ data Property (lvl :: Level) where
   --    Will take the shape of the parent.
   --    After static materialization, becomes PropDict.
   DerivedProp
-    :: Essence lvl
-    -> AbstractProperty lvl
-    -> [PropertyKeyValue lvl]
-    -> Property lvl
+    :: EssenceTL
+    -> AbstractPropertyTL
+    -> [PropertyKeyValueTL]
+    -> PropertyTL
 
   -- | Compound property for static value-level and dynamic
   -- value-level representation.
   -- Can't be static type-level; use Abstract and Derived only
   -- (make Abstract for a root object like Any in Scala
   -- and derive everything from it to describe usual properties.
-
-  -- ??? Each prop in the bag is a mutable reference.
-  -- ??? Each prop can be replaced by some other prop in the dyn model.
   PropDict
     :: PropertyGroupVL
     -> [PropertyKeyValueVL]

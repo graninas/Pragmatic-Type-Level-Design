@@ -19,6 +19,13 @@ getGroup (PropDict group _) = group
 getGroup (DerivedProp _ _ _) = error "getGroup not implemented for DerivedProp"
 getGroup (TagPropRef _) = error "getGroup not implemented for TagPropRef"
 
+getTagPropEss :: TagPropertyVL -> EssenceVL
+getTagPropEss (TagProp tagGroup) = getTagPropGroupEssence tagGroup
+
+getTagPropGroupEssence :: TagPropertyGroupVL -> EssenceVL
+getTagPropGroupEssence (TagGroup ess) = ess
+getTagPropGroupEssence (TagGroupRoot ess _) = ess
+
 getStringValue :: ValDefVL -> Maybe String
 getStringValue (StringValue str) = Just str
 getStringValue _ = Nothing
@@ -62,9 +69,9 @@ queryStringValueForKeyVals _ [] = Nothing
 queryStringValueForKeyVals path@(ess:_) (PropKeyVal ess' owning : kvs)
   | ess == ess' = queryStringValueForOwning path owning
   | otherwise = queryStringValueForKeyVals path kvs
-queryStringValueForKeyVals path@(ess:_) (PropKeyBag ess' ownings : kvs)
-  | ess == ess' = queryStringValueForOwnings path ownings
-  | otherwise = queryStringValueForKeyVals path kvs
+-- queryStringValueForKeyVals path@(ess:_) (PropKeyBag ess' props : kvs)
+--   | ess == ess' = queryStringValueForProps path props
+--   | otherwise = queryStringValueForKeyVals path kvs
 
 -- Hardcoded function.
 -- TODO: move to the Query language.

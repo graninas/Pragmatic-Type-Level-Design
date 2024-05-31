@@ -16,6 +16,13 @@ library
   exposed-modules:
       Main
       TypeLevel.System.Debug
+      TypeLevel.ZeplrogOOP.Dynamic.Instantiation
+      TypeLevel.ZeplrogOOP.Dynamic.Instantiation.Common
+      TypeLevel.ZeplrogOOP.Dynamic.Instantiation.Instantiator
+      TypeLevel.ZeplrogOOP.Dynamic.Instantiation.Property
+      TypeLevel.ZeplrogOOP.Dynamic.Model
+      TypeLevel.ZeplrogOOP.Dynamic.Model.Common
+      TypeLevel.ZeplrogOOP.Dynamic.Model.Property
       TypeLevel.ZeplrogOOP.Static.Description
       TypeLevel.ZeplrogOOP.Static.Materialization
       TypeLevel.ZeplrogOOP.Static.Materialization.Common
@@ -69,6 +76,13 @@ executable typeLevelOOP
   main-is: Main.hs
   other-modules:
       TypeLevel.System.Debug
+      TypeLevel.ZeplrogOOP.Dynamic.Instantiation
+      TypeLevel.ZeplrogOOP.Dynamic.Instantiation.Common
+      TypeLevel.ZeplrogOOP.Dynamic.Instantiation.Instantiator
+      TypeLevel.ZeplrogOOP.Dynamic.Instantiation.Property
+      TypeLevel.ZeplrogOOP.Dynamic.Model
+      TypeLevel.ZeplrogOOP.Dynamic.Model.Common
+      TypeLevel.ZeplrogOOP.Dynamic.Model.Property
       TypeLevel.ZeplrogOOP.Static.Description
       TypeLevel.ZeplrogOOP.Static.Materialization
       TypeLevel.ZeplrogOOP.Static.Materialization.Common

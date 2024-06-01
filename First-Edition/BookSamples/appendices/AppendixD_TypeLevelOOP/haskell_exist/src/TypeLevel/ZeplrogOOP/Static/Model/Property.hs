@@ -13,9 +13,10 @@ import CPrelude
 
 import TypeSelector.Granular
 import TypeLevel.ZeplrogOOP.Static.Model.Common
+import TypeLevel.ZeplrogOOP.Static.Model.Script
 
 import GHC.TypeLits
-import qualified Text.Show as T
+import qualified Data.Map as Map
 
 
 -- | Tag property is always static.
@@ -61,15 +62,19 @@ data PropertyKeyValue (lvl :: Level) where
   -- | Separate property
   PropKeyVal :: Essence lvl -> PropertyOwning lvl -> PropertyKeyValue lvl
 
+data PropertyScript where
+  PropScript :: EssenceTL -> Script -> PropertyScript
+
   -- | Abstract property.
   --   Provides the shape for the derived properties.
-  --   Should not be dynamically materialized.
-data AbstractProperty (lvl :: Level) where
+--     Abstract property can't be value level.
+data AbstractProperty where
   -- | Regular abstract property with fields.
   AbstractProp
-    :: PropertyGroup lvl
-    -> [PropertyKeyValue lvl]
-    -> AbstractProperty lvl
+    :: PropertyGroupTL
+    -> [PropertyKeyValueTL]
+    -> [PropertyScript]
+    -> AbstractProperty
 
 -- | Static property that must be stat and dyn materialized.
 data Property (lvl :: Level) where
@@ -81,22 +86,22 @@ data Property (lvl :: Level) where
   -- | Derived property from any abstract property.
   --    Will take the shape of the parent.
   --    After static materialization, becomes PropDict.
+  --    DeriviedProp can't be value level.
   DerivedProp
     :: EssenceTL
-    -> AbstractPropertyTL
+    -> AbstractProperty
     -> [PropertyKeyValueTL]
+    -> [PropertyScript]
     -> PropertyTL
 
   -- | Compound property for static value-level and dynamic
   -- value-level representation.
-  -- Can't be static type-level; use Abstract and Derived only
-  -- (make Abstract for a root object like Any in Scala
-  -- and derive everything from it to describe usual properties.
+  -- Can't be type-level; use AbstractProp and DerivedProp instead.
   PropDict
     :: PropertyGroupVL
     -> [PropertyKeyValueVL]
+    -> Map.Map EssenceVL String  --tODO
     -> PropertyVL
-
 
 ------ Short identifiers ----------
 type TagPropertyGroupTL = TagPropertyGroup 'TypeLevel
@@ -107,9 +112,6 @@ type TagPropertyVL = TagProperty 'ValueLevel
 
 type PropertyGroupTL = PropertyGroup 'TypeLevel
 type PropertyGroupVL = PropertyGroup 'ValueLevel
-
-type AbstractPropertyTL = AbstractProperty 'TypeLevel
-type AbstractPropertyVL = AbstractProperty 'ValueLevel
 
 type PropertyTL = Property 'TypeLevel
 type PropertyVL = Property 'ValueLevel

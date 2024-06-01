@@ -42,9 +42,12 @@ type EColorRef      = Ess @TypeLevel "ref:color"
 type EAvailableColors = Ess @TypeLevel "available colors"
 type EAbstractLamp    = Ess @TypeLevel "lamp:abstract"
 type EIsOn            = Ess @TypeLevel "is on"
+type ESwitchScript    = Ess @TypeLevel "script:switch"
 
 type EDaylightLamp    = Ess @TypeLevel "lamp:daylight"
 type ETableLamp       = Ess @TypeLevel "lamp:table"
+type EBrightness      = Ess @TypeLevel "brightness"
+type EBrightnessMax   = Ess @TypeLevel "brightness:max"
 
 type Color      = TagProp (TagGroup EColor)
 type ColorWhite = TagProp (TagGroupRoot EColorWhite Color)
@@ -53,6 +56,16 @@ type ColorGreen = TagProp (TagGroupRoot EColorGreen Color)
 type ColorBlue  = TagProp (TagGroupRoot EColorBlue Color)
 
 type ColorPath = '[ EAvailableColors, EColorWhite ]
+
+type SwitchVar = BoolVar "switch"
+
+type SwitchScript = 'Script "inverts the EIsOn switch"
+  '[ DeclareVar SwitchVar
+   , QueryVal '[EIsOn] (ToVar SwitchVar)
+   , Invoke Negate SwitchVar (ToVar SwitchVar)
+   , WriteVar SwitchVar '[EIsOn]
+   ]
+
 
 type AbstractLamp = AbstractProp (Group EAbstractLamp)
   '[ PropKeyVal EIsOn (OwnVal (BoolValue False))
@@ -67,32 +80,41 @@ type AbstractLamp = AbstractProp (Group EAbstractLamp)
    -- | Current color. Points to a possible color.
    , PropKeyVal EColor (OwnVal (PathValue ColorPath))
    ]
+  '[ PropScript ESwitchScript SwitchScript
+   ]
 
 type DaylightLamp = DerivedProp EDaylightLamp AbstractLamp
   '[
   ]
-
-type TableLamp = DerivedProp ETableLamp AbstractLamp
   '[
   ]
+
+type TableLamp = DerivedProp ETableLamp AbstractLamp
+  '[ PropKeyVal EBrightness (OwnVal (IntValue 50))
+   , PropKeyVal EBrightnessMax (OwnVal (IntValue 100))
+   ]
+  '[]
 
 eDaylightLamp = sMatEss @EDaylightLamp
 eAbstractLamp = sMatEss @EAbstractLamp
 
 lampParent :: PropertyVL
-lampParent = PropDict (GroupId eAbstractLamp (StaticPropertyId 1)) []
+lampParent = PropDict
+  (GroupId eAbstractLamp (StaticPropertyId 1))
+  []
+  Map.empty
 
 daylightLampExpected :: PropertyVL
 daylightLampExpected = PropDict
   (GroupRootId eDaylightLamp (StaticPropertyId 2) lampParent)
   []
-
+  Map.empty
 
 
 spec :: Spec
 spec =
   describe "Abstract property deriving test" $ do
-    it "Static materialization test" $ do
+    it "Static materialization test (daylight lamp)" $ do
       sEnv <- makeSEnv DebugDisabled
 
       lamp <- sMat' sEnv () $ Proxy @DaylightLamp
@@ -107,11 +129,34 @@ spec =
       -- print $ "Stat essences: " <> show (Map.keys statEsss)
 
       case lamp of
-        PropDict group props -> do
+        PropDict group props scripts -> do
           let (ess, sId) = getComboPropertyId group
           length props `shouldBe` 3
           length statProps `shouldBe` 2
           ess `shouldBe` Ess "lamp:daylight"
+          Map.member ess statEsss `shouldBe` True
+        _ -> error "invalid materialization result"
+
+    it "Static materialization test (table lamp)" $ do
+      sEnv <- makeSEnv DebugDisabled
+
+      lamp <- sMat' sEnv () $ Proxy @TableLamp
+
+      let lampDescr = SPrint.describe lamp
+      putStrLn $ P.unlines lampDescr
+
+      statProps <- readTVarIO $ seStaticPropertiesVar sEnv
+      statEsss  <- readTVarIO $ seStaticEssencesVar sEnv
+
+      -- print $ "Stat props: " <> show (Map.keys statProps)
+      -- print $ "Stat essences: " <> show (Map.keys statEsss)
+
+      case lamp of
+        PropDict group props scripts -> do
+          let (ess, sId) = getComboPropertyId group
+          length props `shouldBe` 5
+          length statProps `shouldBe` 2
+          ess `shouldBe` Ess "lamp:table"
           Map.member ess statEsss `shouldBe` True
         _ -> error "invalid materialization result"
 
@@ -121,10 +166,10 @@ spec =
       lampStat <- sMat' sEnv () $ Proxy @DaylightLamp
       lamp <- DInst.dInstParent dEnv Nothing lampStat
 
-      -- props <- readTVarIO $ DInst.dePropertiesVar dEnv
-      -- print $ "All props: " <> show (Map.keys props)
+      props <- readTVarIO $ DInst.dePropertiesVar dEnv
+      print $ "All props: " <> show (Map.keys props)
 
-      -- Map.size props `shouldBe` 4
+      Map.size props `shouldBe` 1
 
       case lamp of
         DMod.Prop _ _ _ _ -> pure ()

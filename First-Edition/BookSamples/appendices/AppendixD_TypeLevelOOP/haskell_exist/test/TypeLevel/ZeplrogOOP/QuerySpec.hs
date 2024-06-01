@@ -28,16 +28,18 @@ type TestIconOwning = OwnVal (IconVal "+")
 type TestPropKeyVal = PropKeyVal KB.EIcon TestIconOwning
 
 type EAny = Ess @TypeLevel "prop:any"
-type AnyProp = AbstractProp (Group EAny) '[]
+type AnyProp = AbstractProp (Group EAny) '[] '[]
 
 type TestProp = DerivedProp KB.EIntrinsics AnyProp
   '[ TestPropKeyVal
    ]
+  '[]
 
 
 type Wall = DerivedProp KB.EWall AnyProp
   '[ PropKeyVal KB.EIcon (OwnVal (IconVal "#"))
    ]
+  '[]
 
 spec :: Spec
 spec = do

@@ -36,8 +36,10 @@ import qualified Data.Map.Strict as Map
 data SrcPropKVs propKVs
 data PropOwns propOwns
 data Props props
+data SrcScripts scripts
 
 type ResPropKVs = [PropertyKeyValueVL]
+type ResScripts = [(EssenceVL, String)]
 
 
 -- Statically materialize property group
@@ -64,6 +66,35 @@ instance
     prop <- sMat () $ Proxy @prop
     pure $ GroupRootId ess sId prop
 
+-- Statically materialize script
+
+instance
+  ( SMat () ess EssenceVL
+  , KnownSymbol descr
+  ) =>
+  SMat () ('PropScript ess ('Script descr ops))
+          (EssenceVL, String) where
+  sMat () _ = do
+    ess <- sMat () $ Proxy @ess
+    let descr = symbolVal $ Proxy @descr
+    pure (ess, descr)
+
+-- Statically materialize scripts list
+
+instance
+  SMat () (SrcScripts '[]) ResScripts where
+  sMat () _ = pure []
+
+instance
+  ( SMat () script (EssenceVL, String)
+  , SMat () (SrcScripts scripts) ResScripts
+  ) =>
+  SMat () (SrcScripts (script ': scripts)) ResScripts where
+  sMat () _ = do
+    script  <- sMat () $ Proxy @script
+    scripts <- sMat () $ Proxy @(SrcScripts scripts)
+    pure $ script : scripts
+
 -- Statically materialize property
 
 instance
@@ -84,8 +115,9 @@ newtype APropPrepared = APropPrepared PropertyVL
 instance
   ( SMat () group PropertyGroupVL
   , SMat () (SrcPropKVs propKVs) ResPropKVs
+  , SMat () (SrcScripts scripts) ResScripts
   ) =>
-  SMat () ('AbstractProp @'TypeLevel group propKVs)
+  SMat () ('AbstractProp group propKVs scripts)
           APropPrepared where
   sMat () _ = do
     sEnv <- ask
@@ -109,8 +141,9 @@ instance
       _ -> do
         sTraceDebug $ "New prepared abstract property to introduce: "
           <> show ess <> ", sId: " <> show statPropId
-        propKVs <- sMat () $ Proxy @(SrcPropKVs propKVs)
-        let prop = PropDict group propKVs
+        propKVs   <- sMat () $ Proxy @(SrcPropKVs propKVs)
+        scriptKVs <- sMat () $ Proxy @(SrcScripts scripts)
+        let prop = PropDict group propKVs (Map.fromList scriptKVs)
         addStaticProperty (statPropId, ess, prop)
         sTraceDebug $ show ess <> ": prepared: " <> show statPropId
         pure $ APropPrepared prop
@@ -119,8 +152,9 @@ instance
   ( SMat () ess EssenceVL
   , SMat () abstractProp APropPrepared
   , SMat () (SrcPropKVs propKVs) ResPropKVs
+  , SMat () (SrcScripts scripts) ResScripts
   ) =>
-  SMat () ('DerivedProp ess abstractProp propKVs)
+  SMat () ('DerivedProp ess abstractProp propKVs scripts)
           PropertyVL where
   sMat () _ = do
 
@@ -131,7 +165,7 @@ instance
     APropPrepared aPropPrepared <- sMat () $ Proxy @abstractProp
 
     case aPropPrepared of
-      PropDict aGroup abstractPropKVs -> do
+      PropDict aGroup abstractPropKVs abstractPropScripts -> do
         let aId@(abstractPropEss, abstractPropSId) = getComboPropertyId aGroup
         sTraceDebug $ "Abstract property to derive: " <> show aId
 
@@ -140,10 +174,10 @@ instance
         propKVs <- sMat () $ Proxy @(SrcPropKVs propKVs)
         let propKVs' = mergePropKVs propKVs abstractPropKVs
 
-        -- It seems we don't need to show service-only prepared abstract prop
-        -- as a parent of the new static prop.
-        -- let prop = PropDict (GroupRootId ess statPropId aPropPrepared) propKVs'
-        let prop = PropDict (GroupId ess statPropId) propKVs'
+        scripts <- sMat () $ Proxy @(SrcScripts scripts)
+        let scripts' = Map.union (Map.fromList scripts) abstractPropScripts
+
+        let prop = PropDict (GroupId ess statPropId) propKVs' scripts'
         addStaticProperty (statPropId, ess, prop)
         sTraceDebug $ show ess <> ": new property is derived: "
                    <> show statPropId
@@ -290,7 +324,10 @@ instance
 
 -- | Merges props with preference of the first keys.
 -- Does not merge internal props.
-mergePropKVs :: [PropertyKeyValueVL] -> [PropertyKeyValueVL] -> [PropertyKeyValueVL]
+mergePropKVs
+  :: [PropertyKeyValueVL]
+  -> [PropertyKeyValueVL]
+  -> [PropertyKeyValueVL]
 mergePropKVs kvs1 kvs2 = let
   pKVs1 = Map.fromList [ (getEssenceFromKV k, k) | k <- kvs1]
   pKVs2 = Map.fromList [ (getEssenceFromKV k, k) | k <- kvs2]

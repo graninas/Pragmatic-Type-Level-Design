@@ -7,6 +7,7 @@ module TypeLevel.ZeplrogOOP.Static.Description where
 
 import CPrelude
 import qualified Prelude as P (unwords)
+import qualified Data.Map as Map
 
 import TypeLevel.ZeplrogOOP.Static.Model
 
@@ -82,21 +83,16 @@ instance SPrint TagPropertyVL where
     push "TagProp "
     sub singGroup
 
-instance SPrint AbstractPropertyVL where
-  sPrint (AbstractProp group kvs) = do
-    push "AbstractProp "
-    add group
-    mapM_ sub kvs
-
 instance SPrint PropertyVL where
   sPrint (TagPropRef sProp) = do
     push "TagPropRef"
     sub sProp
 
-  sPrint (PropDict group kvs) = do
+  sPrint (PropDict group kvs scripts) = do
     push "PropDict "
     sub group
     sub kvs
+    push $ show scripts
 
 instance SPrint PropertyGroupVL where
   sPrint (GroupId ess statPropId) = do

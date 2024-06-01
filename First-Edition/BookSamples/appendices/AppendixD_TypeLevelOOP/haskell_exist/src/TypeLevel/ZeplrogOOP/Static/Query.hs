@@ -15,8 +15,8 @@ getEssenceFromKV (PropKeyBag ess _) = ess
 getEssenceFromKV (PropKeyVal ess _) = ess
 
 getGroup :: PropertyVL -> PropertyGroupVL
-getGroup (PropDict group _) = group
-getGroup (DerivedProp _ _ _) = error "getGroup not implemented for DerivedProp"
+getGroup (PropDict group _ _) = group
+getGroup (DerivedProp _ _ _ _) = error "getGroup not implemented for DerivedProp"
 getGroup (TagPropRef _) = error "getGroup not implemented for TagPropRef"
 
 getTagPropEss :: TagPropertyVL -> EssenceVL
@@ -35,11 +35,11 @@ getStringValue _ = Nothing
 -- TODO: move to the Query language.
 queryStringValue :: EssencePathVL -> PropertyVL -> Maybe String
 queryStringValue [] _ = Nothing
-queryStringValue _ (DerivedProp _ _ _) =
+queryStringValue _ (DerivedProp _ _ _ _) =
   error "queryStringValue not implemented for DerivedProp"
 queryStringValue _ (TagPropRef _) =
   error "queryStringValue not implemented for TagPropRef"
-queryStringValue (ess:esss) (PropDict group kvs) = let
+queryStringValue (ess:esss) (PropDict group kvs _) = let
   (ess', _) = getComboPropertyId group
   in case ess == ess' of
         True -> queryStringValueForKeyVals esss kvs
@@ -53,9 +53,9 @@ queryStringValueRelative :: EssencePathVL -> PropertyVL -> Maybe String
 queryStringValueRelative [] _ = Nothing
 queryStringValueRelative _ (TagPropRef _) =
   error "queryStringValueRelative not implemented for TagPropRef"
-queryStringValueRelative _ (DerivedProp _ _ _) =
+queryStringValueRelative _ (DerivedProp _ _ _ _) =
   error "queryStringValueRelative not implemented for DerivedProp"
-queryStringValueRelative esss (PropDict group kvs) =
+queryStringValueRelative esss (PropDict group kvs _) =
   queryStringValueForKeyVals esss kvs
 
 -- Hardcoded function.

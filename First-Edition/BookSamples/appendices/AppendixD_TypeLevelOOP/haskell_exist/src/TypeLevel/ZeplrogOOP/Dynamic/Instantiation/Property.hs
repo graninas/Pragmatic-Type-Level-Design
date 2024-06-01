@@ -56,7 +56,7 @@ instance
     ess <- dInst False () $ SQuery.getTagPropEss tagProp
     pure (ess, TagPropRef tagProp)
 
-  dInst shared mbParentId (SMod.PropDict group propKVs) =
+  dInst shared mbParentId (SMod.PropDict group propKVs scripts) =
     spawnProperty $ withShared shared group $ do
       let (sEss, sId) = SQuery.getComboPropertyId group
 

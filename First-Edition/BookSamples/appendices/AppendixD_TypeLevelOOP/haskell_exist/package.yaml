@@ -37,6 +37,7 @@ dependencies:
 - random
 - lens
 - ptld-lib
+- ghc-prim
 
 library:
   source-dirs:

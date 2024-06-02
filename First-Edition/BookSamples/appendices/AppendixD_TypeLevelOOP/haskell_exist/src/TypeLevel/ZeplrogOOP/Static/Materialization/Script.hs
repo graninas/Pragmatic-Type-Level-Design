@@ -26,14 +26,22 @@ import qualified Data.Map.Strict as Map
 data ScrOps ops
 data EssencesX ess
 
+instance SMat () 'True Bool where
+  sMat () _ = pure True
+
+instance SMat () 'False Bool where
+  sMat () _ = pure False
+
 instance
   ( KnownSymbol varName
+  , SMat () defVal Bool
   ) =>
-  SMat () ('BoolVar varName)
+  SMat () ('BoolVar varName defVal)
           (VarDef BoolTag) where
   sMat () _ = do
     let varName = symbolVal $ Proxy @varName
-    pure $ BoolVarVL varName
+    defVal <- sMat () $ Proxy @defVal
+    pure $ BoolVarVL varName defVal
 
 instance
   ( varDef ~ (vd :: VarDef typeTag)

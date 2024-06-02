@@ -16,9 +16,9 @@ import GHC.TypeLits
 data BoolTag
 
 data VarDef typeTag where
-  BoolVar :: Symbol -> VarDef BoolTag
+  BoolVar :: Symbol -> Bool -> VarDef BoolTag
   -- ^ type-level bool representation
-  BoolVarVL :: String -> VarDef BoolTag
+  BoolVarVL :: String -> Bool -> VarDef BoolTag
   -- ^ value-level bool representation
 
 data ScriptOp where

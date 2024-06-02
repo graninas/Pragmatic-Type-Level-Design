@@ -73,22 +73,8 @@ instance
       -- Prop without scripts
       let tmpProp = Prop propId mbParentId sId propBagsVar Map.empty
 
-      -- scripts' <- mapM (makeScript tmpProp) $ Map.toList scripts
-      -- pure (ess, tmpProp {pScripts = Map.fromList scripts'})
-
-      pure (ess, tmpProp)
-
-makeScript
-  :: Property
-  -> (SMod.EssenceVL, SMod.PropertyScriptVL)
-  -> DInstantiator (Essence, IO ())
-makeScript prop (statEss, pS) = do
-  DEnv sEnv _ _ _ _ <- ask
-
-  ess <- dInst False () statEss
-  -- res <- liftIO $ matScript sEnv proxy
-
-  pure (ess, pure ())
+      scripts' <- liftIO $ mapM (Script.makeScript tmpProp) scripts
+      pure (ess, tmpProp {pScripts = Map.fromList scripts'})
 
 
 instance

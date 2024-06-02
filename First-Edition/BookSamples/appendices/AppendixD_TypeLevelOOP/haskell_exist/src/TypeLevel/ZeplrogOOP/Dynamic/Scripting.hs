@@ -11,6 +11,8 @@ invoke
   -> Property
   -> IO ()
 invoke ess (Prop _ _ _ _ scripts) = do
+  print $ Map.keys scripts
+
   case Map.lookup ess scripts of
     Nothing -> error $ "Script not found: " <> show ess
-    Just act -> act
+    Just (DynScript act) -> act

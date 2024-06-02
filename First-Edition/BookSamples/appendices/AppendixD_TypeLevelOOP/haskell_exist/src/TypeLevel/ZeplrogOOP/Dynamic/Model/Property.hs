@@ -30,6 +30,8 @@ data PropertyRef
   = DynamicPropRef PropertyId
   | StaticPropRef SMod.StaticPropertyId
 
+data DynamicScript = DynScript (IO ())
+
 -- | Dynamic property
 data Property
   = TagPropRef SMod.TagPropertyVL
@@ -42,5 +44,5 @@ data Property
       -- ^ Source property for this one
     , pPropertyBagVar   :: TVar (Map.Map Essence PropertyOwning)
       -- ^ Child properties
-    , pScripts          :: Map.Map Essence (IO ())
+    , pScripts          :: Map.Map Essence DynamicScript
     }

@@ -20,9 +20,11 @@ library
       TypeLevel.ZeplrogOOP.Dynamic.Instantiation.Common
       TypeLevel.ZeplrogOOP.Dynamic.Instantiation.Instantiator
       TypeLevel.ZeplrogOOP.Dynamic.Instantiation.Property
+      TypeLevel.ZeplrogOOP.Dynamic.Instantiation.Script
       TypeLevel.ZeplrogOOP.Dynamic.Model
       TypeLevel.ZeplrogOOP.Dynamic.Model.Common
       TypeLevel.ZeplrogOOP.Dynamic.Model.Property
+      TypeLevel.ZeplrogOOP.Dynamic.Scripting
       TypeLevel.ZeplrogOOP.Static.Description
       TypeLevel.ZeplrogOOP.Static.Materialization
       TypeLevel.ZeplrogOOP.Static.Materialization.Common
@@ -80,9 +82,11 @@ executable typeLevelOOP
       TypeLevel.ZeplrogOOP.Dynamic.Instantiation.Common
       TypeLevel.ZeplrogOOP.Dynamic.Instantiation.Instantiator
       TypeLevel.ZeplrogOOP.Dynamic.Instantiation.Property
+      TypeLevel.ZeplrogOOP.Dynamic.Instantiation.Script
       TypeLevel.ZeplrogOOP.Dynamic.Model
       TypeLevel.ZeplrogOOP.Dynamic.Model.Common
       TypeLevel.ZeplrogOOP.Dynamic.Model.Property
+      TypeLevel.ZeplrogOOP.Dynamic.Scripting
       TypeLevel.ZeplrogOOP.Static.Description
       TypeLevel.ZeplrogOOP.Static.Materialization
       TypeLevel.ZeplrogOOP.Static.Materialization.Common

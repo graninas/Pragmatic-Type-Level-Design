@@ -39,7 +39,7 @@ data Props props
 data SrcScripts scripts
 
 type ResPropKVs = [PropertyKeyValueVL]
-type ResScripts = [(EssenceVL, String)]
+type ResScripts = [(EssenceVL, ScriptWrapper)]
 
 
 -- Statically materialize property group
@@ -70,14 +70,14 @@ instance
 
 instance
   ( SMat () ess EssenceVL
-  , KnownSymbol descr
+  , SMat () script CustomSctiptVL
   ) =>
-  SMat () ('PropScript ess ('Script descr ops))
-          (EssenceVL, String) where
+  SMat () ('PropScript ess script)
+          (EssenceVL, PropertyScriptVL) where
   sMat () _ = do
-    ess <- sMat () $ Proxy @ess
-    let descr = symbolVal $ Proxy @descr
-    pure (ess, descr)
+    ess    <- sMat () $ Proxy @ess
+    script <- sMat () $ Proxy @script
+    pure $ PropScript ess script
 
 -- Statically materialize scripts list
 
@@ -86,7 +86,7 @@ instance
   sMat () _ = pure []
 
 instance
-  ( SMat () script (EssenceVL, String)
+  ( SMat () script (EssenceVL, PropertyScriptVL)
   , SMat () (SrcScripts scripts) ResScripts
   ) =>
   SMat () (SrcScripts (script ': scripts)) ResScripts where
@@ -95,7 +95,7 @@ instance
     scripts <- sMat () $ Proxy @(SrcScripts scripts)
     pure $ script : scripts
 
--- Statically materialize property
+-- -- -- Statically materialize property -- -- --
 
 instance
   ( SMat () tagProp TagPropertyVL
@@ -141,9 +141,9 @@ instance
       _ -> do
         sTraceDebug $ "New prepared abstract property to introduce: "
           <> show ess <> ", sId: " <> show statPropId
-        propKVs   <- sMat () $ Proxy @(SrcPropKVs propKVs)
-        scriptKVs <- sMat () $ Proxy @(SrcScripts scripts)
-        let prop = PropDict group propKVs (Map.fromList scriptKVs)
+        propKVs <- sMat () $ Proxy @(SrcPropKVs propKVs)
+        scripts <- sMat () $ Proxy @(SrcScripts scripts)
+        let prop = PropDict group propKVs scripts
         addStaticProperty (statPropId, ess, prop)
         sTraceDebug $ show ess <> ": prepared: " <> show statPropId
         pure $ APropPrepared prop
@@ -175,7 +175,7 @@ instance
         let propKVs' = mergePropKVs propKVs abstractPropKVs
 
         scripts <- sMat () $ Proxy @(SrcScripts scripts)
-        let scripts' = Map.union (Map.fromList scripts) abstractPropScripts
+        let scripts' = mergeScripts scripts abstractPropScripts
 
         let prop = PropDict (GroupId ess statPropId) propKVs' scripts'
         addStaticProperty (statPropId, ess, prop)
@@ -321,7 +321,6 @@ instance
     pure $ prop : props
 
 
-
 -- | Merges props with preference of the first keys.
 -- Does not merge internal props.
 mergePropKVs
@@ -333,4 +332,15 @@ mergePropKVs kvs1 kvs2 = let
   pKVs2 = Map.fromList [ (getEssenceFromKV k, k) | k <- kvs2]
   pKVs3 = Map.union pKVs1 pKVs2
   in Map.elems pKVs3
+
+-- | Merges scripts with preference of the first keys.
+mergeScripts
+  :: [PropertyScriptVL]
+  -> [PropertyScriptVL]
+  -> [PropertyScriptVL]
+mergeScripts ss1 ss2 = let
+  ss1' = Map.fromList [ (ess, ps) | ps@(PropScript ess _) <- ss1]
+  ss2' = Map.fromList [ (ess, ps) | ps@(PropScript ess _) <- ss2]
+  ss3' = Map.union ss1' ss2'
+  in Map.elems ss3'
 

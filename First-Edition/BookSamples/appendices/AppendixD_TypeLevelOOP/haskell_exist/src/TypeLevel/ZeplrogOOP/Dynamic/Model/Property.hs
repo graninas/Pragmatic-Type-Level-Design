@@ -42,4 +42,5 @@ data Property
       -- ^ Source property for this one
     , pPropertyBagVar   :: TVar (Map.Map Essence PropertyOwning)
       -- ^ Child properties
+    , pScripts          :: Map.Map Essence (IO ())
     }

@@ -16,7 +16,10 @@ import GHC.TypeLits
 data BoolTag
 
 data VarDef typeTag varName where
-  BoolVar :: varName -> VarDef BoolTag varName
+  BoolVar :: Symbol -> VarDef BoolTag varName
+  -- ^ type-level bool representation
+  BoolVarVL :: String -> VarDef BoolTag varName
+  -- ^ value-level bool representation
 
 data ScriptOp where
   DeclareVar :: VarDef typeTag varName -> ScriptOp
@@ -31,8 +34,18 @@ data ScriptOp where
 data ToVarAct typeTag varName where
   ToVar :: VarDef typeTag varName -> ToVarAct typeTag varName
 
-data Script = Script Symbol [ScriptOp]
-
-
 data Func typeTag where
   Negate :: Func BoolTag
+
+-- | Script type
+data CustomScript (lvl :: Level) where
+  Script
+    :: StringType lvl
+    -- ^ Description
+    -> [ScriptOp]
+    -> CustomScript lvl
+
+
+type CustomScriptTL = CustomScript 'TypeLevel
+type CustomScriptVL = CustomScript 'ValueLevel
+

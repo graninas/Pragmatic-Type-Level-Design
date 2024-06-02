@@ -62,8 +62,8 @@ data PropertyKeyValue (lvl :: Level) where
   -- | Separate property
   PropKeyVal :: Essence lvl -> PropertyOwning lvl -> PropertyKeyValue lvl
 
-data PropertyScript where
-  PropScript :: EssenceTL -> Script -> PropertyScript
+data PropertyScript (lvl :: Level) where
+  PropScript :: EssenceTL -> CustomScript lvl -> PropertyScriptTL
 
   -- | Abstract property.
   --   Provides the shape for the derived properties.
@@ -73,7 +73,7 @@ data AbstractProperty where
   AbstractProp
     :: PropertyGroupTL
     -> [PropertyKeyValueTL]
-    -> [PropertyScript]
+    -> [PropertyScriptTL]
     -> AbstractProperty
 
 -- | Static property that must be stat and dyn materialized.
@@ -91,7 +91,7 @@ data Property (lvl :: Level) where
     :: EssenceTL
     -> AbstractProperty
     -> [PropertyKeyValueTL]
-    -> [PropertyScript]
+    -> [PropertyScriptTL]
     -> PropertyTL
 
   -- | Compound property for static value-level and dynamic
@@ -100,10 +100,12 @@ data Property (lvl :: Level) where
   PropDict
     :: PropertyGroupVL
     -> [PropertyKeyValueVL]
-    -> Map.Map EssenceVL String  --tODO
+    -> [PropertyScriptVL]
     -> PropertyVL
 
+
 ------ Short identifiers ----------
+
 type TagPropertyGroupTL = TagPropertyGroup 'TypeLevel
 type TagPropertyGroupVL = TagPropertyGroup 'ValueLevel
 
@@ -112,6 +114,9 @@ type TagPropertyVL = TagProperty 'ValueLevel
 
 type PropertyGroupTL = PropertyGroup 'TypeLevel
 type PropertyGroupVL = PropertyGroup 'ValueLevel
+
+type PropertyScriptTL = PropertyScript 'TypeLevel
+type PropertyScriptVL = PropertyScript 'ValueLevel
 
 type PropertyTL = Property 'TypeLevel
 type PropertyVL = Property 'ValueLevel

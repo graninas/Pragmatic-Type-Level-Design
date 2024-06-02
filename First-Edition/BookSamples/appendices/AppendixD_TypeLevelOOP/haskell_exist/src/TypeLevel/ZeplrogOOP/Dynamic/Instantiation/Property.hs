@@ -2,6 +2,8 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 module TypeLevel.ZeplrogOOP.Dynamic.Instantiation.Property where
@@ -14,6 +16,7 @@ import qualified TypeLevel.ZeplrogOOP.Static.Materialization.Materializer as SMa
 import TypeLevel.ZeplrogOOP.Dynamic.Model
 import TypeLevel.ZeplrogOOP.Dynamic.Instantiation.Instantiator
 import TypeLevel.ZeplrogOOP.Dynamic.Instantiation.Common
+import qualified TypeLevel.ZeplrogOOP.Dynamic.Instantiation.Script as Script
 
 import Data.Proxy
 import qualified Data.Map.Strict as Map
@@ -50,6 +53,8 @@ withShared shared group matProp = do
 
 type MbParentId = Maybe PropertyId
 
+
+
 instance
   DInst MbParentId SMod.PropertyVL (Essence, Property) where
   dInst shared _ (SMod.TagPropRef tagProp) = do
@@ -65,7 +70,31 @@ instance
       props       <- mapM (dInst False (Just propId)) propKVs
       propBagsVar <- newTVarIO $ Map.fromList props
 
-      pure (ess, Prop propId mbParentId sId propBagsVar)
+      -- Prop without scripts
+      let tmpProp = Prop propId mbParentId sId propBagsVar Map.empty
+      scripts' <- mapM (makeScript tmpProp) $ Map.toList scripts
+
+      pure (ess, tmpProp {pScripts = Map.fromList scripts'})
+
+makeScript
+  :: Property
+  -> (SMod.EssenceVL, SMod.ScriptWrapper)
+  -> DInstantiator (Essence, IO ())
+makeScript prop (statEss, SMod.SW proxy) = do
+  DEnv sEnv _ _ _ _ <- ask
+
+  ess <- dInst False () statEss
+  res <- liftIO $ matScript sEnv proxy
+
+  pure (ess, res)
+
+  where
+    matScript
+      :: SMat.SMat Property s (IO ())
+      => SMat.SEnv
+      -> Proxy (s :: SMod.Script)
+      -> IO (IO ())
+    matScript sEnv proxy = SMat.sMat' sEnv prop proxy
 
 instance
   DInst MbParentId SMod.PropertyOwningVL PropertyOwning where

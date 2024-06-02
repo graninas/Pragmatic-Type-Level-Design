@@ -92,7 +92,6 @@ instance SPrint PropertyVL where
     push "PropDict "
     sub group
     sub kvs
-    push $ show scripts
 
 instance SPrint PropertyGroupVL where
   sPrint (GroupId ess statPropId) = do

@@ -9,6 +9,7 @@ import CPrelude
 
 import TypeLevel.System.Debug
 import TypeLevel.ZeplrogOOP.Static.Model
+import qualified TypeLevel.ZeplrogOOP.Dynamic.Model as DMod
 
 import TypeSelector.Granular
 
@@ -23,3 +24,15 @@ sMatEss
   => (ess ~ 'Ess @TypeLevel symb)
   => EssenceVL
 sMatEss = Ess $ symbolVal (Proxy @symb)
+
+instEss
+  :: EssenceVL
+  -> DMod.Essence
+instEss (Ess ess) = ess
+
+toDynEss
+  :: forall ess symb
+  . KnownSymbol symb
+  => (ess ~ 'Ess @TypeLevel symb)
+  => DMod.Essence
+toDynEss = instEss $ sMatEss @ess

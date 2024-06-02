@@ -16,6 +16,7 @@ import TypeLevel.ZeplrogOOP.Static.Query
 import TypeLevel.ZeplrogOOP.Static.Materialization
 import qualified TypeLevel.ZeplrogOOP.Dynamic.Model as DMod
 import qualified TypeLevel.ZeplrogOOP.Dynamic.Instantiation as DInst
+import qualified TypeLevel.ZeplrogOOP.Dynamic.Scripting as DScript
 import qualified TypeLevel.ZeplrogOOP.Static.Description as SPrint
 
 import TypeLevel.ZeplrogOOP.Testing.Utils
@@ -95,22 +96,6 @@ type TableLamp = DerivedProp ETableLamp AbstractLamp
    ]
   '[]
 
-eDaylightLamp = sMatEss @EDaylightLamp
-eAbstractLamp = sMatEss @EAbstractLamp
-
-lampParent :: PropertyVL
-lampParent = PropDict
-  (GroupId eAbstractLamp (StaticPropertyId 1))
-  []
-  Map.empty
-
-daylightLampExpected :: PropertyVL
-daylightLampExpected = PropDict
-  (GroupRootId eDaylightLamp (StaticPropertyId 2) lampParent)
-  []
-  Map.empty
-
-
 spec :: Spec
 spec =
   describe "Abstract property deriving test" $ do
@@ -160,7 +145,7 @@ spec =
           Map.member ess statEsss `shouldBe` True
         _ -> error "invalid materialization result"
 
-    it "Dynamic instantiation test" $ do
+    it "Dynamic instantiation test (daylight lamp)" $ do
       (sEnv, dEnv) <- DInst.makeEnvs DebugDisabled
 
       lampStat <- sMat' sEnv () $ Proxy @DaylightLamp
@@ -172,5 +157,18 @@ spec =
       Map.size props `shouldBe` 1
 
       case lamp of
-        DMod.Prop _ _ _ _ -> pure ()
+        DMod.Prop _ _ _ _ _ -> pure ()
         _ -> error "Invalid prop"
+
+    it "Script invoking test (table lamp)" $ do
+      (sEnv, dEnv) <- DInst.makeEnvs DebugDisabled
+
+      lampStat <- sMat' sEnv () $ Proxy @TableLamp
+      lamp <- DInst.dInstParent dEnv Nothing lampStat
+
+      let scriptEss = toDynEss @ESwitchScript
+
+      DScript.invoke scriptEss lamp
+
+
+

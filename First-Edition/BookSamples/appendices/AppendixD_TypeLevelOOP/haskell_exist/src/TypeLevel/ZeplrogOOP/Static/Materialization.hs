@@ -5,5 +5,4 @@ module TypeLevel.ZeplrogOOP.Static.Materialization
 
 import TypeLevel.ZeplrogOOP.Static.Materialization.Materializer as X
 import TypeLevel.ZeplrogOOP.Static.Materialization.Common as X
-import TypeLevel.ZeplrogOOP.Static.Materialization.Script as X
 import TypeLevel.ZeplrogOOP.Static.Materialization.Property as X

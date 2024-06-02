@@ -63,7 +63,10 @@ data PropertyKeyValue (lvl :: Level) where
   PropKeyVal :: Essence lvl -> PropertyOwning lvl -> PropertyKeyValue lvl
 
 data PropertyScript (lvl :: Level) where
-  PropScript :: EssenceTL -> CustomScript lvl -> PropertyScriptTL
+  PropScript
+    :: Essence lvl
+    -> CustomScript lvl
+    -> PropertyScript lvl
 
   -- | Abstract property.
   --   Provides the shape for the derived properties.

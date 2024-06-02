@@ -15,24 +15,24 @@ import GHC.TypeLits
 
 data BoolTag
 
-data VarDef typeTag varName where
-  BoolVar :: Symbol -> VarDef BoolTag varName
+data VarDef typeTag where
+  BoolVar :: Symbol -> VarDef BoolTag
   -- ^ type-level bool representation
-  BoolVarVL :: String -> VarDef BoolTag varName
+  BoolVarVL :: String -> VarDef BoolTag
   -- ^ value-level bool representation
 
 data ScriptOp where
-  DeclareVar :: VarDef typeTag varName -> ScriptOp
-  WriteVar   :: VarDef typeTag varName -> EssencePathTL -> ScriptOp
-  QueryVal   :: EssencePathTL -> ToVarAct typeTag varName -> ScriptOp
+  DeclareVar :: VarDef typeTag -> ScriptOp
+  WriteVar   :: VarDef typeTag -> EssencePathTL -> ScriptOp
+  QueryVal   :: EssencePathTL -> ToVarAct typeTag -> ScriptOp
   Invoke
     :: Func typeTag
-    -> VarDef typeTag varName1
-    -> ToVarAct typeTag varName2
+    -> VarDef typeTag
+    -> ToVarAct typeTag
     -> ScriptOp
 
-data ToVarAct typeTag varName where
-  ToVar :: VarDef typeTag varName -> ToVarAct typeTag varName
+data ToVarAct typeTag where
+  ToVar :: VarDef typeTag -> ToVarAct typeTag
 
 data Func typeTag where
   Negate :: Func BoolTag

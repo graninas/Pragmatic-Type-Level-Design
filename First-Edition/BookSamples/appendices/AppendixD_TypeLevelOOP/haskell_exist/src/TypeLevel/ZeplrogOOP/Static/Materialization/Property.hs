@@ -36,10 +36,10 @@ import qualified Data.Map.Strict as Map
 data SrcPropKVs propKVs
 data PropOwns propOwns
 data Props props
-data SrcScripts scripts
+data SS scripts
 
 type ResPropKVs = [PropertyKeyValueVL]
-type ResScripts = [(EssenceVL, ScriptWrapper)]
+type RSS = [PropertyScriptVL]
 
 
 -- Statically materialize property group
@@ -70,10 +70,10 @@ instance
 
 instance
   ( SMat () ess EssenceVL
-  , SMat () script CustomSctiptVL
+  , SMat () script CustomScriptVL
   ) =>
   SMat () ('PropScript ess script)
-          (EssenceVL, PropertyScriptVL) where
+          PropertyScriptVL where
   sMat () _ = do
     ess    <- sMat () $ Proxy @ess
     script <- sMat () $ Proxy @script
@@ -82,17 +82,17 @@ instance
 -- Statically materialize scripts list
 
 instance
-  SMat () (SrcScripts '[]) ResScripts where
+  SMat () (SS '[]) RSS where
   sMat () _ = pure []
 
 instance
-  ( SMat () script (EssenceVL, PropertyScriptVL)
-  , SMat () (SrcScripts scripts) ResScripts
+  ( SMat () script PropertyScriptVL
+  , SMat () (SS scripts) RSS
   ) =>
-  SMat () (SrcScripts (script ': scripts)) ResScripts where
+  SMat () (SS (script ': scripts)) RSS where
   sMat () _ = do
     script  <- sMat () $ Proxy @script
-    scripts <- sMat () $ Proxy @(SrcScripts scripts)
+    scripts <- sMat () $ Proxy @(SS scripts)
     pure $ script : scripts
 
 -- -- -- Statically materialize property -- -- --
@@ -115,7 +115,7 @@ newtype APropPrepared = APropPrepared PropertyVL
 instance
   ( SMat () group PropertyGroupVL
   , SMat () (SrcPropKVs propKVs) ResPropKVs
-  , SMat () (SrcScripts scripts) ResScripts
+  , SMat () (SS scripts) RSS
   ) =>
   SMat () ('AbstractProp group propKVs scripts)
           APropPrepared where
@@ -142,7 +142,7 @@ instance
         sTraceDebug $ "New prepared abstract property to introduce: "
           <> show ess <> ", sId: " <> show statPropId
         propKVs <- sMat () $ Proxy @(SrcPropKVs propKVs)
-        scripts <- sMat () $ Proxy @(SrcScripts scripts)
+        scripts <- sMat () $ Proxy @(SS scripts)
         let prop = PropDict group propKVs scripts
         addStaticProperty (statPropId, ess, prop)
         sTraceDebug $ show ess <> ": prepared: " <> show statPropId
@@ -152,7 +152,7 @@ instance
   ( SMat () ess EssenceVL
   , SMat () abstractProp APropPrepared
   , SMat () (SrcPropKVs propKVs) ResPropKVs
-  , SMat () (SrcScripts scripts) ResScripts
+  , SMat () (SS scripts) RSS
   ) =>
   SMat () ('DerivedProp ess abstractProp propKVs scripts)
           PropertyVL where
@@ -174,7 +174,7 @@ instance
         propKVs <- sMat () $ Proxy @(SrcPropKVs propKVs)
         let propKVs' = mergePropKVs propKVs abstractPropKVs
 
-        scripts <- sMat () $ Proxy @(SrcScripts scripts)
+        scripts <- sMat () $ Proxy @(SS scripts)
         let scripts' = mergeScripts scripts abstractPropScripts
 
         let prop = PropDict (GroupId ess statPropId) propKVs' scripts'

@@ -72,29 +72,24 @@ instance
 
       -- Prop without scripts
       let tmpProp = Prop propId mbParentId sId propBagsVar Map.empty
-      scripts' <- mapM (makeScript tmpProp) $ Map.toList scripts
 
-      pure (ess, tmpProp {pScripts = Map.fromList scripts'})
+      -- scripts' <- mapM (makeScript tmpProp) $ Map.toList scripts
+      -- pure (ess, tmpProp {pScripts = Map.fromList scripts'})
+
+      pure (ess, tmpProp)
 
 makeScript
   :: Property
-  -> (SMod.EssenceVL, SMod.ScriptWrapper)
+  -> (SMod.EssenceVL, SMod.PropertyScriptVL)
   -> DInstantiator (Essence, IO ())
-makeScript prop (statEss, SMod.SW proxy) = do
+makeScript prop (statEss, pS) = do
   DEnv sEnv _ _ _ _ <- ask
 
   ess <- dInst False () statEss
-  res <- liftIO $ matScript sEnv proxy
+  -- res <- liftIO $ matScript sEnv proxy
 
-  pure (ess, res)
+  pure (ess, pure ())
 
-  where
-    matScript
-      :: SMat.SMat Property s (IO ())
-      => SMat.SEnv
-      -> Proxy (s :: SMod.Script)
-      -> IO (IO ())
-    matScript sEnv proxy = SMat.sMat' sEnv prop proxy
 
 instance
   DInst MbParentId SMod.PropertyOwningVL PropertyOwning where

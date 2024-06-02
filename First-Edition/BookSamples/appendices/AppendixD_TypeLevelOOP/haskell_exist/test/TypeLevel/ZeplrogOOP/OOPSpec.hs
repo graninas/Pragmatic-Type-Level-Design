@@ -60,7 +60,7 @@ type ColorPath = '[ EAvailableColors, EColorWhite ]
 
 type SwitchVar = BoolVar "switch"
 
-type SwitchScript = 'Script "inverts the EIsOn switch"
+type SwitchScript = 'Script @'TypeLevel "inverts the EIsOn switch"
   '[ DeclareVar SwitchVar
    , QueryVal '[EIsOn] (ToVar SwitchVar)
    , Invoke Negate SwitchVar (ToVar SwitchVar)

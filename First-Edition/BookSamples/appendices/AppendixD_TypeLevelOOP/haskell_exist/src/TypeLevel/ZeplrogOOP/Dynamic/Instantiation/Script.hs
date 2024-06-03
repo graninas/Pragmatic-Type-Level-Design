@@ -39,37 +39,20 @@ instance IScr CustomScriptVL where
     mapM_ (iScr prop) ops
 
 -- Note: doesn't do checks on existing variables for now
-instance IScr ScriptOp where
+instance IScr ScriptOpVL where
   iScr prop (DeclareVar varDef) = do
     IScrRuntime varsRef <- ask
     vars <- liftIO $ readIORef varsRef
 
     -- N.B.: this is not particular extensible. Only PoC
     case varDef of
-      BoolVarVL name defBoolVal -> do
+      BoolVar name defBoolVal -> do
         varRef <- liftIO $ newIORef $ unsafeCoerce defBoolVal
         let vars' = Map.insert name varRef vars
         liftIO $ writeIORef varsRef vars'
 
-  iScr prop (WriteVarVL varDef path) = do
-    IScrRuntime varsRef <- ask
-    vars <- liftIO $ readIORef varsRef
-
-    -- N.B.: this is not particular extensible. Only PoC
-    case varDef of
-      BoolVarVL name _ -> case Map.lookup name vars of
-        Nothing -> error $ "Var not found: " <> name      -- TODO
-        Just var -> do
-
-
-  -- WriteVar   :: VarDef typeTag -> EssencePathTL -> ScriptOp
-  -- QueryVal   :: EssencePathTL -> ToVarAct typeTag -> ScriptOp
-  -- Invoke
-  --   :: Func typeTag
-  --   -> VarDef typeTag
-  --   -> ToVarAct typeTag
-  --   -> ScriptOp
-
+  iScr prop (WriteData target source) = do
+    pure ()
 
 makeIScrRuntime :: IO IScrRuntime
 makeIScrRuntime = do

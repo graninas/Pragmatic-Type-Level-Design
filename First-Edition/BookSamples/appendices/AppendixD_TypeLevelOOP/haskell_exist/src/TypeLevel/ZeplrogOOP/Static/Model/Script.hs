@@ -19,25 +19,25 @@ data VarDef (lvl :: Level) typeTag where
   BoolVar :: StringType lvl -> Bool -> VarDef lvl BoolTag
 
 data ScriptOp (lvl :: Level) where
-  DeclareVar   :: VarDef lvl typeTag -> ScriptOp
-  Read         :: Source lvl typeTag -> Target lvl typeTag -> ScriptOp lvl
-  Write        :: Source lvl typeTag -> Target lvl typeTag -> ScriptOp lvl
+  DeclareVar   :: VarDef lvl typeTag -> ScriptOp lvl
+  ReadData     :: Source lvl typeTag -> Target lvl typeTag -> ScriptOp lvl
+  WriteData    :: Target lvl typeTag -> Source lvl typeTag -> ScriptOp lvl
   Invoke
-    :: Func typeTag
+    :: Func lvl typeTag
     -> VarDef lvl typeTag
     -> Target lvl typeTag
     -> ScriptOp lvl
 
 data Target (lvl :: Level) typeTag where
-  ToField :: EssencePath lvl -> Target lvl typeTag
+  ToField :: Proxy typeTag -> EssencePath lvl -> Target lvl typeTag
   ToVar   :: VarDef lvl typeTag -> Target lvl typeTag
 
 data Source (lvl :: Level) typeTag where
-  FromField :: EssencePath lvl -> Source lvl typeTag
+  FromField :: Proxy typeTag -> EssencePath lvl -> Source lvl typeTag
   FromVar   :: VarDef lvl typeTag -> Source lvl typeTag
 
-data Func typeTag where
-  Negate :: Func BoolTag
+data Func (lvl :: Level) typeTag where
+  Negate :: Func lvl BoolTag
 
 -- | Script type
 data CustomScript (lvl :: Level) where
@@ -50,4 +50,19 @@ data CustomScript (lvl :: Level) where
 
 type CustomScriptTL = CustomScript 'TypeLevel
 type CustomScriptVL = CustomScript 'ValueLevel
+
+type FuncTL = Func 'TypeLevel
+type FuncVL = Func 'ValueLevel
+
+type SourceTL = Source 'TypeLevel
+type SourceVL = Source 'ValueLevel
+
+type TargetTL = Target 'TypeLevel
+type TargetVL = Target 'ValueLevel
+
+type VarDefTL = VarDef 'TypeLevel
+type VarDefVL = VarDef 'ValueLevel
+
+type ScriptOpTL = ScriptOp 'TypeLevel
+type ScriptOpVL = ScriptOp 'ValueLevel
 

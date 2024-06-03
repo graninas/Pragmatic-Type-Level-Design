@@ -35,81 +35,111 @@ instance
   ( KnownSymbol varName
   , SMat () defVal Bool
   ) =>
-  SMat () ('BoolVar varName defVal)
-          (VarDef BoolTag) where
+  SMat () ('BoolVar @'TypeLevel varName defVal)
+          (VarDefVL BoolTag) where
   sMat () _ = do
     let varName = symbolVal $ Proxy @varName
     defVal <- sMat () $ Proxy @defVal
-    pure $ BoolVarVL varName defVal
+    pure $ BoolVar varName defVal
 
 instance
-  ( varDef ~ (vd :: VarDef typeTag)
-  , SMat () varDef (VarDef typeTag)
+  ( varDef ~ (vd :: VarDefTL typeTag)
+  , SMat () varDef (VarDefVL typeTag)
   ) =>
-  SMat () ('ToVar varDef)
-          (ToVarAct typeTag) where
+  SMat () ('ToVar @'TypeLevel varDef)
+          (TargetVL typeTag) where
   sMat () _ = do
     varDef <- sMat () $ Proxy @varDef
     pure $ ToVar varDef
 
 instance
-  SMat () 'Negate
-          (Func BoolTag) where
+  ( SMat () (Essences essPath) [EssenceVL]
+  , proxy ~ (p :: Proxy typeTag)
+  ) =>
+  SMat () ('ToField proxy essPath)
+          (TargetVL typeTag) where
+  sMat () _ = do
+    path <- sMat () $ Proxy @(Essences essPath)
+    pure $ ToField (Proxy @typeTag) path
+
+instance
+  ( varDef ~ (vd :: VarDefTL typeTag)
+  , SMat () varDef (VarDefVL typeTag)
+  ) =>
+  SMat () ('FromVar @'TypeLevel varDef)
+          (SourceVL typeTag) where
+  sMat () _ = do
+    varDef <- sMat () $ Proxy @varDef
+    pure $ FromVar varDef
+
+instance
+  ( SMat () (Essences essPath) [EssenceVL]
+  , proxy ~ (p :: Proxy typeTag)
+  ) =>
+  SMat () ('FromField proxy essPath)
+          (SourceVL typeTag) where
+  sMat () _ = do
+    path <- sMat () $ Proxy @(Essences essPath)
+    pure $ FromField (Proxy @typeTag) path
+
+instance
+  SMat () ('Negate @'TypeLevel)
+          (FuncVL BoolTag) where
   sMat () _ = pure Negate
 
 instance
-  ( SMat () varDef (VarDef typeTag)
+  ( SMat () varDef (VarDefVL typeTag)
   ) =>
-  SMat () ('DeclareVar varDef)
-         ScriptOp where
+  SMat () ('DeclareVar @'TypeLevel varDef)
+         ScriptOpVL where
   sMat () _ = do
     varDef <- sMat () $ Proxy @varDef
     pure $ DeclareVar varDef
 
 instance
-  ( SMat () varDef (VarDef typeTag)
-  , SMat () (Essences essPath) [EssenceVL]
+  ( SMat () source (SourceVL typeTag)
+  , SMat () target (TargetVL typeTag)
   ) =>
-  SMat () ('WriteVar varDef essPath)
-         ScriptOp where
+  SMat () ('WriteData @'TypeLevel target source)
+         ScriptOpVL where
   sMat () _ = do
+    source <- sMat () $ Proxy @source
+    target <- sMat () $ Proxy @target
+    pure $ WriteData target source
+
+instance
+  ( SMat () source (SourceVL typeTag)
+  , SMat () target (TargetVL typeTag)
+  ) =>
+  SMat () ('ReadData @'TypeLevel source target)
+         ScriptOpVL where
+  sMat () _ = do
+    source <- sMat () $ Proxy @source
+    target <- sMat () $ Proxy @target
+    pure $ ReadData source target
+
+instance
+  ( SMat () func   (FuncVL typeTag)
+  , SMat () varDef (VarDefVL typeTag)
+  , SMat () target (TargetVL typeTag)
+  ) =>
+  SMat () ('Invoke @'TypeLevel func varDef target)
+         ScriptOpVL where
+  sMat () _ = do
+    func   <- sMat () $ Proxy @func
     varDef <- sMat () $ Proxy @varDef
-    path   <- sMat () $ Proxy @(Essences essPath)
-    pure $ WriteVarVL varDef path
+    target <- sMat () $ Proxy @target
+    pure $ Invoke func varDef target
 
 instance
-  ( SMat () toVarAct (ToVarAct typeTag)
-  , SMat () (Essences essPath) [EssenceVL]
-  ) =>
-  SMat () ('QueryVal essPath toVarAct)
-         ScriptOp where
-  sMat () _ = do
-    path     <- sMat () $ Proxy @(Essences essPath)
-    toVarAct <- sMat () $ Proxy @toVarAct
-    pure $ QueryValVL path toVarAct
-
-instance
-  ( SMat () func (Func typeTag)
-  , SMat () varDef (VarDef typeTag)
-  , SMat () toVarAct (ToVarAct typeTag)
-  ) =>
-  SMat () ('Invoke func varDef toVarAct)
-         ScriptOp where
-  sMat () _ = do
-    func     <- sMat () $ Proxy @func
-    varDef   <- sMat () $ Proxy @varDef
-    toVarAct <- sMat () $ Proxy @toVarAct
-    pure $ Invoke func varDef toVarAct
-
-instance
-  SMat () (ScrOps '[]) [ScriptOp] where
+  SMat () (ScrOps '[]) [ScriptOpVL] where
   sMat () _ = pure []
 
 instance
-  ( SMat () op ScriptOp
-  , SMat () (ScrOps ops) [ScriptOp]
+  ( SMat () op ScriptOpVL
+  , SMat () (ScrOps ops) [ScriptOpVL]
   ) =>
-  SMat () (ScrOps (op ': ops)) [ScriptOp] where
+  SMat () (ScrOps (op ': ops)) [ScriptOpVL] where
   sMat () _ = do
     op  <- sMat () $ Proxy @op
     ops <- sMat () $ Proxy @(ScrOps ops)
@@ -117,7 +147,7 @@ instance
 
 instance
   ( KnownSymbol descr
-  , SMat () (ScrOps ops) [ScriptOp]
+  , SMat () (ScrOps ops) [ScriptOpVL]
   ) =>
   SMat () ('Script @'TypeLevel descr ops)
          CustomScriptVL where

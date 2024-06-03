@@ -59,13 +59,13 @@ type ColorBlue  = TagProp (TagGroupRoot EColorBlue Color)
 
 type ColorPath = '[ EAvailableColors, EColorWhite ]
 
-type SwitchVar = BoolVar "switch" 'False
+type SwitchVar = BoolVar @'TypeLevel "switch" 'False
 
 type SwitchScript = 'Script @'TypeLevel "inverts the EIsOn switch"
   '[ DeclareVar SwitchVar
-   , QueryVal '[EIsOn] (ToVar SwitchVar)
-   , Invoke Negate SwitchVar (ToVar SwitchVar)
-   , WriteField (FromVar SwitchVar) '[EIsOn]
+  --  , ReadData (FromField '[EIsOn]) (ToVar SwitchVar)
+  --  , Invoke Negate SwitchVar (ToVar SwitchVar)
+   , WriteData (ToField 'Proxy '[EIsOn]) (FromVar SwitchVar)
    ]
 
 

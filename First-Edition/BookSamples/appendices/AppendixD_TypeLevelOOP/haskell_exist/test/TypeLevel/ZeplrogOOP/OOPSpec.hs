@@ -65,7 +65,7 @@ type SwitchScript = 'Script @'TypeLevel "inverts the EIsOn switch"
   '[ DeclareVar SwitchVar
    , QueryVal '[EIsOn] (ToVar SwitchVar)
    , Invoke Negate SwitchVar (ToVar SwitchVar)
-   , WriteVar SwitchVar '[EIsOn]
+   , WriteField (FromVar SwitchVar) '[EIsOn]
    ]
 
 
@@ -171,7 +171,9 @@ spec =
 
       descr <- DPrint.describe lamp
       putStrLn $ P.unlines descr
+
       DScript.invoke scriptEss lamp
+
       descr <- DPrint.describe lamp
       putStrLn $ P.unlines descr
 

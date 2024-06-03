@@ -24,6 +24,7 @@ import qualified Data.Map.Strict as Map
 import qualified GHC.Types as GHC
 import Unsafe.Coerce (unsafeCoerce)
 
+
 data IScrRuntime = IScrRuntime
   { iScrVars :: IORef (Map.Map String (IORef GHC.Any))
   }
@@ -43,13 +44,24 @@ instance IScr ScriptOp where
     IScrRuntime varsRef <- ask
     vars <- liftIO $ readIORef varsRef
 
+    -- N.B.: this is not particular extensible. Only PoC
     case varDef of
       BoolVarVL name defBoolVal -> do
         varRef <- liftIO $ newIORef $ unsafeCoerce defBoolVal
         let vars' = Map.insert name varRef vars
         liftIO $ writeIORef varsRef vars'
 
-  -- DeclareVar :: VarDef typeTag -> ScriptOp
+  iScr prop (WriteVarVL varDef path) = do
+    IScrRuntime varsRef <- ask
+    vars <- liftIO $ readIORef varsRef
+
+    -- N.B.: this is not particular extensible. Only PoC
+    case varDef of
+      BoolVarVL name _ -> case Map.lookup name vars of
+        Nothing -> error $ "Var not found: " <> name      -- TODO
+        Just var -> do
+
+
   -- WriteVar   :: VarDef typeTag -> EssencePathTL -> ScriptOp
   -- QueryVal   :: EssencePathTL -> ToVarAct typeTag -> ScriptOp
   -- Invoke
@@ -76,7 +88,9 @@ makeScript prop (PropScript (Ess ess) customScr) = do
 
   -- TODO: bracket pattern and error handling
   let ioAct = do
+        putStrLn $ "Running script: " <> ess
         runReaderT (iScr prop customScr) runtime
         clearRuntime runtime
+        putStrLn $ "Script finished: " <> ess
   pure (ess, DMod.DynScript ioAct)
 

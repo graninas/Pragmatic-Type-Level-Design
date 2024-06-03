@@ -24,7 +24,6 @@ import qualified Data.Map.Strict as Map
 
 
 data ScrOps ops
-data EssencesX ess
 
 instance SMat () 'True Bool where
   sMat () _ = pure True
@@ -58,7 +57,6 @@ instance
           (Func BoolTag) where
   sMat () _ = pure Negate
 
-
 instance
   ( SMat () varDef (VarDef typeTag)
   ) =>
@@ -68,32 +66,27 @@ instance
     varDef <- sMat () $ Proxy @varDef
     pure $ DeclareVar varDef
 
-
-instance
-  SMat () (EssencesX '[]) [EssenceVL] where
-  sMat () _ = pure []
-
 instance
   ( SMat () varDef (VarDef typeTag)
-  -- , SMat () (EssencesX essPath) [EssenceVL]
+  , SMat () (Essences essPath) [EssenceVL]
   ) =>
   SMat () ('WriteVar varDef essPath)
          ScriptOp where
   sMat () _ = do
     varDef <- sMat () $ Proxy @varDef
-    -- esss   <- sMat () $ Proxy @(EssencesX essPath)
-    pure $ WriteVar varDef []
+    path   <- sMat () $ Proxy @(Essences essPath)
+    pure $ WriteVarVL varDef path
 
 instance
   ( SMat () toVarAct (ToVarAct typeTag)
-  -- , SMat () (EssencesX essPath) [EssenceVL]
+  , SMat () (Essences essPath) [EssenceVL]
   ) =>
   SMat () ('QueryVal essPath toVarAct)
          ScriptOp where
   sMat () _ = do
-    -- esss     <- sMat () $ Proxy @(EssencesX essPath)
+    path     <- sMat () $ Proxy @(Essences essPath)
     toVarAct <- sMat () $ Proxy @toVarAct
-    pure $ QueryVal [] toVarAct
+    pure $ QueryValVL path toVarAct
 
 instance
   ( SMat () func (Func typeTag)
@@ -131,6 +124,6 @@ instance
   sMat () _ = do
     descr <- sMat () $ Proxy @descr
     ops   <- sMat () $ Proxy @(ScrOps ops)
-    pure $ Script descr []
+    pure $ Script descr ops
 
 

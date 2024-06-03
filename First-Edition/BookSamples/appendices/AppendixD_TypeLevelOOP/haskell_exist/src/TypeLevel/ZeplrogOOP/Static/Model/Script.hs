@@ -15,24 +15,26 @@ import GHC.TypeLits
 
 data BoolTag
 
-data VarDef typeTag where
-  BoolVar :: Symbol -> Bool -> VarDef BoolTag
-  -- ^ type-level bool representation
-  BoolVarVL :: String -> Bool -> VarDef BoolTag
-  -- ^ value-level bool representation
+data VarDef (lvl :: Level) typeTag where
+  BoolVar :: StringType lvl -> Bool -> VarDef lvl BoolTag
 
-data ScriptOp where
-  DeclareVar :: VarDef typeTag -> ScriptOp
-  WriteVar   :: VarDef typeTag -> EssencePathTL -> ScriptOp
-  QueryVal   :: EssencePathTL -> ToVarAct typeTag -> ScriptOp
+data ScriptOp (lvl :: Level) where
+  DeclareVar   :: VarDef lvl typeTag -> ScriptOp
+  Read         :: Source lvl typeTag -> Target lvl typeTag -> ScriptOp lvl
+  Write        :: Source lvl typeTag -> Target lvl typeTag -> ScriptOp lvl
   Invoke
     :: Func typeTag
-    -> VarDef typeTag
-    -> ToVarAct typeTag
-    -> ScriptOp
+    -> VarDef lvl typeTag
+    -> Target lvl typeTag
+    -> ScriptOp lvl
 
-data ToVarAct typeTag where
-  ToVar :: VarDef typeTag -> ToVarAct typeTag
+data Target (lvl :: Level) typeTag where
+  ToField :: EssencePath lvl -> Target lvl typeTag
+  ToVar   :: VarDef lvl typeTag -> Target lvl typeTag
+
+data Source (lvl :: Level) typeTag where
+  FromField :: EssencePath lvl -> Source lvl typeTag
+  FromVar   :: VarDef lvl typeTag -> Source lvl typeTag
 
 data Func typeTag where
   Negate :: Func BoolTag
@@ -42,7 +44,7 @@ data CustomScript (lvl :: Level) where
   Script
     :: StringType lvl
     -- ^ Description
-    -> [ScriptOp]
+    -> [ScriptOp lvl]
     -> CustomScript lvl
 
 

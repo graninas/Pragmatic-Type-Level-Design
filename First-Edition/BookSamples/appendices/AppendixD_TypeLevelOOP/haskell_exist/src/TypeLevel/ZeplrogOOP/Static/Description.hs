@@ -12,11 +12,6 @@ import qualified Data.Map as Map
 import TypeLevel.ZeplrogOOP.Static.Model
 
 
-describe :: PropertyVL -> [String]
-describe prop = let
-  (_, _, ss) = execState (sPrint prop) (0, False, [])
-  in reverse ss
-
 type Indent = Int
 type Raw = Bool
 type Printer = State (Indent, Raw, [String]) ()
@@ -24,6 +19,10 @@ type Printer = State (Indent, Raw, [String]) ()
 class SPrint item where
   sPrint :: item -> Printer
 
+describe :: SPrint item => item -> [String]
+describe item = let
+  (_, _, ss) = execState (sPrint item) (0, False, [])
+  in reverse ss
 
 push :: String -> Printer
 push line = do

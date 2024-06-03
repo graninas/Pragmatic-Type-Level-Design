@@ -10,7 +10,7 @@ import qualified TypeLevel.ZeplrogOOP.Static.Model as SMod
 type Essence = String
 
 data Value
-  = PairValue (Value, Value)
+  = PairValue Value Value
   | IntValue Int
   | BoolValue Bool
   | StringValue String

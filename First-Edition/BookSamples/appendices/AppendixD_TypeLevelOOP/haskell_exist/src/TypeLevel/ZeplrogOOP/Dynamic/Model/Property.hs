@@ -42,7 +42,7 @@ data Property
       -- ^ Independent property that owns this prop exclusively
     , pStaticPropertyId :: SMod.StaticPropertyId
       -- ^ Source property for this one
-    , pPropertyBagVar   :: TVar (Map.Map Essence PropertyOwning)
+    , pFieldsVar        :: TVar (Map.Map Essence PropertyOwning)
       -- ^ Child properties
     , pScripts          :: Map.Map Essence DynamicScript
     }

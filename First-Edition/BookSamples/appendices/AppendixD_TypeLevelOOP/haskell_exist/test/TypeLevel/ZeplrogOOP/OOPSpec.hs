@@ -18,6 +18,7 @@ import qualified TypeLevel.ZeplrogOOP.Dynamic.Model as DMod
 import qualified TypeLevel.ZeplrogOOP.Dynamic.Instantiation as DInst
 import qualified TypeLevel.ZeplrogOOP.Dynamic.Scripting as DScript
 import qualified TypeLevel.ZeplrogOOP.Static.Description as SPrint
+import qualified TypeLevel.ZeplrogOOP.Dynamic.Description as DPrint
 
 import TypeLevel.ZeplrogOOP.Testing.Utils
 import TypeLevel.System.Debug
@@ -104,8 +105,8 @@ spec =
 
       lamp <- sMat' sEnv () $ Proxy @DaylightLamp
 
-      let lampDescr = SPrint.describe lamp
-      putStrLn $ P.unlines lampDescr
+      -- let lampDescr = SPrint.describe lamp
+      -- putStrLn $ P.unlines lampDescr
 
       statProps <- readTVarIO $ seStaticPropertiesVar sEnv
       statEsss  <- readTVarIO $ seStaticEssencesVar sEnv
@@ -127,8 +128,8 @@ spec =
 
       lamp <- sMat' sEnv () $ Proxy @TableLamp
 
-      let lampDescr = SPrint.describe lamp
-      putStrLn $ P.unlines lampDescr
+      -- let lampDescr = SPrint.describe lamp
+      -- putStrLn $ P.unlines lampDescr
 
       statProps <- readTVarIO $ seStaticPropertiesVar sEnv
       statEsss  <- readTVarIO $ seStaticEssencesVar sEnv
@@ -152,7 +153,7 @@ spec =
       lamp <- DInst.dInstParent dEnv Nothing lampStat
 
       props <- readTVarIO $ DInst.dePropertiesVar dEnv
-      print $ "All props: " <> show (Map.keys props)
+      -- print $ "All props: " <> show (Map.keys props)
 
       Map.size props `shouldBe` 1
 
@@ -168,7 +169,15 @@ spec =
 
       let scriptEss = toDynEss @ESwitchScript
 
+      descr <- DPrint.describe lamp
+      putStrLn $ P.unlines descr
       DScript.invoke scriptEss lamp
+      descr <- DPrint.describe lamp
+      putStrLn $ P.unlines descr
+
+      props <- readTVarIO $ DInst.dePropertiesVar dEnv
+      Map.size props `shouldBe` 1
+
 
 
 

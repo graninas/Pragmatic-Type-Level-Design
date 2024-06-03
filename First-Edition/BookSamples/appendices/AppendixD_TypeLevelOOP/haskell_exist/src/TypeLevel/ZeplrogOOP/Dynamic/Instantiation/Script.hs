@@ -64,12 +64,19 @@ makeIScrRuntime = do
   varsRef <- newIORef Map.empty
   pure $ IScrRuntime varsRef
 
+clearRuntime :: IScrRuntime -> IO ()
+clearRuntime (IScrRuntime varsRef) = writeIORef varsRef Map.empty
+
 makeScript
   :: DMod.Property
   -> PropertyScriptVL
   -> IO (DMod.Essence, DMod.DynamicScript)
 makeScript prop (PropScript (Ess ess) customScr) = do
   runtime <- makeIScrRuntime
-  let ioAct = runReaderT (iScr prop customScr) runtime
+
+  -- TODO: bracket pattern and error handling
+  let ioAct = do
+        runReaderT (iScr prop customScr) runtime
+        clearRuntime runtime
   pure (ess, DMod.DynScript ioAct)
 

@@ -43,7 +43,7 @@ instance
   dInst _ () (SMod.PairValue val1 val2) = do
     val1' <- dInst False () val1
     val2' <- dInst False () val2
-    pure $ PairValue (val1', val2')
+    pure $ PairValue val1' val2'
   dInst _ () (SMod.PathValue essPath) = do
     essPath' <- mapM (dInst False ()) essPath
     pure $ Path essPath'

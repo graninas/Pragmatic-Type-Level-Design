@@ -16,6 +16,7 @@ library
   exposed-modules:
       Main
       TypeLevel.System.Debug
+      TypeLevel.ZeplrogOOP.Dynamic.Description
       TypeLevel.ZeplrogOOP.Dynamic.Instantiation
       TypeLevel.ZeplrogOOP.Dynamic.Instantiation.Common
       TypeLevel.ZeplrogOOP.Dynamic.Instantiation.Instantiator
@@ -79,6 +80,7 @@ executable typeLevelOOP
   main-is: Main.hs
   other-modules:
       TypeLevel.System.Debug
+      TypeLevel.ZeplrogOOP.Dynamic.Description
       TypeLevel.ZeplrogOOP.Dynamic.Instantiation
       TypeLevel.ZeplrogOOP.Dynamic.Instantiation.Common
       TypeLevel.ZeplrogOOP.Dynamic.Instantiation.Instantiator

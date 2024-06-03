@@ -30,14 +30,14 @@ withShared
   -> DInstantiator (Essence, Property)
   -> DInstantiator (Essence, Property)
 withShared shared group matProp = do
-  sharedVar   <- asks deSharedPropertiesVar
-  sharedProps <- readTVarIO sharedVar
+  sharedVar   <- asks deSharedPropertiesRef
+  sharedProps <- readIORef sharedVar
   (ess, sId) <- dInst False () group
   case (shared, Map.lookup sId sharedProps) of
     (True, Nothing) -> do
       (_, prop) <- matProp
-      atomically $ writeTVar sharedVar
-                 $ Map.insert sId (ess, prop) sharedProps
+      writeIORef sharedVar
+        $ Map.insert sId (ess, prop) sharedProps
       pure (ess, prop)
     (True,  Just (_, prop)) -> pure (ess, prop)
     (False, Just (pId, _)) -> error
@@ -68,7 +68,7 @@ instance
       ess         <- dInst False () sEss
       propId      <- getNextPropertyId
       props       <- mapM (dInst False (Just propId)) propKVs
-      propBagsVar <- newTVarIO $ Map.fromList props
+      propBagsVar <- newIORef $ Map.fromList props
 
       -- Prop without scripts
       let tmpProp = Prop propId mbParentId sId propBagsVar Map.empty
@@ -82,8 +82,8 @@ instance
 
   dInst _ _ (SMod.OwnVal valDef) = do
     val    <- dInst False () valDef
-    valVar <- newTVarIO val
-    pure (OwnVal valVar)
+    valRef <- newIORef val
+    pure (OwnVal valRef)
 
   dInst _ mbParentId (SMod.OwnProp statProp) = do
     (_, prop) <- dInst False mbParentId statProp
@@ -106,5 +106,5 @@ instance
   dInst _ mbParentId (SMod.PropKeyBag keyEss props) = do
     keyEss   <- dInst False () keyEss
     props    <- mapM (dInst False mbParentId) props
-    propsVar <- newTVarIO $ Map.fromList props
+    propsVar <- newIORef $ Map.fromList props
     pure (keyEss, OwnDict propsVar)

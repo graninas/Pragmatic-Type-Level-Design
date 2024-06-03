@@ -7,6 +7,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE FunctionalDependencies #-}
 
 module TypeLevel.ZeplrogOOP.Dynamic.Instantiation.Script
   ( makeScript
@@ -29,17 +30,17 @@ data IScrRuntime = IScrRuntime
   { iScrVars :: IORef (Map.Map String (IORef GHC.Any))
   }
 
-type ScriptInterpreter = ReaderT IScrRuntime IO ()
+type ScriptInterpreter a = ReaderT IScrRuntime IO a
 
-class IScr it where
-  iScr :: DMod.Property -> it -> ScriptInterpreter
+class IScr it a | it -> a where
+  iScr :: DMod.Property -> it -> ScriptInterpreter a
 
-instance IScr CustomScriptVL where
+instance IScr CustomScriptVL () where
   iScr prop (Script _ ops) = do
     mapM_ (iScr prop) ops
 
 -- Note: doesn't do checks on existing variables for now
-instance IScr ScriptOpVL where
+instance IScr ScriptOpVL () where
   iScr prop (DeclareVar varDef) = do
     IScrRuntime varsRef <- ask
     vars <- liftIO $ readIORef varsRef
@@ -52,7 +53,26 @@ instance IScr ScriptOpVL where
         liftIO $ writeIORef varsRef vars'
 
   iScr prop (WriteData target source) = do
-    pure ()
+    readWrite prop source target
+
+readWrite
+  :: DMod.Property
+  -> SourceVL typeTag
+  -> TargetVL typeTag
+  -> ScriptInterpreter ()
+readWrite prop (FromVar fromVarDef) (ToVar toVarDef) = do
+  IScrRuntime varsRef <- ask
+  vars <- liftIO $ readIORef varsRef
+
+  case (fromVarDef, toVarDef) of
+    (BoolVar from _, BoolVar to _) -> do
+      case (Map.lookup from vars, Map.lookup to vars) of
+        (Nothing, _)  -> error $ show $ "From var not found: " <> from
+        (_, Nothing)  -> error $ show $ "To var not found: " <> to
+        (Just fromRef, Just toRef) -> liftIO $ do
+          val <- readIORef fromRef
+          writeIORef toRef val
+    _ -> error $ show "Read/Write is not implemented or type mismatch."
 
 makeIScrRuntime :: IO IScrRuntime
 makeIScrRuntime = do

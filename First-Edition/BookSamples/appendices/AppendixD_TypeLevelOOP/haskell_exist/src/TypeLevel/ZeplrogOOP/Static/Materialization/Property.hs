@@ -127,7 +127,7 @@ instance
     group <- sMat () $ Proxy @group
     let (ess, statPropId) = getComboPropertyId group
 
-    esss <- readTVarIO $ seStaticEssencesVar sEnv
+    esss <- readIORef $ seStaticEssencesRef sEnv
 
     case Map.lookup ess esss of
       Just [(sId, prop)] -> do

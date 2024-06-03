@@ -13,25 +13,32 @@ import TypeLevel.ZeplrogOOP.Static.Model.Common
 import GHC.TypeLits
 
 
-data BoolTag
+data BoolTag = BoolTag
 
 data VarDef (lvl :: Level) typeTag where
   BoolVar :: StringType lvl -> Bool -> VarDef lvl BoolTag
 
 data ScriptOp (lvl :: Level) where
   DeclareVar   :: VarDef lvl typeTag -> ScriptOp lvl
+
+  -- Can be the only MOV instruction
   ReadData     :: Source lvl typeTag -> Target lvl typeTag -> ScriptOp lvl
   WriteData    :: Target lvl typeTag -> Source lvl typeTag -> ScriptOp lvl
+
   Invoke
     :: Func lvl typeTag
     -> VarDef lvl typeTag
     -> Target lvl typeTag
     -> ScriptOp lvl
 
+-- N.B., Proxy is only needed to satisfy functional dependency
+-- that is somehow fails to define typeTag without this workaround.
 data Target (lvl :: Level) typeTag where
   ToField :: Proxy typeTag -> EssencePath lvl -> Target lvl typeTag
   ToVar   :: VarDef lvl typeTag -> Target lvl typeTag
 
+-- N.B., Proxy is only needed to satisfy functional dependency
+-- that is somehow fails to define typeTag without this workaround.
 data Source (lvl :: Level) typeTag where
   FromField :: Proxy typeTag -> EssencePath lvl -> Source lvl typeTag
   FromVar   :: VarDef lvl typeTag -> Source lvl typeTag

@@ -28,7 +28,6 @@ import TypeSelector.Granular
 
 import           Test.Hspec
 import           Data.Proxy (Proxy(..))
-import           Data.IORef
 import qualified Data.Map as Map
 import qualified Prelude as P (unlines)
 
@@ -63,8 +62,8 @@ type SwitchVar = BoolVar @'TypeLevel "switch" 'False
 
 type SwitchScript = 'Script @'TypeLevel "inverts the EIsOn switch"
   '[ DeclareVar SwitchVar
-  --  , ReadData (FromField '[EIsOn]) (ToVar SwitchVar)
-  --  , Invoke Negate SwitchVar (ToVar SwitchVar)
+   , ReadData (FromField 'Proxy '[EIsOn]) (ToVar SwitchVar)
+   , Invoke Negate SwitchVar (ToVar SwitchVar)
    , WriteData (ToField 'Proxy '[EIsOn]) (FromVar SwitchVar)
    ]
 
@@ -108,8 +107,8 @@ spec =
       -- let lampDescr = SPrint.describe lamp
       -- putStrLn $ P.unlines lampDescr
 
-      statProps <- readTVarIO $ seStaticPropertiesVar sEnv
-      statEsss  <- readTVarIO $ seStaticEssencesVar sEnv
+      statProps <- readIORef $ seStaticPropertiesRef sEnv
+      statEsss  <- readIORef $ seStaticEssencesRef sEnv
 
       -- print $ "Stat props: " <> show (Map.keys statProps)
       -- print $ "Stat essences: " <> show (Map.keys statEsss)
@@ -131,8 +130,8 @@ spec =
       -- let lampDescr = SPrint.describe lamp
       -- putStrLn $ P.unlines lampDescr
 
-      statProps <- readTVarIO $ seStaticPropertiesVar sEnv
-      statEsss  <- readTVarIO $ seStaticEssencesVar sEnv
+      statProps <- readIORef $ seStaticPropertiesRef sEnv
+      statEsss  <- readIORef $ seStaticEssencesRef sEnv
 
       -- print $ "Stat props: " <> show (Map.keys statProps)
       -- print $ "Stat essences: " <> show (Map.keys statEsss)
@@ -152,7 +151,7 @@ spec =
       lampStat <- sMat' sEnv () $ Proxy @DaylightLamp
       lamp <- DInst.dInstParent dEnv Nothing lampStat
 
-      props <- readTVarIO $ DInst.dePropertiesVar dEnv
+      props <- readIORef $ DInst.dePropertiesRef dEnv
       -- print $ "All props: " <> show (Map.keys props)
 
       Map.size props `shouldBe` 1
@@ -177,7 +176,7 @@ spec =
       descr <- DPrint.describe lamp
       putStrLn $ P.unlines descr
 
-      props <- readTVarIO $ DInst.dePropertiesVar dEnv
+      props <- readIORef $ DInst.dePropertiesRef dEnv
       Map.size props `shouldBe` 1
 
 

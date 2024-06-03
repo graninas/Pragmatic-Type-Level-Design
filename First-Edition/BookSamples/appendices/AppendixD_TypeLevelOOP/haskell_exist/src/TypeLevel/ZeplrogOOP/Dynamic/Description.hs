@@ -77,7 +77,7 @@ instance DPrint Property where
     mapM_ push descr
     deIndent
 
-  dPrint (Prop pId mbOwner sPid fieldsVar scripts) = do
+  dPrint (Prop pId mbOwner sPid fieldsRef scripts) = do
     push "Prop "
     add pId
     add sPid
@@ -88,7 +88,7 @@ instance DPrint Property where
         addS ")"
       _ -> pure ()
 
-    fields <- liftIO $ readTVarIO fieldsVar
+    fields <- liftIO $ readIORef fieldsRef
     mapM_ sub $ Map.toList fields
 
 instance DPrint (Essence, PropertyOwning) where
@@ -107,8 +107,8 @@ instance DPrint SMod.StaticPropertyId where
     addS $ "<SPID: " <> show spid <> ">"
 
 instance DPrint PropertyOwning where
-  dPrint (OwnVal var) = do
-    val <- liftIO $ readTVarIO var
+  dPrint (OwnVal ref) = do
+    val <- liftIO $ readIORef ref
     push "Val: "
     add val
 

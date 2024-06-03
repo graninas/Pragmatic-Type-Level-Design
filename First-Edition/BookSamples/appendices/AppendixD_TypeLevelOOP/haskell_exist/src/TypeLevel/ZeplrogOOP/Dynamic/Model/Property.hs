@@ -16,9 +16,9 @@ newtype PropertyId = PropertyId Int
 
 -- | Property owning
 data PropertyOwning
-  = OwnVal (TVar Value)
+  = OwnVal (IORef Value)
   -- ^ Mutable dynamic value
-  | OwnDict (TVar (Map.Map Essence Property))
+  | OwnDict (IORef (Map.Map Essence Property))
   -- ^ Multiple child props
   | OwnProp Property
   -- ^ Single child prop
@@ -42,7 +42,7 @@ data Property
       -- ^ Independent property that owns this prop exclusively
     , pStaticPropertyId :: SMod.StaticPropertyId
       -- ^ Source property for this one
-    , pFieldsVar        :: TVar (Map.Map Essence PropertyOwning)
+    , pFieldsRef        :: IORef (Map.Map Essence PropertyOwning)
       -- ^ Child properties
     , pScripts          :: Map.Map Essence DynamicScript
     }

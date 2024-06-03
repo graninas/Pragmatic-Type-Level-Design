@@ -27,13 +27,13 @@ type DynamicEssences   = Map.Map Essence [(PropertyId, Property)]
 data DEnv = DEnv
   { deSEnv :: SMat.SEnv
     -- ^ Static environment
-  , dePropertyIdVar       :: TVar PropertyId
+  , dePropertyIdRef       :: IORef PropertyId
     -- ^ PropId counter
-  , dePropertiesVar       :: TVar DynamicProperties
+  , dePropertiesRef       :: IORef DynamicProperties
     -- ^ List of all dynamic props
-  , deSharedPropertiesVar :: TVar SharedProperties
+  , deSharedPropertiesRef :: IORef SharedProperties
     -- ^ List of shared props
-  , deEssencesVar         :: TVar DynamicEssences
+  , deEssencesRef         :: IORef DynamicEssences
     -- ^ List of all dynamic props
   }
 
@@ -72,10 +72,10 @@ fullInst dEnv p proxy = do
 makeDEnv :: SMat.SEnv -> IO DEnv
 makeDEnv sEnv = DEnv
   <$> pure sEnv
-  <*> newTVarIO (PropertyId 0)
-  <*> newTVarIO Map.empty
-  <*> newTVarIO Map.empty
-  <*> newTVarIO Map.empty
+  <*> newIORef (PropertyId 0)
+  <*> newIORef Map.empty
+  <*> newIORef Map.empty
+  <*> newIORef Map.empty
 
 makeEnvs :: DebugMode -> IO (SMat.SEnv, DEnv)
 makeEnvs dbg = do
@@ -86,22 +86,22 @@ makeEnvs dbg = do
 ---------- Utils -----------------
 
 getNextPropertyId'
-  :: TVar PropertyId
+  :: IORef PropertyId
   -> DInstantiator PropertyId
-getNextPropertyId' propIdVar = atomically $ do
-  PropertyId pId <- readTVar propIdVar
-  writeTVar propIdVar $ PropertyId $ pId + 1
+getNextPropertyId' propIdRef = do
+  PropertyId pId <- readIORef propIdRef
+  writeIORef propIdRef $ PropertyId $ pId + 1
   pure $ PropertyId pId
 
 getNextPropertyId :: DInstantiator PropertyId
 getNextPropertyId = do
-  propIdVar <- asks dePropertyIdVar
-  getNextPropertyId' propIdVar
+  propIdRef <- asks dePropertyIdRef
+  getNextPropertyId' propIdRef
 
 getPropertyEssence :: PropertyId -> DInstantiator Essence
 getPropertyEssence propId = do
-  propsVar <- asks dePropertiesVar
-  props    <- readTVarIO propsVar
+  propsRef <- asks dePropertiesRef
+  props    <- readIORef propsRef
   case Map.lookup propId props of
     Nothing -> error
       $ "Property essence not found for pId: " <> show propId
@@ -124,20 +124,20 @@ spawnProperty propMat = do
   (ess, prop) <- propMat
   let propId = pPropertyId prop
 
-  propsVar  <- asks dePropertiesVar
-  esssVar   <- asks deEssencesVar
+  propsRef  <- asks dePropertiesRef
+  esssRef   <- asks deEssencesRef
 
-  pId <- atomically $ do
-    props  <- readTVar propsVar
-    esss   <- readTVar esssVar
+  pId <- do
+    props  <- readIORef propsRef
+    esss   <- readIORef esssRef
 
     let props'  = Map.insert propId (ess, prop) props
-    writeTVar propsVar props'
+    writeIORef propsRef props'
 
     case Map.lookup ess esss of
-      Nothing -> writeTVar esssVar
+      Nothing -> writeIORef esssRef
         $ Map.insert ess [(propId, prop)] esss
-      Just ps -> writeTVar esssVar
+      Just ps -> writeIORef esssRef
         $ Map.insert ess ((propId, prop) : ps) esss
 
 

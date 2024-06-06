@@ -72,7 +72,7 @@ type SwitchScript = 'Script @'TypeLevel "inverts the EIsOn switch"
    , ReadData (FromField 'Proxy '[EIsOn]) (ToVar SwitchVar)
    , Invoke NegateF (FromVar SwitchVar) (ToVar SwitchVar)
 
-  -- Compile tiem type check works:
+  -- Compile time type check works:
   -- Couldn't match kind ‘StringTag’ with ‘BoolTag’
   --  , Invoke NegateF (FromVar SwitchVar) (ToVar MismatchVar)
 

@@ -14,10 +14,22 @@ import GHC.TypeLits
 
 
 data BoolTag = BoolTag
+data StringTag = StringTag
 
+-- | Variable definition
+-- N.B., incomplete for now (PoC only)
 data VarDef (lvl :: Level) typeTag where
-  BoolVar :: StringType lvl -> Bool -> VarDef lvl BoolTag
+  -- TODO
+  -- BoolVar :: StringType lvl -> ValDef lvl typeTag -> VarDef lvl typeTag
+  BoolVar   :: StringType lvl -> Bool -> VarDef lvl BoolTag
+  StringVar :: StringType lvl -> StringType lvl -> VarDef lvl StringTag
 
+-- | Constant definition
+-- N.B., incomplete for now (PoC only)
+data ConstDef (lvl :: Level) typeTag where
+  BoolConst :: Bool -> ConstDef lvl BoolTag
+
+-- | Script operation
 data ScriptOp (lvl :: Level) where
   DeclareVar   :: VarDef lvl typeTag -> ScriptOp lvl
 
@@ -26,9 +38,9 @@ data ScriptOp (lvl :: Level) where
   WriteData    :: Target lvl typeTag -> Source lvl typeTag -> ScriptOp lvl
 
   Invoke
-    :: Func lvl typeTag
-    -> VarDef lvl typeTag
-    -> Target lvl typeTag
+    :: Func lvl typeTag1 typeTag2
+    -> Source lvl typeTag1
+    -> Target lvl typeTag2
     -> ScriptOp lvl
 
 -- N.B., Proxy is only needed to satisfy functional dependency
@@ -42,9 +54,11 @@ data Target (lvl :: Level) typeTag where
 data Source (lvl :: Level) typeTag where
   FromField :: Proxy typeTag -> EssencePath lvl -> Source lvl typeTag
   FromVar   :: VarDef lvl typeTag -> Source lvl typeTag
+  FromConst :: ConstDef lvl typeTag -> Source lvl typeTag
 
-data Func (lvl :: Level) typeTag where
-  Negate :: Func lvl BoolTag
+-- | Function over a value
+data Func (lvl :: Level) typeTag1 typeTag2 where
+  NegateF    :: Func lvl BoolTag BoolTag
 
 -- | Script type
 data CustomScript (lvl :: Level) where
@@ -69,6 +83,9 @@ type TargetVL = Target 'ValueLevel
 
 type VarDefTL = VarDef 'TypeLevel
 type VarDefVL = VarDef 'ValueLevel
+
+type ConstDefTL = ConstDef 'TypeLevel
+type ConstDefVL = ConstDef 'ValueLevel
 
 type ScriptOpTL = ScriptOp 'TypeLevel
 type ScriptOpVL = ScriptOp 'ValueLevel

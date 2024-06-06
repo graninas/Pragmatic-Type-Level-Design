@@ -8,6 +8,7 @@ import qualified TypeLevel.ZeplrogOOP.Static.Model as SMod
 
 
 type Essence = String
+type EssencePath = [Essence]
 
 data Value
   = PairValue Value Value

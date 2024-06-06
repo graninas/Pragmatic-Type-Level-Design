@@ -104,12 +104,6 @@ instance SPrint PropertyGroupVL where
     add statPropId
     sub prop
 
-  -- sPrint (GroupRoot _ _) = do
-  --   push "Err: static group root can't be printed"
-
-  -- sPrint (Group _) = do
-  --   push "Err: static group can't be printed"
-
 instance SPrint EssenceVL where
   sPrint (Ess ess) = do
     push ("<" <> ess <> ">")

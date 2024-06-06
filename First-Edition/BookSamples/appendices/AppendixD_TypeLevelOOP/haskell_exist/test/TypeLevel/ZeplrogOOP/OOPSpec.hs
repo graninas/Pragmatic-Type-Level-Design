@@ -16,7 +16,8 @@ import TypeLevel.ZeplrogOOP.Static.Query
 import TypeLevel.ZeplrogOOP.Static.Materialization
 import qualified TypeLevel.ZeplrogOOP.Dynamic.Model as DMod
 import qualified TypeLevel.ZeplrogOOP.Dynamic.Instantiation as DInst
-import qualified TypeLevel.ZeplrogOOP.Dynamic.Scripting as DScript
+import qualified TypeLevel.ZeplrogOOP.Dynamic.Interaction as Interact
+import qualified TypeLevel.ZeplrogOOP.Dynamic.Query as Q
 import qualified TypeLevel.ZeplrogOOP.Static.Description as SPrint
 import qualified TypeLevel.ZeplrogOOP.Dynamic.Description as DPrint
 
@@ -59,11 +60,22 @@ type ColorBlue  = TagProp (TagGroupRoot EColorBlue Color)
 type ColorPath = '[ EAvailableColors, EColorWhite ]
 
 type SwitchVar = BoolVar @'TypeLevel "switch" 'False
+type MismatchVar = StringVar @'TypeLevel "test" "abc"
 
 type SwitchScript = 'Script @'TypeLevel "inverts the EIsOn switch"
   '[ DeclareVar SwitchVar
+
+  -- Runtime type check works:
+  -- readWrite (FromField, ToVar) type mismatch (target is not bool)
+  --  , ReadData (FromField 'Proxy '[EIsOn]) (ToVar MismatchVar)
+
    , ReadData (FromField 'Proxy '[EIsOn]) (ToVar SwitchVar)
-   , Invoke Negate SwitchVar (ToVar SwitchVar)
+   , Invoke NegateF (FromVar SwitchVar) (ToVar SwitchVar)
+
+  -- Compile tiem type check works:
+  -- Couldn't match kind ‘StringTag’ with ‘BoolTag’
+  --  , Invoke NegateF (FromVar SwitchVar) (ToVar MismatchVar)
+
    , WriteData (ToField 'Proxy '[EIsOn]) (FromVar SwitchVar)
    ]
 
@@ -167,14 +179,21 @@ spec =
       lamp <- DInst.dInstParent dEnv Nothing lampStat
 
       let scriptEss = toDynEss @ESwitchScript
+      let isOnValEsss = [toDynEss @EIsOn]
 
       descr <- DPrint.describe lamp
       putStrLn $ P.unlines descr
 
-      DScript.invoke scriptEss lamp
+      val1 <- Q.readBoolVal lamp isOnValEsss
+      val1 `shouldBe` False
+
+      Interact.invoke scriptEss lamp
 
       descr <- DPrint.describe lamp
       putStrLn $ P.unlines descr
+
+      val2 <- Q.readBoolVal lamp isOnValEsss
+      val2 `shouldBe` True
 
       props <- readIORef $ DInst.dePropertiesRef dEnv
       Map.size props `shouldBe` 1

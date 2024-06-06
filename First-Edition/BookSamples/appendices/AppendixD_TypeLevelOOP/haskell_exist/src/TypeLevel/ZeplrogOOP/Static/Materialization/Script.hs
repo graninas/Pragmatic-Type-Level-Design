@@ -32,6 +32,15 @@ instance SMat () 'False Bool where
   sMat () _ = pure False
 
 instance
+  ( SMat () boolVal Bool
+  ) =>
+  SMat () ('BoolConst @'TypeLevel boolVal)
+          (ConstDefVL BoolTag) where
+  sMat () _ = do
+    boolVal <- sMat () $ Proxy @boolVal
+    pure $ BoolConst boolVal
+
+instance
   ( KnownSymbol varName
   , SMat () defVal Bool
   ) =>
@@ -41,6 +50,17 @@ instance
     let varName = symbolVal $ Proxy @varName
     defVal <- sMat () $ Proxy @defVal
     pure $ BoolVar varName defVal
+
+instance
+  ( KnownSymbol varName
+  , KnownSymbol defVal
+  ) =>
+  SMat () ('StringVar @'TypeLevel varName defVal)
+          (VarDefVL StringTag) where
+  sMat () _ = do
+    let varName = symbolVal $ Proxy @varName
+    let defVal = symbolVal $ Proxy @defVal
+    pure $ StringVar varName defVal
 
 instance
   ( varDef ~ (vd :: VarDefTL typeTag)
@@ -83,9 +103,19 @@ instance
     pure $ FromField (Proxy @typeTag) path
 
 instance
-  SMat () ('Negate @'TypeLevel)
-          (FuncVL BoolTag) where
-  sMat () _ = pure Negate
+  ( constDef ~ (c :: ConstDefTL typeTag)
+  , SMat () constDef (ConstDefVL typeTag)
+  ) =>
+  SMat () ('FromConst constDef)
+          (SourceVL typeTag) where
+  sMat () _ = do
+    val <- sMat () $ Proxy @constDef
+    pure $ FromConst val
+
+instance
+  SMat () ('NegateF @'TypeLevel)
+          (FuncVL BoolTag BoolTag) where
+  sMat () _ = pure NegateF
 
 instance
   ( SMat () varDef (VarDefVL typeTag)
@@ -119,17 +149,17 @@ instance
     pure $ ReadData source target
 
 instance
-  ( SMat () func   (FuncVL typeTag)
-  , SMat () varDef (VarDefVL typeTag)
-  , SMat () target (TargetVL typeTag)
+  ( SMat () func   (FuncVL typeTag1 typeTag2)
+  , SMat () source (SourceVL typeTag1)
+  , SMat () target (TargetVL typeTag2)
   ) =>
-  SMat () ('Invoke @'TypeLevel func varDef target)
+  SMat () ('Invoke @'TypeLevel func source target)
          ScriptOpVL where
   sMat () _ = do
     func   <- sMat () $ Proxy @func
-    varDef <- sMat () $ Proxy @varDef
+    source <- sMat () $ Proxy @source
     target <- sMat () $ Proxy @target
-    pure $ Invoke func varDef target
+    pure $ Invoke func source target
 
 instance
   SMat () (ScrOps '[]) [ScriptOpVL] where

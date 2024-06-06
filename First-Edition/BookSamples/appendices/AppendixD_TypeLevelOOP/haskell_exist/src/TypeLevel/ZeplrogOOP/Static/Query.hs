@@ -1,3 +1,6 @@
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE TypeFamilies #-}
+
 module TypeLevel.ZeplrogOOP.Static.Query where
 
 import CPrelude
@@ -8,7 +11,6 @@ import TypeLevel.ZeplrogOOP.Static.Model
 getComboPropertyId :: PropertyGroupVL -> (EssenceVL, StaticPropertyId)
 getComboPropertyId (GroupId ess sId)       = (ess, sId)
 getComboPropertyId (GroupRootId ess sId _) = (ess, sId)
-getComboPropertyId _ = error "getComboPropertyId does not support type-level groups"
 
 getEssenceFromKV :: PropertyKeyValueVL -> EssenceVL
 getEssenceFromKV (PropKeyBag ess _) = ess
@@ -16,7 +18,6 @@ getEssenceFromKV (PropKeyVal ess _) = ess
 
 getGroup :: PropertyVL -> PropertyGroupVL
 getGroup (PropDict group _ _) = group
-getGroup (DerivedProp _ _ _ _) = error "getGroup not implemented for DerivedProp"
 getGroup (TagPropRef _) = error "getGroup not implemented for TagPropRef"
 
 getTagPropEss :: TagPropertyVL -> EssenceVL
@@ -35,8 +36,6 @@ getStringValue _ = Nothing
 -- TODO: move to the Query language.
 queryStringValue :: EssencePathVL -> PropertyVL -> Maybe String
 queryStringValue [] _ = Nothing
-queryStringValue _ (DerivedProp _ _ _ _) =
-  error "queryStringValue not implemented for DerivedProp"
 queryStringValue _ (TagPropRef _) =
   error "queryStringValue not implemented for TagPropRef"
 queryStringValue (ess:esss) (PropDict group kvs _) = let
@@ -53,8 +52,6 @@ queryStringValueRelative :: EssencePathVL -> PropertyVL -> Maybe String
 queryStringValueRelative [] _ = Nothing
 queryStringValueRelative _ (TagPropRef _) =
   error "queryStringValueRelative not implemented for TagPropRef"
-queryStringValueRelative _ (DerivedProp _ _ _ _) =
-  error "queryStringValueRelative not implemented for DerivedProp"
 queryStringValueRelative esss (PropDict group kvs _) =
   queryStringValueForKeyVals esss kvs
 
@@ -72,6 +69,7 @@ queryStringValueForKeyVals path@(ess:_) (PropKeyVal ess' owning : kvs)
 -- queryStringValueForKeyVals path@(ess:_) (PropKeyBag ess' props : kvs)
 --   | ess == ess' = queryStringValueForProps path props
 --   | otherwise = queryStringValueForKeyVals path kvs
+queryStringValueForKeyVals _ _ = error "queryStringValueForKeyVals not implemented"
 
 -- Hardcoded function.
 -- TODO: move to the Query language.

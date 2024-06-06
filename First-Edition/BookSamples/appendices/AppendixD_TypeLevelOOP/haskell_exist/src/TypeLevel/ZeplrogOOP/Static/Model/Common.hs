@@ -33,7 +33,7 @@ newtype StaticPropertyId = StaticPropertyId Int
 data ValDef (lvl :: Level) where
   IntValue      :: IntegerType lvl -> ValDef lvl
   BoolValue     :: Bool -> ValDef lvl
-  PairValue     :: ValDef lvl -> ValDef  lvl-> ValDef lvl
+  PairValue     :: ValDef lvl -> ValDef lvl-> ValDef lvl
   StringValue   :: StringType lvl-> ValDef lvl
 
   -- | Reference to a dynamic property relative to the parent prop

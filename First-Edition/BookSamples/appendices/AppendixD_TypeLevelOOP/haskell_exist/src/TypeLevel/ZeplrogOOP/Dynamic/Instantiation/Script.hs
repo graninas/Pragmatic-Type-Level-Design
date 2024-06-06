@@ -110,8 +110,9 @@ readWrite prop mbF (FromVar fromVarDef) (ToField _ statPath) = do
       case Map.lookup from vars of
         Nothing      -> error $ show $ "From var not found: " <> from
         Just fromRef -> do
-          anyVal <- readIORef fromRef
-          writeIORef curValRef $ DMod.BoolValue $ unsafeCoerce anyVal
+          anyVal1 <- readIORef fromRef
+          let anyVal2 = invokeF mbF anyVal1
+          writeIORef curValRef $ DMod.BoolValue $ unsafeCoerce anyVal2
     (BoolVar from _, _)   -> error $ show $ "readWrite (FromVar, ToField) type mismatch (target is not bool): " <> from
     (_, DMod.BoolValue _) -> error $ "readWrite (FromVar, ToField) type mismatch (source is not bool)"
     _                     -> error "readWrite (FromVar, ToField) not yet implemented"
@@ -129,8 +130,10 @@ readWrite prop mbF (FromField _ statPath) (ToVar toVarDef) = do
   liftIO $ case (toVarDef, curVal) of
     (BoolVar to _, DMod.BoolValue boolVal) ->
       case Map.lookup to vars of
-        Nothing      -> error $ show $ "To var not found: " <> to
-        Just toRef -> writeIORef toRef $ unsafeCoerce boolVal
+        Nothing    -> error $ show $ "To var not found: " <> to
+        Just toRef -> do
+          let anyVal2 = invokeF mbF $ unsafeCoerce boolVal
+          writeIORef toRef $ unsafeCoerce anyVal2
     (BoolVar to _, _)     -> error $ show $ "readWrite (FromField, ToVar) type mismatch (source is not bool): " <> to
     (_, DMod.BoolValue _) -> error $ "readWrite (FromField, ToVar) type mismatch (target is not bool)"
     _                     -> error "readWrite (FromField, ToVar) not yet implemented"
@@ -147,8 +150,9 @@ readWrite prop mbF (FromField _ fromStatPath) (ToField _ toStatPath) = do
 
   -- N.B.: this is not particular extensible. Only PoC
   liftIO $ case (fromVal, toVal) of
-    (DMod.BoolValue boolVal, DMod.BoolValue _) ->
-      writeIORef toValRef $ DMod.BoolValue boolVal
+    (DMod.BoolValue boolVal, DMod.BoolValue _) -> do
+      let anyVal = invokeF mbF $ unsafeCoerce boolVal
+      writeIORef toValRef $ DMod.BoolValue $ unsafeCoerce anyVal
     (DMod.BoolValue _, _) -> error $ show $ "readWrite (FromField, ToField) type mismatch (target is not bool)"
     (_, DMod.BoolValue _) -> error $ "readWrite (FromField, ToField) type mismatch (source is not bool)"
     _                     -> error "readWrite (FromField, ToField) not yet implemented"
@@ -162,7 +166,9 @@ readWrite prop mbF (FromConst constVal) (ToVar toVarDef) = do
     (BoolVar to _, BoolConst boolVal) -> do
       case Map.lookup to vars of
         Nothing    -> error $ show $ "To var not found: " <> to
-        Just toRef -> writeIORef toRef $ unsafeCoerce boolVal
+        Just toRef -> do
+          let anyVal = invokeF mbF $ unsafeCoerce boolVal
+          writeIORef toRef anyVal
     _ -> error "readWrite (FromField, ToVar) not yet implemented"
 
 readWrite prop mbF (FromConst constVal) (ToField _ toStatPath) = do
@@ -173,8 +179,9 @@ readWrite prop mbF (FromConst constVal) (ToField _ toStatPath) = do
 
   -- N.B.: this is not particular extensible. Only PoC
   liftIO $ case (constVal, toVal) of
-    (BoolConst boolVal, DMod.BoolValue _) ->
-      writeIORef toValRef $ DMod.BoolValue boolVal
+    (BoolConst boolVal, DMod.BoolValue _) -> do
+      let anyVal = invokeF mbF $ unsafeCoerce boolVal
+      writeIORef toValRef $ DMod.BoolValue $ unsafeCoerce anyVal
     _ -> error "readWrite (FromField, ToField) not yet implemented"
 
 

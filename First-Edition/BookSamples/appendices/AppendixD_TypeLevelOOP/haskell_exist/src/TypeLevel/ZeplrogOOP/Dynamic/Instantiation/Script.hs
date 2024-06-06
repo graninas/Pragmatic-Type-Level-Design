@@ -54,20 +54,32 @@ instance IScr ScriptOpVL () where
         liftIO $ writeIORef varsRef vars'
 
   iScr prop (WriteData target source) =
-    readWrite prop source target
+    readWrite prop Nothing source target
 
   iScr prop (ReadData source target) =
-    readWrite prop source target
+    readWrite prop Nothing source target
 
-  iScr prop (Invoke func source target) = do
-    pure ()
+  iScr prop (Invoke func source target) =
+    readWrite prop (Just func) source target
 
+
+invokeF
+  :: Maybe (FuncVL typeTag1 typeTag2)
+  -> GHC.Any
+  -> GHC.Any
+invokeF Nothing anyVal = anyVal
+invokeF (Just NegateF) anyVal =
+  unsafeCoerce $ not $ unsafeCoerce anyVal
+
+
+-- N.B.: badly written code.
 readWrite
   :: DMod.Property
+  -> Maybe (FuncVL typeTag1 typeTag2)
   -> SourceVL typeTag1
   -> TargetVL typeTag2
   -> ScriptInterpreter ()
-readWrite prop (FromVar fromVarDef) (ToVar toVarDef) = do
+readWrite prop mbF (FromVar fromVarDef) (ToVar toVarDef) = do
   IScrRuntime varsRef <- ask
   vars <- liftIO $ readIORef varsRef
 
@@ -79,10 +91,11 @@ readWrite prop (FromVar fromVarDef) (ToVar toVarDef) = do
         (_, Nothing)  -> error $ show $ "To var not found: " <> to
         (Just fromRef, Just toRef) -> liftIO $ do
           val <- readIORef fromRef
-          writeIORef toRef val
+          let val' = invokeF mbF val
+          writeIORef toRef val'
     _ -> error $ show "Read/Write is not implemented or type mismatch."
 
-readWrite prop (FromVar fromVarDef) (ToField _ statPath) = do
+readWrite prop mbF (FromVar fromVarDef) (ToField _ statPath) = do
   IScrRuntime varsRef <- ask
   vars   <- liftIO $ readIORef varsRef
 
@@ -103,7 +116,7 @@ readWrite prop (FromVar fromVarDef) (ToField _ statPath) = do
     (_, DMod.BoolValue _) -> error $ "readWrite (FromVar, ToField) type mismatch (source is not bool)"
     _                     -> error "readWrite (FromVar, ToField) not yet implemented"
 
-readWrite prop (FromField _ statPath) (ToVar toVarDef) = do
+readWrite prop mbF (FromField _ statPath) (ToVar toVarDef) = do
   IScrRuntime varsRef <- ask
   vars   <- liftIO $ readIORef varsRef
 
@@ -122,7 +135,7 @@ readWrite prop (FromField _ statPath) (ToVar toVarDef) = do
     (_, DMod.BoolValue _) -> error $ "readWrite (FromField, ToVar) type mismatch (target is not bool)"
     _                     -> error "readWrite (FromField, ToVar) not yet implemented"
 
-readWrite prop (FromField _ fromStatPath) (ToField _ toStatPath) = do
+readWrite prop mbF (FromField _ fromStatPath) (ToField _ toStatPath) = do
   let fromDynPath = DInst.toDynEssPath fromStatPath
   let toDynPath   = DInst.toDynEssPath toStatPath
 
@@ -140,7 +153,7 @@ readWrite prop (FromField _ fromStatPath) (ToField _ toStatPath) = do
     (_, DMod.BoolValue _) -> error $ "readWrite (FromField, ToField) type mismatch (source is not bool)"
     _                     -> error "readWrite (FromField, ToField) not yet implemented"
 
-readWrite prop (FromConst constVal) (ToVar toVarDef) = do
+readWrite prop mbF (FromConst constVal) (ToVar toVarDef) = do
   IScrRuntime varsRef <- ask
   vars   <- liftIO $ readIORef varsRef
 
@@ -152,7 +165,7 @@ readWrite prop (FromConst constVal) (ToVar toVarDef) = do
         Just toRef -> writeIORef toRef $ unsafeCoerce boolVal
     _ -> error "readWrite (FromField, ToVar) not yet implemented"
 
-readWrite prop (FromConst constVal) (ToField _ toStatPath) = do
+readWrite prop mbF (FromConst constVal) (ToField _ toStatPath) = do
   let toDynPath = DInst.toDynEssPath toStatPath
 
   toValRef <- liftIO $ Q.queryValue prop toDynPath

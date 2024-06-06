@@ -58,7 +58,7 @@ data Source (lvl :: Level) typeTag where
 
 -- | Function over a value
 data Func (lvl :: Level) typeTag1 typeTag2 where
-  NegateF    :: Func lvl BoolTag BoolTag
+  NegateF :: Func lvl BoolTag BoolTag
 
 -- | Script type
 data CustomScript (lvl :: Level) where

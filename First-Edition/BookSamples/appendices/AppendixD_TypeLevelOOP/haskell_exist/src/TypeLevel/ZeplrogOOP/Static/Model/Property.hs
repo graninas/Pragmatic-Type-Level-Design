@@ -19,23 +19,6 @@ import GHC.TypeLits
 import qualified Data.Map as Map
 
 
--- | Tag property is always static.
---   Used to tag and group notions.
---   Can be hierarchical.
-data TagPropertyGroup (lvl :: Level) where
-  -- | Tag property groups for static type-level representation.
-  TagGroup     :: Essence lvl -> TagPropertyGroup lvl
-  TagGroupRoot :: Essence lvl -> TagProperty lvl -> TagPropertyGroup lvl
-
--- | Tag property: immutable, reference-only,
---   one instance, only for grouping.
-data TagProperty (lvl :: Level) where
-  -- | Tag prop for static type-level and
-  --   dynamic value-level representation.
-  TagProp
-    :: TagPropertyGroup lvl
-    -> TagProperty lvl
-
 -- | Used to make static property hierarchies.
 data PropertyGroup (lvl :: Level) where
   -- | Property groups for static type-level representation.
@@ -75,6 +58,13 @@ data AbstractProperty where
   -- | Regular abstract property with fields.
   AbstractProp
     :: PropertyGroupTL
+    -> [PropertyKeyValueTL]
+    -> [PropertyScriptTL]
+    -> AbstractProperty
+  -- | Regular abstract property that derives another abstract prop.
+  AbstractDerivedProp
+    :: EssenceTL
+    -> AbstractProperty
     -> [PropertyKeyValueTL]
     -> [PropertyScriptTL]
     -> AbstractProperty

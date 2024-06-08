@@ -149,6 +149,7 @@ test-suite functional
       TypeLevel.ZeplrogOOP.QuerySpec
       TypeLevel.ZeplrogOOP.Testing.KnowledgeBase
       TypeLevel.ZeplrogOOP.Testing.Utils
+      TypeLevel.ZeplrogOOP.ZeplrogSpec
       Paths_typeLevelOOP
   hs-source-dirs:
       test/

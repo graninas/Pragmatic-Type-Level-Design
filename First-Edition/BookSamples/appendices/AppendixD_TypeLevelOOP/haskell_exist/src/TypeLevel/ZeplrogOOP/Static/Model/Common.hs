@@ -28,6 +28,23 @@ type EssencePath (lvl :: Level) = [Essence lvl]
 newtype StaticPropertyId = StaticPropertyId Int
   deriving (Show, Eq, Ord)
 
+-- | Tag property is always static.
+--   Used to tag and group notions.
+--   Can be hierarchical.
+data TagPropertyGroup (lvl :: Level) where
+  -- | Tag property groups for static type-level representation.
+  TagGroup     :: Essence lvl -> TagPropertyGroup lvl
+  TagGroupRoot :: Essence lvl -> TagProperty lvl -> TagPropertyGroup lvl
+
+-- | Tag property: immutable, reference-only,
+--   one instance, only for grouping.
+data TagProperty (lvl :: Level) where
+  -- | Tag prop for static type-level and
+  --   dynamic value-level representation.
+  TagProp
+    :: TagPropertyGroup lvl
+    -> TagProperty lvl
+
 -- | Value definition with a default value
 
 data ValDef (lvl :: Level) where
@@ -38,6 +55,11 @@ data ValDef (lvl :: Level) where
 
   -- | Reference to a dynamic property relative to the parent prop
   PathValue     :: [Essence lvl] -> ValDef lvl
+
+  -- | Reference to a tag property
+  -- with a value
+  TagValue      :: TagProperty lvl -> ValDef lvl -> ValDef lvl
+
 
 ------ Short identifiers ----------
 

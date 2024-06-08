@@ -33,6 +33,39 @@ instance
   sMat () _ = pure $ symbolVal $ Proxy @str
 
 
+-- Statically materialize tag property group
+
+instance
+  ( SMat () ess EssenceVL
+  ) =>
+  SMat () ('TagGroup @'TypeLevel ess)
+          TagPropertyGroupVL where
+  sMat () _ = do
+    ess <- sMat () $ Proxy @ess
+    pure $ TagGroup ess
+
+instance
+  ( SMat () ess EssenceVL
+  , SMat () tagProp TagPropertyVL
+  ) =>
+  SMat () ('TagGroupRoot @'TypeLevel ess tagProp)
+          TagPropertyGroupVL where
+  sMat () _ = do
+    ess      <- sMat () $ Proxy @ess
+    tagProp  <- sMat () $ Proxy @tagProp
+    pure $ TagGroupRoot ess tagProp
+
+-- Statically materialize tag property
+
+instance
+  ( SMat () tagGroup TagPropertyGroupVL
+  ) =>
+  SMat () ('TagProp @'TypeLevel tagGroup)
+          TagPropertyVL where
+  sMat () _ = do
+    tagGroup <- sMat () $ Proxy @tagGroup
+    pure $ TagProp tagGroup
+
 -- Statically materialize value
 
 instance
@@ -78,6 +111,17 @@ instance
   sMat () _ = do
     path <- sMat () $ Proxy @(Essences essPath)
     pure $ PathValue path
+
+instance
+  ( SMat () tagProp TagPropertyVL
+  , SMat () valDef ValDefVL
+  ) =>
+  SMat () ('TagValue @'TypeLevel tagProp valDef)
+         ValDefVL where
+  sMat () _ = do
+    tagProp <- sMat () $ Proxy @tagProp
+    valDef  <- sMat () $ Proxy @valDef
+    pure $ TagValue tagProp valDef
 
 -- Statically materialize Essence path
 

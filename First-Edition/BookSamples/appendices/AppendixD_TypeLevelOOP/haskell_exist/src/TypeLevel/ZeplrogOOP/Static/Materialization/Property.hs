@@ -185,39 +185,6 @@ instance
 
       _ -> error "Invalid prepared property (not PropDict)."
 
--- Statically materialize tag property group
-
-instance
-  ( SMat () ess EssenceVL
-  ) =>
-  SMat () ('TagGroup @'TypeLevel ess)
-          TagPropertyGroupVL where
-  sMat () _ = do
-    ess <- sMat () $ Proxy @ess
-    pure $ TagGroup ess
-
-instance
-  ( SMat () ess EssenceVL
-  , SMat () tagProp TagPropertyVL
-  ) =>
-  SMat () ('TagGroupRoot @'TypeLevel ess tagProp)
-          TagPropertyGroupVL where
-  sMat () _ = do
-    ess      <- sMat () $ Proxy @ess
-    tagProp  <- sMat () $ Proxy @tagProp
-    pure $ TagGroupRoot ess tagProp
-
--- Statically materialize tag property
-
-instance
-  ( SMat () tagGroup TagPropertyGroupVL
-  ) =>
-  SMat () ('TagProp @'TypeLevel tagGroup)
-          TagPropertyVL where
-  sMat () _ = do
-    tagGroup <- sMat () $ Proxy @tagGroup
-    pure $ TagProp tagGroup
-
 -- Statically materialize property key value list
 
 instance

@@ -57,7 +57,7 @@ type ColorRed   = TagProp (TagGroupRoot EColorRed Color)
 type ColorGreen = TagProp (TagGroupRoot EColorGreen Color)
 type ColorBlue  = TagProp (TagGroupRoot EColorBlue Color)
 
-type ColorPath = '[ EAvailableColors, EColorWhite ]
+type ColorRef = '[ EAvailableColors, EColorWhite ]
 
 type SwitchVar = BoolVar @'TypeLevel "switch" 'False
 type MismatchVar = StringVar @'TypeLevel "test" "abc"
@@ -91,7 +91,7 @@ type AbstractLamp = AbstractProp (Group EAbstractLamp)
        ]
 
    -- | Current color. Points to a possible color.
-   , PropKeyVal EColor (OwnVal (PathValue ColorPath))
+   , PropKeyVal EColor (OwnVal (PathValue ColorRef))
    ]
   '[ PropScript ESwitchScript SwitchScript
    ]

@@ -112,6 +112,8 @@ newtype APropPrepared = APropPrepared PropertyVL
 
 -- Abstract properties will turn into special PropDict properties
 --  only once to avoid multiple property preparation.
+
+-- Abstract prop materialization
 instance
   ( SMat () group PropertyGroupVL
   , SMat () (SrcPropKVs propKVs) ResPropKVs
@@ -121,13 +123,12 @@ instance
           APropPrepared where
   sMat () _ = do
     sEnv <- ask
+    esss <- readIORef $ seStaticEssencesRef sEnv
 
     -- N.B. This routine will result in some staticPropertyIds
     --   to be dropped when a singleton property is already present.
     group <- sMat () $ Proxy @group
     let (ess, statPropId) = getComboPropertyId group
-
-    esss <- readIORef $ seStaticEssencesRef sEnv
 
     case Map.lookup ess esss of
       Just [(sId, prop)] -> do
@@ -139,7 +140,7 @@ instance
         error $ "Multiple prepared properties for abstract prop found, ess: " <> show ess
 
       _ -> do
-        sTraceDebug $ "New prepared abstract property to introduce: "
+        sTraceDebug $ "New abstract property to introduce: "
           <> show ess <> ", sId: " <> show statPropId
         propKVs <- sMat () $ Proxy @(SrcPropKVs propKVs)
         scripts <- sMat () $ Proxy @(SS scripts)
@@ -147,6 +148,58 @@ instance
         addStaticProperty (statPropId, ess, prop)
         sTraceDebug $ show ess <> ": prepared: " <> show statPropId
         pure $ APropPrepared prop
+
+-- Abstract derived prop materialization
+instance
+  ( SMat () ess EssenceVL
+  , SMat () abstractProp APropPrepared
+  , SMat () (SrcPropKVs propKVs) ResPropKVs
+  , SMat () (SS scripts) RSS
+  ) =>
+  SMat () ('AbstractDerivedProp ess abstractProp propKVs scripts)
+          APropPrepared where
+  sMat () _ = do
+    sEnv <- ask
+    esss <- readIORef $ seStaticEssencesRef sEnv
+
+    ess <- sMat () $ Proxy @ess
+
+    -- Checking if self is already prepared
+
+    case Map.lookup ess esss of
+      Just [(sId, prop)] -> do
+        sTraceDebug $ "Prepared abstract derived prop found: "
+                    <> show (ess, sId)
+        pure $ APropPrepared prop
+
+      Just (_:_:_) ->
+        error $ "Multiple prepared properties for abstract derived prop found, ess: " <> show ess
+
+      _ -> do
+        statPropId <- getNextStaticPropertyId
+        sTraceDebug $ "New abstract derived prop to introduce: "
+          <> show ess <> ", sId: " <> show statPropId
+
+        sTraceDebug $ "Preparing parent abstract property for deriving"
+        APropPrepared aPropPrepared <- sMat () $ Proxy @abstractProp
+
+        case aPropPrepared of
+          PropDict aGroup parentAPropKVs parentAPropScripts -> do
+            let aId@(abstractPropEss, abstractPropSId) = getComboPropertyId aGroup
+            sTraceDebug $ "Parent abstract property to derive: " <> show aId
+
+            propKVs <- sMat () $ Proxy @(SrcPropKVs propKVs)
+            let propKVs' = mergePropKVs propKVs parentAPropKVs
+
+            scripts <- sMat () $ Proxy @(SS scripts)
+            let scripts' = mergeScripts scripts parentAPropScripts
+
+            let prop = PropDict (GroupId ess statPropId) propKVs scripts
+            addStaticProperty (statPropId, ess, prop)
+            sTraceDebug $ show ess <> ": prepared: " <> show statPropId
+            pure $ APropPrepared prop
+
+          _ -> error "Invalid prepared property (not PropDict)."
 
 instance
   ( SMat () ess EssenceVL

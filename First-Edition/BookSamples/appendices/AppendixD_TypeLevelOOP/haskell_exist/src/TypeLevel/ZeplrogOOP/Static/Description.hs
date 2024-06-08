@@ -35,7 +35,7 @@ add
   => item -> Printer
 add item = do
   let (_, _, rawSS) = execState (sPrint item) (0, True, [])
-  let rawS = ' ' : P.unwords rawSS
+  let rawS = P.unwords rawSS
   (i, r, ss) <- get
   case ss of
     [] -> put (i, r, [rawS])
@@ -69,17 +69,17 @@ sub item = do
 
 instance SPrint TagPropertyGroupVL where
   sPrint (TagGroup ess) = do
-    push "TagGroup "
+    push "TagGroup"
     add ess
 
   sPrint (TagGroupRoot ess tagProp) = do
-    push "TagGroupRoot "
+    push "TagGroupRoot"
     add ess
     sub tagProp
 
 instance SPrint TagPropertyVL where
   sPrint (TagProp singGroup) = do
-    push "TagProp "
+    push "TagProp"
     sub singGroup
 
 instance SPrint PropertyVL where
@@ -88,13 +88,13 @@ instance SPrint PropertyVL where
     sub sProp
 
   sPrint (PropDict group kvs scripts) = do
-    push "PropDict "
+    push "PropDict"
     sub group
     sub kvs
 
 instance SPrint PropertyGroupVL where
   sPrint (GroupId ess statPropId) = do
-    push "GroupId "
+    push "GroupId"
     add ess
     add statPropId
 
@@ -113,7 +113,7 @@ instance SPrint [PropertyKeyValueVL] where
 
 instance SPrint StaticPropertyId where
   sPrint (StaticPropertyId i) = do
-    push ("(SPID: " <> show i)
+    push ("(SPID:" <> show i)
     addS ")"
 
 instance SPrint PropertyKeyValueVL where
@@ -142,25 +142,31 @@ instance SPrint PropertyOwningVL where
 
 instance SPrint ValDefVL where
   sPrint (IntValue i) = do
-    push ("(IntValue: " <> show i)
+    push ("(IntValue:" <> show i)
     addS ")"
 
   sPrint (BoolValue f) = do
-    push ("(BoolValue: " <> show f)
+    push ("(BoolValue:" <> show f)
     addS ")"
 
   sPrint (PairValue p1 p2) = do
-    push "(PairValue: ("
+    push "(PairValue:("
     add p1
     add p2
     addS ")"
     addS ")"
 
   sPrint (StringValue s) = do
-    push ("(StringValue: " <> s)
+    push ("(StringValue:" <> s)
     addS ")"
 
   sPrint (PathValue esss) = do
-    push "(PathValue: "
+    push "(PathValue:"
     mapM_ add esss
     addS ")"
+
+  sPrint (TagValue tagProp val) = do
+    push "(TagValue:"
+    add val
+    addS ")"
+    sub tagProp

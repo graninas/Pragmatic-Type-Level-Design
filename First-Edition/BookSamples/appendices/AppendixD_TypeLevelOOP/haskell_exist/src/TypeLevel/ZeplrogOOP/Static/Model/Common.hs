@@ -66,6 +66,12 @@ data ValDef (lvl :: Level) where
 type EssenceTL = Essence 'TypeLevel
 type EssenceVL = Essence 'ValueLevel
 
+type TagPropertyGroupTL = TagPropertyGroup 'TypeLevel
+type TagPropertyGroupVL = TagPropertyGroup 'ValueLevel
+
+type TagPropertyTL = TagProperty 'TypeLevel
+type TagPropertyVL = TagProperty 'ValueLevel
+
 type ValDefTL = ValDef 'TypeLevel
 type ValDefVL = ValDef 'ValueLevel
 
@@ -82,3 +88,30 @@ instance Ord EssenceVL where
 
 instance T.Show EssenceVL where
   show (Ess a) = T.show a
+
+instance Eq TagPropertyGroupVL where
+  (==) (TagGroup a) (TagGroup b) = a == b
+  (==) (TagGroupRoot a l) (TagGroupRoot b r) = (a == b) && (l == r)
+  (==) _ _ = False
+
+instance Ord TagPropertyGroupVL where
+  compare (TagGroup a) (TagGroup b) = compare a b
+  compare (TagGroupRoot a l) (TagGroupRoot b r)
+    = compare (compare a b) (compare l r)
+  compare (TagGroup _) (TagGroupRoot _ _) = GT
+  compare _ _ = LT
+
+instance T.Show TagPropertyGroupVL where
+  show (TagGroup a) = "TagGroup " <> T.show a
+  show (TagGroupRoot a l)
+    = "TagGroupRoot " <> T.show a <> " " <> T.show l
+
+instance Eq TagPropertyVL where
+  (==) (TagProp a) (TagProp b) = a == b
+
+instance Ord TagPropertyVL where
+  compare (TagProp a) (TagProp b) = compare a b
+
+instance T.Show TagPropertyVL where
+  show (TagProp a) = "TagProp " <> T.show a
+

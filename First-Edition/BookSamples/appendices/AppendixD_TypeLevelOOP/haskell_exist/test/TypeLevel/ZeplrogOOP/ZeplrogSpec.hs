@@ -130,10 +130,6 @@ type PosTagVal x y = TagValue GenericPos (PosVal x y)
 
 type IconVal icon = StringValue icon
 
--- ???
--- type StatePropRefVal = PropVal (Group EStateRef)
---   (PathValue '[ EStates, EStateClose ])
-
 -- | HP value: current and max
 type GenericHP   = TagProp (TagGroup EGenericHP)
 type HPVal hp    = PairValue (IntValue hp) (IntValue hp)
@@ -176,8 +172,27 @@ type SpecificDoor = DerivedProp ESpecificDoor AbstractDoor
 
 spec :: Spec
 spec = describe "Zeplrog data model" $ do
-  it "Simple test" $ do
-    1 `shouldBe` 2
+  it "Door instantiation test" $ do
+    (sEnv, dEnv) <- DInst.makeEnvs DebugDisabled
 
+    doorStat <- sMat' sEnv () $ Proxy @SpecificDoor
+    door <- DInst.dInstParent dEnv Nothing doorStat
 
+    let iconValEss = [toDynEss @EIcon]
 
+    descr <- DPrint.describe door
+    putStrLn $ P.unlines descr
+
+    val1 <- Q.readStringVal door iconValEss
+    val1 `shouldBe` "?"
+
+    -- Interact.invoke scriptEss lamp
+
+    -- descr <- DPrint.describe lamp
+    -- putStrLn $ P.unlines descr
+
+    -- val2 <- Q.readBoolVal lamp isOnValEsss
+    -- val2 `shouldBe` True
+
+    -- props <- readIORef $ DInst.dePropertiesRef dEnv
+    -- Map.size props `shouldBe` 1

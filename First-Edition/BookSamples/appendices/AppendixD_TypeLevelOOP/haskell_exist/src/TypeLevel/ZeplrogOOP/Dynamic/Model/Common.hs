@@ -15,6 +15,7 @@ data Value
   | IntValue Int
   | BoolValue Bool
   | StringValue String
+  | TagValue SMod.TagPropertyVL Value
   | Path [Essence]
   | StaticPropertyRefValue SMod.StaticPropertyId
   deriving (Show, Eq, Ord)

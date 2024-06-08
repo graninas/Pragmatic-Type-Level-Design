@@ -46,6 +46,9 @@ instance
   dInst _ () (SMod.IntValue val)  = pure $ IntValue val
   dInst _ () (SMod.BoolValue val) = pure $ BoolValue val
   dInst _ () (SMod.StringValue val) = pure $ StringValue val
+  dInst _ () (SMod.TagValue tagProp cVal) = do
+    val <- dInst False () cVal
+    pure $ TagValue tagProp val
   dInst _ () (SMod.PairValue val1 val2) = do
     val1' <- dInst False () val1
     val2' <- dInst False () val2

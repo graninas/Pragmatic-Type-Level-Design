@@ -12,6 +12,7 @@ import qualified Data.Map as Map
 import TypeLevel.ZeplrogOOP.Dynamic.Model
 import qualified TypeLevel.ZeplrogOOP.Static.Model as SMod
 import qualified TypeLevel.ZeplrogOOP.Static.Description as SPrint
+import qualified TypeLevel.ZeplrogOOP.Static.Query as SQ
 
 
 type Indent = Int
@@ -37,7 +38,7 @@ add
   => item -> Printer
 add item = do
   (_, _, rawSS) <- liftIO $ execStateT (dPrint item) (0, True, [])
-  let rawS = ' ' : P.unwords rawSS
+  let rawS = P.unwords rawSS
   (i, r, ss) <- get
   case ss of
     [] -> put (i, r, [rawS])
@@ -78,12 +79,12 @@ instance DPrint Property where
     deIndent
 
   dPrint (Prop pId mbOwner sPid fieldsRef scripts) = do
-    push "Prop "
+    push "Prop"
     add pId
     add sPid
     case mbOwner of
       Just owner -> do
-        addS "(Owner: "
+        addS "(Owner:"
         add owner
         addS ")"
       _ -> pure ()
@@ -109,7 +110,7 @@ instance DPrint SMod.StaticPropertyId where
 instance DPrint PropertyOwning where
   dPrint (OwnVal ref) = do
     val <- liftIO $ readIORef ref
-    push "Val: "
+    push "Val:"
     add val
 
   dPrint (OwnProp prop) = do
@@ -140,11 +141,21 @@ instance DPrint Value where
   dPrint (StringValue s) = do
     addS s
 
+  dPrint (TagValue tagProp val) = do
+    let SMod.Ess tpEss = SQ.getTagPropEss tagProp
+    addS "TagVal"
+    dPrint val
+
+    let descr = SPrint.describe tagProp
+    indent
+    mapM_ push descr
+    deIndent
+
   dPrint (Path esss) = do
-    addS "Path: "
+    addS "Path:"
     addS $ show $ map (\e -> "<" <> e <> ">") esss
 
   dPrint (StaticPropertyRefValue spid) = do
-    addS "StaticPropertyRefValue: "
+    addS "StaticPropertyRefValue:"
     addS $ show spid
 

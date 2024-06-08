@@ -53,15 +53,20 @@ data PropertyScript (lvl :: Level) where
 
   -- | Abstract property.
   --   Provides the shape for the derived properties.
---     Abstract property can't be value level.
+--     Abstract property itself can't be value level.
 data AbstractProperty where
-  -- | Regular abstract property with fields.
+  -- | Abstract property with fields.
+  --   Becomes a regular static value-level property that can't be
+  --   instantiated but can be referenced.
+  --   Due to the group reference, can define properties in the middle of the hierarchy.
   AbstractProp
     :: PropertyGroupTL
     -> [PropertyKeyValueTL]
     -> [PropertyScriptTL]
     -> AbstractProperty
-  -- | Regular abstract property that derives another abstract prop.
+  -- | Abstract property that derives another abstract prop.
+  --   Does not contain group because will not reference prop branches.
+  --   Resulting PropDict will contain prop group with this essence only.
   AbstractDerivedProp
     :: EssenceTL
     -> AbstractProperty
@@ -98,12 +103,6 @@ data Property (lvl :: Level) where
 
 
 ------ Short identifiers ----------
-
-type TagPropertyGroupTL = TagPropertyGroup 'TypeLevel
-type TagPropertyGroupVL = TagPropertyGroup 'ValueLevel
-
-type TagPropertyTL = TagProperty 'TypeLevel
-type TagPropertyVL = TagProperty 'ValueLevel
 
 type PropertyGroupTL = PropertyGroup 'TypeLevel
 type PropertyGroupVL = PropertyGroup 'ValueLevel

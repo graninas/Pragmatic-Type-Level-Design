@@ -51,3 +51,14 @@ readBoolVal prop esss = do
   case val of
     BoolValue boolVal -> pure boolVal
     _ -> error "readBoolVal: not a bool value"
+
+readStringVal
+  :: Property
+  -> [Essence]
+  -> IO String
+readStringVal prop esss = do
+  valRef <- queryValue prop esss
+  val <- readIORef valRef
+  case val of
+    StringValue val -> pure val
+    _ -> error "readBoolVal: not a string value"

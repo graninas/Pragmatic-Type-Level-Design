@@ -36,7 +36,10 @@ instance QueryValue Property where
 instance QueryValue PropertyOwning where
   queryValue (OwnVal valRef) [] = pure valRef
   queryValue (OwnVal _) esss = error $ show $ "Path exceeds hierarchy: " <> show esss
-  queryValue _ _ = error "queryValue: not yet implemented"
+  queryValue (OwnProp prop) _ =
+    error "queryValue (OwnProp prop): not yet implemented"
+  queryValue (SharedProp prop) _ =
+    error "queryValue (SharedProp prop): not yet implemented"
 
 
 
@@ -61,4 +64,15 @@ readStringVal prop esss = do
   val <- readIORef valRef
   case val of
     StringValue val -> pure val
-    _ -> error "readBoolVal: not a string value"
+    _ -> error "readStringVal: not a string value"
+
+readPathVal
+  :: Property
+  -> [Essence]
+  -> IO [Essence]
+readPathVal prop esss = do
+  valRef <- queryValue prop esss
+  val <- readIORef valRef
+  case val of
+    PathValue val -> pure val
+    _ -> error "readPathVal: not a path value"

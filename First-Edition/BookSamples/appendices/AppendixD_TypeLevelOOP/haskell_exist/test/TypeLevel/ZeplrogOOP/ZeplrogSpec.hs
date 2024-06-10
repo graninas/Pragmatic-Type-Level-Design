@@ -58,7 +58,6 @@ type EOpen          = Ess @TypeLevel "open"
 type EClose         = Ess @TypeLevel "close"
 type EStateOpen     = Ess @TypeLevel "state:open"
 type EStateClose    = Ess @TypeLevel "state:close"
-
 -- type EPushable      = Ess @TypeLevel "ability:pushable"
 
 -- type EPushableScript = Ess @TypeLevel "script:pushable"
@@ -68,9 +67,10 @@ type EStateClose    = Ess @TypeLevel "state:close"
 -- type EWand          = Ess @TypeLevel "object:wand"
 -- type ERat           = Ess @TypeLevel "object:rat"
 -- type EGuard         = Ess @TypeLevel "object:guard"
-type EAbstractDoor  = Ess @TypeLevel "object:abstract door"
-type ESpecificDoor  = Ess @TypeLevel "object:specific door"
-type EDoor          = Ess @TypeLevel "object:door"
+type EAbstractDoor   = Ess @TypeLevel "object:abstract door"
+type ESpecificDoor   = Ess @TypeLevel "object:specific door"
+type EDoor           = Ess @TypeLevel "object:door"
+type EOpenDoorScript = Ess @TypeLevel "script:open door"
 
 -- type EPhysicalImpact = Ess @TypeLevel "effect:physical impact"
 -- type EPush           = Ess @TypeLevel "effect:push"
@@ -135,7 +135,12 @@ type GenericHP   = TagProp (TagGroup EGenericHP)
 type HPVal hp    = PairValue (IntValue hp) (IntValue hp)
 type HPTagVal hp = TagValue GenericHP (HPVal hp)
 
-type StateRef = '[ EStates, EStateClose ]
+type CloseStateRef = '[ EStates, EStateClose ]
+type OpenStateRef  = '[ EStates, EStateClose ]
+
+-- type StateVar = PathVar "cur state" CloseStateRef
+
+type OpenDoorScript = 'Script @'TypeLevel "opens a door" '[]
 
 type AnyProp = AbstractProp (Group EAnyProp) '[] '[]
 
@@ -152,7 +157,7 @@ type AbstractDoor = AbstractDerivedProp EAbstractDoor AnyProp
        ]
 
     -- | Current state. Points to a close/open state
-   , PropKeyVal EState (OwnVal (PathValue StateRef))
+   , PropKeyVal EState (OwnVal (PathValue CloseStateRef))
 
     -- | Abilities to react to effects              -------
   --  , PropKeyBag EAbilities
@@ -160,7 +165,7 @@ type AbstractDoor = AbstractDerivedProp EAbstractDoor AnyProp
   --                   PushableScript)
   --      ]
    ]
-   '[]
+   '[PropScript EOpenDoorScript OpenDoorScript]
 
 -- | Specific door with a specific icon.
 type SpecificDoor = DerivedProp ESpecificDoor AbstractDoor
@@ -178,21 +183,28 @@ spec = describe "Zeplrog data model" $ do
     doorStat <- sMat' sEnv () $ Proxy @SpecificDoor
     door <- DInst.dInstParent dEnv Nothing doorStat
 
-    let iconValEss = [toDynEss @EIcon]
+    let iconValPath = [toDynEss @EIcon]
 
     descr <- DPrint.describe door
     putStrLn $ P.unlines descr
 
-    val1 <- Q.readStringVal door iconValEss
+    val1 <- Q.readStringVal door iconValPath
     val1 `shouldBe` "?"
 
-    -- Interact.invoke scriptEss lamp
+    let stateValPath  = [toDynEss @EState]
+    let closeStateRef = toDynEsss @CloseStateRef
+    val2 <- Q.readPathVal door stateValPath
+    val2 `shouldBe` closeStateRef
 
-    -- descr <- DPrint.describe lamp
+    let openDoorScript = toDynEss @EOpenDoorScript
+    Interact.invoke openDoorScript door
+
+    -- descr <- DPrint.describe door
     -- putStrLn $ P.unlines descr
 
-    -- val2 <- Q.readBoolVal lamp isOnValEsss
-    -- val2 `shouldBe` True
+    let openStateRef = toDynEsss @OpenStateRef
+    val3 <- Q.readPathVal door stateValPath
+    val3 `shouldBe` openStateRef
 
     -- props <- readIORef $ DInst.dePropertiesRef dEnv
     -- Map.size props `shouldBe` 1

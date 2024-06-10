@@ -25,7 +25,7 @@ type SharedProperties  = Map.Map SMod.StaticPropertyId (Essence, Property)
 type DynamicEssences   = Map.Map Essence [(PropertyId, Property)]
 
 data DEnv = DEnv
-  { deSEnv :: SMat.SEnv
+  { deSEnv                :: SMat.SEnv
     -- ^ Static environment
   , dePropertyIdRef       :: IORef PropertyId
     -- ^ PropId counter
@@ -48,12 +48,20 @@ class DInst payload a b | payload a -> b where
 runDInstantiator :: DEnv -> DInstantiator a -> IO a
 runDInstantiator dEnv m = runReaderT m dEnv
 
-dInst' :: DInst payload a b => DEnv -> payload -> a -> IO b
+dInst'
+  :: DInst payload a b
+  => DEnv
+  -> payload
+  -> a
+  -> IO b
 dInst' dEnv p itVL = runDInstantiator dEnv $ dInst False p itVL
 
 dInstParent
   :: DInst (Maybe PropertyId) SMod.PropertyVL (Essence, Property)
-  => DEnv -> Maybe PropertyId -> SMod.PropertyVL -> IO Property
+  => DEnv
+  -> Maybe PropertyId
+  -> SMod.PropertyVL
+  -> IO Property
 dInstParent dEnv mbParentId pVL = do
   (_ :: Essence, prop) <- runDInstantiator dEnv $ dInst False mbParentId pVL
   pure prop

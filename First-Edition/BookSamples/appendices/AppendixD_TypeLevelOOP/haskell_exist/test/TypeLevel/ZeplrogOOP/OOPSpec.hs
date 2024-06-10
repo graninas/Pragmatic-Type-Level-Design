@@ -59,8 +59,8 @@ type ColorBlue  = TagProp (TagGroupRoot EColorBlue Color)
 
 type ColorRef = '[ EAvailableColors, EColorWhite ]
 
-type SwitchVar = BoolVar @'TypeLevel "switch" 'False
-type MismatchVar = StringVar @'TypeLevel "test" "abc"
+type SwitchVar   = BoolVar "switch" 'False
+type MismatchVar = StringVar "test" "abc"
 
 type SwitchScript = 'Script @'TypeLevel "inverts the EIsOn switch"
   '[ DeclareVar SwitchVar

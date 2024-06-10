@@ -151,7 +151,7 @@ instance DPrint Value where
     mapM_ push descr
     deIndent
 
-  dPrint (Path esss) = do
+  dPrint (PathValue esss) = do
     addS "Path:"
     addS $ show $ map (\e -> "<" <> e <> ">") esss
 

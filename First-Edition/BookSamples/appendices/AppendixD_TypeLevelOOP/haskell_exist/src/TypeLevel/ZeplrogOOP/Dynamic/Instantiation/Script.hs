@@ -41,15 +41,37 @@ instance IScr CustomScriptVL () where
   iScr prop (Script _ ops) = do
     mapM_ (iScr prop) ops
 
+instance
+  IScr EssenceVL DMod.Essence where
+  iScr _ (Ess ess) = pure ess
+
+-- N.B., this is not quite extensible.
+-- Also, duplicates DInst instance
+instance IScr ValDefVL DMod.Value where
+  iScr _ (IntValue val)    = pure $ DMod.IntValue val
+  iScr _ (BoolValue val)   = pure $ DMod.BoolValue val
+  iScr _ (StringValue val) = pure $ DMod.StringValue val
+  iScr prop (TagValue tagProp cVal) = do
+    val <- iScr prop cVal
+    pure $ DMod.TagValue tagProp val
+  iScr prop (PairValue val1 val2) = do
+    val1' <- iScr prop val1
+    val2' <- iScr prop val2
+    pure $ DMod.PairValue val1' val2'
+  iScr prop (PathValue essPath) = do
+    essPath' <- mapM (iScr prop) essPath
+    pure $ DMod.PathValue essPath'
+
 instance IScr ScriptOpVL () where
   iScr prop (DeclareVar varDef) = do
     IScrRuntime varsRef <- ask
     vars <- liftIO $ readIORef varsRef
 
-    -- N.B.: this is not particular extensible. Only PoC
     case varDef of
-      BoolVar name defBoolVal -> do
-        varRef <- liftIO $ newIORef $ unsafeCoerce defBoolVal
+      GenericVar name defVal typeName -> do
+        val    <- iScr prop defVal
+        varRef <- liftIO $ newIORef $ unsafeCoerce val
+
         let vars' = Map.insert name varRef vars
         liftIO $ writeIORef varsRef vars'
 
@@ -68,121 +90,127 @@ invokeF
   -> GHC.Any
   -> GHC.Any
 invokeF Nothing anyVal = anyVal
-invokeF (Just NegateF) anyVal =
-  unsafeCoerce $ not $ unsafeCoerce anyVal
+invokeF (Just NegateF) anyVal = let
+  val :: DMod.Value = unsafeCoerce anyVal
+  in case val of
+        DMod.BoolValue b -> unsafeCoerce $ DMod.BoolValue $ not b
+        _ -> error $ "invokeF (Just NegateF) type mismatch: " <> show val
 
-
--- N.B.: badly written code.
 readWrite
   :: DMod.Property
   -> Maybe (FuncVL typeTag1 typeTag2)
   -> SourceVL typeTag1
   -> TargetVL typeTag2
   -> ScriptInterpreter ()
-readWrite prop mbF (FromVar fromVarDef) (ToVar toVarDef) = do
+readWrite prop mbF
+  (FromVar (GenericVar from _ typeName1))
+  (ToVar   (GenericVar to   _ typeName2))
+    | typeName1 /= typeName2 = error $ show
+            $ "readWrite (FromVar, ToVar) type mismatch: "
+            <> from <> "(" <> typeName1 <> ")"
+            <> to <> "(" <> typeName2 <> ")"
+
+    | otherwise = do
+
   IScrRuntime varsRef <- ask
   vars <- liftIO $ readIORef varsRef
 
-  -- N.B.: this is not particular extensible. Only PoC
-  case (fromVarDef, toVarDef) of
-    (BoolVar from _, BoolVar to _) ->
-      case (Map.lookup from vars, Map.lookup to vars) of
-        (Nothing, _)  -> error $ show $ "From var not found: " <> from
-        (_, Nothing)  -> error $ show $ "To var not found: " <> to
-        (Just fromRef, Just toRef) -> liftIO $ do
-          val <- readIORef fromRef
-          let val' = invokeF mbF val
-          writeIORef toRef val'
-    _ -> error $ show "Read/Write is not implemented or type mismatch."
+  case (Map.lookup from vars, Map.lookup to vars) of
+    (Nothing, _) -> error $ show $ "readWrite (FromVar, ToVar) from var not found: " <> from
+    (_, Nothing) -> error $ show $ "readWrite (FromVar, ToVar) to var not found: " <> to
+    (Just fromRef, Just toRef) -> liftIO $ do
+      val <- readIORef fromRef
+      let val' = invokeF mbF val
+      writeIORef toRef val'
 
-readWrite prop mbF (FromVar fromVarDef) (ToField _ statPath) = do
-  IScrRuntime varsRef <- ask
-  vars   <- liftIO $ readIORef varsRef
+-- readWrite prop mbF
+--   (FromVar (GenericVar from _ typeName1))
+--   (ToField _ statPath) = do
+--     IScrRuntime varsRef <- ask
+--     vars   <- liftIO $ readIORef varsRef
 
-  let dynPath = DInst.toDynEssPath statPath
+--     let dynPath = DInst.toDynEssPath statPath
 
-  curValRef <- liftIO $ Q.queryValue prop dynPath
-  curVal    <- liftIO $ readIORef curValRef
+--     curValRef <- liftIO $ Q.queryValue prop dynPath
+--     -- curVal    <- liftIO $ readIORef curValRef
 
-  -- N.B.: this is not particular extensible. Only PoC
-  liftIO $ case (fromVarDef, curVal) of
-    (BoolVar from _, DMod.BoolValue _) ->
-      case Map.lookup from vars of
-        Nothing      -> error $ show $ "From var not found: " <> from
-        Just fromRef -> do
-          anyVal1 <- readIORef fromRef
-          let anyVal2 = invokeF mbF anyVal1
-          writeIORef curValRef $ DMod.BoolValue $ unsafeCoerce anyVal2
-    (BoolVar from _, _)   -> error $ show $ "readWrite (FromVar, ToField) type mismatch (target is not bool): " <> from
-    (_, DMod.BoolValue _) -> error $ "readWrite (FromVar, ToField) type mismatch (source is not bool)"
-    _                     -> error "readWrite (FromVar, ToField) not yet implemented"
+--     liftIO $ case Map.lookup from vars of
+--       Nothing      -> error $ show $ "readWrite (FromVar, ToField) from var not found: " <> from
+--       Just fromRef -> do
+--         anyVal1 <- readIORef fromRef
+--         let anyVal2 = invokeF mbF anyVal1
 
-readWrite prop mbF (FromField _ statPath) (ToVar toVarDef) = do
-  IScrRuntime varsRef <- ask
-  vars   <- liftIO $ readIORef varsRef
+--   -- ??????
+--         writeIORef curValRef $ DMod.BoolValue $ unsafeCoerce anyVal2
+--       -- (BoolVar from _, _)   -> error $ show $ "readWrite (FromVar, ToField) type mismatch (target is not bool): " <> from
+--       -- (_, DMod.BoolValue _) -> error $ "readWrite (FromVar, ToField) type mismatch (source is not bool)"
 
-  let dynPath = DInst.toDynEssPath statPath
+-- readWrite prop mbF
+--   (FromField _ statPath)
+--   (ToVar (GenericVar to _ typeName2)) = do
+--     IScrRuntime varsRef <- ask
+--     vars   <- liftIO $ readIORef varsRef
 
-  curValRef <- liftIO $ Q.queryValue prop dynPath
-  curVal    <- liftIO $ readIORef curValRef
+--     let dynPath = DInst.toDynEssPath statPath
 
-  -- N.B.: this is not particular extensible. Only PoC
-  liftIO $ case (toVarDef, curVal) of
-    (BoolVar to _, DMod.BoolValue boolVal) ->
-      case Map.lookup to vars of
-        Nothing    -> error $ show $ "To var not found: " <> to
-        Just toRef -> do
-          let anyVal2 = invokeF mbF $ unsafeCoerce boolVal
-          writeIORef toRef $ unsafeCoerce anyVal2
-    (BoolVar to _, _)     -> error $ show $ "readWrite (FromField, ToVar) type mismatch (source is not bool): " <> to
-    (_, DMod.BoolValue _) -> error $ "readWrite (FromField, ToVar) type mismatch (target is not bool)"
-    _                     -> error "readWrite (FromField, ToVar) not yet implemented"
+--     curValRef <- liftIO $ Q.queryValue prop dynPath
+--     curVal    <- liftIO $ readIORef curValRef
 
-readWrite prop mbF (FromField _ fromStatPath) (ToField _ toStatPath) = do
-  let fromDynPath = DInst.toDynEssPath fromStatPath
-  let toDynPath   = DInst.toDynEssPath toStatPath
+--     case Map.lookup to vars of
+--       Nothing    -> error $ show $ "readWrite (FromField, ToVar) To var not found: " <> to
+--       Just toRef -> do
+--         -- ??????
+--         let boolVal = True
 
-  fromValRef <- liftIO $ Q.queryValue prop fromDynPath
-  fromVal    <- liftIO $ readIORef fromValRef
+--         let anyVal2 = invokeF mbF $ unsafeCoerce boolVal
+--         writeIORef toRef $ unsafeCoerce anyVal2
 
-  toValRef <- liftIO $ Q.queryValue prop toDynPath
-  toVal    <- liftIO $ readIORef toValRef
+-- readWrite prop mbF
+--   (FromField _ fromStatPath)
+--   (ToField _ toStatPath) = do
+--     let fromDynPath = DInst.toDynEssPath fromStatPath
+--     let toDynPath   = DInst.toDynEssPath toStatPath
 
-  -- N.B.: this is not particular extensible. Only PoC
-  liftIO $ case (fromVal, toVal) of
-    (DMod.BoolValue boolVal, DMod.BoolValue _) -> do
-      let anyVal = invokeF mbF $ unsafeCoerce boolVal
-      writeIORef toValRef $ DMod.BoolValue $ unsafeCoerce anyVal
-    (DMod.BoolValue _, _) -> error $ show $ "readWrite (FromField, ToField) type mismatch (target is not bool)"
-    (_, DMod.BoolValue _) -> error $ "readWrite (FromField, ToField) type mismatch (source is not bool)"
-    _                     -> error "readWrite (FromField, ToField) not yet implemented"
+--     fromValRef <- liftIO $ Q.queryValue prop fromDynPath
+--     fromVal    <- liftIO $ readIORef fromValRef
 
-readWrite prop mbF (FromConst constVal) (ToVar toVarDef) = do
-  IScrRuntime varsRef <- ask
-  vars   <- liftIO $ readIORef varsRef
+--     toValRef <- liftIO $ Q.queryValue prop toDynPath
+--     toVal    <- liftIO $ readIORef toValRef
 
-  -- N.B.: this is not particular extensible. Only PoC
-  liftIO $ case (toVarDef, constVal) of
-    (BoolVar to _, BoolConst boolVal) -> do
-      case Map.lookup to vars of
-        Nothing    -> error $ show $ "To var not found: " <> to
-        Just toRef -> do
-          let anyVal = invokeF mbF $ unsafeCoerce boolVal
-          writeIORef toRef anyVal
-    _ -> error "readWrite (FromField, ToVar) not yet implemented"
+--     -- liftIO $ case (fromVal, toVal) of
+--     --   (DMod.BoolValue boolVal, DMod.BoolValue _) -> do
+--     --     let anyVal = invokeF mbF $ unsafeCoerce boolVal
+--     --     writeIORef toValRef $ DMod.BoolValue $ unsafeCoerce anyVal
+--     --   (DMod.BoolValue _, _) -> error $ show $ "readWrite (FromField, ToField) type mismatch (target is not bool)"
+--     --   (_, DMod.BoolValue _) -> error $ "readWrite (FromField, ToField) type mismatch (source is not bool)"
+--     --   _                     -> error "readWrite (FromField, ToField) not yet implemented"
 
-readWrite prop mbF (FromConst constVal) (ToField _ toStatPath) = do
-  let toDynPath = DInst.toDynEssPath toStatPath
+-- readWrite prop mbF (FromConst constVal) (ToVar toVarDef) = do
+--   IScrRuntime varsRef <- ask
+--   vars   <- liftIO $ readIORef varsRef
 
-  toValRef <- liftIO $ Q.queryValue prop toDynPath
-  toVal    <- liftIO $ readIORef toValRef
+--   -- N.B.: this is not particular extensible. Only PoC
+--   liftIO $ case (toVarDef, constVal) of
+--     (BoolVar to _, BoolConst boolVal) -> do
+--       case Map.lookup to vars of
+--         Nothing    -> error $ show $ "To var not found: " <> to
+--         Just toRef -> do
+--           let anyVal = invokeF mbF $ unsafeCoerce boolVal
+--           writeIORef toRef anyVal
+--     _ -> error "readWrite (FromField, ToVar) not yet implemented"
 
-  -- N.B.: this is not particular extensible. Only PoC
-  liftIO $ case (constVal, toVal) of
-    (BoolConst boolVal, DMod.BoolValue _) -> do
-      let anyVal = invokeF mbF $ unsafeCoerce boolVal
-      writeIORef toValRef $ DMod.BoolValue $ unsafeCoerce anyVal
-    _ -> error "readWrite (FromField, ToField) not yet implemented"
+-- readWrite prop mbF (FromConst constVal) (ToField _ toStatPath) = do
+--   let toDynPath = DInst.toDynEssPath toStatPath
+
+--   toValRef <- liftIO $ Q.queryValue prop toDynPath
+--   toVal    <- liftIO $ readIORef toValRef
+
+--   -- N.B.: this is not particular extensible. Only PoC
+--   liftIO $ case (constVal, toVal) of
+--     (BoolConst boolVal, DMod.BoolValue _) -> do
+--       let anyVal = invokeF mbF $ unsafeCoerce boolVal
+--       writeIORef toValRef $ DMod.BoolValue $ unsafeCoerce anyVal
+--     _ -> error "readWrite (FromField, ToField) not yet implemented"
 
 
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE GADTs #-}
@@ -13,16 +14,13 @@ import TypeLevel.ZeplrogOOP.Static.Model.Common
 import GHC.TypeLits
 
 
-data BoolTag = BoolTag
-data StringTag = StringTag
-
 -- | Variable definition
--- N.B., incomplete for now (PoC only)
 data VarDef (lvl :: Level) typeTag where
-  -- TODO
-  -- BoolVar :: StringType lvl -> ValDef lvl typeTag -> VarDef lvl typeTag
-  BoolVar   :: StringType lvl -> Bool -> VarDef lvl BoolTag
-  StringVar :: StringType lvl -> StringType lvl -> VarDef lvl StringTag
+  GenericVar
+    :: StringType lvl       -- ^ Var name
+    -> ValDef lvl           -- ^ Default value
+    -> StringType lvl       -- ^ Stringified type name
+    -> VarDef lvl typeTag
 
 -- | Constant definition
 -- N.B., incomplete for now (PoC only)
@@ -68,6 +66,23 @@ data CustomScript (lvl :: Level) where
     -> [ScriptOp lvl]
     -> CustomScript lvl
 
+-- Predefined var types
+
+type IntVar (name :: Symbol) (i :: Nat)
+  = GenericVar @'TypeLevel @IntTag name (IntValue i) IntTag
+
+type BoolVar (name :: Symbol) (b :: Bool)
+  = GenericVar @'TypeLevel @BoolTag name (BoolValue b) BoolTag
+
+type StringVar (name :: Symbol) (s :: Symbol)
+  = GenericVar @'TypeLevel @StringTag name (StringValue s) StringTag
+
+type PathVar (name :: Symbol) (s :: [EssenceTL])
+  = GenericVar @'TypeLevel @PathTag name (PathValue s) PathTag
+
+
+
+-- Short definitions
 
 type CustomScriptTL = CustomScript 'TypeLevel
 type CustomScriptVL = CustomScript 'ValueLevel

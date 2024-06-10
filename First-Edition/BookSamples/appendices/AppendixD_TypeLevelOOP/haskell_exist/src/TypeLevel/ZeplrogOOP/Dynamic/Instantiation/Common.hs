@@ -55,5 +55,5 @@ instance
     pure $ PairValue val1' val2'
   dInst _ () (SMod.PathValue essPath) = do
     essPath' <- mapM (dInst False ()) essPath
-    pure $ Path essPath'
+    pure $ PathValue essPath'
 

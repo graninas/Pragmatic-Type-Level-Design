@@ -50,8 +50,8 @@ data TagProperty (lvl :: Level) where
 data ValDef (lvl :: Level) where
   IntValue      :: IntegerType lvl -> ValDef lvl
   BoolValue     :: Bool -> ValDef lvl
-  PairValue     :: ValDef lvl -> ValDef lvl-> ValDef lvl
   StringValue   :: StringType lvl-> ValDef lvl
+  PairValue     :: ValDef lvl -> ValDef lvl-> ValDef lvl
 
   -- | Reference to a dynamic property relative to the parent prop
   PathValue     :: [Essence lvl] -> ValDef lvl
@@ -60,6 +60,13 @@ data ValDef (lvl :: Level) where
   -- with a value
   TagValue      :: TagProperty lvl -> ValDef lvl -> ValDef lvl
 
+
+type IntTag = "tag:int"
+type BoolTag = "tag:bool"
+type StringTag = "tag:string"
+type PairTag = "tag:pair"
+type PathTag = "tag:path"
+type TagTag = "tag:tag"
 
 ------ Short identifiers ----------
 

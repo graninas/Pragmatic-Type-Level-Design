@@ -7,6 +7,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
 
 module TypeLevel.ZeplrogOOP.Static.Materialization.Script where
 
@@ -40,36 +41,32 @@ instance
     boolVal <- sMat () $ Proxy @boolVal
     pure $ BoolConst boolVal
 
-instance
-  ( KnownSymbol varName
-  , SMat () defVal Bool
-  ) =>
-  SMat () ('BoolVar @'TypeLevel varName defVal)
-          (VarDefVL BoolTag) where
-  sMat () _ = do
-    let varName = symbolVal $ Proxy @varName
-    defVal <- sMat () $ Proxy @defVal
-    pure $ BoolVar varName defVal
+-- Var materialization
 
 instance
   ( KnownSymbol varName
-  , KnownSymbol defVal
+  , KnownSymbol typeName
+  , SMat () defVal ValDefVL
   ) =>
-  SMat () ('StringVar @'TypeLevel varName defVal)
-          (VarDefVL StringTag) where
-  sMat () _ = do
+  SMat (Proxy typeTag)
+        ('GenericVar @'TypeLevel varName defVal typeName)
+        (VarDefVL typeTag) where
+  sMat _ _ = do
     let varName = symbolVal $ Proxy @varName
-    let defVal = symbolVal $ Proxy @defVal
-    pure $ StringVar varName defVal
+    let typeName = symbolVal $ Proxy @typeName
+    val <- sMat () $ Proxy @defVal
+    pure $ GenericVar varName val typeName
+
+-- Target materialization
 
 instance
   ( varDef ~ (vd :: VarDefTL typeTag)
-  , SMat () varDef (VarDefVL typeTag)
+  , SMat (Proxy typeTag) varDef (VarDefVL typeTag)
   ) =>
   SMat () ('ToVar @'TypeLevel varDef)
           (TargetVL typeTag) where
   sMat () _ = do
-    varDef <- sMat () $ Proxy @varDef
+    varDef <- sMat (Proxy @typeTag) $ Proxy @varDef
     pure $ ToVar varDef
 
 instance
@@ -84,12 +81,12 @@ instance
 
 instance
   ( varDef ~ (vd :: VarDefTL typeTag)
-  , SMat () varDef (VarDefVL typeTag)
+  , SMat (Proxy typeTag) varDef (VarDefVL typeTag)
   ) =>
   SMat () ('FromVar @'TypeLevel varDef)
           (SourceVL typeTag) where
   sMat () _ = do
-    varDef <- sMat () $ Proxy @varDef
+    varDef <- sMat (Proxy @typeTag) $ Proxy @varDef
     pure $ FromVar varDef
 
 instance
@@ -118,12 +115,12 @@ instance
   sMat () _ = pure NegateF
 
 instance
-  ( SMat () varDef (VarDefVL typeTag)
+  ( SMat (Proxy typeTag) varDef (VarDefVL typeTag)
   ) =>
   SMat () ('DeclareVar @'TypeLevel varDef)
          ScriptOpVL where
   sMat () _ = do
-    varDef <- sMat () $ Proxy @varDef
+    varDef <- sMat (Proxy @typeTag) $ Proxy @varDef
     pure $ DeclareVar varDef
 
 instance

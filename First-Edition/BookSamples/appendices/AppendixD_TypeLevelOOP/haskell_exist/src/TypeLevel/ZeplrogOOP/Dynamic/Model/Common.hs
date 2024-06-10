@@ -6,9 +6,13 @@ import CPrelude
 
 import qualified TypeLevel.ZeplrogOOP.Static.Model as SMod
 
+import qualified GHC.Types as GHC
 
 type Essence = String
 type EssencePath = [Essence]
+
+type TypeTag = String
+type StringifiedValue = String
 
 data Value
   = PairValue Value Value
@@ -16,6 +20,6 @@ data Value
   | BoolValue Bool
   | StringValue String
   | TagValue SMod.TagPropertyVL Value
-  | Path [Essence]
+  | PathValue [Essence]
   | StaticPropertyRefValue SMod.StaticPropertyId
   deriving (Show, Eq, Ord)

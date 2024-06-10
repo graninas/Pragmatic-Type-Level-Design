@@ -136,11 +136,12 @@ type HPVal hp    = PairValue (IntValue hp) (IntValue hp)
 type HPTagVal hp = TagValue GenericHP (HPVal hp)
 
 type CloseStateRef = '[ EStates, EStateClose ]
-type OpenStateRef  = '[ EStates, EStateClose ]
+type OpenStateRef  = '[ EStates, EStateOpen  ]
 
--- type StateVar = PathVar "cur state" CloseStateRef
-
-type OpenDoorScript = 'Script @'TypeLevel "opens a door" '[]
+type OpenDoorScript = 'Script @'TypeLevel "opens a door"
+  '[ WriteData (ToField 'Proxy '[EState])
+               (FromConst (PathConst OpenStateRef))
+   ]
 
 type AnyProp = AbstractProp (Group EAnyProp) '[] '[]
 
@@ -191,20 +192,15 @@ spec = describe "Zeplrog data model" $ do
     val1 <- Q.readStringVal door iconValPath
     val1 `shouldBe` "?"
 
-    let stateValPath  = [toDynEss @EState]
+    let openStateRef  = toDynEsss @OpenStateRef
     let closeStateRef = toDynEsss @CloseStateRef
+
+    let stateValPath  = [toDynEss @EState]
     val2 <- Q.readPathVal door stateValPath
     val2 `shouldBe` closeStateRef
 
     let openDoorScript = toDynEss @EOpenDoorScript
     Interact.invoke openDoorScript door
 
-    -- descr <- DPrint.describe door
-    -- putStrLn $ P.unlines descr
-
-    let openStateRef = toDynEsss @OpenStateRef
     val3 <- Q.readPathVal door stateValPath
     val3 `shouldBe` openStateRef
-
-    -- props <- readIORef $ DInst.dePropertiesRef dEnv
-    -- Map.size props `shouldBe` 1

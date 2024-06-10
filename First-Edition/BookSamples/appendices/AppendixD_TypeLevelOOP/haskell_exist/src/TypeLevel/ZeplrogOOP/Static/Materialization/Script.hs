@@ -33,13 +33,16 @@ instance SMat () 'False Bool where
   sMat () _ = pure False
 
 instance
-  ( SMat () boolVal Bool
+  ( KnownSymbol typeName
+  , SMat () val ValDefVL
   ) =>
-  SMat () ('BoolConst @'TypeLevel boolVal)
-          (ConstDefVL BoolTag) where
-  sMat () _ = do
-    boolVal <- sMat () $ Proxy @boolVal
-    pure $ BoolConst boolVal
+  SMat (Proxy typeTag)
+        ('GenericConst @'TypeLevel val typeName)
+        (ConstDefVL typeTag) where
+  sMat _ _ = do
+    let typeName = symbolVal $ Proxy @typeName
+    val <- sMat () $ Proxy @val
+    pure $ GenericConst val typeName
 
 -- Var materialization
 
@@ -101,12 +104,12 @@ instance
 
 instance
   ( constDef ~ (c :: ConstDefTL typeTag)
-  , SMat () constDef (ConstDefVL typeTag)
+  , SMat (Proxy typeTag) constDef (ConstDefVL typeTag)
   ) =>
   SMat () ('FromConst constDef)
           (SourceVL typeTag) where
   sMat () _ = do
-    val <- sMat () $ Proxy @constDef
+    val <- sMat (Proxy @typeTag) $ Proxy @constDef
     pure $ FromConst val
 
 instance

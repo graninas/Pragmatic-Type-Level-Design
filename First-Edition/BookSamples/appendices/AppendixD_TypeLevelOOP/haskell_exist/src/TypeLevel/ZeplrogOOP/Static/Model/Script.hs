@@ -23,17 +23,25 @@ data VarDef (lvl :: Level) typeTag where
     -> VarDef lvl typeTag
 
 -- | Constant definition
--- N.B., incomplete for now (PoC only)
 data ConstDef (lvl :: Level) typeTag where
-  BoolConst :: Bool -> ConstDef lvl BoolTag
+  GenericConst
+    :: ValDef lvl
+    -> StringType lvl       -- ^ Stringified type name
+    -> ConstDef lvl typeTag
 
 -- | Script operation
 data ScriptOp (lvl :: Level) where
   DeclareVar   :: VarDef lvl typeTag -> ScriptOp lvl
 
   -- Can be the only MOV instruction
-  ReadData     :: Source lvl typeTag -> Target lvl typeTag -> ScriptOp lvl
-  WriteData    :: Target lvl typeTag -> Source lvl typeTag -> ScriptOp lvl
+  ReadData
+    :: Source lvl typeTag
+    -> Target lvl typeTag
+    -> ScriptOp lvl
+  WriteData
+    :: Target lvl typeTag
+    -> Source lvl typeTag
+    -> ScriptOp lvl
 
   Invoke
     :: Func lvl typeTag1 typeTag2
@@ -80,7 +88,23 @@ type StringVar (name :: Symbol) (s :: Symbol)
 type PathVar (name :: Symbol) (s :: [EssenceTL])
   = GenericVar @'TypeLevel @PathTag name (PathValue s) PathTag
 
+-- TODO: rest of vars
 
+-- Predefined const types
+
+type IntConst (i :: Nat)
+  = GenericConst @'TypeLevel @IntTag (IntValue i) IntTag
+
+type BoolConst (b :: Bool)
+  = GenericConst @'TypeLevel @BoolTag (BoolValue b) BoolTag
+
+type StringConst (s :: Symbol)
+  = GenericConst @'TypeLevel @StringTag (StringValue s) StringTag
+
+type PathConst (s :: [EssenceTL])
+  = GenericConst @'TypeLevel @PathTag (PathValue s) PathTag
+
+-- TODO: rest of consts
 
 -- Short definitions
 

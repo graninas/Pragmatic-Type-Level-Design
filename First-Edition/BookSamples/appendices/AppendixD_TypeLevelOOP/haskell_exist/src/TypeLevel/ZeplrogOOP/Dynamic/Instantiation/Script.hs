@@ -96,12 +96,12 @@ invokeF (Just NegateF) anyVal = let
         DMod.BoolValue b -> unsafeCoerce $ DMod.BoolValue $ not b
         _ -> error $ "invokeF (Just NegateF) type mismatch: " <> show val
 
-readWrite
-  :: DMod.Property
-  -> Maybe (FuncVL typeTag1 typeTag2)
-  -> SourceVL typeTag1
-  -> TargetVL typeTag2
-  -> ScriptInterpreter ()
+-- readWrite
+--   :: DMod.Property
+--   -> Maybe (FuncVL typeTag1 typeTag2)
+--   -> SourceVL typeTag1
+--   -> TargetVL typeTag2
+--   -> ScriptInterpreter ()
 readWrite prop mbF
   (FromVar (GenericVar from _ typeName1))
   (ToVar   (GenericVar to   _ typeName2))
@@ -123,94 +123,73 @@ readWrite prop mbF
       let val' = invokeF mbF val
       writeIORef toRef val'
 
--- readWrite prop mbF
---   (FromVar (GenericVar from _ typeName1))
---   (ToField _ statPath) = do
---     IScrRuntime varsRef <- ask
---     vars   <- liftIO $ readIORef varsRef
+readWrite prop mbF
+  (FromVar (GenericVar from _ typeName1))
+  (ToField _ toFieldSPath) = do
+    IScrRuntime varsRef <- ask
+    vars <- liftIO $ readIORef varsRef
 
---     let dynPath = DInst.toDynEssPath statPath
+    liftIO $ case Map.lookup from vars of
+      Nothing      -> error $ show $ "readWrite (FromVar, ToField) from var not found: " <> from
+      Just fromRef -> do
+        anyVal1 <- readIORef fromRef
+        let anyVal2 = invokeF mbF anyVal1
 
---     curValRef <- liftIO $ Q.queryValue prop dynPath
---     -- curVal    <- liftIO $ readIORef curValRef
+        let toFieldDPath = DInst.toDynEssPath toFieldSPath
+        toValRef <- Q.queryValueRef prop toFieldDPath
+        writeIORef toValRef $ unsafeCoerce anyVal2
 
---     liftIO $ case Map.lookup from vars of
---       Nothing      -> error $ show $ "readWrite (FromVar, ToField) from var not found: " <> from
---       Just fromRef -> do
---         anyVal1 <- readIORef fromRef
---         let anyVal2 = invokeF mbF anyVal1
+readWrite prop mbF
+  (FromField _ fromFieldSPath)
+  (ToVar (GenericVar to _ typeName2)) = do
+    IScrRuntime varsRef <- ask
+    vars <- liftIO $ readIORef varsRef
 
---   -- ??????
---         writeIORef curValRef $ DMod.BoolValue $ unsafeCoerce anyVal2
---       -- (BoolVar from _, _)   -> error $ show $ "readWrite (FromVar, ToField) type mismatch (target is not bool): " <> from
---       -- (_, DMod.BoolValue _) -> error $ "readWrite (FromVar, ToField) type mismatch (source is not bool)"
+    case Map.lookup to vars of
+      Nothing    -> error $ show $ "readWrite (FromField, ToVar) To var not found: " <> to
+      Just toVarRef -> do
 
--- readWrite prop mbF
---   (FromField _ statPath)
---   (ToVar (GenericVar to _ typeName2)) = do
---     IScrRuntime varsRef <- ask
---     vars   <- liftIO $ readIORef varsRef
+        let fromFieldDPath = DInst.toDynEssPath fromFieldSPath
+        curValRef <- liftIO $ Q.queryValueRef prop fromFieldDPath
+        curVal    <- liftIO $ readIORef curValRef
 
---     let dynPath = DInst.toDynEssPath statPath
+        let anyVal2 = invokeF mbF $ unsafeCoerce curVal
+        writeIORef toVarRef anyVal2
 
---     curValRef <- liftIO $ Q.queryValue prop dynPath
---     curVal    <- liftIO $ readIORef curValRef
+readWrite prop mbF
+  (FromField _ fromFieldSPath)
+  (ToField   _ toFieldSPath) = do
+    let fromFieldDPath = DInst.toDynEssPath fromFieldSPath
+    let toFieldDPath   = DInst.toDynEssPath toFieldSPath
 
---     case Map.lookup to vars of
---       Nothing    -> error $ show $ "readWrite (FromField, ToVar) To var not found: " <> to
---       Just toRef -> do
---         -- ??????
---         let boolVal = True
+    fromValRef <- liftIO $ Q.queryValueRef prop fromFieldDPath
+    fromVal    <- liftIO $ readIORef fromValRef
+    toValRef   <- liftIO $ Q.queryValueRef prop toFieldDPath
 
---         let anyVal2 = invokeF mbF $ unsafeCoerce boolVal
---         writeIORef toRef $ unsafeCoerce anyVal2
+    let anyVal = invokeF mbF $ unsafeCoerce fromVal
+    writeIORef toValRef $ unsafeCoerce anyVal
 
--- readWrite prop mbF
---   (FromField _ fromStatPath)
---   (ToField _ toStatPath) = do
---     let fromDynPath = DInst.toDynEssPath fromStatPath
---     let toDynPath   = DInst.toDynEssPath toStatPath
+readWrite prop mbF (FromConst (GenericConst constVal _))
+                   (ToVar (GenericVar to _ typeName2)) = do
+  IScrRuntime varsRef <- ask
+  vars <- readIORef varsRef
 
---     fromValRef <- liftIO $ Q.queryValue prop fromDynPath
---     fromVal    <- liftIO $ readIORef fromValRef
+  case Map.lookup to vars of
+    Nothing    -> error $ show $ "To var not found: " <> to
+    Just toRef -> do
+      val <- iScr prop constVal
+      let anyVal = invokeF mbF $ unsafeCoerce val
+      writeIORef toRef anyVal
 
---     toValRef <- liftIO $ Q.queryValue prop toDynPath
---     toVal    <- liftIO $ readIORef toValRef
+readWrite prop mbF (FromConst (GenericConst constVal _))
+                   (ToField _ toFieldSPath) = do
+  let toFieldDPath = DInst.toDynEssPath toFieldSPath
 
---     -- liftIO $ case (fromVal, toVal) of
---     --   (DMod.BoolValue boolVal, DMod.BoolValue _) -> do
---     --     let anyVal = invokeF mbF $ unsafeCoerce boolVal
---     --     writeIORef toValRef $ DMod.BoolValue $ unsafeCoerce anyVal
---     --   (DMod.BoolValue _, _) -> error $ show $ "readWrite (FromField, ToField) type mismatch (target is not bool)"
---     --   (_, DMod.BoolValue _) -> error $ "readWrite (FromField, ToField) type mismatch (source is not bool)"
---     --   _                     -> error "readWrite (FromField, ToField) not yet implemented"
+  toValRef <- liftIO $ Q.queryValueRef prop toFieldDPath
+  val <- iScr prop constVal
 
--- readWrite prop mbF (FromConst constVal) (ToVar toVarDef) = do
---   IScrRuntime varsRef <- ask
---   vars   <- liftIO $ readIORef varsRef
-
---   -- N.B.: this is not particular extensible. Only PoC
---   liftIO $ case (toVarDef, constVal) of
---     (BoolVar to _, BoolConst boolVal) -> do
---       case Map.lookup to vars of
---         Nothing    -> error $ show $ "To var not found: " <> to
---         Just toRef -> do
---           let anyVal = invokeF mbF $ unsafeCoerce boolVal
---           writeIORef toRef anyVal
---     _ -> error "readWrite (FromField, ToVar) not yet implemented"
-
--- readWrite prop mbF (FromConst constVal) (ToField _ toStatPath) = do
---   let toDynPath = DInst.toDynEssPath toStatPath
-
---   toValRef <- liftIO $ Q.queryValue prop toDynPath
---   toVal    <- liftIO $ readIORef toValRef
-
---   -- N.B.: this is not particular extensible. Only PoC
---   liftIO $ case (constVal, toVal) of
---     (BoolConst boolVal, DMod.BoolValue _) -> do
---       let anyVal = invokeF mbF $ unsafeCoerce boolVal
---       writeIORef toValRef $ DMod.BoolValue $ unsafeCoerce anyVal
---     _ -> error "readWrite (FromField, ToField) not yet implemented"
+  let anyVal = invokeF mbF $ unsafeCoerce val
+  writeIORef toValRef $ unsafeCoerce anyVal
 
 
 

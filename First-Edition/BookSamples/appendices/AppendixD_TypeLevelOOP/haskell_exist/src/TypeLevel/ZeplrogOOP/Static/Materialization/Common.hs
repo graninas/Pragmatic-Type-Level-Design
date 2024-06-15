@@ -104,6 +104,17 @@ instance
   sMat () _ = pure $ BoolValue False
 
 instance
+  ( SMat () valDef ValDefVL
+  ) =>
+  SMat () ('DerivableValue @'TypeLevel valDef) ValDefVL where
+  sMat () _ = do
+    valDef <- sMat () $ Proxy @valDef
+    pure $ DerivableValue valDef
+
+
+-- Static materialization of essences
+
+instance
   ( SMat () (Essences essPath) [EssenceVL]
   ) =>
   SMat () ('PathValue @'TypeLevel essPath)

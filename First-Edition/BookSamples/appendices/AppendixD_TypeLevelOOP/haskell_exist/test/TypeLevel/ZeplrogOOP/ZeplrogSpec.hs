@@ -120,10 +120,9 @@ type PosVal x y    = PairValue (IntValue x) (IntValue y)
 type PosTagVal x y = TagValue GenericPos (PosVal x y)
 
 
--- -- | Derived world position value.
--- type DerivedPosVal = PropVal
---   (GroupRoot EPos GenericPos)
---   DerivedWorldPos
+-- | Derived world position value.
+type DerivablePosTagVal x y = DerivableValue (PosTagVal x y)
+
 
 -- | Strength random val
 -- type StrengthRandomVal from to = RandomIntValue from to
@@ -149,7 +148,7 @@ type AnyProp = AbstractProp (Group EAnyProp) '[] '[]
 type AbstractDoor = AbstractDerivedProp EAbstractDoor AnyProp
   '[ PropKeyVal EIcon (OwnVal (IconVal "+"))
    , PropKeyVal EHP   (OwnVal (HPTagVal 50))
-  --  , PropKeyVal EPos  (OwnVal DerivedPosVal)    --------
+   , PropKeyVal EPos  (OwnVal (DerivablePosTagVal 0 0))
 
     -- | Possible states
    , PropKeyBag EStates
@@ -172,7 +171,7 @@ type AbstractDoor = AbstractDerivedProp EAbstractDoor AnyProp
 type SpecificDoor = DerivedProp ESpecificDoor AbstractDoor
   '[ PropKeyVal EIcon (OwnVal (IconVal "?"))
    , PropKeyVal EHP   (OwnVal (HPTagVal 50))
-   , PropKeyVal EPos  (OwnVal (PosTagVal 2 3))
+   , PropKeyVal EPos  (OwnVal (PosTagVal 2 3))    -- overridden
    ]
    '[]
 

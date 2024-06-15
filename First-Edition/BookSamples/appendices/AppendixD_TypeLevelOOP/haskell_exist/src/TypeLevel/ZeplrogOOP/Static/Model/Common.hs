@@ -60,13 +60,16 @@ data ValDef (lvl :: Level) where
   -- with a value
   TagValue      :: TagProperty lvl -> ValDef lvl -> ValDef lvl
 
+  -- | Value should be overridden.
+  --   Provides default value.
+  DerivableValue  :: ValDef lvl -> ValDef lvl
 
-type IntTag = "tag:int"
-type BoolTag = "tag:bool"
+type IntTag    = "tag:int"
+type BoolTag   = "tag:bool"
 type StringTag = "tag:string"
-type PairTag = "tag:pair"
-type PathTag = "tag:path"
-type TagTag = "tag:tag"
+type PairTag   = "tag:pair"
+type PathTag   = "tag:path"
+type TagTag    = "tag:tag"
 
 ------ Short identifiers ----------
 

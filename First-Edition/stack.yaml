@@ -23,7 +23,8 @@ packages:
 - BookSamples/CH04/Section2p1
 - BookSamples/CH04/Section2p5
 
-- BookSamples/CH05/ch5
+- BookSamples/CH05
+- BookSamples/CH07
 
 - BookSamples/demo-apps/ptld-lib
 - BookSamples/demo-apps/ptld-auction
@@ -32,7 +33,6 @@ packages:
 - BookSamples/appendices/AppendixB_FightClub/haskell_exist
 - BookSamples/appendices/AppendixB_FightClub/haskell_value
 - BookSamples/appendices/AppendixC_MythologizedCorrectness
-- BookSamples/appendices/AppendixD_TypeLevelOOP/haskell_exist
 
 allow-newer: true
 

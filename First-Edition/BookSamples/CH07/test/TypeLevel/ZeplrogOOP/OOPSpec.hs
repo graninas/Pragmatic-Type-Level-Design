@@ -108,6 +108,45 @@ type TableLamp = DerivedProp ETableLamp AbstractLamp
    ]
   '[]
 
+
+-- for the book
+type ESimpleLamp = Ess @TypeLevel "lamp:simple"
+type EIsOnStatus = Ess @TypeLevel "is on?"
+
+type SimpleLamp = DerivedProp ESimpleLamp AbstractLamp
+  '[ PropKeyVal EIsOnStatus (OwnVal (BoolValue False))
+   ]
+  '[]
+
+
+type EAnyProp = Ess @TypeLevel "any prop"
+type EAbstractDerived1 = Ess @TypeLevel "EAbstractDerived1"
+type EAbstractDerived2 = Ess @TypeLevel "EAbstractDerived2"
+type EConcrete = Ess @TypeLevel "EConcrete"
+
+type AnyProp = AbstractProp (Group EAnyProp) '[] '[]
+
+type AbstractDerived1 = AbstractDerivedProp
+  EAbstractDerived1 AnyProp '[] '[]
+
+type AbstractDerived2 = AbstractDerivedProp
+  EAbstractDerived2 AbstractDerived1 '[] '[]
+
+type ConcreteProp = DerivedProp
+  EConcrete AbstractDerived2 '[] '[]
+
+
+
+type EQuantuumState = Ess @TypeLevel "quantuum state"
+type EAlive = Ess @TypeLevel "alive"
+type ESchrodingerCat = Ess @TypeLevel "Schrodinger cat"
+
+type QuantuumState = TagProp (TagGroup EQuantuumState)
+type Alive = TagProp (TagGroupRoot EAlive QuantuumState)
+type SchrodingerCat
+  = AbstractProp (GroupRoot ESchrodingerCat (TagPropRef Alive))
+
+
 spec :: Spec
 spec =
   describe "Abstract property deriving test" $ do

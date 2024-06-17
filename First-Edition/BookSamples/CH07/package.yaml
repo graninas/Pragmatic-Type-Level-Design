@@ -1,4 +1,4 @@
-name:                typeLevelOOP
+name:                ch7
 version:             1.0.0.0
 license:             BSD3
 author:              "Alexander Granin"
@@ -46,7 +46,7 @@ library:
   - -Wall
 
 executables:
-  typeLevelOOP:
+  ch7:
     main:                Main.hs
     source-dirs:         ./src
     ghc-options:
@@ -66,4 +66,4 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - hspec
-    - typeLevelOOP
+    - ch7

@@ -53,6 +53,11 @@ data ValDef (lvl :: Level) where
   StringValue   :: StringType lvl-> ValDef lvl
   PairValue     :: ValDef lvl -> ValDef lvl-> ValDef lvl
 
+  -- TODO:
+  -- ListValue     :: [ValDef lvl] -> ValDef lvl
+  -- EssenceValue  :: Essence lvl -> ValDef lvl
+
+
   -- | Reference to a dynamic property relative to the parent prop
   PathValue     :: [Essence lvl] -> ValDef lvl
 

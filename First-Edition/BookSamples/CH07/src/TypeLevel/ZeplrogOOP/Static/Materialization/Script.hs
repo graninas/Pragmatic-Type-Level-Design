@@ -138,17 +138,6 @@ instance
     pure $ WriteData target source
 
 instance
-  ( SMat () source (SourceVL typeTag)
-  , SMat () target (TargetVL typeTag)
-  ) =>
-  SMat () ('ReadData @'TypeLevel source target)
-         ScriptOpVL where
-  sMat () _ = do
-    source <- sMat () $ Proxy @source
-    target <- sMat () $ Proxy @target
-    pure $ ReadData source target
-
-instance
   ( SMat () func   (FuncVL typeTag1 typeTag2)
   , SMat () source (SourceVL typeTag1)
   , SMat () target (TargetVL typeTag2)

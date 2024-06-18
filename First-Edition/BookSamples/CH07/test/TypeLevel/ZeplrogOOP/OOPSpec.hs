@@ -64,6 +64,8 @@ type MismatchVar = StringVar "test" "abc"
 
 type SwitchScript = 'Script @'TypeLevel "inverts the EIsOn switch"
   '[ DeclareVar SwitchVar
+   , DeclareVar MismatchVar
+   , WriteData (ToVar MismatchVar) (FromField 'Proxy '[EIsOn])
 
   -- Runtime type check works:
   -- readWrite (FromField, ToVar) type mismatch (target is not bool)

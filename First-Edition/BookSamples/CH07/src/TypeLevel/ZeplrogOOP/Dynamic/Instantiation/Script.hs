@@ -78,9 +78,6 @@ instance IScr ScriptOpVL () where
   iScr prop (WriteData target source) =
     readWrite prop Nothing source target
 
-  iScr prop (ReadData source target) =
-    readWrite prop Nothing source target
-
   iScr prop (Invoke func source target) =
     readWrite prop (Just func) source target
 

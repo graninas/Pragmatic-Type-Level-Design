@@ -34,10 +34,6 @@ data ScriptOp (lvl :: Level) where
   DeclareVar   :: VarDef lvl typeTag -> ScriptOp lvl
 
   -- Can be the only MOV instruction
-  ReadData
-    :: Source lvl typeTag
-    -> Target lvl typeTag
-    -> ScriptOp lvl
   WriteData
     :: Target lvl typeTag
     -> Source lvl typeTag
@@ -48,6 +44,8 @@ data ScriptOp (lvl :: Level) where
     -> Source lvl typeTag1
     -> Target lvl typeTag2
     -> ScriptOp lvl
+
+type ReadData src tgt = WriteData tgt src
 
 -- N.B., Proxy is only needed to satisfy functional dependency
 -- that is somehow fails to define typeTag without this workaround.

@@ -17,6 +17,7 @@ import qualified Text.Show as T
 ------ Common and General -----------------
 
 -- | Sudo ID of a property
+{-# LANGUAGE DataKinds #-}
 
 data Essence (lvl :: Level) where
   Ess :: StringType lvl -> Essence lvl

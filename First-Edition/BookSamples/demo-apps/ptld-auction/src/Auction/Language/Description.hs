@@ -18,6 +18,7 @@ module Auction.Language.Description where
 
 import GHC.TypeLits (Symbol)
 
+
 -- Closed data
 
 data Country

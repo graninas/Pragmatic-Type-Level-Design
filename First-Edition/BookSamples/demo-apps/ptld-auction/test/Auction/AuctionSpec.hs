@@ -116,14 +116,14 @@ spec :: Spec
 spec = do
   describe "Type level eDSL Auction: Introspection" $ do
 
-    xit "AuctionInfo test" $ do
+    it "AuctionInfo test" $ do
       strs <- eval I.AsIntroInfo (Proxy :: Proxy WorldArtsInfo)
       strs `shouldBe`
         [ "Name: World arts"
         , "Holder: UK Bank"
         ]
 
-    xit "Auction Lots test" $ do
+    it "Auction Lots test" $ do
       strs <- eval I.AsIntroLots (Proxy :: Proxy WorldArtsLots)
       strs `shouldBe`
         [ "Lot: 101"
@@ -142,7 +142,7 @@ spec = do
         , "Currency: USD"
         ]
 
-    xit "Auction test" $ do
+    it "Auction test" $ do
       strs <- I.describeAuction (Proxy :: Proxy WorldArtsAuction)
       strs `shouldBe`
         [ "==> Auction! <=="
@@ -164,23 +164,16 @@ spec = do
         , "Currency: USD"
         , "AuctionFlow"
         , "Lot process"
-        , "GetPayloadValue' reached"
-        , "GetPayloadValue' reached"
+        , "GetLotName' reached"
+        , "GetLotDescr' reached"
         , "End' reached."
         ]
 
   describe "Type level eDSL Auction: Implementation" $ do
-    -- it "runAuction WorldArtsAuction test" $ do
-      -- Impl.runAuction (Proxy :: Proxy WorldArtsAuction)
-
-    it "runAuction TestAuction test" $ do
-      Impl.runAuction (Proxy :: Proxy TestAuction)
-
     it "evalCtx Action ReadRef WriteRef ReadRef test" $ do
       ctx <- TestData <$> newIORef (Map.fromList
         [ ("ref1", Dyn.toDyn (10 :: Int))
         ]) <*> pure Map.empty
-
 
       void $ evalCtx ctx Impl.AsImplAction (Proxy :: Proxy (
             Action (ReadRef "ref1" Int (WriteRef "ref2" Int))

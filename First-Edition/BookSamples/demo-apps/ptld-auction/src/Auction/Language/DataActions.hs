@@ -14,6 +14,7 @@ import TypeLevelDSL.Language.Action
 
 import GHC.TypeLits (Symbol, Nat)
 
+
 data LotName
 data LotDescr
 
@@ -21,7 +22,6 @@ data LotDescr
 data GetPayloadValue' (valTag :: *) (valType :: *) (lam :: LambdaTag lamBody)
 data GetLotName' (lam :: LambdaTag lamBody)      -- custom methods
 data GetLotDescr' (lam :: LambdaTag lamBody)     -- custom methods
-
 
 -- Helpers
 

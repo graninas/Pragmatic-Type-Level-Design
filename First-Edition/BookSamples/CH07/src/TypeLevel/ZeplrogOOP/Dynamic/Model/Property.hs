@@ -30,7 +30,8 @@ data PropertyRef
   = DynamicPropRef PropertyId
   | StaticPropRef SMod.StaticPropertyId
 
-data DynamicScript = DynScript (IO ())
+-- | Dynamic script wrapper
+newtype DynamicScript = DynScript (IO ())
 
 -- | Dynamic property
 data Property

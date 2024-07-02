@@ -13,18 +13,21 @@ import CPrelude
 
 import GHC.TypeLits
 
+-- Interfaces
 
 data IEssence a
 data IEssencePath a
-data Essences a
+
 type family MkEssence (a :: *) :: IEssence a
-type family MkEssencePath (a :: [*]) :: IEssencePath a
+type family MkEssencePath (a :: [IEssence b]) :: IEssencePath a
 
 
+
+-- Implementations
 
 data EssenceImpl (ess :: Symbol)
-
 type Essence ess = MkEssence (EssenceImpl ess)
+
 type EssencePath path = MkEssencePath path
 
 -- -- | Tag property is always static.

@@ -15,6 +15,10 @@ import TypeLevel.Interfaces.Common
 import GHC.TypeLits
 
 
+-- | Interface for a non-implemented functionality
+data IUnknown a
+type family MkUnknown (a :: *) :: IUnknown a
+
 data IPropertyGroup a
 type family MkPropertyGroup (a :: *) :: IPropertyGroup a
 
@@ -24,59 +28,78 @@ type family MkAbstractProperty (a :: *) :: IAbstractProperty a
 data IProperty a
 type family MkProperty (a :: *) :: IProperty a
 
+data IProperties a
+type family MkProperties (a :: [IProperty b]) :: IProperties a
+
+data IField a
+type family MkField (a :: *) :: IField a
+
 data IFields a
-type family MkFields (a :: [*]) :: IFields a
+type family MkFields (a :: [IField b]) :: IFields a
+
+data IPropertyOwning a
+type family MkPropertyOwning (a :: *) :: IPropertyOwning a
+
 
 -- Implementations
 
-data GroupImpl (iEss :: IEssence a)
+-- -- IUnknown placeholder implementation
+
+data UnknownImpl
+type Unknown = MkUnknown UnknownImpl
+data DummyImpl
+type Dummy = MkUnknown DummyImpl
+
+-- -- Group implementation
+
+data GroupImpl (ess :: IEssence a)
 type Group ess = MkPropertyGroup (GroupImpl ess)
 
-data GroupRootImpl (iEss :: IEssence a) (iProp :: IProperty b)
-type GroupRoot ess iProp = MkPropertyGroup (GroupRootImpl ess iProp)
+data GroupRootImpl (ess :: IEssence a) (prop :: IProperty b)
+type GroupRoot ess prop = MkPropertyGroup (GroupRootImpl ess prop)
+
+-- -- Property owning implementation
+
+data OwnValImpl (valDef :: IUnknown a)
+type OwnVal (unkn :: IUnknown a) = MkPropertyOwning (OwnValImpl unkn)
+
+data OwnPropImpl (prop :: IProperty a)
+type OwnProp (prop :: IProperty a) = MkPropertyOwning (OwnPropImpl prop)
+
+-- -- Property field implementation
+
+data KeyBagFieldImpl
+  (ess :: IEssence a)
+  (props :: IProperties b)
+type KeyBagField ess props = MkField (KeyBagFieldImpl ess props)
+
+data KeyValFieldImpl
+  (ess :: IEssence a)
+  (own :: IPropertyOwning b)
+type KeyValField ess own = MkField (KeyValFieldImpl ess own)
+
+-- -- Abstract property implementation
 
 data AbstractPropertyImpl
   (pg :: IPropertyGroup a)
   (fs :: IFields b)
+type AbstractProp pg fs = MkAbstractProperty (AbstractPropertyImpl pg fs)
 
-type AbstractProperty pg fs =
-  MkAbstractProperty (AbstractPropertyImpl pg fs)
-
-data PropertyImpl
+data AbstractDerivedPropImpl
   (ess :: IEssence a)
-  (iAProp :: IAbstractProperty b)
+  (aProp :: IAbstractProperty b)
   (fs :: IFields c)
-type Property pg iAProp fs = MkProperty (PropertyImpl pg iAProp fs)
+type AbstractDerivedProp ess aProp fs = MkAbstractProperty (AbstractDerivedPropImpl ess aProp fs)
 
+-- -- Property implementation
+data DerivedPropImpl
+  (ess :: IEssence a)
+  (aProp :: IAbstractProperty b)
+  (fs :: IFields c)
+type DerivedProp pg aProp fs = MkProperty (DerivedPropImpl pg aProp fs)
 
 type Fields fs = MkFields fs
-
-
--- -- | Used to make static property hierarchies.
--- data PropertyGroup (lvl :: Level) where
---   -- | Property groups for static type-level representation.
---   Group     :: EssenceTL -> PropertyGroupTL
---   GroupRoot :: EssenceTL -> PropertyTL -> PropertyGroupTL
-
---   -- | Property groups and id for static value-level representation.
---   GroupId      :: EssenceVL -> StaticPropertyId -> PropertyGroupVL
---   GroupRootId  :: EssenceVL -> StaticPropertyId -> PropertyVL -> PropertyGroupVL
-
--- -- | Property owning
--- data PropertyOwning (lvl :: Level) where
---   -- | Own value. Will be materialized for each parent prop.
---   OwnVal     :: ValDef lvl -> PropertyOwning lvl
---   -- | Own property. Will be materialized for each parent prop.
---   OwnProp    :: Property lvl -> PropertyOwning lvl
---   -- | Shared property. Will be materialized only once and shared between parents.
---   SharedProp :: Property lvl -> PropertyOwning lvl
-
--- -- | Key-value pair for a property
--- data PropertyKeyValue (lvl :: Level) where
---   -- | Implicit dictionary of properties.
---   PropKeyBag :: Essence lvl -> [Property lvl] -> PropertyKeyValue lvl
---   -- | Separate property
---   PropKeyVal :: Essence lvl -> PropertyOwning lvl -> PropertyKeyValue lvl
+type Properties ps = MkProperties ps
 
 -- data PropertyScript (lvl :: Level) where
 --   PropScript
@@ -84,28 +107,7 @@ type Fields fs = MkFields fs
 --     -> CustomScript lvl
 --     -> PropertyScript lvl
 
---   -- | Abstract property.
---   --   Provides the shape for the derived properties.
--- --     Abstract property itself can't be value level.
--- data AbstractProperty where
---   -- | Abstract property with fields.
---   --   Becomes a regular static value-level property that can't be
---   --   instantiated but can be referenced.
---   --   Due to the group reference, can define properties in the middle of the hierarchy.
---   AbstractProp
---     :: PropertyGroupTL
---     -> [PropertyKeyValueTL]
---     -> [PropertyScriptTL]
---     -> AbstractProperty
---   -- | Abstract property that derives another abstract prop.
---   --   Does not contain group because will not reference prop branches.
---   --   Resulting PropDict will contain prop group with this essence only.
---   AbstractDerivedProp
---     :: EssenceTL
---     -> AbstractProperty
---     -> [PropertyKeyValueTL]
---     -> [PropertyScriptTL]
---     -> AbstractProperty
+
 
 -- -- | Static property that must be stat and dyn materialized.
 -- data Property (lvl :: Level) where

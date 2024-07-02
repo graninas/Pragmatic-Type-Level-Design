@@ -15,6 +15,8 @@ import CPrelude
 
 import TypeLevel.Interfaces
 
+import GHC.TypeLits
+
 import Test.Hspec
 
 -- type AbstractDoor = AbstractDerivedProp EAbstractDoor AnyProp
@@ -44,17 +46,29 @@ import Test.Hspec
 
 type EAbstractDoor   = Essence "object:abstract door"
 type ESpecificDoor   = Essence "object:specific door"
+type EIcon           = Essence "system:icon"
+type EPos            = Essence "intrinsics:pos"
+type EHP             = Essence "intrinsics:hp"
 
-type AbstractDoor = AbstractProperty (Group EAbstractDoor)
+type IconVal (s :: Symbol) = Dummy
+type HPTagVal (n :: Nat) = Dummy
+type PosTagVal (x :: Nat) (y :: Nat) = Dummy
+
+type AbstractDoor = AbstractProp (Group EAbstractDoor)
   ( Fields
-      '[
+      '[ KeyValField EIcon (OwnVal (IconVal "+"))
+
+      -- These don't work, we need a heterogenous list...
+      --  , KeyValField EHP   (OwnVal (HPTagVal 50))
+      --  , KeyValField EPos  (OwnVal (PosTagVal 0 0))
        ]
   )
 
-type SpecificDoor = Property ESpecificDoor AbstractDoor
-  ( Fields
-      '[
-
+type SpecificDoor = DerivedProp ESpecificDoor AbstractDoor
+  ( Fields '[]
+      '[ KeyValField EIcon (OwnVal (IconVal "?"))
+      --  , KeyValField EHP   (OwnVal (HPTagVal 50))
+      --  , KeyValField EPos  (OwnVal (PosTagVal 2 3))
        ]
   )
 

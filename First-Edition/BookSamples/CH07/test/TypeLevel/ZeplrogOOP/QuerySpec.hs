@@ -12,7 +12,6 @@ import TypeLevel.System.Debug
 import TypeLevel.ZeplrogOOP.Static.Model
 import TypeLevel.ZeplrogOOP.Static.Query
 import TypeLevel.ZeplrogOOP.Static.Materialization
-import qualified TypeLevel.ZeplrogOOP.Testing.KnowledgeBase as KB
 
 import TypeSelector.Granular
 
@@ -22,22 +21,26 @@ import Data.Proxy
 import qualified Data.Map.Strict as Map
 
 
+type EIcon = Ess @TypeLevel "system:icon"
+type EIntrinsics = Ess @TypeLevel "category:intrinsics"
+type EWall = Ess @TypeLevel "object:wall"
+
 type IconVal icon = StringValue @TypeLevel icon
 
 type TestIconOwning = OwnVal (IconVal "+")
-type TestPropKeyVal = PropKeyVal KB.EIcon TestIconOwning
+type TestPropKeyVal = PropKeyVal EIcon TestIconOwning
 
 type EAny = Ess @TypeLevel "prop:any"
 type AnyProp = AbstractProp (Group EAny) '[] '[]
 
-type TestProp = DerivedProp KB.EIntrinsics AnyProp
+type TestProp = DerivedProp EIntrinsics AnyProp
   '[ TestPropKeyVal
    ]
   '[]
 
 
-type Wall = DerivedProp KB.EWall AnyProp
-  '[ PropKeyVal KB.EIcon (OwnVal (IconVal "#"))
+type Wall = DerivedProp EWall AnyProp
+  '[ PropKeyVal EIcon (OwnVal (IconVal "#"))
    ]
   '[]
 
@@ -48,7 +51,7 @@ spec = do
       sEnv <- makeSEnv DebugDisabled
 
       owning <- sMat' sEnv () $ Proxy @TestIconOwning
-      path   <- sMat' sEnv () $ Proxy @(Essences '[KB.EIcon])
+      path   <- sMat' sEnv () $ Proxy @(Essences '[EIcon])
 
       let mbRes = queryStringValueForOwning path owning
       case mbRes of
@@ -59,7 +62,7 @@ spec = do
       sEnv <- makeSEnv DebugDisabled
 
       kv   <- sMat' sEnv () $ Proxy @TestPropKeyVal
-      path <- sMat' sEnv () $ Proxy @(Essences '[KB.EIcon])
+      path <- sMat' sEnv () $ Proxy @(Essences '[EIcon])
 
       let mbRes = queryStringValueForKeyVals path [kv]
       case mbRes of
@@ -70,7 +73,7 @@ spec = do
       sEnv <- makeSEnv DebugDisabled
 
       prop <- sMat' sEnv () $ Proxy @TestProp
-      path <- sMat' sEnv () $ Proxy @(Essences '[KB.EIntrinsics, KB.EIcon])
+      path <- sMat' sEnv () $ Proxy @(Essences '[EIntrinsics, EIcon])
 
       let mbRes = queryStringValue path prop
       case mbRes of
@@ -81,7 +84,7 @@ spec = do
       sEnv <- makeSEnv DebugDisabled
 
       prop <- sMat' sEnv () $ Proxy @TestProp
-      path <- sMat' sEnv () $ Proxy @(Essences '[KB.EIcon])
+      path <- sMat' sEnv () $ Proxy @(Essences '[EIcon])
 
       let mbRes = queryStringValueRelative path prop
       case mbRes of

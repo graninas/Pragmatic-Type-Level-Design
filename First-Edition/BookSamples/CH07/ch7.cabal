@@ -8,7 +8,7 @@ name:           ch7
 version:        1.0.0.0
 author:         Alexander Granin
 maintainer:     graninas@gmail.com
-copyright:      Granin A.S. 2023
+copyright:      Granin A.S. 2024
 license:        BSD3
 build-type:     Simple
 
@@ -147,7 +147,6 @@ test-suite functional
   other-modules:
       TypeLevel.ZeplrogOOP.OOPSpec
       TypeLevel.ZeplrogOOP.QuerySpec
-      TypeLevel.ZeplrogOOP.Testing.KnowledgeBase
       TypeLevel.ZeplrogOOP.Testing.Utils
       TypeLevel.ZeplrogOOP.ZeplrogSpec
       Paths_ch7

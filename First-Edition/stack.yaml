@@ -25,6 +25,7 @@ packages:
 
 - BookSamples/CH05
 - BookSamples/CH07
+- BookSamples/CH08
 
 - BookSamples/demo-apps/ptld-lib
 - BookSamples/demo-apps/ptld-auction

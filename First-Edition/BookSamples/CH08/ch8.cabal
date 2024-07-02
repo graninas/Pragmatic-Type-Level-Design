@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           ch3section2
+name:           ch8
 version:        1.0.0.0
 author:         Alexander Granin
 maintainer:     graninas@gmail.com
@@ -14,16 +14,12 @@ build-type:     Simple
 
 library
   exposed-modules:
-      Domain.Automaton
-      Domain.AutomatonADTs
-      Domain.AutomatonNG
-      Domain.Board
-      Domain.BoardNG
-      Domain.Cell
-      Domain.CellTransitionNG
       Main
+      TypeLevel.Interfaces
+      TypeLevel.Interfaces.Common
+      TypeLevel.Interfaces.Property
   other-modules:
-      Paths_ch3section2
+      Paths_ch8
   hs-source-dirs:
       src
   default-extensions:
@@ -39,16 +35,18 @@ library
       MultiWayIf
       RecordWildCards
       InstanceSigs
+      NoImplicitPrelude
   ghc-options: -Wall
   build-depends:
       base >=4.7 && <5
     , bytestring
-    , constraints
     , containers
     , free
+    , ghc-prim
     , lens
     , mtl
     , newtype-generics
+    , ptld-lib
     , random
     , scientific
     , template-haskell
@@ -59,17 +57,13 @@ library
     , void
   default-language: Haskell2010
 
-executable ch3section2
+executable ch8
   main-is: Main.hs
   other-modules:
-      Domain.Automaton
-      Domain.AutomatonADTs
-      Domain.AutomatonNG
-      Domain.Board
-      Domain.BoardNG
-      Domain.Cell
-      Domain.CellTransitionNG
-      Paths_ch3section2
+      TypeLevel.Interfaces
+      TypeLevel.Interfaces.Common
+      TypeLevel.Interfaces.Property
+      Paths_ch8
   hs-source-dirs:
       ./src
   default-extensions:
@@ -85,16 +79,18 @@ executable ch3section2
       MultiWayIf
       RecordWildCards
       InstanceSigs
+      NoImplicitPrelude
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
   build-depends:
       base >=4.7 && <5
     , bytestring
-    , constraints
     , containers
     , free
+    , ghc-prim
     , lens
     , mtl
     , newtype-generics
+    , ptld-lib
     , random
     , scientific
     , template-haskell
@@ -109,8 +105,8 @@ test-suite functional
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      AutoNGSpec
-      Paths_ch3section2
+      TypeLevel.InterfacesSpec
+      Paths_ch8
   hs-source-dirs:
       test/
   default-extensions:
@@ -126,18 +122,20 @@ test-suite functional
       MultiWayIf
       RecordWildCards
       InstanceSigs
+      NoImplicitPrelude
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
     , bytestring
-    , ch3section2
-    , constraints
+    , ch8
     , containers
     , free
+    , ghc-prim
     , hspec
     , lens
     , mtl
     , newtype-generics
+    , ptld-lib
     , random
     , scientific
     , template-haskell

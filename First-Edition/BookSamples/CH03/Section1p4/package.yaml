@@ -3,7 +3,7 @@ version:             1.0.0.0
 license:             BSD3
 author:              "Alexander Granin"
 maintainer:          "graninas@gmail.com"
-copyright:           "Granin A.S. 2023"
+copyright:           "Granin A.S. 2024"
 
 default-extensions:
 - DeriveFunctor

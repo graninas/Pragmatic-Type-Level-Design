@@ -39,7 +39,7 @@ data AsImplLot        = AsImplLot
 data AsImplLotPayload = AsImplLotPayload
 data AsImplMoneyConst = AsImplMoneyConst
 
--- Interpreting of the list of lots (lots :: LotsTag a)
+-- Interpreting of the list of lots (lots :: ILots)
 
 instance Eval AsImplLot p (IO LotDescr) =>
   Eval AsImplLots (p ': '[]) (IO LotDescrs) where

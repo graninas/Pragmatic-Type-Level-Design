@@ -15,6 +15,7 @@ import Data.Text (Text)
 
 import TypeLevelDSL.Context (Context, Key, getDyn, setDyn, getSubContext)
 
+
 -- Previous version:
 -- newtype StateContext = StateContext (IORef (Map.Map Text (IORef Dyn.Dynamic)))
 

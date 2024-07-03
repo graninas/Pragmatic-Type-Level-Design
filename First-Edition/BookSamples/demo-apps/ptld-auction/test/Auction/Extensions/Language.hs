@@ -24,7 +24,7 @@ data GBP
 
 data AllowedCountries' (name :: Symbol) (participants :: [ Country ])
 
-data EFLotPayload' (minBid :: MoneyConstTag a)
+data EFLotPayload' (minBid :: IMoneyConst)
 
 class CurrencyInfo a where
   showCurrency :: Proxy a -> String

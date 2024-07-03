@@ -14,9 +14,9 @@ import Data.Typeable (Typeable, typeRep)
 
 import TypeLevelDSL.Context (Key)
 
+
 toTypeableKey :: forall key. Typeable key => Key
 toTypeableKey = show $ typeRep (Proxy :: Proxy key)
-
 
 toIntDyn :: Int -> Dyn.Dynamic
 toIntDyn = Dyn.toDyn

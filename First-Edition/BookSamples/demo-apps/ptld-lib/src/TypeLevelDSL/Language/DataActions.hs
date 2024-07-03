@@ -16,11 +16,17 @@ import GHC.TypeLits (Symbol, Nat)
 
 
 
-data ReadRef' (refName :: Symbol) (t :: *) (lam :: LambdaTag lamBody)
-data WriteRef' (refName :: Symbol) (t :: *)
+data ReadRef'
+  (refName :: Symbol)
+  (t :: *)
+  (lam :: ILambda)
+
+data WriteRef'
+  (refName :: Symbol)
+  (t :: *)
 
 
 -- Helpers
 
-type ReadRef n t lam             = MkAction (ReadRef' n t lam)
-type WriteRef n t                = MkLambda (WriteRef' n t)
+type ReadRef n t lam = MkAction (ReadRef' n t lam)
+type WriteRef n t    = MkLambda (WriteRef' n t)

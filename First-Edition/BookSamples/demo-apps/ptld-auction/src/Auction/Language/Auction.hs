@@ -22,9 +22,9 @@ import Auction.Language.Flow as X
 
 
 data Auction'
-  (auctionFlow :: AuctionFlowTag f)
-  (auctionInfo :: AuctionInfoTag i)
-  (lots        :: LotsTag ls)
+  (auctionFlow :: IAuctionFlow)
+  (auctionInfo :: IAuctionInfo)
+  (lots        :: ILots)
 
 
 type Auction = Auction'       -- Just a type synonym

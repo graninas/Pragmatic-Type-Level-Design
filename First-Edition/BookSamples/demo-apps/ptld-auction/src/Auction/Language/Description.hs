@@ -6,7 +6,7 @@
 {-# LANGUAGE FlexibleInstances        #-}
 {-# LANGUAGE ScopedTypeVariables      #-}
 
--- type family Lots (a :: [*]) :: LotsTag a
+-- type family Lots (a :: [*]) :: ILots
 --                                        ^
 {-# LANGUAGE PolyKinds                #-}
 
@@ -45,39 +45,40 @@ data Info' (name :: Symbol) (holder :: Symbol)
 data Lot' (name :: Symbol)
           (description :: Symbol)
           (payload :: LotPayloadTag p)
-          (currency :: CurrencyTag a)
+          (currency :: ICurrency)
           (censorship :: CensorshipTag c)
 
 data NoCensorship'    -- This can be pattern matched esier than something like ()
 
 -- Extension points:
 
-data MoneyConstTag a
-data AuctionInfoTag a
-data LotsTag a
-data LotPayloadTag a
-data CurrencyTag a
-data CensorshipTag a
-data BidTag a
+data IMoneyConst
+data IAuctionInfo
+data ILots
+data ILotPayload
+data ICurrency
+data ICensorship
+data IBidTag
 
 -- Construction
 
-type family MkMoneyConst  (a :: *)   :: MoneyConstTag a
-type family MkAuctionInfo (a :: *)   :: AuctionInfoTag a
-type family MkCurrency    (a :: *)   :: CurrencyTag a
-type family MkCensorship  (a :: *)   :: CensorshipTag a
-type family MkLots        (a :: [*]) :: LotsTag a
-type family MkLotPayload  (a :: *)   :: LotPayloadTag a
-type family MkBid         (a :: *)   :: BidTag a
+type family MkMoneyConst  (a :: *)   :: IMoneyConst
+type family MkAuctionInfo (a :: *)   :: IAuctionInfo
+type family MkCurrency    (a :: *)   :: ICurrency
+type family MkCensorship  (a :: *)   :: ICensorship
+type family MkLots        (a :: [*]) :: ILots
+type family MkLotPayload  (a :: *)   :: ILotPayload
+type family MkBid         (a :: *)   :: IBidTag
 
 -- Helpers
 
-type NoCensorship                 = MkCensorship NoCensorship'
-type Info name holder             = MkAuctionInfo (Info' name holder)
-type MoneyVal (val :: Symbol)     = MkMoneyConst (MoneyVal' val)
+type MoneyVal (val :: Symbol) = MkMoneyConst (MoneyVal' val)
 type MoneyDynVal (valName :: ValNameSymb) = MkMoneyConst (DynVal' valName)
-type Censorship c                 = MkCensorship c
-type LotPayload p                 = MkLotPayload p
-type Currency c                   = MkCurrency c
-type Lots ls                      = MkLots ls
-type Lot                          = Lot'                       -- Just a synonym
+
+type Info name holder = MkAuctionInfo (Info' name holder)
+type NoCensorship     = MkCensorship NoCensorship'
+type Censorship c     = MkCensorship c
+type LotPayload p     = MkLotPayload p
+type Currency c       = MkCurrency c
+type Lots ls          = MkLots ls
+type Lot              = Lot'                       -- Just a synonym

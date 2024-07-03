@@ -15,6 +15,7 @@ import Data.IORef
 import qualified Data.Text as T
 import Test.Hspec
 
+
 type StringType = String
 
 data MockedFramework = MockedFramework

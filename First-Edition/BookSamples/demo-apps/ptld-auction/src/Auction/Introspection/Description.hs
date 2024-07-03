@@ -41,7 +41,7 @@ data AsIntroBid = AsIntroBid
 data AsIntroMinBid = AsIntroMinBid
 
 
--- Interpreting of the auction info (auctionInfo :: AuctionInfoTag)
+-- Interpreting of the auction info (auctionInfo :: IAuctionInfo)
 
 instance
   ( ai ~ MkAuctionInfo i
@@ -60,7 +60,7 @@ instance
          : ( "Holder: " <> symbolVal (Proxy :: Proxy holder) )
          : []
 
--- Interpreting of the list of lots (lots :: LotsTag a)
+-- Interpreting of the list of lots (lots :: ILots)
 
 -- No instance for an empty list. Empty lists are prohibited.
 -- instance Eval AsIntroLots '[] [String] where

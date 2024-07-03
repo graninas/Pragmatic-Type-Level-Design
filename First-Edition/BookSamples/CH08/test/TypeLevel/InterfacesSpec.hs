@@ -57,18 +57,16 @@ type PosTagVal (x :: Nat) (y :: Nat) = Dummy
 type AbstractDoor = AbstractProp (Group EAbstractDoor)
   ( Fields
       '[ KeyValField EIcon (OwnVal (IconVal "+"))
-
-      -- These don't work, we need a heterogenous list...
-      --  , KeyValField EHP   (OwnVal (HPTagVal 50))
-      --  , KeyValField EPos  (OwnVal (PosTagVal 0 0))
+       , KeyValField EHP   (OwnVal (HPTagVal 50))
+       , KeyValField EPos  (OwnVal (PosTagVal 0 0))
        ]
   )
 
 type SpecificDoor = DerivedProp ESpecificDoor AbstractDoor
-  ( Fields '[]
+  ( Fields
       '[ KeyValField EIcon (OwnVal (IconVal "?"))
-      --  , KeyValField EHP   (OwnVal (HPTagVal 50))
-      --  , KeyValField EPos  (OwnVal (PosTagVal 2 3))
+       , KeyValField EHP   (OwnVal (HPTagVal 50))
+       , KeyValField EPos  (OwnVal (PosTagVal 2 3))
        ]
   )
 

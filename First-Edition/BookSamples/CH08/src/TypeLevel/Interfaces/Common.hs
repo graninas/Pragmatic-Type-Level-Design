@@ -15,11 +15,11 @@ import GHC.TypeLits
 
 -- Interfaces
 
-data IEssence a
-data IEssencePath a
+data IEssence
+data IEssencePath
 
-type family MkEssence (a :: *) :: IEssence a
-type family MkEssencePath (a :: [IEssence b]) :: IEssencePath a
+type family MkEssence (a :: *) :: IEssence
+type family MkEssencePath (a :: [IEssence]) :: IEssencePath
 
 
 

@@ -16,29 +16,29 @@ import GHC.TypeLits
 
 
 -- | Interface for a non-implemented functionality
-data IUnknown a
-type family MkUnknown (a :: *) :: IUnknown a
+data IUnknown
+type family MkUnknown (a :: *) :: IUnknown
 
-data IPropertyGroup a
-type family MkPropertyGroup (a :: *) :: IPropertyGroup a
+data IPropertyGroup
+type family MkPropertyGroup (a :: *) :: IPropertyGroup
 
-data IAbstractProperty a
-type family MkAbstractProperty (a :: *) :: IAbstractProperty a
+data IAbstractProperty
+type family MkAbstractProperty (a :: *) :: IAbstractProperty
 
-data IProperty a
-type family MkProperty (a :: *) :: IProperty a
+data IProperty
+type family MkProperty (a :: *) :: IProperty
 
-data IProperties a
-type family MkProperties (a :: [IProperty b]) :: IProperties a
+data IProperties
+type family MkProperties (a :: [IProperty]) :: IProperties
 
-data IField a
-type family MkField (a :: *) :: IField a
+data IField
+type family MkField (a :: *) :: IField
 
-data IFields a
-type family MkFields (a :: [IField b]) :: IFields a
+data IFields
+type family MkFields (a :: [IField]) :: IFields
 
-data IPropertyOwning a
-type family MkPropertyOwning (a :: *) :: IPropertyOwning a
+data IPropertyOwning
+type family MkPropertyOwning (a :: *) :: IPropertyOwning
 
 
 -- Implementations
@@ -52,50 +52,50 @@ type Dummy = MkUnknown DummyImpl
 
 -- -- Group implementation
 
-data GroupImpl (ess :: IEssence a)
+data GroupImpl (ess :: IEssence)
 type Group ess = MkPropertyGroup (GroupImpl ess)
 
-data GroupRootImpl (ess :: IEssence a) (prop :: IProperty b)
+data GroupRootImpl (ess :: IEssence) (prop :: IProperty)
 type GroupRoot ess prop = MkPropertyGroup (GroupRootImpl ess prop)
 
 -- -- Property owning implementation
 
-data OwnValImpl (valDef :: IUnknown a)
-type OwnVal (unkn :: IUnknown a) = MkPropertyOwning (OwnValImpl unkn)
+data OwnValImpl (valDef :: IUnknown)
+type OwnVal (unkn :: IUnknown) = MkPropertyOwning (OwnValImpl unkn)
 
-data OwnPropImpl (prop :: IProperty a)
-type OwnProp (prop :: IProperty a) = MkPropertyOwning (OwnPropImpl prop)
+data OwnPropImpl (prop :: IProperty)
+type OwnProp (prop :: IProperty) = MkPropertyOwning (OwnPropImpl prop)
 
 -- -- Property field implementation
 
 data KeyBagFieldImpl
-  (ess :: IEssence a)
-  (props :: IProperties b)
+  (ess :: IEssence)
+  (props :: IProperties)
 type KeyBagField ess props = MkField (KeyBagFieldImpl ess props)
 
 data KeyValFieldImpl
-  (ess :: IEssence a)
-  (own :: IPropertyOwning b)
+  (ess :: IEssence)
+  (own :: IPropertyOwning)
 type KeyValField ess own = MkField (KeyValFieldImpl ess own)
 
 -- -- Abstract property implementation
 
 data AbstractPropertyImpl
-  (pg :: IPropertyGroup a)
-  (fs :: IFields b)
+  (pg :: IPropertyGroup)
+  (fs :: IFields)
 type AbstractProp pg fs = MkAbstractProperty (AbstractPropertyImpl pg fs)
 
 data AbstractDerivedPropImpl
-  (ess :: IEssence a)
-  (aProp :: IAbstractProperty b)
-  (fs :: IFields c)
+  (ess :: IEssence)
+  (aProp :: IAbstractProperty)
+  (fs :: IFields)
 type AbstractDerivedProp ess aProp fs = MkAbstractProperty (AbstractDerivedPropImpl ess aProp fs)
 
 -- -- Property implementation
 data DerivedPropImpl
-  (ess :: IEssence a)
-  (aProp :: IAbstractProperty b)
-  (fs :: IFields c)
+  (ess :: IEssence)
+  (aProp :: IAbstractProperty)
+  (fs :: IFields)
 type DerivedProp pg aProp fs = MkProperty (DerivedPropImpl pg aProp fs)
 
 type Fields fs = MkFields fs

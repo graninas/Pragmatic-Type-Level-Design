@@ -12,10 +12,7 @@
 module Auction.AuctionSpec where
 
 import Auction.Language
-import qualified Auction.Implementation.Description as Impl
-import qualified Auction.Implementation.Auction as Impl
-import qualified Auction.Implementation.Flow as Impl
-import qualified Auction.Implementation.DataActions as Impl
+import qualified Auction.Implementation as Impl
 import qualified Auction.Introspection as I
 import qualified Auction.Extensions.Language as ExtL
 import qualified Auction.Extensions.Introspection as I

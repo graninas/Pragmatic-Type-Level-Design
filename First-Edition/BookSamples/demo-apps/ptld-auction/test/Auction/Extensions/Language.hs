@@ -10,7 +10,7 @@
 
 module Auction.Extensions.Language where
 
-import Auction.Language.Description
+import Auction.Language
 
 import Data.List (intercalate)
 import Data.Proxy (Proxy(..))

@@ -10,8 +10,8 @@
 
 module Auction.Extensions.Introspection where
 
-import Auction.Language.Description
-import Auction.Introspection.Description
+import Auction.Language
+import Auction.Introspection.Auction
 import Auction.Extensions.Language
 import TypeLevelDSL.Eval
 

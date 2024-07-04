@@ -10,17 +10,10 @@
 {-# LANGUAGE FlexibleInstances        #-}
 -- {-# LANGUAGE AllowAmbiguousTypes      #-}
 
-module Auction.Implementation.Auction
-  ( module Impl
-  , AsImplAuction (..)
-  , runAuction
-  ) where
+module Auction.Implementation.Auction where
 
 import qualified Auction.Types as T
-import qualified Auction.Language.Description as L
-import qualified Auction.Language.Flow as L
-import qualified Auction.Language.Auction as L
-import qualified Auction.Implementation.Description as Impl
+import qualified Auction.Language as L
 import qualified Auction.Implementation.Flow as Impl
 import qualified Auction.Implementation.DataActions as Impl
 import TypeLevelDSL.Eval
@@ -35,6 +28,91 @@ import Data.List (sortOn)
 import GHC.TypeLits (KnownSymbol, symbolVal)
 import Control.Monad
 import System.Random (randomIO, randomRIO)
+
+
+
+
+-- Service types
+
+data LotDescr = LotDescr
+  { ldName           :: String
+  , ldDescription    :: String
+  , ldPayloadContext :: StateContext
+  }
+
+type LotDescrs = [LotDescr]
+
+
+-- Interpretation tags
+
+data AsImplInfo       = AsImplInfo
+data AsImplLots       = AsImplLots
+data AsImplLot        = AsImplLot
+data AsImplLotPayload = AsImplLotPayload
+data AsImplMoneyConst = AsImplMoneyConst
+
+-- Interpreting of the list of lots (lots :: ILots)
+
+instance Eval AsImplLot p (IO LotDescr) =>
+  Eval AsImplLots (p ': '[]) (IO LotDescrs) where
+  eval _ _ = do
+    lot <- eval AsImplLot (Proxy :: Proxy p)
+    pure [lot]
+
+instance
+  ( Eval AsImplLot p (IO LotDescr)
+  , Eval AsImplLots (x ': ps) (IO LotDescrs)
+  ) =>
+  Eval AsImplLots (p ': x ': ps) (IO LotDescrs) where
+  eval _ _ = do
+    lot  <- eval AsImplLot (Proxy :: Proxy p)
+    lots <- eval AsImplLots (Proxy :: Proxy (x ': ps))
+    pure $ lot : lots
+
+instance
+  ( b ~ L.MkLots a
+  , Eval AsImplLots a (IO LotDescrs)
+  ) =>
+  Eval AsImplLots b (IO LotDescrs) where
+  eval _ _ = eval AsImplLots (Proxy :: Proxy a)
+
+-- Interpreting of a Lot
+
+instance
+  ( Eval AsImplLotPayload payload (IO StateContext)
+  , KnownSymbol name
+  , KnownSymbol descr
+  ) =>
+  Eval AsImplLot (L.LotImpl name descr payload currency censorship) (IO LotDescr) where
+  eval _ _ = do
+    payloadCtx <- eval AsImplLotPayload (Proxy :: Proxy payload)
+    pure $ LotDescr
+      { ldName           = symbolVal (Proxy :: Proxy name)
+      , ldDescription    = symbolVal (Proxy :: Proxy descr)
+      , ldPayloadContext = payloadCtx
+      }
+
+-- Interpreting a MoneyConst value
+
+instance
+  ( b ~ L.MkMoneyConst a
+  , Eval AsImplMoneyConst a (IO T.Money)
+  ) =>
+  Eval AsImplMoneyConst b (IO T.Money) where
+  eval _ _ = eval AsImplMoneyConst (Proxy :: Proxy a)
+
+instance KnownSymbol val =>
+ Eval AsImplMoneyConst (L.MoneyValImpl val) (IO T.Money) where
+  eval _ _ = pure $ read $ symbolVal (Proxy :: Proxy val)     -- unsafe
+
+-- Interpreting a LotPayload value
+
+instance
+  ( b ~ L.MkLotPayload a
+  , Eval AsImplLotPayload a (IO StateContext)
+  ) =>
+  Eval AsImplLotPayload b (IO StateContext) where
+  eval _ _ = eval AsImplLotPayload (Proxy :: Proxy a)
 
 
 -- Interpretation tags
@@ -105,17 +183,16 @@ initParticipants (AuctionState {..}) =
   where
     initParticipant (Participant {..}) = pure ()
 
-initLotState :: AuctionState -> Impl.LotDescr -> IO ()
+initLotState :: AuctionState -> LotDescr -> IO ()
 initLotState (AuctionState {..}) lotDescr = do
   let LotState {..} = lotState
-  writeIORef lotNameRef $ Impl.ldName lotDescr
+  writeIORef lotNameRef $ ldName lotDescr
   writeIORef curRoundRef lotRounds
   writeIORef curOwnerRef Nothing
   writeIORef curCostRef 0               --   hardcode, should be extracted from payload
 
 instance
-  ( Eval Impl.AsImplLots lots (IO Impl.LotDescrs)
-  -- , EvalCtx AuctionState Impl.AsImplAuctionFlow flow Impl.AuctionFlow
+  ( Eval AsImplLots lots (IO LotDescrs)
   ) =>
   Eval AsImplAuction (L.AuctionImpl flow info lots) (IO ()) where
   eval _ _ = do
@@ -136,12 +213,11 @@ instance
 
     let ctx = auctionState
 
-    lotDescrs   <- eval Impl.AsImplLots (Proxy :: Proxy lots)
-    -- auctionFlow <- evalCtx ctx Impl.AsImplAuctionFlow (Proxy :: Proxy flow)
+    lotDescrs   <- eval AsImplLots (Proxy :: Proxy lots)
 
     for_ lotDescrs $ \lotDescr -> do
-      putStrLn $ "New lot: " <> Impl.ldName lotDescr
-      putStrLn $ Impl.ldDescription lotDescr
+      putStrLn $ "New lot: " <> ldName lotDescr
+      putStrLn $ ldDescription lotDescr
 
       initParticipants auctionState
       initLotState auctionState lotDescr

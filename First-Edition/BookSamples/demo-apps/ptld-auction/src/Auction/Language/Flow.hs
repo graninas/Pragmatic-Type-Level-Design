@@ -13,14 +13,16 @@ module Auction.Language.Flow where
 import GHC.TypeLits (Symbol, Nat)
 
 
-data IAuctionFlow
-data ILotProcess
+data IAuctionFlow a
+data ILotProcess a
 
-type family MkAuctionFlow (a :: *) :: IAuctionFlow
-type family MkLotProcess  (a :: *) :: ILotProcess
+type family MkAuctionFlow (a :: *) :: IAuctionFlow a
+type family MkLotProcess  (a :: *) :: ILotProcess a
 
-data AuctionFlow' (lotProcess :: ILotProcess)
-data LotProcess'  (startActions :: *)
+data AuctionFlowImpl (lotProcess :: ILotProcess a)
+data LotProcessImpl  (startActions :: *)
 
-type AuctionFlow lotProcess  = MkAuctionFlow (AuctionFlow' lotProcess)
-type LotProcess startActions = MkLotProcess (LotProcess' startActions)
+type AuctionFlow lotProcess
+  = MkAuctionFlow (AuctionFlowImpl lotProcess)
+type LotProcess startActions
+  = MkLotProcess (LotProcessImpl startActions)

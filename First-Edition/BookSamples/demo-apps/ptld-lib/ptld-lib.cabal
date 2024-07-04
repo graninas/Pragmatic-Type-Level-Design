@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e4a50618b0818c0f141c6db8ddf57a3d8dd962de0a3635082d352a1df25975a5
+-- hash: f97376386fc882ec3a0bc4eaf680993ede79158e8484ad5eba495009dea37a9c
 
 name:           ptld-lib
 version:        0.0.0.1
@@ -17,19 +17,13 @@ build-type:     Simple
 library
   exposed-modules:
       CPrelude
+      Data.HList.HList
       Data.Vector.Indexed
       GUI.Components
       TypeLevelDSL.Context
       TypeLevelDSL.Dyn
       TypeLevelDSL.Eval
-      TypeLevelDSL.Implementation
-      TypeLevelDSL.Implementation.Action
-      TypeLevelDSL.Implementation.DataActions
-      TypeLevelDSL.Language
-      TypeLevelDSL.Language.Action
-      TypeLevelDSL.Language.DataActions
       TypeLevelDSL.StateContext
-      TypeLevelDSL.Testing.Environment
       TypeSelector.Granular
   other-modules:
       Paths_ptld_lib
@@ -75,7 +69,6 @@ test-suite ptld-lib-tests
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      TypeLevelDSL.TLSpec
       Paths_ptld_lib
   hs-source-dirs:
       test/

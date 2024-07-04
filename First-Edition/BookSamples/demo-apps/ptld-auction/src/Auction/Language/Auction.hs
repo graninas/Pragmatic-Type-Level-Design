@@ -11,7 +11,7 @@
 module Auction.Language.Auction
   ( module X
   , Auction
-  , Auction'
+  , AuctionImpl
   ) where
 
 import GHC.TypeLits (Symbol)
@@ -21,10 +21,10 @@ import Auction.Language.Flow as X
 
 
 
-data Auction'
-  (auctionFlow :: IAuctionFlow)
-  (auctionInfo :: IAuctionInfo)
-  (lots        :: ILots)
+data AuctionImpl
+  (auctionFlow :: IAuctionFlow a)
+  (auctionInfo :: IAuctionInfo b)
+  (lots        :: ILots c)
 
 
-type Auction = Auction'       -- Just a type synonym
+type Auction = AuctionImpl       -- Just a type synonym

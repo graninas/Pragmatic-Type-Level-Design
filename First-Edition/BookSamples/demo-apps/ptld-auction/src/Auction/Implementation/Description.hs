@@ -71,7 +71,7 @@ instance
   , KnownSymbol name
   , KnownSymbol descr
   ) =>
-  Eval AsImplLot (L.Lot' name descr payload currency censorship) (IO LotDescr) where
+  Eval AsImplLot (L.LotImpl name descr payload currency censorship) (IO LotDescr) where
   eval _ _ = do
     payloadCtx <- eval AsImplLotPayload (Proxy :: Proxy payload)
     pure $ LotDescr
@@ -90,7 +90,7 @@ instance
   eval _ _ = eval AsImplMoneyConst (Proxy :: Proxy a)
 
 instance KnownSymbol val =>
- Eval AsImplMoneyConst (L.MoneyVal' val) (IO T.Money) where
+ Eval AsImplMoneyConst (L.MoneyValImpl val) (IO T.Money) where
   eval _ _ = pure $ read $ symbolVal (Proxy :: Proxy val)     -- unsafe
 
 -- Interpreting a LotPayload value

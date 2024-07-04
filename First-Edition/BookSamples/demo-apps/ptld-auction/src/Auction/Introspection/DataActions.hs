@@ -12,7 +12,7 @@
 module Auction.Introspection.DataActions where
 
 import Auction.Introspection.Action
-import qualified Auction.Language as L
+import Auction.Language
 import TypeLevelDSL.Eval
 
 import Data.Proxy (Proxy(..))
@@ -21,11 +21,11 @@ import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 
 -- Specific actions
 
-instance Eval AsIntroAction (L.GetPayloadValue' valName valType lam) (IO [String]) where
-  eval _ _ = pure ["GetPayloadValue' reached"]
+instance Eval AsIntroAction (GetPayloadValueImpl valName valType lam) (IO [String]) where
+  eval _ _ = pure ["GetPayloadValueImpl reached"]
 
-instance Eval AsIntroAction (L.GetLotName' lam) (IO [String]) where
-  eval _ _ = pure ["GetLotName' reached"]
+instance Eval AsIntroAction (GetLotNameImpl lam) (IO [String]) where
+  eval _ _ = pure ["GetLotNameImpl reached"]
 
-instance Eval AsIntroAction (L.GetLotDescr' lam) (IO [String]) where
-  eval _ _ = pure ["GetLotDescr' reached"]
+instance Eval AsIntroAction (GetLotDescrImpl lam) (IO [String]) where
+  eval _ _ = pure ["GetLotDescrImpl reached"]

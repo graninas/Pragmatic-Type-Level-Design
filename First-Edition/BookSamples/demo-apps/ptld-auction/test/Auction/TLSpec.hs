@@ -5,28 +5,28 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 
-module TypeLevelDSL.TLSpec where
+module Auction.TLSpec where
 
 import CPrelude
 
-import TypeLevelDSL.Language
+import Auction.Language.DataActions
+import qualified Auction.Implementation.DataActions as Impl
 import TypeLevelDSL.Eval
 import TypeLevelDSL.Context
-import qualified TypeLevelDSL.Implementation as Impl
 import qualified TypeLevelDSL.Context as Ctx
 
 import Test.Hspec
-import TypeLevelDSL.Testing.Environment
+import Auction.Testing.Environment
 
+import Data.HList.HList
 import qualified Data.Map as Map
 import qualified Data.Dynamic as Dyn
 
 
 type Actions =
-  Action (ReadRef "val1" Int (WriteRef "val2" Int))
-    (Action (ReadRef "val2" Int (WriteRef "val1" Int))
-      End
-    )
+  (ReadRef "val1" Int (WriteRef "val2" Int))
+  :> (ReadRef "val2" Int (WriteRef "val1" Int))
+  :> End
 
 spec :: Spec
 spec = do

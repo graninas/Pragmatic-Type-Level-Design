@@ -16,15 +16,16 @@ import Data.List (intercalate)
 import Data.Proxy (Proxy(..))
 import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 
+
 -- User space
 
 data USD
 data EUR
 data GBP
 
-data AllowedCountries' (name :: Symbol) (participants :: [ Country ])
+data AllowedCountriesImpl (name :: Symbol) (participants :: [ Country ])
 
-data EFLotPayload' (minBid :: IMoneyConst)
+data EFLotPayloadImpl (minBid :: IMoneyConst a)
 
 class CurrencyInfo a where
   showCurrency :: Proxy a -> String
@@ -40,5 +41,5 @@ instance ParticipantInfo US where showParticipant _ = "US"
 instance ParticipantInfo UK where showParticipant _ = "UK"
 instance ParticipantInfo UA where showParticipant _ = "UA"
 
-type AllowedCountries = AllowedCountries'     -- Just a synonym
-type EFLotPayload     = EFLotPayload'         -- Just a synonym
+type AllowedCountries = AllowedCountriesImpl     -- Just a synonym
+type EFLotPayload     = EFLotPayloadImpl         -- Just a synonym

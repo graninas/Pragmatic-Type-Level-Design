@@ -23,7 +23,6 @@ import qualified Auction.Language.Auction as L
 import qualified Auction.Implementation.Description as Impl
 import qualified Auction.Implementation.Flow as Impl
 import qualified Auction.Implementation.DataActions as Impl
-import qualified TypeLevelDSL.Implementation.Action as Impl
 import TypeLevelDSL.Eval
 import TypeLevelDSL.Context
 import TypeLevelDSL.StateContext
@@ -36,6 +35,7 @@ import Data.List (sortOn)
 import GHC.TypeLits (KnownSymbol, symbolVal)
 import Control.Monad
 import System.Random (randomIO, randomRIO)
+
 
 -- Interpretation tags
 
@@ -117,7 +117,7 @@ instance
   ( Eval Impl.AsImplLots lots (IO Impl.LotDescrs)
   -- , EvalCtx AuctionState Impl.AsImplAuctionFlow flow Impl.AuctionFlow
   ) =>
-  Eval AsImplAuction (L.Auction' flow info lots) (IO ()) where
+  Eval AsImplAuction (L.AuctionImpl flow info lots) (IO ()) where
   eval _ _ = do
 
     auctionState <- AuctionState

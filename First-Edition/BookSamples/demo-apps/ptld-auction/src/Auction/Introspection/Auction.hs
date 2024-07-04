@@ -37,7 +37,7 @@ instance
   , Eval AsIntroLots lots (IO [String])
   , Eval AsIntroAuctionFlow flow (IO [String])
   ) =>
-  Eval AsIntroAuction (Auction' flow info lots) (IO [String]) where
+  Eval AsIntroAuction (AuctionImpl flow info lots) (IO [String]) where
   eval _ _ = do
 
     -- start the flow

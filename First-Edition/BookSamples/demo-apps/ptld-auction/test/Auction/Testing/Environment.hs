@@ -1,6 +1,5 @@
-module TypeLevelDSL.Testing.Environment where
+module Auction.Testing.Environment where
 
-import TypeLevelDSL.Language
 import TypeLevelDSL.Eval
 import TypeLevelDSL.Context
 import qualified TypeLevelDSL.Context as Ctx
@@ -27,9 +26,6 @@ mkDefaultFramework :: IORef [StringType] -> MockedFramework
 mkDefaultFramework apiCallTrackerRef = MockedFramework
   (\req -> modifyIORef' apiCallTrackerRef (req:))
   (\req -> modifyIORef' apiCallTrackerRef (show req:))
-
-
-
 
 data TestData = TestData
   { dynsRef      :: IORef (Map.Map StringType Dyn.Dynamic)

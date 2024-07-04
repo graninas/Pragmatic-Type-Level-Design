@@ -21,11 +21,11 @@
 
 module Auction.Introspection.Description where
 
-import Data.Proxy (Proxy(..))
-import GHC.TypeLits (KnownSymbol, symbolVal)
-
 import Auction.Language.Description
 import TypeLevelDSL.Eval
+
+import Data.Proxy (Proxy(..))
+import GHC.TypeLits (KnownSymbol, symbolVal)
 
 
 -- Interpretation tags
@@ -54,7 +54,7 @@ instance
   ( KnownSymbol name
   , KnownSymbol holder
   ) =>
-  Eval AsIntroInfo (Info' name holder) (IO [String]) where
+  Eval AsIntroInfo (InfoImpl name holder) (IO [String]) where
   eval _ _ = do
     pure $ ( "Name: " <> symbolVal (Proxy :: Proxy name) )
          : ( "Holder: " <> symbolVal (Proxy :: Proxy holder) )
@@ -99,7 +99,7 @@ instance
   , KnownSymbol name
   , KnownSymbol descr
   ) =>
-  Eval AsIntroLot (Lot' name descr payload currency censorship) (IO [String]) where
+  Eval AsIntroLot (LotImpl name descr payload currency censorship) (IO [String]) where
   eval _ _ = do
     payload    <- eval AsIntroLotPayload (Proxy :: Proxy payload)
     censorship <- eval AsIntroCensorship (Proxy :: Proxy censorship)
@@ -132,7 +132,7 @@ instance
 
 -- Interpretating of the NoCensorship
 
-instance Eval AsIntroCensorship NoCensorship' (IO [String]) where
+instance Eval AsIntroCensorship NoCensorshipImpl (IO [String]) where
   eval _ _ = pure []
 
 
@@ -146,7 +146,7 @@ instance
   eval _ _ = eval AsIntroMoneyConst (Proxy :: Proxy a)
 
 instance KnownSymbol val =>
-  Eval AsIntroMoneyConst (MoneyVal' val) (IO String) where
+  Eval AsIntroMoneyConst (MoneyValImpl val) (IO String) where
   eval _ _ = pure $ symbolVal (Proxy :: Proxy val)
 
 -- Interpreting a LotPayload value

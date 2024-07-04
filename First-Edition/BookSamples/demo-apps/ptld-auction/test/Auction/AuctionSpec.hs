@@ -20,17 +20,13 @@ import qualified Auction.Introspection as I
 import qualified Auction.Extensions.Language as ExtL
 import qualified Auction.Extensions.Introspection as I
 import qualified Auction.Extensions.Implementation as Impl
+import Auction.Testing.Environment
 
 import TypeLevelDSL.Eval
 import TypeLevelDSL.Context
-import TypeLevelDSL.Language
-import qualified TypeLevelDSL.Implementation as Impl
 import qualified TypeLevelDSL.Dyn as Dyn
 
-import TypeLevelDSL.Testing.Environment
-
-import Test.Hspec
-
+import Data.HList.HList
 import Data.List (intercalate)
 import Data.Proxy (Proxy(..))
 import Data.IORef
@@ -38,6 +34,8 @@ import qualified Data.Map as Map
 import qualified Data.Dynamic as Dyn
 import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 import Control.Monad (void)
+
+import Test.Hspec
 
 
 -- Test sample
@@ -68,16 +66,18 @@ type PayloadLot3 = LotPayload (ExtL.EFLotPayload (MoneyVal "40000"))
 -- Auction algorithm
 
 type EnglishAuctionLotAction1 =
-  ( Action (GetLotName (ConcatL "New lot: " Print))
-  ( Action (GetLotDescr Print)
-    End
-  ))
+  (GetLotName (ConcatL "New lot: " Print))
+  :> (GetLotDescr Print)
+  :> End
 
 type EnglishAuctionLotAction2 =
-  ( Action (GetLotName2  (ConcatL "New lot: "         (Both (WriteRef "LotName result" String)  Print)))
-  ( Action (GetLotDescr2 (ConcatL "Lot description: " (Both (WriteRef "LotDescr result" String) Print)))
-    End
-  ))
+  (GetLotName2
+        (ConcatL "New lot: "
+          (Both (WriteRef "LotName result" String) Print)))
+  :> (GetLotDescr2 (ConcatL "Lot description: "
+        (Both (WriteRef "LotDescr result" String) Print)))
+  :> End
+
 
 type EnglishAuctionFlow = AuctionFlow
   ( LotProcess EnglishAuctionLotAction1
@@ -86,10 +86,9 @@ type EnglishAuctionFlow = AuctionFlow
 
 type TestFlow = AuctionFlow
   ( LotProcess
-      ( Action (ReadRef "curRound" Int Print)
-        ( Action (ReadRef "curCost" Int Drop)
-          End
-        )
+      ( (ReadRef "curRound" Int Print)
+        :> (ReadRef "curCost" Int Drop)
+        :> End
       )
   )
 
@@ -164,9 +163,9 @@ spec = do
         , "Currency: USD"
         , "AuctionFlow"
         , "Lot process"
-        , "GetLotName' reached"
-        , "GetLotDescr' reached"
-        , "End' reached."
+        , "GetLotNameImpl reached"
+        , "GetLotDescrImpl reached"
+        , "HEmptyImpl reached."
         ]
 
   describe "Type level eDSL Auction: Implementation" $ do
@@ -176,11 +175,10 @@ spec = do
         ]) <*> pure Map.empty
 
       void $ evalCtx ctx Impl.AsImplAction (Proxy :: Proxy (
-            Action (ReadRef "ref1" Int (WriteRef "ref2" Int))
-              ( Action (ReadRef "ref2" Int Drop)
-                End
-              )
-          ))
+            (ReadRef "ref1" Int (WriteRef "ref2" Int))
+            :> (ReadRef "ref2" Int Drop)
+            :>  End
+            ))
 
       verifyRef ctx "ref1" (10 :: Int)
       verifyRef ctx "ref2" (10 :: Int)
@@ -191,11 +189,9 @@ spec = do
         ]) <*> pure Map.empty
 
       void $ evalCtx ctx Impl.AsImplAction (Proxy :: Proxy (
-            ( Action (GetPayloadValue MinBid Float Print)
-              ( Action (GetPayloadValue MinBid Float (WriteRef "f" Float))
-                End
-              )
-            )
+            (GetPayloadValue MinBid Float Print)
+            :> (GetPayloadValue MinBid Float (WriteRef "f" Float))
+            :> End
           ))
 
       verifyRef ctx (Dyn.toTypeableKey @MinBid) (10.0 :: Float)

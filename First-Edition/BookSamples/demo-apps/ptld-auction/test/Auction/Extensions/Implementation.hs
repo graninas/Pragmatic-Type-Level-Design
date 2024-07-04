@@ -27,13 +27,13 @@ import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 
 -- Dynamic (runtime) value. For now hardcoded by can be obtained from any source.
 type MinBid202 = 'L.ValNameS "202 min bid"
-instance Eval Impl.AsImplMoneyConst (L.DynVal' MinBid202) (IO T.Money) where
+instance Eval Impl.AsImplMoneyConst (L.DynValImpl MinBid202) (IO T.Money) where
   eval _ _ = pure 20000
 
 -- Payload
 
 instance Eval Impl.AsImplMoneyConst minBid (IO T.Money) =>
-  Eval Impl.AsImplLotPayload (ExtL.EFLotPayload' minBid) (IO StCtx.StateContext) where
+  Eval Impl.AsImplLotPayload (ExtL.EFLotPayloadImpl minBid) (IO StCtx.StateContext) where
   eval _ _ = do
     stCtx <- StCtx.createStateContext
     v <- eval Impl.AsImplMoneyConst (Proxy :: Proxy minBid)

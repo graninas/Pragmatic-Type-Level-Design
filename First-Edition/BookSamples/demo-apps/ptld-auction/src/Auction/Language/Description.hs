@@ -6,7 +6,7 @@
 {-# LANGUAGE FlexibleInstances        #-}
 {-# LANGUAGE ScopedTypeVariables      #-}
 
--- type family Lots (a :: [*]) :: ILots
+-- type family Lots (a :: [*]) :: LotsTag a
 --                                        ^
 {-# LANGUAGE PolyKinds                #-}
 
@@ -36,49 +36,49 @@ data MinBid
 
 newtype ValNameSymb = ValNameS Symbol
 
-data DynVal' (name :: ValNameSymb)
+data DynValImpl (name :: ValNameSymb)
 
-data MoneyVal' (val :: Symbol)
+data MoneyValImpl (val :: Symbol)
 
-data Info' (name :: Symbol) (holder :: Symbol)
+data InfoImpl (name :: Symbol) (holder :: Symbol)
 
-data Lot' (name :: Symbol)
-          (description :: Symbol)
-          (payload :: LotPayloadTag p)
-          (currency :: ICurrency)
-          (censorship :: CensorshipTag c)
+data LotImpl
+  (name :: Symbol)
+  (description :: Symbol)
+  (payload :: ILotPayload p)
+  (currency :: ICurrency a)
+  (censorship :: ICensorship c)
 
-data NoCensorship'    -- This can be pattern matched esier than something like ()
+data NoCensorshipImpl    -- This can be pattern matched esier than something like ()
 
 -- Extension points:
 
-data IMoneyConst
-data IAuctionInfo
-data ILots
-data ILotPayload
-data ICurrency
-data ICensorship
-data IBidTag
+data IMoneyConst a
+data IAuctionInfo a
+data ILots a
+data ILotPayload a
+data ICurrency a
+data ICensorship a
+data IBid a
 
 -- Construction
 
-type family MkMoneyConst  (a :: *)   :: IMoneyConst
-type family MkAuctionInfo (a :: *)   :: IAuctionInfo
-type family MkCurrency    (a :: *)   :: ICurrency
-type family MkCensorship  (a :: *)   :: ICensorship
-type family MkLots        (a :: [*]) :: ILots
-type family MkLotPayload  (a :: *)   :: ILotPayload
-type family MkBid         (a :: *)   :: IBidTag
+type family MkMoneyConst  (a :: *)   :: IMoneyConst a
+type family MkAuctionInfo (a :: *)   :: IAuctionInfo a
+type family MkCurrency    (a :: *)   :: ICurrency a
+type family MkCensorship  (a :: *)   :: ICensorship a
+type family MkLots        (a :: [*]) :: ILots a
+type family MkLotPayload  (a :: *)   :: ILotPayload a
+type family MkBid         (a :: *)   :: IBid a
 
 -- Helpers
 
-type MoneyVal (val :: Symbol) = MkMoneyConst (MoneyVal' val)
-type MoneyDynVal (valName :: ValNameSymb) = MkMoneyConst (DynVal' valName)
-
-type Info name holder = MkAuctionInfo (Info' name holder)
-type NoCensorship     = MkCensorship NoCensorship'
-type Censorship c     = MkCensorship c
-type LotPayload p     = MkLotPayload p
-type Currency c       = MkCurrency c
-type Lots ls          = MkLots ls
-type Lot              = Lot'                       -- Just a synonym
+type NoCensorship                 = MkCensorship NoCensorshipImpl
+type Info name holder             = MkAuctionInfo (InfoImpl name holder)
+type MoneyVal (val :: Symbol)     = MkMoneyConst (MoneyValImpl val)
+type MoneyDynVal (valName :: ValNameSymb) = MkMoneyConst (DynValImpl valName)
+type Censorship c                 = MkCensorship c
+type LotPayload p                 = MkLotPayload p
+type Currency c                   = MkCurrency c
+type Lots ls                      = MkLots ls
+type Lot                          = LotImpl                       -- Just a synonym

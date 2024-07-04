@@ -19,6 +19,7 @@ import Data.List (intercalate)
 import Data.Proxy (Proxy(..))
 import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 
+
 -- Implementation
 
 -- Interpreting of the participants list
@@ -47,7 +48,7 @@ instance
 -- Interpreting of the AllowedCountries censorship
 
 instance (Eval AsIntroParticipants participants (IO String)) =>
-  Eval AsIntroCensorship (AllowedCountries' name participants) (IO [String]) where
+  Eval AsIntroCensorship (AllowedCountriesImpl name participants) (IO [String]) where
   eval _ _ = do
     participants <- eval AsIntroParticipants (Proxy :: Proxy participants)
     pure [ "Eligible participants: " <> participants ]
@@ -69,12 +70,12 @@ instance Eval AsIntroCurrency EUR (IO [String]) where
 -- Dynamic (runtime) value. For now hardcoded but can be obtained from any source.
 -- N.B., this sample does not check for type safety of the money value.
 type MinBid202 = 'ValNameS "202 min bid"
-instance Eval AsIntroMoneyConst (DynVal' MinBid202) (IO String) where
+instance Eval AsIntroMoneyConst (DynValImpl MinBid202) (IO String) where
   eval _ _ = pure "20000"
 
 -- Payload
 instance Eval AsIntroMoneyConst minBid (IO String) =>
-  Eval AsIntroLotPayload (EFLotPayload' minBid) (IO String) where
+  Eval AsIntroLotPayload (EFLotPayloadImpl minBid) (IO String) where
   eval _ _ = do
     v <- eval AsIntroMoneyConst (Proxy :: Proxy minBid)
     pure $ "Minimum bid: " <> v

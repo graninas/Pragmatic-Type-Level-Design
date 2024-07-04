@@ -16,12 +16,6 @@ import Data.Text (Text)
 import TypeLevelDSL.Context (Context, Key, getDyn, setDyn, getSubContext)
 
 
--- Previous version:
--- newtype StateContext = StateContext (IORef (Map.Map Text (IORef Dyn.Dynamic)))
-
--- But we don't exposure the internal dynamic reference anyway,
--- and there is none consumers of this secret IORef,
--- so no need to keep a mutable value.
 newtype StateContext = StateContext (IORef (Map.Map Key Dyn.Dynamic))
 
 instance Context StateContext where

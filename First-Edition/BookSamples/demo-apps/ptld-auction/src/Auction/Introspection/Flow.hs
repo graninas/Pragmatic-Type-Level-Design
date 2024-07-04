@@ -28,7 +28,7 @@ data AsIntroLotProcess  = AsIntroLotProcess
 -- AuctionFlow
 
 instance (Eval AsIntroLotProcess proc (IO [String])) =>
-  Eval AsIntroAuctionFlow (AuctionFlow' proc) (IO [String]) where
+  Eval AsIntroAuctionFlow (AuctionFlowImpl proc) (IO [String]) where
   eval _ _ = do
     strs <- eval AsIntroLotProcess (Proxy :: Proxy proc)
     pure $ "AuctionFlow" : strs
@@ -43,7 +43,7 @@ instance
 -- Lot Process
 
 instance (Eval AsIntroAction acts (IO [String])) =>
-  Eval AsIntroLotProcess (LotProcess' acts) (IO [String]) where
+  Eval AsIntroLotProcess (LotProcessImpl acts) (IO [String]) where
   eval _ _ = do
     strs <- eval AsIntroAction (Proxy :: Proxy acts)
     pure $ "Lot process" : strs

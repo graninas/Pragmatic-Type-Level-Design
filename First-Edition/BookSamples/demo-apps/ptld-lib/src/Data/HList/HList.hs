@@ -8,24 +8,26 @@
 {-# LANGUAGE FlexibleInstances        #-}
 {-# LANGUAGE ScopedTypeVariables      #-}
 
-module TypeLevelDSL.Language.DataActions where
-
-import TypeLevelDSL.Language.Action
+module Data.HList.HList where
 
 import GHC.TypeLits (Symbol, Nat)
 
 
--- Action implementations
+-- Interface
 
-data ReadRefImpl
-  (refName :: Symbol)
-  (t :: *)
-  (lam :: ILambda a)
-type ReadRef n t lam = MkAction (ReadRefImpl n t lam)
+data IHList a
 
--- Lambda implementaions
+type family MkHList (a :: *) :: IHList a
 
-data WriteRefImpl
-  (refName :: Symbol)
-  (t :: *)
-type WriteRef n t = MkLambda (WriteRefImpl n t)
+-- Implementation
+
+data HEmptyImpl
+type HEmpty = MkHList HEmptyImpl
+type End = HEmpty
+
+data HListImpl it its
+type HList it its = HListImpl it its   -- Just a synonym
+
+type (:>) it its = HList it its
+
+infixr 6 :>

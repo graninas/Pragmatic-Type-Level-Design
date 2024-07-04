@@ -15,18 +15,17 @@ import TypeLevelDSL.Language.Action
 import GHC.TypeLits (Symbol, Nat)
 
 
+-- Action implementations
 
-data ReadRef'
+data ReadRefImpl
   (refName :: Symbol)
   (t :: *)
-  (lam :: ILambda)
+  (lam :: ILambda a)
+type ReadRef n t lam = MkAction (ReadRefImpl n t lam)
 
-data WriteRef'
+-- Lambda implementaions
+
+data WriteRefImpl
   (refName :: Symbol)
   (t :: *)
-
-
--- Helpers
-
-type ReadRef n t lam = MkAction (ReadRef' n t lam)
-type WriteRef n t    = MkLambda (WriteRef' n t)
+type WriteRef n t = MkLambda (WriteRefImpl n t)

@@ -23,8 +23,10 @@ import qualified Data.Dynamic as Dyn
 
 
 type Actions =
-  '[ ReadRef "val1" Int (WriteRef "val2" Int)
-   ]
+  Action (ReadRef "val1" Int (WriteRef "val2" Int))
+    (Action (ReadRef "val2" Int (WriteRef "val1" Int))
+      End
+    )
 
 spec :: Spec
 spec = do
@@ -35,7 +37,7 @@ spec = do
         [ ("val1", Dyn.toDyn (10 :: Int))
         ]) <*> pure Map.empty
 
-      void $ evalCtx ctx Impl.AsImplActions (Proxy @Actions)
+      void $ evalCtx ctx Impl.AsImplAction (Proxy @Actions)
 
       verifyRef ctx "val1" (10 :: Int)
       verifyRef ctx "val2" (10 :: Int)

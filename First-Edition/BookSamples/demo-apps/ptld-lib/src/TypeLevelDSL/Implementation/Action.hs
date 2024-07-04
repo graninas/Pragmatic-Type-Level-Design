@@ -8,65 +8,51 @@
 {-# LANGUAGE FlexibleInstances        #-}
 {-# LANGUAGE ScopedTypeVariables      #-}
 {-# LANGUAGE TypeApplications         #-}
-{-# LANGUAGE UndecidableInstances     #-}
-{-# LANGUAGE AllowAmbiguousTypes      #-}
--- {-# LANGUAGE QuantifiedConstraints    #-}
--- {-# LANGUAGE ImpredicativeTypes    #-}
 
 module TypeLevelDSL.Implementation.Action where
 
-import TypeLevelDSL.Language
+import qualified TypeLevelDSL.Language as L
 import TypeLevelDSL.Eval
 
 import Data.Proxy (Proxy(..))
 import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 
-
 data AsImplAction = AsImplAction
-data AsImplActions = AsImplActions
 data AsImplLambda = AsImplLambda
 
 -- The Actions mechanism
 
-instance
-  ( KnownSymbol name
-  , mkAct ~ (MkAction (ReadRef' name Int (MkLambda (WriteRef' "val2" Int))))
-  ) =>
-  EvalCtx ctx AsImplAction
-    mkAct
-    (IO [String]) where
-  evalCtx _ _ _ = pure []
-
+-- This is how we unwrap a type constructed with a type family.
+-- Example:
+-- type End = MkAction End'
+--      ^ type to unwrap
+--            ^ type family
+--                     ^ some real data type
 
 instance
-  EvalCtx ctx AsImplActions '[] (IO [String]) where
-  evalCtx _ _ _ = pure []
-
-instance
-  ( EvalCtx ctx AsImplActions acts (IO [String])
+  ( mkAct ~ L.MkAction act
   , EvalCtx ctx AsImplAction act (IO [String])
-  , act ~ (x :: IAction)
   ) =>
-  EvalCtx ctx AsImplActions (act ': acts) (IO [String]) where
-  evalCtx ctx _ _ = do
-    strs1 <- evalCtx ctx AsImplAction (Proxy @act)
-    -- strs2 <- evalCtx ctx AsImplActions (Proxy @acts)
-    -- pure $ strs1 <> strs2
-    pure strs1
+  EvalCtx ctx AsImplAction mkAct (IO [String]) where
+  evalCtx ctx _ _ = evalCtx ctx AsImplAction (Proxy :: Proxy act)
+
+instance EvalCtx ctx AsImplAction L.EndImpl (IO [String]) where
+  evalCtx ctx _ _ = pure ["EndImpl reached."]
 
 instance
-  ( acts ~ (b :: [IAction])
-  , EvalCtx ctx AsImplActions acts (IO [String])
+  ( EvalCtx ctx AsImplAction act (IO [String])
+  , EvalCtx ctx AsImplAction acts (IO [String])
   ) =>
-  EvalCtx ctx AsImplAction acts (IO [String]) where
-  evalCtx ctx _ _ =
-    evalCtx ctx AsImplActions (Proxy @acts)
-
+  EvalCtx ctx AsImplAction (L.ActionImpl act acts) (IO [String]) where
+  evalCtx ctx _ _ = do
+    strs1 <- evalCtx ctx AsImplAction (Proxy :: Proxy act)
+    strs2 <- evalCtx ctx AsImplAction (Proxy :: Proxy acts)
+    pure $ strs1 <> strs2
 
 -- Lambda mechanism
 
 instance
-  ( mkLam ~ MkLambda lam
+  ( mkLam ~ L.MkLambda lam
   , EvalLambdaCtx ctx valType AsImplLambda lam (IO [String])
   ) =>
   EvalLambdaCtx ctx valType AsImplLambda mkLam (IO [String]) where

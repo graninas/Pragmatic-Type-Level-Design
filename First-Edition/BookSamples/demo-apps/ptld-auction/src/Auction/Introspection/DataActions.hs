@@ -11,13 +11,29 @@
 
 module Auction.Introspection.DataActions where
 
-import Auction.Introspection.Action
 import Auction.Language
 import TypeLevelDSL.Eval
 
 import Data.Proxy (Proxy(..))
 import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 
+
+data AsIntroAction = AsIntroAction
+
+instance Eval AsIntroAction '[] (IO [String]) where
+  eval _ _ = pure []
+
+instance
+  ( Eval AsIntroAction act (IO [String])
+  , Eval AsIntroAction acts (IO [String])
+  ) =>
+  Eval AsIntroAction
+    (ActionWrapper act ': acts)
+    (IO [String]) where
+  eval _ _ = do
+    strs1 <- eval AsIntroAction $ Proxy @act
+    strs2 <- eval AsIntroAction $ Proxy @acts
+    pure $ strs1 <> strs2
 
 -- Specific actions
 

@@ -26,24 +26,21 @@ import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 data AsImplAction = AsImplAction
 data AsImplLambda = AsImplLambda
 
-instance
-  ( mkAct ~ MkHList act
-  , EvalCtx ctx AsImplAction act (IO [String])
-  ) =>
-  EvalCtx ctx AsImplAction mkAct (IO [String]) where
-  evalCtx ctx _ _ = evalCtx ctx AsImplAction (Proxy :: Proxy act)
 
-instance EvalCtx ctx AsImplAction HEmptyImpl (IO [String]) where
-  evalCtx ctx _ _ = pure ["HEmptyImpl reached."]
+instance
+  EvalCtx ctx AsImplAction '[] (IO [String]) where
+  evalCtx ctx _ _ = pure []
 
 instance
   ( EvalCtx ctx AsImplAction act (IO [String])
   , EvalCtx ctx AsImplAction acts (IO [String])
   ) =>
-  EvalCtx ctx AsImplAction (HListImpl act acts) (IO [String]) where
+  EvalCtx ctx AsImplAction
+    (ActionWrapper act ': acts)
+    (IO [String]) where
   evalCtx ctx _ _ = do
-    strs1 <- evalCtx ctx AsImplAction (Proxy :: Proxy act)
-    strs2 <- evalCtx ctx AsImplAction (Proxy :: Proxy acts)
+    strs1 <- evalCtx ctx AsImplAction $ Proxy @act
+    strs2 <- evalCtx ctx AsImplAction $ Proxy @acts
     pure $ strs1 <> strs2
 
 -- Lambda mechanism
@@ -54,13 +51,11 @@ instance
   ) =>
   EvalLambdaCtx ctx valType AsImplLambda mkLam (IO [String]) where
   evalLambdaCtx ctx val _ _ =
-    evalLambdaCtx ctx val AsImplLambda (Proxy :: Proxy lam)
+    evalLambdaCtx ctx val AsImplLambda $ Proxy @lam
 
+-- Specific actions
 
-
--- * Specific actions
-
--- GetPayloadValue
+-- -- GetPayloadValue
 
 instance
   ( Context ctx
@@ -100,8 +95,6 @@ instance
     withContextValue ctx key
       $ \(lotDescr :: String) -> evalLambdaCtx ctx lotDescr AsImplLambda (Proxy :: Proxy lam)
     pure []
-
-
 
 -- ReadRef
 

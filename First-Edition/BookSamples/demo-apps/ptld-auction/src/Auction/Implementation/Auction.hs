@@ -8,13 +8,12 @@
 {-# LANGUAGE UndecidableInstances     #-}
 {-# LANGUAGE FlexibleContexts         #-}
 {-# LANGUAGE FlexibleInstances        #-}
--- {-# LANGUAGE AllowAmbiguousTypes      #-}
+{-# LANGUAGE AllowAmbiguousTypes      #-}
 
 module Auction.Implementation.Auction where
 
 import qualified Auction.Types as T
 import qualified Auction.Language as L
-import qualified Auction.Implementation.Flow as Impl
 import qualified Auction.Implementation.DataActions as Impl
 import TypeLevelDSL.Eval
 import TypeLevelDSL.Context
@@ -30,8 +29,6 @@ import Control.Monad
 import System.Random (randomIO, randomRIO)
 
 
-
-
 -- Service types
 
 data LotDescr = LotDescr
@@ -42,84 +39,75 @@ data LotDescr = LotDescr
 
 type LotDescrs = [LotDescr]
 
-
 -- Interpretation tags
 
 data AsImplInfo       = AsImplInfo
-data AsImplLots       = AsImplLots
 data AsImplLot        = AsImplLot
 data AsImplLotPayload = AsImplLotPayload
 data AsImplMoneyConst = AsImplMoneyConst
+data AsImplAuction    = AsImplAuction
 
--- Interpreting of the list of lots (lots :: ILots)
-
-instance Eval AsImplLot p (IO LotDescr) =>
-  Eval AsImplLots (p ': '[]) (IO LotDescrs) where
-  eval _ _ = do
-    lot <- eval AsImplLot (Proxy :: Proxy p)
-    pure [lot]
+-- List of lots
 
 instance
-  ( Eval AsImplLot p (IO LotDescr)
-  , Eval AsImplLots (x ': ps) (IO LotDescrs)
+  ( Eval AsImplLot lot (IO LotDescr)
+  , Eval AsImplLot lots (IO [LotDescr])
   ) =>
-  Eval AsImplLots (p ': x ': ps) (IO LotDescrs) where
+  Eval AsImplLot (L.LotWrapper lot ': lots) (IO [LotDescr]) where
   eval _ _ = do
-    lot  <- eval AsImplLot (Proxy :: Proxy p)
-    lots <- eval AsImplLots (Proxy :: Proxy (x ': ps))
-    pure $ lot : lots
+    d  <- eval AsImplLot $ Proxy @lot
+    ds <- eval AsImplLot $ Proxy @lots
+    pure $ d : ds
 
 instance
-  ( b ~ L.MkLots a
-  , Eval AsImplLots a (IO LotDescrs)
-  ) =>
-  Eval AsImplLots b (IO LotDescrs) where
-  eval _ _ = eval AsImplLots (Proxy :: Proxy a)
+  Eval AsImplLot '[] (IO [LotDescr]) where
+  eval _ _ = pure []
 
--- Interpreting of a Lot
+-- Lot
 
 instance
   ( Eval AsImplLotPayload payload (IO StateContext)
   , KnownSymbol name
   , KnownSymbol descr
   ) =>
-  Eval AsImplLot (L.LotImpl name descr payload currency censorship) (IO LotDescr) where
+  Eval AsImplLot
+    (L.LotImpl name descr payload currency censorship)
+    (IO LotDescr) where
   eval _ _ = do
-    payloadCtx <- eval AsImplLotPayload (Proxy :: Proxy payload)
+    payloadCtx <- eval AsImplLotPayload $ Proxy @payload
     pure $ LotDescr
-      { ldName           = symbolVal (Proxy :: Proxy name)
-      , ldDescription    = symbolVal (Proxy :: Proxy descr)
+      { ldName           = symbolVal $ Proxy @name
+      , ldDescription    = symbolVal $ Proxy @descr
       , ldPayloadContext = payloadCtx
       }
 
--- Interpreting a MoneyConst value
+-- MoneyConst
 
 instance
-  ( b ~ L.MkMoneyConst a
-  , Eval AsImplMoneyConst a (IO T.Money)
+  ( Eval AsImplMoneyConst a (IO T.Money)
   ) =>
-  Eval AsImplMoneyConst b (IO T.Money) where
-  eval _ _ = eval AsImplMoneyConst (Proxy :: Proxy a)
-
-instance KnownSymbol val =>
- Eval AsImplMoneyConst (L.MoneyValImpl val) (IO T.Money) where
-  eval _ _ = pure $ read $ symbolVal (Proxy :: Proxy val)     -- unsafe
-
--- Interpreting a LotPayload value
+  Eval AsImplMoneyConst (L.MoneyConstWrapper b) (IO T.Money) where
+  eval _ _ = eval AsImplMoneyConst $ Proxy @a
 
 instance
-  ( b ~ L.MkLotPayload a
-  , Eval AsImplLotPayload a (IO StateContext)
+  ( KnownSymbol val
   ) =>
-  Eval AsImplLotPayload b (IO StateContext) where
-  eval _ _ = eval AsImplLotPayload (Proxy :: Proxy a)
+  Eval AsImplMoneyConst (L.MoneyValImpl val) (IO T.Money) where
+  eval _ _ = pure $ read $ symbolVal $ Proxy @val     -- unsafe
 
+-- LotPayload
 
--- Interpretation tags
+instance
+  ( Eval AsImplLotPayload a (IO StateContext)
+  ) =>
+  Eval AsImplLotPayload
+    (L.LotPayloadWrapper b)
+    (IO StateContext) where
+  eval _ _ = eval AsImplLotPayload $ Proxy @a
 
-data AsImplAuction = AsImplAuction
-
--- Interpreting of the Auction
+-----------------------------------------------------------
+-- Auction implementation with some hardcoded parameters --
+-----------------------------------------------------------
 
 for_ :: Monad m => [a] -> (a -> m b) -> m ()
 for_ = flip mapM_
@@ -192,7 +180,7 @@ initLotState (AuctionState {..}) lotDescr = do
   writeIORef curCostRef 0               --   hardcode, should be extracted from payload
 
 instance
-  ( Eval AsImplLots lots (IO LotDescrs)
+  ( Eval AsImplLot lots (IO LotDescrs)
   ) =>
   Eval AsImplAuction (L.AuctionImpl flow info lots) (IO ()) where
   eval _ _ = do
@@ -213,7 +201,7 @@ instance
 
     let ctx = auctionState
 
-    lotDescrs   <- eval AsImplLots (Proxy :: Proxy lots)
+    lotDescrs   <- eval AsImplLot $ Proxy @lots
 
     for_ lotDescrs $ \lotDescr -> do
       putStrLn $ "New lot: " <> ldName lotDescr

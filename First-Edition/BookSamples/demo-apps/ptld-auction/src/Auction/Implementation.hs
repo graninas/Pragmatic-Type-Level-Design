@@ -3,5 +3,4 @@ module Auction.Implementation
   ) where
 
 import Auction.Implementation.DataActions as X
-import Auction.Implementation.Flow as X
 import Auction.Implementation.Auction as X

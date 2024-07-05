@@ -10,7 +10,6 @@
 
 module Auction.Language.DataActions where
 
-import Data.HList.HList
 import GHC.TypeLits (Symbol, Nat)
 
 
@@ -19,7 +18,12 @@ import GHC.TypeLits (Symbol, Nat)
 data ILambda a
 type family MkLambda (a :: *) :: ILambda a
 
--- Lambda implementations
+data IAction where
+  ActionWrapper :: a -> IAction
+type family MkAction a :: IAction where
+  MkAction a = ActionWrapper a
+
+-- Lambda & action implementations
 
 data BothImpl lam1 lam2
 data PrintImpl
@@ -33,7 +37,6 @@ type Drop            = MkLambda DropImpl
 type ConcatL str lam = MkLambda (ConcatLImpl str lam)
 type ConcatR lam str = MkLambda (ConcatRImpl lam str)
 
-
 data LotName
 data LotDescr
 
@@ -42,16 +45,11 @@ data GetPayloadValueImpl (val :: *) (valType :: *) (lam :: ILambda a)
 data GetLotNameImpl (lam :: ILambda a)      -- custom methods
 data GetLotDescrImpl (lam :: ILambda a)     -- custom methods
 
-
-type MkAction act = MkHList act
-
 data ReadRefImpl
   (refName :: Symbol)
   (t :: *)
   (lam :: ILambda a)
 type ReadRef n t lam = MkAction (ReadRefImpl n t lam)
-
--- Lambda implementaions
 
 data WriteRefImpl
   (refName :: Symbol)

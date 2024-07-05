@@ -17,12 +17,9 @@ library
       Auction.Implementation
       Auction.Implementation.Auction
       Auction.Implementation.DataActions
-      Auction.Implementation.Flow
       Auction.Introspection
-      Auction.Introspection.Action
       Auction.Introspection.Auction
       Auction.Introspection.DataActions
-      Auction.Introspection.Flow
       Auction.Language
       Auction.Language.Auction
       Auction.Language.DataActions
@@ -102,6 +99,7 @@ test-suite ptld-auction-tests
       Auction.Extensions.Language
       Auction.Testing.Environment
       Auction.TLSpec
+      Auction.XSpec
       Paths_ptld_auction
   hs-source-dirs:
       test/

@@ -27,23 +27,50 @@ newtype ValNameSymb = ValNameS Symbol
 
 -- Interfaces / extension points
 
-data IMoneyConst a
-data IAuctionInfo a
-data ILots a
-data ILotPayload a
-data ICurrency a
-data ICensorship a
-data IBid a
+data IMoneyConst where
+  MoneyConstWrapper :: a -> IMoneyConst
+
+data IAuctionInfo where
+  AuctionInfoWrapper :: a -> IAuctionInfo
+
+data ILotPayload where
+  LotPayloadWrapper :: a -> ILotPayload
+
+data ICurrency where
+  CurrencyWrapper :: a -> ICurrency
+
+data ICensorship where
+  CensorshipWrapper :: a -> ICensorship
+
+data IBid where
+  BidWrapper :: a -> IBid
+
+data ILot where
+  LotWrapper :: a -> ILot
 
 -- Construction
 
-type family MkMoneyConst  (a :: *)   :: IMoneyConst a
-type family MkAuctionInfo (a :: *)   :: IAuctionInfo a
-type family MkCurrency    (a :: *)   :: ICurrency a
-type family MkCensorship  (a :: *)   :: ICensorship a
-type family MkLots        (a :: [*]) :: ILots a
-type family MkLotPayload  (a :: *)   :: ILotPayload a
-type family MkBid         (a :: *)   :: IBid a
+type family MkMoneyConst (a :: *) :: IMoneyConst where
+  MkMoneyConst a = MoneyConstWrapper a
+
+type family MkAuctionInfo (a :: *) :: IAuctionInfo where
+  MkAuctionInfo a = AuctionInfoWrapper a
+
+type family MkCurrency (a :: *) :: ICurrency where
+  MkCurrency a = CurrencyWrapper a
+
+type family MkCensorship (a :: *) :: ICensorship where
+  MkCensorship a = CensorshipWrapper a
+
+type family MkLotPayload (a :: *) :: ILotPayload where
+  MkLotPayload a = LotPayloadWrapper a
+
+type family MkBid (a :: *) :: IBid where
+  MkBid a = BidWrapper a
+
+type family MkLot (a :: *) :: ILot where
+  MkLot a = LotWrapper a
+
 
 -- Implementations
 
@@ -56,16 +83,16 @@ data InfoImpl (name :: Symbol) (holder :: Symbol)
 data LotImpl
   (name :: Symbol)
   (description :: Symbol)
-  (payload :: ILotPayload p)
-  (currency :: ICurrency a)
-  (censorship :: ICensorship c)
+  (payload :: ILotPayload)
+  (currency :: ICurrency)
+  (censorship :: ICensorship)
 
 data NoCensorshipImpl
 
 data AuctionImpl
-  (auctionFlow :: IAuctionFlow a)
-  (auctionInfo :: IAuctionInfo b)
-  (lots        :: ILots c)
+  (auctionFlow :: IAuctionFlow)
+  (auctionInfo :: IAuctionInfo)
+  (lots        :: [ILot])         -- TODO: use non-empty list
 
 -- Smart constructors
 
@@ -77,6 +104,6 @@ type Info name holder = MkAuctionInfo (InfoImpl name holder)
 type Censorship c     = MkCensorship c
 type LotPayload p     = MkLotPayload p
 type Currency c       = MkCurrency c
-type Lots ls          = MkLots ls
-type Lot              = LotImpl  -- Just a synonym
-type Auction = AuctionImpl       -- Just a type synonym
+type Lot n d p c cur  = MkLot (LotImpl n d p c cur)
+type Auction          = AuctionImpl       -- Just a type synonym
+

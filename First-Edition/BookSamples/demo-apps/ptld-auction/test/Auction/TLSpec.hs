@@ -24,9 +24,9 @@ import qualified Data.Dynamic as Dyn
 
 
 type Actions =
-  (ReadRef "val1" Int (WriteRef "val2" Int))
-  :> (ReadRef "val2" Int (WriteRef "val1" Int))
-  :> End
+  '[ ReadRef "val1" Int (WriteRef "val2" Int)
+   , ReadRef "val2" Int (WriteRef "val1" Int)
+   ]
 
 spec :: Spec
 spec = do

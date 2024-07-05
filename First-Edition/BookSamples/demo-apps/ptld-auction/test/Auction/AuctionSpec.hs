@@ -63,36 +63,30 @@ type PayloadLot3 = LotPayload (ExtL.EFLotPayload (MoneyVal "40000"))
 -- Auction algorithm
 
 type EnglishAuctionLotAction1 =
-  (GetLotName (ConcatL "New lot: " Print))
-  :> (GetLotDescr Print)
-  :> End
+  '[ GetLotName (ConcatL "New lot: " Print)
+   , GetLotDescr Print
+   ]
 
 type EnglishAuctionLotAction2 =
-  (GetLotName2
+  '[ GetLotName2
         (ConcatL "New lot: "
-          (Both (WriteRef "LotName result" String) Print)))
-  :> (GetLotDescr2 (ConcatL "Lot description: "
-        (Both (WriteRef "LotDescr result" String) Print)))
-  :> End
+          (Both (WriteRef "LotName result" String) Print))
 
+   , GetLotDescr2 (ConcatL "Lot description: "
+        (Both (WriteRef "LotDescr result" String) Print))
+   ]
 
-type EnglishAuctionFlow = AuctionFlow
-  ( LotProcess EnglishAuctionLotAction1
-  )
-
+type EnglishAuctionFlow = AuctionFlow EnglishAuctionLotAction1
 
 type TestFlow = AuctionFlow
-  ( LotProcess
-      ( (ReadRef "curRound" Int Print)
-        :> (ReadRef "curCost" Int Drop)
-        :> End
-      )
-  )
+  '[ ReadRef "curRound" Int Print
+   , ReadRef "curCost" Int Drop
+   ]
 
 -- Auction
 
 type WorldArtsInfo = Info "World arts" "UK Bank"
-type WorldArtsLots = Lots
+type WorldArtsLots =
   '[ Lot "101" "Dali artwork"      PayloadLot1 (Currency ExtL.GBP) UKOnly
    , Lot "202" "Chinese vase"      PayloadLot2 (Currency ExtL.USD) UKAndUS
    , Lot "303" "Ancient mechanism" PayloadLot3 (Currency ExtL.USD) NoCensorship
@@ -113,14 +107,14 @@ spec = do
   describe "Type level eDSL Auction: Introspection" $ do
 
     it "AuctionInfo test" $ do
-      strs <- eval I.AsIntroInfo (Proxy :: Proxy WorldArtsInfo)
+      strs <- eval I.AsIntroInfo $ Proxy @WorldArtsInfo
       strs `shouldBe`
         [ "Name: World arts"
         , "Holder: UK Bank"
         ]
 
     it "Auction Lots test" $ do
-      strs <- eval I.AsIntroLots (Proxy :: Proxy WorldArtsLots)
+      strs <- eval I.AsIntroLot $ Proxy @WorldArtsLots
       strs `shouldBe`
         [ "Lot: 101"
         , "Description: Dali artwork"
@@ -139,7 +133,7 @@ spec = do
         ]
 
     it "Auction test" $ do
-      strs <- I.describeAuction (Proxy :: Proxy WorldArtsAuction)
+      strs <- I.describeAuction $ Proxy @WorldArtsAuction
       strs `shouldBe`
         [ "==> Auction! <=="
         , "Name: World arts"
@@ -171,11 +165,11 @@ spec = do
         [ ("ref1", Dyn.toDyn (10 :: Int))
         ]) <*> pure Map.empty
 
-      void $ evalCtx ctx Impl.AsImplAction (Proxy :: Proxy (
+      void $ evalCtx ctx Impl.AsImplAction $ Proxy @(
             (ReadRef "ref1" Int (WriteRef "ref2" Int))
             :> (ReadRef "ref2" Int Drop)
             :>  End
-            ))
+            )
 
       verifyRef ctx "ref1" (10 :: Int)
       verifyRef ctx "ref2" (10 :: Int)
@@ -185,11 +179,11 @@ spec = do
         [ (Dyn.toTypeableKey @MinBid, Dyn.toDyn (10.0 :: Float))
         ]) <*> pure Map.empty
 
-      void $ evalCtx ctx Impl.AsImplAction (Proxy :: Proxy (
+      void $ evalCtx ctx Impl.AsImplAction $ Proxy @(
             (GetPayloadValue MinBid Float Print)
             :> (GetPayloadValue MinBid Float (WriteRef "f" Float))
             :> End
-          ))
+          )
 
       verifyRef ctx (Dyn.toTypeableKey @MinBid) (10.0 :: Float)
       verifyRef ctx "f" (10.0 :: Float)
@@ -200,7 +194,7 @@ spec = do
           , ("LotDescr", Dyn.toDyn ("Dali artwork" :: String))
           ]) <*> pure Map.empty
 
-      void $ evalCtx ctx Impl.AsImplAction (Proxy :: Proxy EnglishAuctionLotAction1)
+      void $ evalCtx ctx Impl.AsImplAction $ Proxy @EnglishAuctionLotAction1
 
       verifyRef ctx "LotName" ("101" :: String)
 
@@ -210,7 +204,7 @@ spec = do
         , ("LotDescr", Dyn.toDyn ("Dali artwork" :: String))
         ]) <*> pure Map.empty
 
-      void $ evalCtx ctx Impl.AsImplAction (Proxy :: Proxy EnglishAuctionLotAction2)
+      void $ evalCtx ctx Impl.AsImplAction $ Proxy @EnglishAuctionLotAction2
 
       verifyRef ctx "LotName" ("101" :: String)
       verifyRef ctx "LotDescr" ("Dali artwork" :: String)

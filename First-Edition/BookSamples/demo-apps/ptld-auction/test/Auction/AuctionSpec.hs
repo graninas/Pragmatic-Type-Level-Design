@@ -52,13 +52,13 @@ import Test.Hspec
 -- data MinBidGetter
 -- data Get l r
 
-type UKOnly  = Censorship (ExtL.AllowedCountries "UK only" '[UK])
-type UKAndUS = Censorship (ExtL.AllowedCountries "UK & US" '[UK, US])
+type UKOnly  = ExtL.AllowedCountries "UK only" '[UK]
+type UKAndUS = ExtL.AllowedCountries "UK & US" '[UK, US]
 
 type MinBid202 = 'ValNameS "202 min bid"
-type PayloadLot1 = LotPayload (ExtL.EFLotPayload (MoneyVal "1000"))
-type PayloadLot2 = LotPayload (ExtL.EFLotPayload (MoneyDynVal MinBid202))
-type PayloadLot3 = LotPayload (ExtL.EFLotPayload (MoneyVal "40000"))
+type PayloadLot1 = ExtL.EFLotPayload (ExtL.MoneyVal "1000")
+type PayloadLot2 = ExtL.EFLotPayload (ExtL.MoneyDynVal MinBid202)
+type PayloadLot3 = ExtL.EFLotPayload (ExtL.MoneyVal "40000")
 
 -- Auction algorithm
 
@@ -166,10 +166,9 @@ spec = do
         ]) <*> pure Map.empty
 
       void $ evalCtx ctx Impl.AsImplAction $ Proxy @(
-            (ReadRef "ref1" Int (WriteRef "ref2" Int))
-            :> (ReadRef "ref2" Int Drop)
-            :>  End
-            )
+            '[ ReadRef "ref1" Int (WriteRef "ref2" Int)
+             , ReadRef "ref2" Int Drop
+             ])
 
       verifyRef ctx "ref1" (10 :: Int)
       verifyRef ctx "ref2" (10 :: Int)
@@ -180,10 +179,9 @@ spec = do
         ]) <*> pure Map.empty
 
       void $ evalCtx ctx Impl.AsImplAction $ Proxy @(
-            (GetPayloadValue MinBid Float Print)
-            :> (GetPayloadValue MinBid Float (WriteRef "f" Float))
-            :> End
-          )
+            '[ GetPayloadValue MinBid Float Print
+             , GetPayloadValue MinBid Float (WriteRef "f" Float)
+             ])
 
       verifyRef ctx (Dyn.toTypeableKey @MinBid) (10.0 :: Float)
       verifyRef ctx "f" (10.0 :: Float)
@@ -194,7 +192,8 @@ spec = do
           , ("LotDescr", Dyn.toDyn ("Dali artwork" :: String))
           ]) <*> pure Map.empty
 
-      void $ evalCtx ctx Impl.AsImplAction $ Proxy @EnglishAuctionLotAction1
+      void $ evalCtx ctx Impl.AsImplAction
+           $ Proxy @EnglishAuctionLotAction1
 
       verifyRef ctx "LotName" ("101" :: String)
 
@@ -204,7 +203,8 @@ spec = do
         , ("LotDescr", Dyn.toDyn ("Dali artwork" :: String))
         ]) <*> pure Map.empty
 
-      void $ evalCtx ctx Impl.AsImplAction $ Proxy @EnglishAuctionLotAction2
+      void $ evalCtx ctx Impl.AsImplAction
+           $ Proxy @EnglishAuctionLotAction2
 
       verifyRef ctx "LotName" ("101" :: String)
       verifyRef ctx "LotDescr" ("Dali artwork" :: String)

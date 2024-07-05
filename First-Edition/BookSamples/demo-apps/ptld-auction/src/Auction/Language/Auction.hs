@@ -27,9 +27,6 @@ newtype ValNameSymb = ValNameS Symbol
 
 -- Interfaces / extension points
 
-data IMoneyConst where
-  MoneyConstWrapper :: a -> IMoneyConst
-
 data IAuctionInfo where
   AuctionInfoWrapper :: a -> IAuctionInfo
 
@@ -49,9 +46,6 @@ data ILot where
   LotWrapper :: a -> ILot
 
 -- Construction
-
-type family MkMoneyConst (a :: *) :: IMoneyConst where
-  MkMoneyConst a = MoneyConstWrapper a
 
 type family MkAuctionInfo (a :: *) :: IAuctionInfo where
   MkAuctionInfo a = AuctionInfoWrapper a
@@ -87,8 +81,6 @@ data LotImpl
   (currency :: ICurrency)
   (censorship :: ICensorship)
 
-data NoCensorshipImpl
-
 data AuctionImpl
   (auctionFlow :: IAuctionFlow)
   (auctionInfo :: IAuctionInfo)
@@ -96,14 +88,14 @@ data AuctionImpl
 
 -- Smart constructors
 
-type MoneyVal (val :: Symbol) = MkMoneyConst (MoneyValImpl val)
-type MoneyDynVal (valName :: ValNameSymb) = MkMoneyConst (DynValImpl valName)
-
-type NoCensorship     = MkCensorship NoCensorshipImpl
 type Info name holder = MkAuctionInfo (InfoImpl name holder)
 type Censorship c     = MkCensorship c
-type LotPayload p     = MkLotPayload p
 type Currency c       = MkCurrency c
 type Lot n d p c cur  = MkLot (LotImpl n d p c cur)
+type LotPayload x     = MkLotPayload x
 type Auction          = AuctionImpl       -- Just a type synonym
 
+data NoCensorshipImpl
+data NoLotPayloadImpl
+type NoCensorship = MkCensorship NoCensorshipImpl
+type NoLotPayload = MkLotPayload NoLotPayloadImpl

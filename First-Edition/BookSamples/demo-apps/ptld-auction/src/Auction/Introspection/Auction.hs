@@ -22,18 +22,65 @@ import GHC.TypeLits (KnownSymbol, symbolVal)
 
 data AsIntroLotPayload = AsIntroLotPayload
 data AsIntroInfo = AsIntroInfo
-data AsIntroMoneyConst = AsIntroMoneyConst
 data AsIntroCensorship = AsIntroCensorship
 data AsIntroCurrency = AsIntroCurrency
 data AsIntroLot = AsIntroLot
 data AsIntroAuction = AsIntroAuction
 data AsIntroAuctionFlow = AsIntroAuctionFlow
 
+-- Wrappers (extension points)
+
+-- -- AuctionInfoWrapper
+
 instance
   ( Eval AsIntroInfo i (IO [String])
   ) =>
   Eval AsIntroInfo (AuctionInfoWrapper i) (IO [String]) where
   eval _ _ = eval AsIntroInfo $ Proxy @i
+
+-- -- Lot payload wrapper
+
+instance
+  ( Eval AsIntroLotPayload p (IO String)
+  ) =>
+  Eval AsIntroLotPayload (LotPayloadWrapper p) (IO String) where
+  eval _ _ = eval AsIntroLotPayload $ Proxy @p
+
+-- -- Currency wrapper
+
+instance
+  ( Eval AsIntroCurrency p (IO String)
+  ) =>
+  Eval AsIntroCurrency (CurrencyWrapper p) (IO String) where
+  eval _ _ = eval AsIntroCurrency $ Proxy @p
+
+-- -- Censorship wrapper
+
+instance
+  ( Eval AsIntroCensorship p (IO String)
+  ) =>
+  Eval AsIntroCensorship (CensorshipWrapper p) (IO String) where
+  eval _ _ = eval AsIntroCensorship $ Proxy @p
+
+-- -- Auction flow wrapper
+
+instance
+  ( Eval AsIntroAuctionFlow p (IO String)
+  ) =>
+  Eval AsIntroAuctionFlow (AuctionFlowWrapper p) (IO String) where
+  eval _ _ = eval AsIntroAuctionFlow $ Proxy @p
+
+-- -- Lot wrapper
+
+instance
+  ( Eval AsIntroLot p (IO String)
+  ) =>
+  Eval AsIntroLot (LotWrapper p) (IO String) where
+  eval _ _ = eval AsIntroLot $ Proxy @p
+
+-- Instances
+
+-- Info
 
 instance
   ( KnownSymbol name
@@ -45,7 +92,7 @@ instance
          , "Holder: " <> (symbolVal $ Proxy @holder)
          ]
 
--- Lot list
+-- -- Lot list
 
 instance
   Eval AsIntroLot '[] (IO [String]) where
@@ -61,7 +108,7 @@ instance
     strs2 <- eval AsIntroLot $ Proxy @ps
     pure $ strs1 <> strs2
 
--- Lot
+-- -- Lot
 
 instance
   ( Eval AsIntroCurrency currency (IO [String])
@@ -71,7 +118,12 @@ instance
   , KnownSymbol descr
   ) =>
   Eval AsIntroLot
-    (LotImpl name descr payload currency censorship)
+    (LotImpl
+      name
+      descr
+      payload
+      currency
+      censorship)
     (IO [String]) where
   eval _ _ = do
     payload    <- eval AsIntroLotPayload $ Proxy @payload
@@ -85,48 +137,12 @@ instance
       ] <> currency
         <> censorship
 
--- Currency
-
-instance
-  ( Eval AsIntroCurrency a (IO [String])
-  ) =>
-  Eval AsIntroCurrency (CurrencyWrapper b) (IO [String]) where
-  eval _ _ = eval AsIntroCurrency $ Proxy @a
-
--- Censorship
-
-instance
-  ( Eval AsIntroCensorship a (IO [String])
-  ) =>
-  Eval AsIntroCensorship (CensorshipWrapper b) (IO [String]) where
-  eval _ _ = eval AsIntroCensorship $ Proxy @a
+-- -- Censorship
 
 instance Eval AsIntroCensorship NoCensorshipImpl (IO [String]) where
   eval _ _ = pure []
 
--- MoneyConst
-
-instance
-  ( Eval AsIntroMoneyConst a (IO String)
-  ) =>
-  Eval AsIntroMoneyConst (MoneyConstWrapper b) (IO String) where
-  eval _ _ = eval AsIntroMoneyConst $ Proxy @a
-
-instance
-  ( KnownSymbol val
-  ) =>
-  Eval AsIntroMoneyConst (MoneyValImpl val) (IO String) where
-  eval _ _ = pure $ symbolVal $ Proxy @val
-
--- LotPayload
-
-instance
-  ( Eval AsIntroLotPayload a (IO String)
-  ) =>
-  Eval AsIntroLotPayload (LotPayloadWrapper b) (IO String) where
-  eval _ _ = eval AsIntroLotPayload $ Proxy @a
-
--- AuctionFlow
+-- -- AuctionFlow
 
 instance
   ( Eval AsIntroAction acts (IO [String])
@@ -138,15 +154,7 @@ instance
     strs <- eval AsIntroAction $ Proxy @acts
     pure $ "AuctionFlow" : strs
 
-instance
-  ( Eval AsIntroAuctionFlow auct (IO [String])
-  ) =>
-  Eval AsIntroAuctionFlow
-    (AuctionFlowWrapper auct)
-    (IO [String]) where
-  eval _ _ = eval AsIntroAuctionFlow $ Proxy @auct
-
--- Auction
+-- -- Auction
 
 instance
   ( Eval AsIntroInfo info (IO [String])

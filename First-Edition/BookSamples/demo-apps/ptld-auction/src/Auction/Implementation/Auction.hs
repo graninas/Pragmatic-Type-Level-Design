@@ -44,16 +44,38 @@ type LotDescrs = [LotDescr]
 data AsImplInfo       = AsImplInfo
 data AsImplLot        = AsImplLot
 data AsImplLotPayload = AsImplLotPayload
-data AsImplMoneyConst = AsImplMoneyConst
 data AsImplAuction    = AsImplAuction
 
--- List of lots
+
+-- Wrappers (extension points)
+
+-- -- Lot payload
+
+instance
+  ( Eval AsImplLotPayload p (IO StateContext)
+  ) =>
+  Eval AsImplLotPayload
+    (L.LotPayloadWrapper p)
+    (IO StateContext) where
+  eval _ _ = eval AsImplLotPayload $ Proxy @p
+
+-- -- Lot wrapper
+
+instance
+  ( Eval AsImplLot p (IO [LotDescr])
+  ) =>
+  Eval AsImplLot (L.LotWrapper p) (IO [LotDescr]) where
+  eval _ _ = eval AsImplLot $ Proxy @p
+
+-- Instances
+
+-- -- List of lots
 
 instance
   ( Eval AsImplLot lot (IO LotDescr)
   , Eval AsImplLot lots (IO [LotDescr])
   ) =>
-  Eval AsImplLot (L.LotWrapper lot ': lots) (IO [LotDescr]) where
+  Eval AsImplLot (lot ': lots) (IO [LotDescr]) where
   eval _ _ = do
     d  <- eval AsImplLot $ Proxy @lot
     ds <- eval AsImplLot $ Proxy @lots
@@ -63,15 +85,16 @@ instance
   Eval AsImplLot '[] (IO [LotDescr]) where
   eval _ _ = pure []
 
--- Lot
+-- -- Lot
 
+-- N.B., currency and censorship are not implemented yet
 instance
   ( Eval AsImplLotPayload payload (IO StateContext)
   , KnownSymbol name
   , KnownSymbol descr
   ) =>
   Eval AsImplLot
-    (L.LotImpl name descr payload currency censorship)
+    (L.LotImpl name descr payload currency_ censorship_)
     (IO LotDescr) where
   eval _ _ = do
     payloadCtx <- eval AsImplLotPayload $ Proxy @payload
@@ -80,30 +103,6 @@ instance
       , ldDescription    = symbolVal $ Proxy @descr
       , ldPayloadContext = payloadCtx
       }
-
--- MoneyConst
-
-instance
-  ( Eval AsImplMoneyConst a (IO T.Money)
-  ) =>
-  Eval AsImplMoneyConst (L.MoneyConstWrapper b) (IO T.Money) where
-  eval _ _ = eval AsImplMoneyConst $ Proxy @a
-
-instance
-  ( KnownSymbol val
-  ) =>
-  Eval AsImplMoneyConst (L.MoneyValImpl val) (IO T.Money) where
-  eval _ _ = pure $ read $ symbolVal $ Proxy @val     -- unsafe
-
--- LotPayload
-
-instance
-  ( Eval AsImplLotPayload a (IO StateContext)
-  ) =>
-  Eval AsImplLotPayload
-    (L.LotPayloadWrapper b)
-    (IO StateContext) where
-  eval _ _ = eval AsImplLotPayload $ Proxy @a
 
 -----------------------------------------------------------
 -- Auction implementation with some hardcoded parameters --
@@ -179,10 +178,13 @@ initLotState (AuctionState {..}) lotDescr = do
   writeIORef curOwnerRef Nothing
   writeIORef curCostRef 0               --   hardcode, should be extracted from payload
 
+-- N.B., flow and info are not implemented yet
 instance
   ( Eval AsImplLot lots (IO LotDescrs)
   ) =>
-  Eval AsImplAuction (L.AuctionImpl flow info lots) (IO ()) where
+  Eval AsImplAuction
+    (L.AuctionImpl flow_ info_ lots)
+    (IO ()) where
   eval _ _ = do
 
     auctionState <- AuctionState

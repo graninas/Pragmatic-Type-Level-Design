@@ -5,6 +5,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Auction.XSpec where
 
@@ -23,32 +24,28 @@ import qualified Data.Dynamic as Dyn
 import GHC.TypeLits
 
 
-data IAct
+data IAct where
+  IActW :: a -> IAct
 
-type family MkAction a :: IAct
+type family MkAct a :: IAct where
+  MkAct a = IActW a
 
 data ReadXImpl (x :: Symbol)
 data WriteXImpl (x :: Symbol)
--- type ReadX x = MkHList (ReadXImpl x)
--- type WriteX x = MkHList (ReadXImpl x)
-type ReadX x  = ReadXImpl x
-type WriteX x = ReadXImpl x
-
 data NotAnAct
+type ReadX x  = MkAct (ReadXImpl x)
+type WriteX x = MkAct (ReadXImpl x)
 
-type Script' =
+
+data ScriptHolder (acts :: [IAct])
+
+type Script =
   '[ ReadX "abc"
    , ReadX "cde"
    , WriteX "efg"
-   , NotAnAct
-  --  , Script
+  --  , NotAnAct
    ]
-
--- type Script =
---   ReadX "abc"
---   :> ReadX "cde"
---   :> WriteX "efg"
---   :> HEmptyImpl
+type MyHolder = ScriptHolder Script
 
 class EvX tag payload ret
   | tag payload -> ret where
@@ -68,33 +65,29 @@ instance
   evX _ _ = pure ()
 
 instance
-  ( EvX AsActImpl act (IO ())
+  ( mkAct ~ MkAct act
+  , EvX AsActImpl act (IO ())
   , EvX AsActImpl acts (IO ())
   ) =>
-  EvX AsActImpl (act ': acts) (IO ()) where
-  evX _ _ = pure ()
+  EvX AsActImpl (mkAct ': acts) (IO ()) where
+  evX _ _ = do
+    evX AsActImpl $ Proxy @act
+    evX AsActImpl $ Proxy @acts
 
 instance
   EvX AsActImpl '[] (IO ()) where
   evX _ _ = pure ()
 
--- instance
---   EvX
---     AsActImpl
---     ( (ReadXImpl "abc")
---      :> ( (ReadXImpl "cde")
---          :> ( (ReadXImpl "efg")
---              :>  HEmptyImpl)))
---     (IO ()) where
---   evX _ _ = pure ()
-
-
+instance
+  (  EvX AsActImpl acts (IO ())
+  ) =>
+  EvX AsActImpl (ScriptHolder acts) (IO ()) where
+  evX _ _ = evX AsActImpl $ Proxy @acts
 
 evScript :: IO ()
 evScript = do
 
-  -- evX AsActImpl $ Proxy @Script
-  evX AsActImpl $ Proxy @Script'
+  evX AsActImpl $ Proxy @MyHolder
 
 
 spec :: Spec

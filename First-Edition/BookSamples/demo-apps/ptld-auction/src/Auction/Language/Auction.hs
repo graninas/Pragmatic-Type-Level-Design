@@ -78,5 +78,5 @@ type Censorship c     = MkCensorship c
 type LotPayload p     = MkLotPayload p
 type Currency c       = MkCurrency c
 type Lots ls          = MkLots ls
-type Lot              = LotImpl  -- Just a synonym
-type Auction = AuctionImpl       -- Just a type synonym
+type Lot              = LotImpl     -- Just a synonym
+type Auction          = AuctionImpl -- Just a type synonym

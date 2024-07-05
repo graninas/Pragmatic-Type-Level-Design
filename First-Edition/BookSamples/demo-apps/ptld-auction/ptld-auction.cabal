@@ -102,6 +102,7 @@ test-suite ptld-auction-tests
       Auction.Extensions.Language
       Auction.Testing.Environment
       Auction.TLSpec
+      Auction.XSpec
       Paths_ptld_auction
   hs-source-dirs:
       test/

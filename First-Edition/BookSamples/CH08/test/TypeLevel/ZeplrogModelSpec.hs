@@ -25,8 +25,8 @@ type PosTagVal (x :: Nat) (y :: Nat) = Dummy
 
 type AbstractDoor = AbstractProp (Group EAbstractDoor)
   '[ KeyValField EIcon (OwnVal (IconVal "+"))
-       , KeyValField EHP   (OwnVal (HPTagVal 50))
-       , KeyValField EPos  (OwnVal (PosTagVal 0 0))
+   , KeyValField EHP   (OwnVal (HPTagVal 50))
+   , KeyValField EPos  (OwnVal (PosTagVal 0 0))
    ]
 
 type SpecificDoor = DerivedProp ESpecificDoor AbstractDoor

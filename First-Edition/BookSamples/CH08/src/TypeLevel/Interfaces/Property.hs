@@ -1,6 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE GADTs #-}
 
 module TypeLevel.Interfaces.Property where
 
@@ -12,22 +13,33 @@ import GHC.TypeLits
 
 
 -- | Interface for a non-implemented functionality
-data IUnknown
-type family MkUnknown (a :: *) :: IUnknown
+data IUnknown where
+  UnknownWrapper :: a -> IUnknown
+type family MkUnknown (a :: *) :: IUnknown where
+  MkUnknown a = UnknownWrapper a
 
-data IPropertyGroup
-type family MkPropertyGroup (a :: *) :: IPropertyGroup
+data IPropertyGroup where
+  PropertyGroupWrapper :: a -> IPropertyGroup
+type family MkPropertyGroup (a :: *) :: IPropertyGroup where
+  MkPropertyGroup a = PropertyGroupWrapper a
 
-data IAbstractProperty
-type family MkAbstractProperty (a :: *) :: IAbstractProperty
+data IAbstractProperty where
+  AbstractPropertyWrapper :: a -> IAbstractProperty
+type family MkAbstractProperty (a :: *) :: IAbstractProperty where
+  MkAbstractProperty a = AbstractPropertyWrapper a
 
-data IProperty
-type family MkProperty (a :: *) :: IProperty
+data IProperty where
+  PropertyWrapper :: a -> IProperty
+type family MkProperty (a :: *) :: IProperty where
+  MkProperty a = PropertyWrapper a
 
-data IField
-type family MkField (a :: *) :: IField
+data IField where
+  FieldWrapper :: a -> IField
+type family MkField (a :: *) :: IField where
+  MkField a = FieldWrapper a
 
-data IPropertyOwning
+data IPropertyOwning where
+  PropertyOwningWrapper :: a -> IPropertyOwning
 type family MkPropertyOwning (a :: *) :: IPropertyOwning
 
 

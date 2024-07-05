@@ -49,33 +49,33 @@ instance
 -- -- Currency wrapper
 
 instance
-  ( Eval AsIntroCurrency p (IO String)
+  ( Eval AsIntroCurrency p (IO [String])
   ) =>
-  Eval AsIntroCurrency (CurrencyWrapper p) (IO String) where
+  Eval AsIntroCurrency (CurrencyWrapper p) (IO [String]) where
   eval _ _ = eval AsIntroCurrency $ Proxy @p
 
 -- -- Censorship wrapper
 
 instance
-  ( Eval AsIntroCensorship p (IO String)
+  ( Eval AsIntroCensorship p (IO [String])
   ) =>
-  Eval AsIntroCensorship (CensorshipWrapper p) (IO String) where
+  Eval AsIntroCensorship (CensorshipWrapper p) (IO [String]) where
   eval _ _ = eval AsIntroCensorship $ Proxy @p
 
 -- -- Auction flow wrapper
 
 instance
-  ( Eval AsIntroAuctionFlow p (IO String)
+  ( Eval AsIntroAuctionFlow p (IO [String])
   ) =>
-  Eval AsIntroAuctionFlow (AuctionFlowWrapper p) (IO String) where
+  Eval AsIntroAuctionFlow (AuctionFlowWrapper p) (IO [String]) where
   eval _ _ = eval AsIntroAuctionFlow $ Proxy @p
 
 -- -- Lot wrapper
 
 instance
-  ( Eval AsIntroLot p (IO String)
+  ( Eval AsIntroLot p (IO [String])
   ) =>
-  Eval AsIntroLot (LotWrapper p) (IO String) where
+  Eval AsIntroLot (LotWrapper p) (IO [String]) where
   eval _ _ = eval AsIntroLot $ Proxy @p
 
 -- Instances

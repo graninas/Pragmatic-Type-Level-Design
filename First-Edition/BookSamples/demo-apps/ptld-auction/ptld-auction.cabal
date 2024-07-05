@@ -93,13 +93,12 @@ test-suite ptld-auction-tests
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Auction.ActionSpec
       Auction.AuctionSpec
       Auction.Extensions.Implementation
       Auction.Extensions.Introspection
       Auction.Extensions.Language
       Auction.Testing.Environment
-      Auction.TLSpec
-      Auction.XSpec
       Paths_ptld_auction
   hs-source-dirs:
       test/

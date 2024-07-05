@@ -106,6 +106,7 @@ test-suite functional
   main-is: Spec.hs
   other-modules:
       TypeLevel.InterfacesSpec
+      TypeLevel.ZeplrogModelSpec
       Paths_ch8
   hs-source-dirs:
       test/

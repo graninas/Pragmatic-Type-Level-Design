@@ -5,7 +5,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 
-module Auction.TLSpec where
+module Auction.ActionSpec where
 
 import CPrelude
 
@@ -30,9 +30,9 @@ type Actions =
 
 spec :: Spec
 spec = do
-  describe "Eval test" $ do
+  describe "Action test" $ do
 
-    it "Eval test" $ do
+    it "Action test" $ do
       ctx <- TestData <$> newIORef (Map.fromList
         [ ("val1", Dyn.toDyn (10 :: Int))
         ]) <*> pure Map.empty

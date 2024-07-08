@@ -14,10 +14,11 @@ build-type:     Simple
 
 library
   exposed-modules:
+      Cellular.Language.Automaton
       Main
-      TypeLevel.Interfaces
-      TypeLevel.Interfaces.Common
-      TypeLevel.Interfaces.Property
+      ZeplrogOOP.Static.Model
+      ZeplrogOOP.Static.Model.Common
+      ZeplrogOOP.Static.Model.Property
   other-modules:
       Paths_ch8
   hs-source-dirs:
@@ -60,9 +61,10 @@ library
 executable ch8
   main-is: Main.hs
   other-modules:
-      TypeLevel.Interfaces
-      TypeLevel.Interfaces.Common
-      TypeLevel.Interfaces.Property
+      Cellular.Language.Automaton
+      ZeplrogOOP.Static.Model
+      ZeplrogOOP.Static.Model.Common
+      ZeplrogOOP.Static.Model.Property
       Paths_ch8
   hs-source-dirs:
       ./src
@@ -105,8 +107,8 @@ test-suite functional
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      TypeLevel.InterfacesSpec
-      TypeLevel.ZeplrogModelSpec
+      Tests.InterfacesSpec
+      Tests.ZeplrogModelSpec
       Paths_ch8
   hs-source-dirs:
       test/

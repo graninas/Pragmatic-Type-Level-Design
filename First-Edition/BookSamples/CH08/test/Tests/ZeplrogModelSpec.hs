@@ -2,11 +2,11 @@
 {-# LANGUAGE PolyKinds                #-}
 {-# LANGUAGE TypeFamilies             #-}
 
-module TypeLevel.ZeplrogModelSpec where
+module Tests.ZeplrogModelSpec where
 
 import CPrelude
 
-import TypeLevel.Interfaces
+import ZeplrogOOP.Static.Model
 
 import GHC.TypeLits
 

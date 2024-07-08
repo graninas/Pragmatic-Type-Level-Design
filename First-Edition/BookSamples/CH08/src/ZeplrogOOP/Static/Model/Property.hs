@@ -3,11 +3,11 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE GADTs #-}
 
-module TypeLevel.Interfaces.Property where
+module ZeplrogOOP.Static.Model.Property where
 
 import CPrelude
 
-import TypeLevel.Interfaces.Common
+import ZeplrogOOP.Static.Model.Common
 
 import GHC.TypeLits
 

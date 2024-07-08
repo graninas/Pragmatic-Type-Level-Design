@@ -3,7 +3,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE GADTs #-}
 
-module TypeLevel.Interfaces.Common where
+module ZeplrogOOP.Static.Model.Common where
 
 import CPrelude
 

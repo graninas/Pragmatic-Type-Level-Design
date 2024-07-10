@@ -99,3 +99,43 @@ spec = do
 
       evalScript
       1 `shouldBe` 2
+
+
+-- data Benoit
+-- data Mandelbrot (name :: *)
+
+-- type Fractal = Mandelbrot (Mandelbrot (Mandelbrot Benoit))
+-- type WhatAmI = Mandelbrot Bool
+
+-- type SomethingElse = Mandelbrot '[2, 3, 5, 7]
+-- type OneMoreUsage = Mandelbrot '("A pair with this string and 1", 1)
+
+-- data Person (firstName :: Symbol) (lastName :: Symbol)
+-- data User (login :: Symbol) (person :: Person fn ln)
+
+-- type MandelbrotPerson = Person "Benoit" "Mandelbrot"
+-- type HausdorffUser = User "haus" (Person "Felix" "Hausdorff")
+
+-- type WhatAmI = User "invalid user" Bool
+
+-- data PersonType = Person
+--   { firstName :: Symbol
+--   , lastName :: Symbol
+--   }
+-- data UserType = User
+--   { login :: Symbol
+--   , person :: PersonType
+--   }
+
+-- type MandelbrotPerson = Person "Benoit" "Mandelbrot"
+-- type MandelbrotUser   = User "mandel" MandelbrotPerson
+
+data PersonType = Person
+  { firstName :: Symbol
+  , lastName :: Symbol
+  }
+data User (login :: Symbol) (person :: PersonType)
+
+type MandelbrotPerson = Person "Benoit" "Mandelbrot"
+type MandelbrotUser   = User "mandel" MandelbrotPerson
+-- type WhatAmI = User "invalid user" Bool

@@ -14,6 +14,9 @@ build-type:     Simple
 
 library
   exposed-modules:
+      Cellular.Assets.ColoredLife
+      Cellular.Assets.GameOfLife
+      Cellular.Implementation.Automaton
       Cellular.Language.Automaton
       Main
       ZeplrogOOP.Static.Model
@@ -61,6 +64,9 @@ library
 executable ch8
   main-is: Main.hs
   other-modules:
+      Cellular.Assets.ColoredLife
+      Cellular.Assets.GameOfLife
+      Cellular.Implementation.Automaton
       Cellular.Language.Automaton
       ZeplrogOOP.Static.Model
       ZeplrogOOP.Static.Model.Common

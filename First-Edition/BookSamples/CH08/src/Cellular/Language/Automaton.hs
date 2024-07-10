@@ -5,19 +5,11 @@
 module Cellular.Language.Automaton where
 
 import GHC.TypeLits
-import Data.Proxy ( Proxy(..) )
-import Data.Maybe (fromMaybe)
-import qualified Data.Map as Map
-import Control.Monad (mapM)
 
 
 -- Interfaces
 
--- data IBoard where
---   BoardWrapper :: a -> IBoard
-
--- type family MkBoard a :: IBoard where
---   MkBoard a = BoardWrapper a
+-- -- Cell condition
 
 data ICellCondition where
   CellConditionWrapper :: a -> ICellCondition
@@ -25,11 +17,23 @@ data ICellCondition where
 type family MkCellCondition a :: ICellCondition where
   MkCellCondition a = CellConditionWrapper a
 
+-- -- State
+
 data IState where
   StateWrapper :: a -> IState
 
 type family MkState a :: IState where
   MkState a = StateWrapper a
+
+-- -- Neighborhood
+
+data INeighborhood where
+  NeighborhoodWrapper :: a -> INeighborhood
+
+type family MkNeighborhood a :: INeighborhood where
+  MkNeighborhood a = NeighborhoodWrapper a
+
+-- -- Rule
 
 data IRule where
   RuleWrapper :: a -> IRule
@@ -37,14 +41,7 @@ data IRule where
 type family MkRule a :: IRule where
   MkRule a = RuleWrapper a
 
-
--- Implementations
-
-data NeighborsCountImpl
-  (state :: IState)
-  (counts :: [Nat])
-type NeighborsCount s c =
-  MkCellCondition (NeighborsCountImpl s c)
+-- Customizable domain model
 
 data CustomStateTransition = StateTransition
   { cstFromState :: IState
@@ -52,34 +49,9 @@ data CustomStateTransition = StateTransition
   , cstCondition :: ICellCondition
   }
 
+newtype DefaultState = DefState IState
+
 data CustomStep = Step
-  { defState :: IState
+  { defState    :: DefaultState
   , transitions :: [CustomStateTransition]
   }
-
-data StateImpl
-  (name :: Symbol)
-type State n = MkState (StateImpl n)
-
-data RuleImpl
-  (name :: Symbol)
-  (code :: Symbol)
-  (step :: CustomStep)
-type Rule n c s = MkRule (RuleImpl n c s)
-
-
-type D = State "Dead"
-type A = State "Alive"
-
-type Neighbors3  = NeighborsCount A '[3  ]
-type Neighbors23 = NeighborsCount A '[2,3]
-
-type GoLStep = Step D
-  '[ 'StateTransition D A Neighbors3
-   , 'StateTransition A A Neighbors23
-   ]
-
-type GoLRule = Rule
-  "Game of Life"
-  "gol"
-  GoLStep

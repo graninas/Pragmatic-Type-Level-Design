@@ -1,6 +1,6 @@
-{-# LANGUAGE KindSignatures #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE DataKinds      #-}
+{-# LANGUAGE PolyKinds      #-}
+{-# LANGUAGE TypeFamilies   #-}
 
 module TypeSelector.Granular where
 
@@ -13,7 +13,7 @@ import GHC.TypeLits
 data Level = TypeLevel | ValueLevel
   deriving (Show, Eq, Ord)
 
-type family StringType (lvl :: Level) where
+type family StringType (lvl :: Level) :: a where
   StringType 'TypeLevel  = Symbol
   StringType 'ValueLevel = String     -- TODO: use Text
 

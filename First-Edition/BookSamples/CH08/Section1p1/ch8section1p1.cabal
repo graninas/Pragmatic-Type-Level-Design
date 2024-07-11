@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           ch8
+name:           ch8section1p1
 version:        1.0.0.0
 author:         Alexander Granin
 maintainer:     graninas@gmail.com
@@ -14,16 +14,9 @@ build-type:     Simple
 
 library
   exposed-modules:
-      Cellular.Assets.ColoredLife
-      Cellular.Assets.GameOfLife
-      Cellular.Implementation.Automaton
-      Cellular.Language.Automaton
       Main
-      ZeplrogOOP.Static.Model
-      ZeplrogOOP.Static.Model.Common
-      ZeplrogOOP.Static.Model.Property
   other-modules:
-      Paths_ch8
+      Paths_ch8section1p1
   hs-source-dirs:
       src
   default-extensions:
@@ -61,17 +54,10 @@ library
     , void
   default-language: Haskell2010
 
-executable ch8
+executable ch8section1p1
   main-is: Main.hs
   other-modules:
-      Cellular.Assets.ColoredLife
-      Cellular.Assets.GameOfLife
-      Cellular.Implementation.Automaton
-      Cellular.Language.Automaton
-      ZeplrogOOP.Static.Model
-      ZeplrogOOP.Static.Model.Common
-      ZeplrogOOP.Static.Model.Property
-      Paths_ch8
+      Paths_ch8section1p1
   hs-source-dirs:
       ./src
   default-extensions:
@@ -113,9 +99,8 @@ test-suite functional
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Tests.InterfacesSpec
-      Tests.ZeplrogModelSpec
-      Paths_ch8
+      Tests.ActionModelSpec
+      Paths_ch8section1p1
   hs-source-dirs:
       test/
   default-extensions:
@@ -136,7 +121,7 @@ test-suite functional
   build-depends:
       base >=4.7 && <5
     , bytestring
-    , ch8
+    , ch8section1p1
     , containers
     , free
     , ghc-prim

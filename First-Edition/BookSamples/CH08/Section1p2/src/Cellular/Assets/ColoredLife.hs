@@ -5,7 +5,7 @@
 module Cellular.Assets.ColoredLife where
 
 import Cellular.Language.Automaton
-import Cellular.Implementation.Automaton
+import Cellular.Extensions.Automaton
 import Cellular.Assets.GameOfLife
 
 import GHC.TypeLits
@@ -23,7 +23,7 @@ type B = ColoredState 'Green
 
 type Neighbors2 st = NeighborsCount st '[2]
 
-type ColoredStep = Step ('DefState D)
+type ColoredStep = 'Step ('DefState D)
   '[ 'StateTransition D A Neighbors3
    , 'StateTransition A R (Neighbors2 A)
    , 'StateTransition R G (Neighbors2 R)

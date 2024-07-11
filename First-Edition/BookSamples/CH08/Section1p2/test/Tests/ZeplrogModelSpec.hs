@@ -37,6 +37,6 @@ type SpecificDoor = DerivedProp ESpecificDoor AbstractDoor
 
 spec :: Spec
 spec = do
-  describe "Type level interfaces" $ do
-    xit "Property materialization test" $ do
-      1 `shouldBe` 2
+  describe "Zeplrog extensible model tests" $ do
+    it "Dummy" $ do
+      1 `shouldBe` 1

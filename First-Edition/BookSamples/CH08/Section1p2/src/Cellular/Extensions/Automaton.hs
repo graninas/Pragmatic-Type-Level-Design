@@ -2,7 +2,7 @@
 {-# LANGUAGE GADTs          #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE TypeFamilies   #-}
-module Cellular.Implementation.Automaton where
+module Cellular.Extensions.Automaton where
 
 import Cellular.Language.Automaton
 

@@ -16,32 +16,33 @@ import GHC.TypeLits
 data IUnknown where
   UnknownWrapper :: a -> IUnknown
 type family MkUnknown (a :: *) :: IUnknown where
-  MkUnknown a = UnknownWrapper a
+  MkUnknown a = 'UnknownWrapper a
 
 data IPropertyGroup where
   PropertyGroupWrapper :: a -> IPropertyGroup
 type family MkPropertyGroup (a :: *) :: IPropertyGroup where
-  MkPropertyGroup a = PropertyGroupWrapper a
+  MkPropertyGroup a = 'PropertyGroupWrapper a
 
 data IAbstractProperty where
   AbstractPropertyWrapper :: a -> IAbstractProperty
 type family MkAbstractProperty (a :: *) :: IAbstractProperty where
-  MkAbstractProperty a = AbstractPropertyWrapper a
+  MkAbstractProperty a = 'AbstractPropertyWrapper a
 
 data IProperty where
   PropertyWrapper :: a -> IProperty
 type family MkProperty (a :: *) :: IProperty where
-  MkProperty a = PropertyWrapper a
+  MkProperty a = 'PropertyWrapper a
 
 data IField where
   FieldWrapper :: a -> IField
 type family MkField (a :: *) :: IField where
-  MkField a = FieldWrapper a
+  MkField a = 'FieldWrapper a
 
 data IPropertyOwning where
   PropertyOwningWrapper :: a -> IPropertyOwning
-type family MkPropertyOwning (a :: *) :: IPropertyOwning
 
+type family MkPropertyOwning (a :: *) :: IPropertyOwning where
+  MkPropertyOwning a = 'PropertyOwningWrapper a
 
 -- Implementations
 

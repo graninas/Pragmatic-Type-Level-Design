@@ -10,7 +10,7 @@
 {-# LANGUAGE TypeApplications         #-}
 {-# LANGUAGE GADTs                    #-}
 
-module Tests.InterfacesSpec where
+module Tests.ActionModelSpec where
 
 import CPrelude
 
@@ -43,37 +43,28 @@ data AsActImpl = AsActImpl
 instance
   ( KnownSymbol n
   ) =>
-  Eval AsActImpl (ReadXImpl n) (IO ()) where
-  eval _ _ = do
-    print "f"
-    print $ symbolVal $ Proxy @n
-    pure ()
+  Eval AsActImpl (ReadXImpl n) [String] where
+  eval _ _ = ["f", symbolVal $ Proxy @n]
 
 instance
-  ( Eval AsActImpl act (IO ())
-  , Eval AsActImpl acts (IO ())
+  ( Eval AsActImpl act [String]
+  , Eval AsActImpl acts [String]
   ) =>
-  Eval AsActImpl (ActionWrapper act ': acts) (IO ()) where
-  eval _ _ = do
-    print "d"
-    eval AsActImpl $ Proxy @act
-    eval AsActImpl $ Proxy @acts
+  Eval AsActImpl (ActionWrapper act ': acts) [String] where
+  eval _ _ =
+    "d"
+     : (eval AsActImpl $ Proxy @act)
+    <> (eval AsActImpl $ Proxy @acts)
 
 instance
-  Eval AsActImpl '[] (IO ()) where
-  eval _ _ = do
-    print "c"
-    pure ()
+  Eval AsActImpl '[] [String] where
+  eval _ _ = ["c"]
 
 instance
-  ( Eval AsActImpl acts (IO ())
+  ( Eval AsActImpl acts [String]
   ) =>
-  Eval AsActImpl (ScriptHolder acts) (IO ()) where
-  eval _ _ = do
-    print "b"
-    eval AsActImpl $ Proxy @acts
-
-
+  Eval AsActImpl (ScriptHolder acts) [String] where
+  eval _ _ = "b" : (eval AsActImpl $ Proxy @acts)
 
 data ScriptHolder (acts :: [IAction])
 
@@ -85,20 +76,14 @@ type Script =
    ]
 type MyHolder = ScriptHolder Script
 
-evalScript :: IO ()
-evalScript = do
-  print "a"
-  eval AsActImpl $ Proxy @MyHolder
-
-
 spec :: Spec
 spec = do
-  describe "x" $ do
+  describe "Type-level interfaces test" $ do
 
-    xit "x" $ do
+    it "Eval" $ do
 
-      evalScript
-      1 `shouldBe` 2
+      let res = eval AsActImpl $ Proxy @MyHolder
+      res `shouldBe` ["b","d","f","abc","d","f","cde","d","f","efg","c"]
 
 
 -- data Benoit

@@ -5,7 +5,7 @@
 module Cellular.Assets.GameOfLife where
 
 import Cellular.Language.Automaton
-import Cellular.Implementation.Automaton
+import Cellular.Extensions.Automaton
 
 import GHC.TypeLits
 
@@ -16,7 +16,7 @@ type D = State "Dead" 0
 type Neighbors3  = NeighborsCount A '[3  ]
 type Neighbors23 = NeighborsCount A '[2,3]
 
-type GoLStep = Step ('DefState D)
+type GoLStep = 'Step ('DefState D)
   '[ 'StateTransition D A Neighbors3
    , 'StateTransition A A Neighbors23
    ]

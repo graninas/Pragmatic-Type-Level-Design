@@ -19,10 +19,10 @@ data IEssencePath where
   EssencePathWrapper :: a -> IEssencePath
 
 type family MkEssence (a :: *) :: IEssence where
-  MkEssence a = EssenceWrapper a
+  MkEssence a = 'EssenceWrapper a
 
 type family MkEssencePath (a :: [IEssence]) :: IEssencePath where
-  MkEssencePath a = EssencePathWrapper a
+  MkEssencePath a = 'EssencePathWrapper a
 
 
 -- Implementations

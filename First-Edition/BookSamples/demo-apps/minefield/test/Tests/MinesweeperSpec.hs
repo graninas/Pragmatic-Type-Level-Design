@@ -21,18 +21,15 @@ import qualified Data.Map as Map
 import GHC.TypeLits
 
 
-
-type TestMinefield =
-  '[ "6 6     B    "
+type Minefield =
+  '[ "7 6     A   @"
    , "  B 7 B     8"
-   , "  B   7     B"
-   , "  8     B 6  "
-   , "B B   7 8   6"
-   , "7     B   7 6"
-   , "  B B     6 B"
+   , "  C   7     B"
+   , "  8     A 6  "
+   , "B A   7 8   8"
+   , "7     C   7 6"
+   , "  A C     7 C"
    ]
-
-
 
 spec :: Spec
 spec = do

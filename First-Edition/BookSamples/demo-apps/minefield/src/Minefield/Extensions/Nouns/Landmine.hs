@@ -10,44 +10,30 @@
 {-# LANGUAGE TypeApplications         #-}
 {-# LANGUAGE GADTs                    #-}
 
-module Main where
+module Minefield.Extensions.Nouns.Landmine where
 
 import CPrelude
 
+import Minefield.Core.Language
+import Minefield.Core.System
+import Minefield.Core.Eval
 
-class Eval tag payload ret
-  | tag payload -> ret where
-  eval :: tag -> Proxy payload -> ret
-
-
-
-data IBomb where
-  BombWrapper :: a -> IBomb
-
-type family MkBomb a :: IBomb where
-  MkBomb a = BombWrapper a
+import GHC.TypeLits
 
 
-
-data BombImpl
+-- | Landmine with variable power.
+data LandmineImpl
+  (icon :: Symbol)
   (power :: Nat)
-    -- ^ Detonation power from 1 to n.
+    -- ^ Detonation power from 1 to 3.
     --   1 == only explodes itself
     --   n == triggers neighbor bombs to explode in the nth radius
-type Bomb p = MkBomb (BombImpl p)
-
-data TimerBombImpl
-  (turns :: Nat)
-    -- ^ How much turns before the bomb explodes
-type TimerBomb t = MkBomb (TimerBombImpl t)
+type Landmine i p = MkObject (LandmineImpl i p)
 
 
 
-data Dig = Dig
-data PutFlag = PutFlag
-data UseLandmineDetector = UseLandmineDetector
-
-
-
-main :: IO ()
-main = pure ()
+instance
+  ( KnownSymbol i
+  ) =>
+  Eval GetIcon (LandmineImpl i p) Char where
+  eval _ _ = head $ symbolVal $ Proxy @i

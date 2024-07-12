@@ -1,4 +1,4 @@
-name:                ch8section2p1
+name:                minefield
 version:             1.0.0.0
 license:             BSD3
 author:              "Alexander Granin"
@@ -19,6 +19,19 @@ default-extensions:
 - RecordWildCards
 - InstanceSigs
 - NoImplicitPrelude
+
+- DataKinds
+- TypeOperators
+- FunctionalDependencies
+- TypeFamilies
+- FlexibleContexts
+- FlexibleInstances
+- ScopedTypeVariables
+- PolyKinds
+- KindSignatures
+- TypeApplications
+- GADTs
+
 
 dependencies:
 - base >= 4.7 && < 5
@@ -46,7 +59,7 @@ library:
   - -Wall
 
 executables:
-  ch8section2p1:
+  minefield:
     main:                Main.hs
     source-dirs:         ./src
     ghc-options:
@@ -66,4 +79,4 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - hspec
-    - ch8section2p1
+    - minefield

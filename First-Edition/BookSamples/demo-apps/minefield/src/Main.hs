@@ -52,6 +52,6 @@ type MyGame = Game
 
 main :: IO ()
 main = do
-  game <- createRandomGame 0.5 @MyGame (7, 7)
+  game <- createRandomGame @MyGame 0.5 (7, 7)
 
-  pure ()
+  grGameOrchestrator game

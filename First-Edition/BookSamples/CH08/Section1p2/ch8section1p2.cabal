@@ -115,7 +115,6 @@ test-suite functional
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Tests.ActionModelSpec
       Tests.CellularModelSpec
       Tests.ZeplrogModelSpec
       Paths_ch8section1p2

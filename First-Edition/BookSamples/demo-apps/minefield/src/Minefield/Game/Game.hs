@@ -5,13 +5,15 @@ module Minefield.Game.Game where
 import CPrelude
 
 import Minefield.Core.Language
-import Minefield.Core.System
 import Minefield.Core.Eval
-import Minefield.Core.UI
 
 import Minefield.Game.Types
 import Minefield.Game.RndGen
 import Minefield.Game.Player
+import Minefield.Game.System
+import Minefield.Game.UI
+
+import Minefield.Extensions.Materialization
 
 import GHC.TypeLits
 import qualified Data.List as L
@@ -24,6 +26,7 @@ import System.Console.ANSI
 createRandomGame
   :: forall g field player emptyCell objects actions
    . ( g ~ Game field player emptyCell objects actions
+     , Eval MakeCommands (ObjsActs objects actions) PlayerCommands
      , Eval GetIcon player Char
      , Eval GetIcon emptyCell Char
      , Eval GetIcon (Objects objects) [Char]
@@ -40,11 +43,15 @@ createRandomGame emptyCellsPercent (w, h) = do
   let ecIcon   = eval getIcon $ Proxy @emptyCell
   let objIcons = eval getIcon $ Proxy @(Objects objects)
 
+  let makeCommands = Proxy @MakeCommands
+  let cmds = eval makeCommands $ Proxy @(ObjsActs objects actions)
+
   let coords = [(x, y) | x <- [0..w-1], y <- [0..h-1]]
 
   cells1 <- mapM (createRandomCell objIcons) coords
   cells2 <- writeRandomEmptyCells ecIcon emptyCellsPercent cells1
   cells3 <- writeRandomPlayer (w, h) pIcon cells2
+
 
   sysBus <- createSystemBus
 
@@ -67,16 +74,17 @@ createRandomGame emptyCellsPercent (w, h) = do
   pure $ GameRuntime
     fieldRef
     (w, h)
-    (runGameOrchestrator orchQueueVar actors sysBus)
+    (runGameOrchestrator sysBus orchQueueVar actors cmds)
 
 
 -- | Game orchestrator. Manages events and provides a game loop.
 runGameOrchestrator
-  :: EventQueueVar
+  :: SystemBus
+  -> EventQueueVar
   -> Actors
-  -> SystemBus
+  -> PlayerCommands
   -> IO ()
-runGameOrchestrator queueVar actors sysBus = do
+runGameOrchestrator sysBus queueVar actors cmds = do
   -- print "Starting game orchestrator..."
   gameOrchestratorWorker RefreshUI
 
@@ -113,6 +121,8 @@ runGameOrchestrator queueVar actors sysBus = do
         (PlayerInputEvent "quit" : _) -> print "Bye-bye"
         (PlayerInputEvent "exit" : _) -> print "Bye-bye"
         (PlayerInputEvent line : _) -> do
+
+          let mbCmd = parsePlayerCommand cmds line
 
           gameOrchestratorWorker RefreshUI
         _ -> gameOrchestratorWorker RefreshUI

@@ -13,7 +13,6 @@ import Minefield.Extensions.Nouns.Landmine
 import Minefield.Extensions.Nouns.TimerBomb
 import Minefield.Extensions.Verbs.Dig
 import Minefield.Extensions.Verbs.PutFlag
-import Minefield.Extensions.Verbs.Travel
 import Minefield.Extensions.Verbs.UseLandmineDetector
 
 import GHC.TypeLits
@@ -35,7 +34,7 @@ type Minefield =
    ]
 
 type MyGame = Game
-  Minefield
+  Minefield         -- not used for now
   (Player "@")
   (EmptyCell " ")
   '[ Landmine "6" 6
@@ -45,8 +44,7 @@ type MyGame = Game
    , TimerBomb "B" 18
    , TimerBomb "C" 20
    ]
-  '[ Travel
-   , PutFlag
+  '[ PutFlag
    , Dig
    , UseLandmineDetector
    ]

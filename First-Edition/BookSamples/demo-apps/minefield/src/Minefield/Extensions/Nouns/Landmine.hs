@@ -15,8 +15,9 @@ module Minefield.Extensions.Nouns.Landmine where
 import CPrelude
 
 import Minefield.Core.Language
-import Minefield.Core.System
 import Minefield.Core.Eval
+
+import Minefield.Extensions.Materialization
 
 import GHC.TypeLits
 
@@ -29,8 +30,6 @@ data LandmineImpl
     --   1 == only explodes itself
     --   n == triggers neighbor bombs to explode in the nth radius
 type Landmine i p = MkObject (LandmineImpl i p)
-
-
 
 instance
   ( KnownSymbol i

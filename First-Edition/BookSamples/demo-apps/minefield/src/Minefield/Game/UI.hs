@@ -1,4 +1,4 @@
-module Minefield.Core.UI where
+module Minefield.Game.UI where
 
 import CPrelude
 

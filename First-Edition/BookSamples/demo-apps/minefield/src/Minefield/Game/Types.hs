@@ -2,10 +2,27 @@ module Minefield.Game.Types where
 
 import CPrelude
 
-import Minefield.Core.System
-
 import qualified Data.Map as Map
 
+
+data SystemEvent
+  = PlayerInputInvitedEvent
+  | PlayerInputEvent !Text
+  | PopulateCellDescriptionEvent
+  | FieldEvent (Int, Int) Char
+  deriving (Show, Eq, Ord)
+
+type EventQueueVar = MVar [SystemEvent]
+
+data SystemBus = SystemBus
+  { sbEventsVar :: EventQueueVar
+  , sbSubscriptionsVar :: MVar [Subscription]
+  }
+
+data Subscription = Subscription
+  { sCondition :: SystemEvent -> Bool
+  , sRecipientQueueVar :: EventQueueVar
+  }
 
 data Channel inT outT = Channel
   { cInVar  :: MVar inT
@@ -32,20 +49,10 @@ data GameRuntime = GameRuntime
 
 type EmptyCellsPercent = Float
 
-
 data GamePhase
   = RefreshUI
   | PlayerInput
 
+type PlayerCommands = Int
+type PlayerCommand = Int
 
-waitForTick :: TickChannel -> IO ()
-waitForTick (Channel inVar _) = takeMVar inVar
-
-reportTickFinished :: TickChannel -> IO ()
-reportTickFinished (Channel _ outVar) = putMVar outVar ()
-
-sendTick :: TickChannel -> IO ()
-sendTick (Channel inVar _) = putMVar inVar ()
-
-waitForFinishedTick :: TickChannel -> IO ()
-waitForFinishedTick (Channel _ outVar) = takeMVar outVar

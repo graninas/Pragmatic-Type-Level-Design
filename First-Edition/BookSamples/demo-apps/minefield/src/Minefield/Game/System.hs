@@ -1,63 +1,13 @@
-module Minefield.Core.System where
+module Minefield.Game.System where
 
 import CPrelude
 
 import Minefield.Core.Eval
 import Minefield.Core.Language
+import Minefield.Game.Types
 
 import GHC.TypeLits
 
-
--- Static infrastructure
-
-
-data GetIcon
-
-
-instance
-  ( Eval GetIcon o Char
-  ) =>
-  Eval GetIcon ('ObjectWrapper o) Char where
-  eval vProxy _ = eval vProxy $ Proxy @o
-
-
-data Objects a
-
-instance
-  Eval GetIcon (Objects '[]) [Char] where
-  eval _ _ = []
-
-instance
-  ( Eval GetIcon o Char
-  , Eval GetIcon (Objects os) [Char]
-  ) =>
-  Eval GetIcon (Objects (o ': os)) [Char] where
-  eval vProxy _ = let
-    o  = eval vProxy $ Proxy @o
-    os = eval vProxy $ Proxy @(Objects os)
-    in o : os
-
-
--- Dynamic infrastructure
-
-data SystemEvent
-  = PlayerInputInvitedEvent
-  | PlayerInputEvent !Text
-  | PopulateCellDescriptionEvent
-  | FieldEvent (Int, Int) Char
-  deriving (Show, Eq, Ord)
-
-type EventQueueVar = MVar [SystemEvent]
-
-data SystemBus = SystemBus
-  { sbEventsVar :: EventQueueVar
-  , sbSubscriptionsVar :: MVar [Subscription]
-  }
-
-data Subscription = Subscription
-  { sCondition :: SystemEvent -> Bool
-  , sRecipientQueueVar :: EventQueueVar
-  }
 
 createSystemBus :: IO SystemBus
 createSystemBus = SystemBus
@@ -95,25 +45,28 @@ distributeEvents (SystemBus evsVar subsVar) = do
       evs <- takeMVar queueVar
       putMVar queueVar $ ev : evs
 
--- readEvents :: EventQueueVar -> IO [SystemEvent]
--- readEvents eqVar = fromJust <$> tryReadMVar eqVar
-
 takeEvents :: EventQueueVar -> IO [SystemEvent]
 takeEvents eqVar = do
   evs <- takeMVar eqVar
   putMVar eqVar []
   pure evs
 
--- readEvents' :: SystemBus -> IO [SystemEvent]
--- readEvents' (SystemBus eqVar) = readEvents eqVar
-
 dropEvents :: EventQueueVar -> IO ()
 dropEvents eqVar = do
   _ <- takeMVar eqVar
   putMVar eqVar []
 
--- dropEvents' :: SystemBus -> IO ()
--- dropEvents' (SystemBus eqVar) = dropEvents eqVar
+waitForTick :: TickChannel -> IO ()
+waitForTick (Channel inVar _) = takeMVar inVar
+
+reportTickFinished :: TickChannel -> IO ()
+reportTickFinished (Channel _ outVar) = putMVar outVar ()
+
+sendTick :: TickChannel -> IO ()
+sendTick (Channel inVar _) = putMVar inVar ()
+
+waitForFinishedTick :: TickChannel -> IO ()
+waitForFinishedTick (Channel _ outVar) = takeMVar outVar
 
 createQueueVar :: IO EventQueueVar
 createQueueVar = newMVar []

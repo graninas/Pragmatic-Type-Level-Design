@@ -2,9 +2,8 @@ module Minefield.Game.RndGen where
 
 import CPrelude
 
-import Minefield.Core.System
-
 import Minefield.Game.Types
+import Minefield.Game.System
 
 import qualified Data.List as L
 import qualified Data.Map as Map

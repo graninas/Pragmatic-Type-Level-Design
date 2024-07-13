@@ -1,11 +1,11 @@
-
 module Minefield.Extensions.Nouns.EmptyCell where
 
 import CPrelude
 
 import Minefield.Core.Language
-import Minefield.Core.System
 import Minefield.Core.Eval
+
+import Minefield.Extensions.Materialization
 
 import GHC.TypeLits
 
@@ -13,7 +13,6 @@ import GHC.TypeLits
 data EmptyCellImpl
   (icon :: Symbol)
 type EmptyCell i = MkObject (EmptyCellImpl i)
-
 
 instance
   ( KnownSymbol i

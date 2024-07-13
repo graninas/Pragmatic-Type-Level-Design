@@ -3,8 +3,9 @@ module Minefield.Extensions.Nouns.TimerBomb where
 import CPrelude
 
 import Minefield.Core.Language
-import Minefield.Core.System
 import Minefield.Core.Eval
+
+import Minefield.Extensions.Materialization
 
 import GHC.TypeLits
 
@@ -16,8 +17,6 @@ data TimerBombImpl
   (turns :: Nat)
     -- ^ How much turns before the bomb explodes
 type TimerBomb i t = MkObject (TimerBombImpl i t)
-
-
 
 instance
   ( KnownSymbol i

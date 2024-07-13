@@ -4,8 +4,9 @@ module Minefield.Extensions.Nouns.Player where
 import CPrelude
 
 import Minefield.Core.Language
-import Minefield.Core.System
 import Minefield.Core.Eval
+
+import Minefield.Extensions.Materialization
 
 import GHC.TypeLits
 
@@ -13,8 +14,6 @@ import GHC.TypeLits
 data PlayerImpl
   (icon :: Symbol)
 type Player i = MkObject (PlayerImpl i)
-
-
 
 instance
   ( KnownSymbol i

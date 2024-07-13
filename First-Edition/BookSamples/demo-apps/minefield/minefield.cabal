@@ -17,20 +17,20 @@ library
       Main
       Minefield.Core.Eval
       Minefield.Core.Language
-      Minefield.Core.System
-      Minefield.Core.UI
+      Minefield.Extensions.Materialization
       Minefield.Extensions.Nouns.EmptyCell
       Minefield.Extensions.Nouns.Landmine
       Minefield.Extensions.Nouns.Player
       Minefield.Extensions.Nouns.TimerBomb
       Minefield.Extensions.Verbs.Dig
       Minefield.Extensions.Verbs.PutFlag
-      Minefield.Extensions.Verbs.Travel
       Minefield.Extensions.Verbs.UseLandmineDetector
       Minefield.Game.Game
       Minefield.Game.Player
       Minefield.Game.RndGen
+      Minefield.Game.System
       Minefield.Game.Types
+      Minefield.Game.UI
   other-modules:
       Paths_minefield
   hs-source-dirs:
@@ -87,20 +87,20 @@ executable minefield
   other-modules:
       Minefield.Core.Eval
       Minefield.Core.Language
-      Minefield.Core.System
-      Minefield.Core.UI
+      Minefield.Extensions.Materialization
       Minefield.Extensions.Nouns.EmptyCell
       Minefield.Extensions.Nouns.Landmine
       Minefield.Extensions.Nouns.Player
       Minefield.Extensions.Nouns.TimerBomb
       Minefield.Extensions.Verbs.Dig
       Minefield.Extensions.Verbs.PutFlag
-      Minefield.Extensions.Verbs.Travel
       Minefield.Extensions.Verbs.UseLandmineDetector
       Minefield.Game.Game
       Minefield.Game.Player
       Minefield.Game.RndGen
+      Minefield.Game.System
       Minefield.Game.Types
+      Minefield.Game.UI
       Paths_minefield
   hs-source-dirs:
       ./src

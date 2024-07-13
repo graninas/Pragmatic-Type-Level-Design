@@ -1,13 +1,10 @@
-{-# LANGUAGE AllowAmbiguousTypes #-}
-
 module Minefield.Game.Player where
 
 import CPrelude
 
-import Minefield.Core.System
-import Minefield.Core.UI
-
 import Minefield.Game.Types
+import Minefield.Game.System
+import Minefield.Game.UI
 
 import qualified Data.List as L
 import qualified Data.Map as Map
@@ -38,3 +35,10 @@ processPlayerEvent sysBus p ch PlayerInputInvitedEvent = do
   line <- withInputInvitation "Type your command:"
   publishEvent sysBus $ PlayerInputEvent line
 processPlayerEvent _ _ _ _ = pure ()
+
+
+parsePlayerCommand
+  :: PlayerCommands
+  -> Text
+  -> Maybe PlayerCommand
+parsePlayerCommand cmds line = Nothing

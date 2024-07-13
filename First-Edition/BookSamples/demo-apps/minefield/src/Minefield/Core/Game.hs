@@ -7,11 +7,13 @@ import CPrelude
 import Minefield.Core.Language
 import Minefield.Core.System
 import Minefield.Core.Eval
+import Minefield.Core.UI
 
 import GHC.TypeLits
 import qualified Data.List as L
 import qualified Data.Map as Map
 import System.Random (randomRIO)
+import System.Console.ANSI
 
 
 data Channel inT outT = Channel
@@ -33,7 +35,7 @@ type Actors = [((Int, Int), Actor)]
 
 data GameRuntime = GameRuntime
   { grFieldRef :: IORef Field
-  , grFieldWatcher :: ThreadId
+  , grFieldSize :: (Int, Int)
   , grGameOrchestrator :: IO ()
   }
 
@@ -50,6 +52,8 @@ createRandomGame
   -> (Int, Int)
   -> IO GameRuntime
 createRandomGame emptyCellsPercent (w, h) = do
+  resetScreen
+  printTitle "Minefield game"
 
   let getIcon  = Proxy @GetIcon
   let pIcon    = eval getIcon $ Proxy @player
@@ -70,17 +74,19 @@ createRandomGame emptyCellsPercent (w, h) = do
   let orchSub = Subscription orchCond orchQueueVar
   subscribeRecipient sysBus orchSub
 
-  fieldWatcherId <- createFieldWatcher sysBus
+  fieldWatcher <- createFieldWatcherActor (w, h) sysBus
   -- TODO: subscribe the field watcher
 
   -- Creating actors for each cell
-  actors <- mapM (createActor sysBus) $ Map.toList cells3
-  let field = Map.fromList actors
+  fieldActors <- mapM (createActor sysBus) $ Map.toList cells3
+  let field = Map.fromList fieldActors
   fieldRef <- newIORef field
+
+  let actors = ((-1, -1), fieldWatcher) : fieldActors
 
   pure $ GameRuntime
     fieldRef
-    fieldWatcherId
+    (w, h)
     (runGameOrchestrator orchQueueVar actors sysBus)
 
 
@@ -95,21 +101,20 @@ runGameOrchestrator
   -> SystemBus
   -> IO ()
 runGameOrchestrator queueVar actors sysBus = do
-  print "Starting game orchestrator..."
+  -- print "Starting game orchestrator..."
   gameOrchestratorWorker RefreshUI
 
   where
 
     gameOrchestratorWorker RefreshUI = do
-      publishEvent sysBus PopulateCellDescriptionsEvent
+      publishEvent sysBus PopulateCellDescriptionEvent
       distributeEvents sysBus
 
-      print "RefreshUI: ticking actors..."
+      -- print "RefreshUI: ticking actors..."
 
       tickActors actors
 
-      print "TODO: RefreshUI: ticking field watcher..."
-      -- TODO
+      -- print "TODO: RefreshUI: ticking field watcher..."
 
       gameOrchestratorWorker PlayerInput
 
@@ -117,47 +122,60 @@ runGameOrchestrator queueVar actors sysBus = do
       publishEvent sysBus PlayerInputInvitedEvent
       distributeEvents sysBus
 
-      print "Ticking actors..."
+      -- print "Ticking actors..."
       tickActors actors
 
       distributeEvents sysBus
 
-      print "Reading orchestrator's events..."
+      -- print "Reading orchestrator's events..."
       evs <- takeEvents queueVar
-      print $ "Events: " <> show evs
+      -- print $ "Events: " <> show evs
 
-      print "Processing events..."
+      -- print "Processing events..."
       -- TODO: proces events properly
       let inputEvs = [ev | ev <- evs, isPlayerInputEvent ev]
       case inputEvs of
         (PlayerInputEvent "quit" : _) -> print "Bye-bye"
         (PlayerInputEvent "exit" : _) -> print "Bye-bye"
         (PlayerInputEvent line : _) -> do
-          print $ "Player line: " <> line
+          -- print $ "Player line: " <> line
           gameOrchestratorWorker RefreshUI
         _ -> do
-          print "No player input yet"
+          -- print "No player input yet"
           gameOrchestratorWorker RefreshUI
 
 
-createFieldWatcher
-  :: SystemBus
-  -> IO ThreadId
-createFieldWatcher sysBus = do
-  print "Creating field watcher..."
+createFieldWatcherActor
+  :: (Int, Int)
+  -> SystemBus
+  -> IO Actor
+createFieldWatcherActor (w, h) sysBus = do
   inVar  <- newEmptyMVar
   outVar <- newEmptyMVar
   let tickChan = Channel inVar outVar
 
-  tId <- forkIO $ fieldWatcherWorker tickChan
-  print "Field watcher created."
-  pure tId
+  clearField (w, h)
+  drawFieldFrame (w, h)
+
+  queueVar <- createQueueVar
+  tId <- forkIO $ fieldWatcherWorker tickChan queueVar (w, h)
+
+  let sub = isFieldEvent
+  subscribeRecipient sysBus $ Subscription sub queueVar
+
+  pure $ Actor tId tickChan queueVar
 
   where
-    fieldWatcherWorker tickChan = do
+    fieldWatcherWorker tickChan queueVar (w, h) = do
 
+      waitForTick tickChan
 
-      pure ()
+      evs <- takeEvents queueVar
+      mapM_ (processFieldWatcherEvent sysBus (w, h)) evs
+
+      reportTickFinished tickChan
+
+      fieldWatcherWorker tickChan queueVar (w, h)
 
 
 createActor
@@ -175,12 +193,14 @@ createActor sysBus (p, ch) = do
   (threadId, subCond) <- case ch of
     '@' -> do
       tId <- forkIO (playerWorker tickChan queueVar p ch)
-      let sub ev = isPlayerInputInvitedEvent ev
+      let sub ev =
+            isPlayerInputInvitedEvent ev
+            || isPopulateCellDescriptionEvent ev
       pure (tId, sub)
 
     _   -> do
       tId <- forkIO (actorWorker tickChan queueVar p ch)
-      let sub _ = False
+      let sub = isPopulateCellDescriptionEvent
       pure (tId, sub)
 
   subscribeRecipient sysBus $ Subscription subCond queueVar
@@ -198,16 +218,7 @@ createActor sysBus (p, ch) = do
       waitForTick tickChan
 
       evs <- takeEvents queueVar
-
-      -- TODO: process all events properly
-
-      let inputEvs = [ev | ev <- evs, isPlayerInputInvitedEvent ev]
-      case inputEvs of
-        (_:_) -> do
-          print "Type your command: "
-          line <- getLine
-          publishEvent sysBus $ PlayerInputEvent line
-        _ -> pure ()
+      mapM_ (processPlayerEvent sysBus p ch) evs
 
       reportTickFinished tickChan
 
@@ -223,7 +234,8 @@ createActor sysBus (p, ch) = do
 
       waitForTick tickChan
 
-      -- do stuff
+      evs <- takeEvents queueVar
+      mapM_ (processActorEvent sysBus p ch) evs
 
       reportTickFinished tickChan
 
@@ -285,3 +297,19 @@ writePlayer (w, h) ch cells = do
   x <- randomRIO (0, w - 1)
   y <- randomRIO (0, h - 1)
   pure $ Map.insert (x, y) ch cells
+
+
+processPlayerEvent sysBus p ch PopulateCellDescriptionEvent =
+  publishEvent sysBus $ FieldEvent p ch
+processPlayerEvent sysBus p ch PlayerInputInvitedEvent = do
+  line <- withInputInvitation "Type your command:"
+  publishEvent sysBus $ PlayerInputEvent line
+processPlayerEvent _ _ _ _ = pure ()
+
+processActorEvent sysBus p ch PopulateCellDescriptionEvent =
+  publishEvent sysBus $ FieldEvent p ch
+processActorEvent _ _ _ _ = pure ()
+
+processFieldWatcherEvent sysBus (w, h) (FieldEvent pos ch) =
+  drawFieldObject pos ch
+processFieldWatcherEvent _ _ _ = pure ()

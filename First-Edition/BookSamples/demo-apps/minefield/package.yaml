@@ -51,6 +51,7 @@ dependencies:
 - lens
 - ptld-lib
 - ghc-prim
+- ansi-terminal
 
 library:
   source-dirs:

@@ -42,9 +42,9 @@ instance
 
 data SystemEvent
   = PlayerInputInvitedEvent
-  | PlayerInputEvent Text
-  | PopulateCellDescriptionsEvent
-  | CellDescriptionEvent (Int, Int) Char
+  | PlayerInputEvent !Text
+  | PopulateCellDescriptionEvent
+  | FieldEvent (Int, Int) Char
   deriving (Show, Eq, Ord)
 
 type EventQueueVar = MVar [SystemEvent]
@@ -125,3 +125,11 @@ isPlayerInputEvent _ = False
 isPlayerInputInvitedEvent :: SystemEvent -> Bool
 isPlayerInputInvitedEvent PlayerInputInvitedEvent = True
 isPlayerInputInvitedEvent _ = False
+
+isFieldEvent :: SystemEvent -> Bool
+isFieldEvent (FieldEvent _ _) = True
+isFieldEvent _ = False
+
+isPopulateCellDescriptionEvent :: SystemEvent -> Bool
+isPopulateCellDescriptionEvent PopulateCellDescriptionEvent = True
+isPopulateCellDescriptionEvent _ = False

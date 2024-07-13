@@ -19,6 +19,7 @@ library
       Minefield.Core.Game
       Minefield.Core.Language
       Minefield.Core.System
+      Minefield.Core.UI
       Minefield.Extensions.Nouns.EmptyCell
       Minefield.Extensions.Nouns.Landmine
       Minefield.Extensions.Nouns.Player
@@ -58,7 +59,8 @@ library
       GADTs
   ghc-options: -Wall
   build-depends:
-      base >=4.7 && <5
+      ansi-terminal
+    , base >=4.7 && <5
     , bytestring
     , containers
     , free
@@ -84,6 +86,7 @@ executable minefield
       Minefield.Core.Game
       Minefield.Core.Language
       Minefield.Core.System
+      Minefield.Core.UI
       Minefield.Extensions.Nouns.EmptyCell
       Minefield.Extensions.Nouns.Landmine
       Minefield.Extensions.Nouns.Player
@@ -122,7 +125,8 @@ executable minefield
       GADTs
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
   build-depends:
-      base >=4.7 && <5
+      ansi-terminal
+    , base >=4.7 && <5
     , bytestring
     , containers
     , free
@@ -176,7 +180,8 @@ test-suite functional
       GADTs
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      ansi-terminal
+    , base >=4.7 && <5
     , bytestring
     , containers
     , free

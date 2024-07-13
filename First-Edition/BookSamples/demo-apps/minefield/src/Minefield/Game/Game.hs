@@ -1,6 +1,6 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 
-module Minefield.Core.Game where
+module Minefield.Game.Game where
 
 import CPrelude
 
@@ -9,6 +9,10 @@ import Minefield.Core.System
 import Minefield.Core.Eval
 import Minefield.Core.UI
 
+import Minefield.Game.Types
+import Minefield.Game.RndGen
+import Minefield.Game.Player
+
 import GHC.TypeLits
 import qualified Data.List as L
 import qualified Data.Map as Map
@@ -16,31 +20,7 @@ import System.Random (randomRIO)
 import System.Console.ANSI
 
 
-data Channel inT outT = Channel
-  { cInVar  :: MVar inT
-  , cOutVar :: MVar outT
-  }
-
-type TickChannel = Channel () ()
-type EndGameVar = MVar ()
-
-data Actor = Actor
-  { aThreadId :: ThreadId
-  , aTickChannel :: TickChannel
-  , aInEventQueueVar :: EventQueueVar
-  }
-
-type Field = Map.Map (Int, Int) Actor
-type Actors = [((Int, Int), Actor)]
-
-data GameRuntime = GameRuntime
-  { grFieldRef :: IORef Field
-  , grFieldSize :: (Int, Int)
-  , grGameOrchestrator :: IO ()
-  }
-
-type EmptyCellsPercent = Float
-
+-- | Creates a random game of given field size.
 createRandomGame
   :: forall g field player emptyCell objects actions
    . ( g ~ Game field player emptyCell objects actions
@@ -60,11 +40,11 @@ createRandomGame emptyCellsPercent (w, h) = do
   let ecIcon   = eval getIcon $ Proxy @emptyCell
   let objIcons = eval getIcon $ Proxy @(Objects objects)
 
-  let coords = [(x, y) | x <- [1..w], y <- [1..h]]
+  let coords = [(x, y) | x <- [0..w-1], y <- [0..h-1]]
 
   cells1 <- mapM (createRandomCell objIcons) coords
-  cells2 <- writeEmptyCells ecIcon emptyCellsPercent cells1
-  cells3 <- writePlayer (w, h) pIcon cells2
+  cells2 <- writeRandomEmptyCells ecIcon emptyCellsPercent cells1
+  cells3 <- writeRandomPlayer (w, h) pIcon cells2
 
   sysBus <- createSystemBus
 
@@ -89,10 +69,6 @@ createRandomGame emptyCellsPercent (w, h) = do
     (w, h)
     (runGameOrchestrator orchQueueVar actors sysBus)
 
-
-data GamePhase
-  = RefreshUI
-  | PlayerInput
 
 -- | Game orchestrator. Manages events and provides a game loop.
 runGameOrchestrator
@@ -132,17 +108,14 @@ runGameOrchestrator queueVar actors sysBus = do
       -- print $ "Events: " <> show evs
 
       -- print "Processing events..."
-      -- TODO: proces events properly
       let inputEvs = [ev | ev <- evs, isPlayerInputEvent ev]
       case inputEvs of
         (PlayerInputEvent "quit" : _) -> print "Bye-bye"
         (PlayerInputEvent "exit" : _) -> print "Bye-bye"
         (PlayerInputEvent line : _) -> do
-          -- print $ "Player line: " <> line
+
           gameOrchestratorWorker RefreshUI
-        _ -> do
-          -- print "No player input yet"
-          gameOrchestratorWorker RefreshUI
+        _ -> gameOrchestratorWorker RefreshUI
 
 
 createFieldWatcherActor
@@ -192,7 +165,7 @@ createActor sysBus (p, ch) = do
   -- TODO: FIXME: Hardcode
   (threadId, subCond) <- case ch of
     '@' -> do
-      tId <- forkIO (playerWorker tickChan queueVar p ch)
+      tId <- forkIO (playerWorker sysBus tickChan queueVar p ch)
       let sub ev =
             isPlayerInputInvitedEvent ev
             || isPopulateCellDescriptionEvent ev
@@ -207,23 +180,6 @@ createActor sysBus (p, ch) = do
 
   pure (p, Actor threadId tickChan queueVar)
   where
-    playerWorker
-      :: TickChannel
-      -> EventQueueVar
-      -> (Int, Int)
-      -> Char
-      -> IO ()
-    playerWorker tickChan queueVar p ch = do
-
-      waitForTick tickChan
-
-      evs <- takeEvents queueVar
-      mapM_ (processPlayerEvent sysBus p ch) evs
-
-      reportTickFinished tickChan
-
-      playerWorker tickChan queueVar p ch
-
     actorWorker
       :: TickChannel
       -> EventQueueVar
@@ -248,63 +204,6 @@ tickActors actors = mapM_ doTick actors
     doTick (_, Actor _ tickChan _) = do
       sendTick tickChan
       waitForFinishedTick tickChan
-
-waitForTick (Channel inVar _) = takeMVar inVar
-reportTickFinished (Channel _ outVar) = putMVar outVar ()
-sendTick (Channel inVar _) = putMVar inVar ()
-waitForFinishedTick (Channel _ outVar) = takeMVar outVar
-
-
-createRandomCell
-  :: [Char]
-  -> (Int, Int)
-  -> IO ((Int, Int), Char)
-createRandomCell icons pos = do
-  rndIdx <- randomRIO (0, (length icons) - 1)
-  pure (pos, icons !! rndIdx)
-
-writeEmptyCells
-  :: Char
-  -> Float
-  -> [((Int, Int), Char)]
-  -> IO (Map.Map (Int, Int) Char)
-writeEmptyCells ecIcon percent cells = do
-
-  let maxIdx = (length cells) - 1
-  let cnt = truncate (percent * fromIntegral maxIdx)
-
-  -- FIXME: not very reliable operation
-  rndIndeces <- (L.take cnt . L.nub)
-    <$> (replicateM (cnt * 3) $ randomRIO (0, maxIdx))
-
-  let rndCells = map (\idx -> cells !! idx) rndIndeces
-
-  let newMap1 = foldr (\(p, _) -> Map.insert p ecIcon) Map.empty rndCells
-  let newMap2 = foldr maybeInsert newMap1 cells
-
-  pure newMap2
-
-  where
-    maybeInsert (p, ch) field =
-      Map.insertWith (\_ old -> old) p ch field
-
-writePlayer
-  :: (Int, Int)
-  -> Char
-  -> Map.Map (Int, Int) Char
-  -> IO (Map.Map (Int, Int) Char)
-writePlayer (w, h) ch cells = do
-  x <- randomRIO (0, w - 1)
-  y <- randomRIO (0, h - 1)
-  pure $ Map.insert (x, y) ch cells
-
-
-processPlayerEvent sysBus p ch PopulateCellDescriptionEvent =
-  publishEvent sysBus $ FieldEvent p ch
-processPlayerEvent sysBus p ch PlayerInputInvitedEvent = do
-  line <- withInputInvitation "Type your command:"
-  publishEvent sysBus $ PlayerInputEvent line
-processPlayerEvent _ _ _ _ = pure ()
 
 processActorEvent sysBus p ch PopulateCellDescriptionEvent =
   publishEvent sysBus $ FieldEvent p ch

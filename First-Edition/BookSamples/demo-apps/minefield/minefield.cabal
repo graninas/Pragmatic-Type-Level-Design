@@ -16,7 +16,6 @@ library
   exposed-modules:
       Main
       Minefield.Core.Eval
-      Minefield.Core.Game
       Minefield.Core.Language
       Minefield.Core.System
       Minefield.Core.UI
@@ -28,6 +27,10 @@ library
       Minefield.Extensions.Verbs.PutFlag
       Minefield.Extensions.Verbs.Travel
       Minefield.Extensions.Verbs.UseLandmineDetector
+      Minefield.Game.Game
+      Minefield.Game.Player
+      Minefield.Game.RndGen
+      Minefield.Game.Types
   other-modules:
       Paths_minefield
   hs-source-dirs:
@@ -83,7 +86,6 @@ executable minefield
   main-is: Main.hs
   other-modules:
       Minefield.Core.Eval
-      Minefield.Core.Game
       Minefield.Core.Language
       Minefield.Core.System
       Minefield.Core.UI
@@ -95,6 +97,10 @@ executable minefield
       Minefield.Extensions.Verbs.PutFlag
       Minefield.Extensions.Verbs.Travel
       Minefield.Extensions.Verbs.UseLandmineDetector
+      Minefield.Game.Game
+      Minefield.Game.Player
+      Minefield.Game.RndGen
+      Minefield.Game.Types
       Paths_minefield
   hs-source-dirs:
       ./src

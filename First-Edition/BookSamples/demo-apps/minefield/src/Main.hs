@@ -4,7 +4,9 @@ import CPrelude
 
 import Minefield.Core.Eval
 import Minefield.Core.Language
-import Minefield.Core.Game
+import Minefield.Game.Types
+import Minefield.Game.Game
+
 import Minefield.Extensions.Nouns.Player
 import Minefield.Extensions.Nouns.EmptyCell
 import Minefield.Extensions.Nouns.Landmine
@@ -52,6 +54,6 @@ type MyGame = Game
 
 main :: IO ()
 main = do
-  game <- createRandomGame @MyGame 0.5 (7, 7)
+  game <- createRandomGame @MyGame 0.8 (7, 7)
 
   grGameOrchestrator game

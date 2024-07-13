@@ -14,15 +14,18 @@ import qualified Data.Map as Map
 import System.Random (randomRIO)
 
 
-data TickVar = TickVar
-  { tvInVar :: MVar ()
-  , tvOutVar :: MVar ()
+data Channel inT outT = Channel
+  { cInVar  :: MVar inT
+  , cOutVar :: MVar outT
   }
+
+type TickChannel = Channel () ()
 type EndGameVar = MVar ()
 
 data Actor = Actor
   { aThreadId :: ThreadId
-  , aTickVar  :: TickVar
+  , aTickChannel :: TickChannel
+  , aInEventQueueVar :: EventQueueVar
   }
 
 type Field = Map.Map (Int, Int) Actor
@@ -59,66 +62,82 @@ createRandomGame emptyCellsPercent (w, h) = do
   cells2 <- writeEmptyCells ecIcon emptyCellsPercent cells1
   cells3 <- writePlayer (w, h) pIcon cells2
 
-  -- print $ Map.toList cells2
-
   sysBus <- createSystemBus
+
+  -- Subscribing the orchestrator
+  let orchCond ev = isPlayerInputEvent ev
+  orchQueueVar <- createQueueVar
+  let orchSub = Subscription orchCond orchQueueVar
+  subscribeRecipient sysBus orchSub
+
+  fieldWatcherId <- createFieldWatcher sysBus
+  -- TODO: subscribe the field watcher
 
   -- Creating actors for each cell
   actors <- mapM (createActor sysBus) $ Map.toList cells3
   let field = Map.fromList actors
   fieldRef <- newIORef field
 
-  fieldWatcherId <- createFieldWatcher sysBus
-
   pure $ GameRuntime
     fieldRef
     fieldWatcherId
-    (runGameOrchestrator actors sysBus)
+    (runGameOrchestrator orchQueueVar actors sysBus)
 
 
 data GamePhase
-  = FieldDescription
+  = RefreshUI
   | PlayerInput
-  | PlayerInputAwaiting
 
+-- | Game orchestrator. Manages events and provides a game loop.
 runGameOrchestrator
-  :: Actors
+  :: EventQueueVar
+  -> Actors
   -> SystemBus
   -> IO ()
-runGameOrchestrator actors sysBus = do
+runGameOrchestrator queueVar actors sysBus = do
   print "Starting game orchestrator..."
-  gameOrchestratorWorker PlayerInput
+  gameOrchestratorWorker RefreshUI
 
   where
 
-    gameOrchestratorWorker PlayerInput = do
-      publishSystemEvent sysBus PlayerInputInvitedEvent
-      gameOrchestratorWorker PlayerInputAwaiting
+    gameOrchestratorWorker RefreshUI = do
+      publishEvent sysBus PopulateCellDescriptionsEvent
+      distributeEvents sysBus
 
-    gameOrchestratorWorker PlayerInputAwaiting = do
+      print "RefreshUI: ticking actors..."
+
+      tickActors actors
+
+      print "TODO: RefreshUI: ticking field watcher..."
+      -- TODO
+
+      gameOrchestratorWorker PlayerInput
+
+    gameOrchestratorWorker PlayerInput = do
+      publishEvent sysBus PlayerInputInvitedEvent
+      distributeEvents sysBus
+
       print "Ticking actors..."
       tickActors actors
 
-      print "Delaying..."
-      threadDelay $ 1000 * 100
+      distributeEvents sysBus
 
-      print "Reading events..."
-      evs <- readEvents sysBus
-      print $ "Events : " <> show evs
+      print "Reading orchestrator's events..."
+      evs <- takeEvents queueVar
+      print $ "Events: " <> show evs
 
-      dropEvents sysBus
-
-      print "Dispatching events..."
-
+      print "Processing events..."
+      -- TODO: proces events properly
       let inputEvs = [ev | ev <- evs, isPlayerInputEvent ev]
       case inputEvs of
-        (PlayerInputEvent "quit" : _) ->
-          print "Bye-bye"
+        (PlayerInputEvent "quit" : _) -> print "Bye-bye"
+        (PlayerInputEvent "exit" : _) -> print "Bye-bye"
         (PlayerInputEvent line : _) -> do
           print $ "Player line: " <> line
+          gameOrchestratorWorker RefreshUI
         _ -> do
           print "No player input yet"
-          gameOrchestratorWorker PlayerInputAwaiting
+          gameOrchestratorWorker RefreshUI
 
 
 createFieldWatcher
@@ -128,14 +147,14 @@ createFieldWatcher sysBus = do
   print "Creating field watcher..."
   inVar  <- newEmptyMVar
   outVar <- newEmptyMVar
-  let tickVar = TickVar inVar outVar
+  let tickChan = Channel inVar outVar
 
-  tId <- forkIO $ fieldWatcherWorker tickVar
+  tId <- forkIO $ fieldWatcherWorker tickChan
   print "Field watcher created."
   pure tId
 
   where
-    fieldWatcherWorker tickVar = do
+    fieldWatcherWorker tickChan = do
 
 
       pure ()
@@ -148,65 +167,80 @@ createActor
 createActor sysBus (p, ch) = do
   inVar  <- newEmptyMVar
   outVar <- newEmptyMVar
-  let tickVar = TickVar inVar outVar
+  let tickChan = Channel inVar outVar
 
-  -- Hardcode
-  threadId <- case ch of
-    '@' -> forkIO (playerWorker tickVar p ch)
-    _   -> forkIO (actorWorker tickVar p ch)
+  queueVar <- createQueueVar
 
-  pure (p, Actor threadId tickVar)
+  -- TODO: FIXME: Hardcode
+  (threadId, subCond) <- case ch of
+    '@' -> do
+      tId <- forkIO (playerWorker tickChan queueVar p ch)
+      let sub ev = isPlayerInputInvitedEvent ev
+      pure (tId, sub)
+
+    _   -> do
+      tId <- forkIO (actorWorker tickChan queueVar p ch)
+      let sub _ = False
+      pure (tId, sub)
+
+  subscribeRecipient sysBus $ Subscription subCond queueVar
+
+  pure (p, Actor threadId tickChan queueVar)
   where
     playerWorker
-      :: TickVar
+      :: TickChannel
+      -> EventQueueVar
       -> (Int, Int)
       -> Char
       -> IO ()
-    playerWorker tickVar p ch = do
+    playerWorker tickChan queueVar p ch = do
 
-      waitForTick tickVar
+      waitForTick tickChan
 
-      evs <- readEvents sysBus
+      evs <- takeEvents queueVar
+
+      -- TODO: process all events properly
 
       let inputEvs = [ev | ev <- evs, isPlayerInputInvitedEvent ev]
       case inputEvs of
         (_:_) -> do
           print "Type your command: "
           line <- getLine
-          publishSystemEvent sysBus $ PlayerInputEvent line
+          publishEvent sysBus $ PlayerInputEvent line
         _ -> pure ()
 
-      reportTickFinished tickVar
+      reportTickFinished tickChan
 
-      playerWorker tickVar p ch
+      playerWorker tickChan queueVar p ch
 
     actorWorker
-      :: TickVar
+      :: TickChannel
+      -> EventQueueVar
       -> (Int, Int)
       -> Char
       -> IO ()
-    actorWorker tickVar p ch = do
+    actorWorker tickChan queueVar p ch = do
 
-      waitForTick tickVar
+      waitForTick tickChan
 
       -- do stuff
 
-      reportTickFinished tickVar
+      reportTickFinished tickChan
 
-      actorWorker tickVar p ch
+      actorWorker tickChan queueVar p ch
 
 
 tickActors :: Actors -> IO ()
 tickActors actors = mapM_ doTick actors
   where
-    doTick (_, Actor _ tickVar) = do
-      sendTick tickVar
-      waitForFinishedTick tickVar
+    doTick (_, Actor _ tickChan _) = do
+      sendTick tickChan
+      waitForFinishedTick tickChan
 
-waitForTick (TickVar inVar _) = takeMVar inVar
-reportTickFinished (TickVar _ outVar) = putMVar outVar ()
-sendTick (TickVar inVar _) = putMVar inVar ()
-waitForFinishedTick (TickVar _ outVar) = takeMVar outVar
+waitForTick (Channel inVar _) = takeMVar inVar
+reportTickFinished (Channel _ outVar) = putMVar outVar ()
+sendTick (Channel inVar _) = putMVar inVar ()
+waitForFinishedTick (Channel _ outVar) = takeMVar outVar
 
 
 createRandomCell

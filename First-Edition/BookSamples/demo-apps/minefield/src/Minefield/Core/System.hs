@@ -39,31 +39,84 @@ instance
 
 
 -- Dynamic infrastructure
-data SystemBus = SystemBus
-  { sbEventsVar :: MVar [SystemEvent]
-  }
 
 data SystemEvent
-  = CellDescriptionEvent (Int, Int) Char
-  | PlayerInputInvitedEvent
+  = PlayerInputInvitedEvent
   | PlayerInputEvent Text
+  | PopulateCellDescriptionsEvent
+  | CellDescriptionEvent (Int, Int) Char
   deriving (Show, Eq, Ord)
 
-createSystemBus :: IO SystemBus
-createSystemBus = SystemBus <$> newMVar []
+type EventQueueVar = MVar [SystemEvent]
 
-publishSystemEvent :: SystemBus -> SystemEvent -> IO ()
-publishSystemEvent (SystemBus evsVar) ev = do
+data SystemBus = SystemBus
+  { sbEventsVar :: EventQueueVar
+  , sbSubscriptionsVar :: MVar [Subscription]
+  }
+
+data Subscription = Subscription
+  { sCondition :: SystemEvent -> Bool
+  , sRecipientQueueVar :: EventQueueVar
+  }
+
+createSystemBus :: IO SystemBus
+createSystemBus = SystemBus
+  <$> newMVar []
+  <*> newMVar []
+
+subscribeRecipient
+  :: SystemBus
+  -> Subscription
+  -> IO ()
+subscribeRecipient (SystemBus _ subsVar) sub = do
+  subs <- takeMVar subsVar
+  putMVar subsVar $ sub : subs
+
+publishEvent :: SystemBus -> SystemEvent -> IO ()
+publishEvent (SystemBus evsVar _) ev = do
   evs <- takeMVar evsVar
   putMVar evsVar $ ev : evs
 
-readEvents :: SystemBus -> IO [SystemEvent]
-readEvents (SystemBus evsVar) = fromJust <$> tryReadMVar evsVar
+distributeEvents :: SystemBus -> IO ()
+distributeEvents (SystemBus evsVar subsVar) = do
+  evs <- takeMVar evsVar
 
-dropEvents :: SystemBus -> IO ()
-dropEvents (SystemBus evsVar) = do
-  _ <- takeMVar evsVar
+  subs <- readMVar subsVar
+  mapM_ (\ev -> mapM_ (relayEvent ev) subs) evs
+
   putMVar evsVar []
+  where
+    relayEvent :: SystemEvent -> Subscription -> IO ()
+    relayEvent ev (Subscription cond queueVar)
+      | cond ev = pushEvent ev queueVar
+      | otherwise = pure ()
+    pushEvent :: SystemEvent -> EventQueueVar -> IO ()
+    pushEvent ev queueVar = do
+      evs <- takeMVar queueVar
+      putMVar queueVar $ ev : evs
+
+-- readEvents :: EventQueueVar -> IO [SystemEvent]
+-- readEvents eqVar = fromJust <$> tryReadMVar eqVar
+
+takeEvents :: EventQueueVar -> IO [SystemEvent]
+takeEvents eqVar = do
+  evs <- takeMVar eqVar
+  putMVar eqVar []
+  pure evs
+
+-- readEvents' :: SystemBus -> IO [SystemEvent]
+-- readEvents' (SystemBus eqVar) = readEvents eqVar
+
+dropEvents :: EventQueueVar -> IO ()
+dropEvents eqVar = do
+  _ <- takeMVar eqVar
+  putMVar eqVar []
+
+-- dropEvents' :: SystemBus -> IO ()
+-- dropEvents' (SystemBus eqVar) = dropEvents eqVar
+
+createQueueVar :: IO EventQueueVar
+createQueueVar = newMVar []
 
 isPlayerInputEvent :: SystemEvent -> Bool
 isPlayerInputEvent (PlayerInputEvent _) = True

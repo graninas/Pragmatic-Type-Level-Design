@@ -13,7 +13,7 @@ import GHC.TypeLits
 
 data PlayerImpl
   (icon :: Symbol)
-type Player i = MkObject (PlayerImpl i)
+type Player i = MkObject (PlayerImpl i) "player"
 
 instance
   ( KnownSymbol i

@@ -16,7 +16,7 @@ data TimerBombImpl
   (icon :: Symbol)
   (turns :: Nat)
     -- ^ How much turns before the bomb explodes
-type TimerBomb i t = MkObject (TimerBombImpl i t)
+type TimerBomb i t = MkObject (TimerBombImpl i t) "timer-bomb"
 
 instance
   ( KnownSymbol i

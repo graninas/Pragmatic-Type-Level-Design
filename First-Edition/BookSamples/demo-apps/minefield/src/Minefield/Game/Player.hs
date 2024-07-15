@@ -8,6 +8,7 @@ import Minefield.Game.UI
 
 import qualified Data.List as L
 import qualified Data.Map as Map
+import qualified Data.Text as T
 import System.Random (randomRIO)
 
 
@@ -43,8 +44,46 @@ processPlayerEvent sysBus p ch PlayerInputInvitedEvent = do
 processPlayerEvent _ _ _ _ = pure ()
 
 
+-- type ActorAction  = SystemBus -> Pos -> GameIO ()
+-- type ActorActions = Map.Map ObjectType ActorAction
+-- type GameActions  = Map.Map TextCommand (Bool, ActorActions)
+
+-- data Direction = U | D | L | R
+--   deriving (Show, Eq, Ord)
+
+-- data PlayerCommand
+--   = PlayerCommand (Maybe Direction) ActorAction
+performPlayerCommand
+  :: SystemBus
+  -> PlayerPos
+  -> PlayerCommand
+  -> GameIO ()
+performPlayerCommand sysBus pos (PlayerCommand mbDir actorActions) = do
+  let acts = Map.toList actorActions
+  case mbDir of
+    Nothing  -> mapM_ (performActorAction pos) acts
+    Just dir -> mapM_ (performActorAction (movePos pos dir)) acts
+  where
+    performActorAction pos' (_, act) = act sysBus pos'
+
 parsePlayerCommand
-  :: GameAction
-  -> Text
-  -> Maybe String
-parsePlayerCommand cmds line = Nothing
+  :: Text
+  -> GameActions
+  -> GameIO (Either String PlayerCommand)
+parsePlayerCommand line actions = do
+
+  let ws = T.words line
+
+  case ws of
+    [] -> pure $ Left $ "Empty command: " <> show line
+    (cmd : rest) -> do
+      case Map.lookup cmd actions of
+        Nothing                -> pure $ Left $ "Command not found: " <> show cmd
+        Just (isDirected, act) -> do
+          case (isDirected, rest) of
+            (False, _)        -> pure $ Right $ PlayerCommand Nothing act
+            (True, [])        -> pure $ Left $ "Directed command lacks direction: " <> show line
+            (True, (arg : _)) ->
+              case readMaybe arg of
+                Nothing  -> pure $ Left $ "Direction parse error: " <> show arg
+                Just dir -> pure $ Right $ PlayerCommand (Just dir) act

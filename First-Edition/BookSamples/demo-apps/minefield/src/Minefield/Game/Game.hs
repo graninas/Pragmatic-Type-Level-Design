@@ -27,7 +27,7 @@ import System.Console.ANSI
 createRandomGame
   :: forall g field player emptyCell objects actions
    . ( g ~ Game field player emptyCell objects actions
-     , Eval MakeGameAction (ObjsActs objects actions) GameAction
+     , Eval MakeGameActions (ObjsActs objects actions) GameActions
      , Eval GetIcon player Char
      , Eval GetIcon emptyCell Char
      , Eval GetIcon (Objects objects) [Char]
@@ -44,7 +44,7 @@ createRandomGame emptyCellsPercent (w, h) = do
   ecIcon   <- eval getIcon $ Proxy @emptyCell
   objIcons <- eval getIcon $ Proxy @(Objects objects)
 
-  let makeActions = Proxy @MakeGameAction
+  let makeActions = Proxy @MakeGameActions
   actions <- eval makeActions $ Proxy @(ObjsActs objects actions)
 
   let coords = [(x, y) | x <- [0..w-1], y <- [0..h-1]]
@@ -83,7 +83,7 @@ runGameOrchestrator
   :: SystemBus
   -> EventQueueVar
   -> Actors
-  -> GameAction
+  -> GameActions
   -> GameIO ()
 runGameOrchestrator sysBus queueVar actors actions = do
   -- print "Starting game orchestrator..."
@@ -117,13 +117,20 @@ runGameOrchestrator sysBus queueVar actors actions = do
       -- print $ "Events: " <> show evs
 
       -- print "Processing events..."
+      -- tODO: proper event processing
       let inputEvs = [ev | ev <- evs, isPlayerInputEvent ev]
       case inputEvs of
         (PlayerInputEvent _ "quit" : _) -> printStatus "Bye-bye"
         (PlayerInputEvent _ "exit" : _) -> printStatus "Bye-bye"
-        (PlayerInputEvent _ line : _) -> do
+        (PlayerInputEvent playerPos line : _) -> do
 
-          -- let mbCmd = parsePlayerCommand cmds line
+          eCmd <- parsePlayerCommand line actions
+
+          case eCmd of
+            Left err        -> printStatus err
+            Right playerCmd -> do
+              printStatus $ "Command recognized: " <> show line
+              performPlayerCommand sysBus playerPos playerCmd
 
           gameOrchestratorWorker RefreshUI
         _ -> gameOrchestratorWorker RefreshUI

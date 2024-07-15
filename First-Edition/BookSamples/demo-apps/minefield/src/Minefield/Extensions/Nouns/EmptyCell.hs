@@ -12,7 +12,7 @@ import GHC.TypeLits
 
 data EmptyCellImpl
   (icon :: Symbol)
-type EmptyCell i = MkObject (EmptyCellImpl i)
+type EmptyCell i = MkObject (EmptyCellImpl i) "empty-cell"
 
 instance
   ( KnownSymbol i

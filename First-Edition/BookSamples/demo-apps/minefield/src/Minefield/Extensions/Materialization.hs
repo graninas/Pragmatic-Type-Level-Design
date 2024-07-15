@@ -10,10 +10,14 @@ import Minefield.Core.Interface
 import Minefield.Game.Types
 
 import GHC.TypeLits
+import qualified Data.Map as Map
 
 
 data GetIcon
+data MakeActorAction
 data MakeGameAction
+data MakeGameActions
+data GetIsDirected
 
 data Objects a
 
@@ -22,13 +26,12 @@ data TraverseObjs objs acts
 data TraverseActs obj acts
 data ObjAct o a
 
-
 -- Get icon
 
 instance
   ( Eval GetIcon o Char
   ) =>
-  Eval GetIcon ('ObjectWrapper o) Char where
+  Eval GetIcon ('ObjectWrapper o ot) Char where
   eval vProxy _ = eval vProxy $ Proxy @o
 
 instance
@@ -48,42 +51,64 @@ instance
 -- Make game action
 
 instance
-  ( Eval MakeGameAction (TraverseObjs os acts) GameAction
+  ( Eval MakeGameActions (TraverseObjs os acts) GameActions
   ) =>
-  Eval MakeGameAction (ObjsActs os acts) GameAction where
+  Eval MakeGameActions (ObjsActs os acts) GameActions where
   eval proxy _ =
     eval proxy $ Proxy @(TraverseObjs os acts)
 
 instance
-  Eval MakeGameAction (TraverseObjs '[] acts) GameAction where
-  eval _ _ = pure $ \_ _ -> pure ()
+  Eval MakeGameActions (TraverseObjs '[] acts) GameActions where
+  eval _ _ = pure Map.empty
 
 instance
-  ( Eval MakeGameAction (TraverseObjs os acts) GameAction
-  , Eval MakeGameAction (TraverseActs o acts) GameAction
+  ( Eval MakeGameActions (TraverseObjs os acts) GameActions
+  , Eval MakeGameActions (TraverseActs o acts) GameActions
   ) =>
-  Eval MakeGameAction (TraverseObjs (o ': os) acts) GameAction where
+  Eval MakeGameActions (TraverseObjs (o ': os) acts) GameActions where
   eval proxy _ = do
     act1 <- eval proxy $ Proxy @(TraverseActs o acts)
     act2 <- eval proxy $ Proxy @(TraverseObjs os acts)
-    pure $ \sysBus pos -> do
-      act1 sysBus pos
-      act2 sysBus pos
+    pure $ Map.union act1 act2
 
 instance
-  Eval MakeGameAction (TraverseActs o '[]) GameAction where
-  eval _ _ = pure $ \_ _ -> pure ()
+  Eval MakeGameActions (TraverseActs o '[]) GameActions where
+  eval _ _ = pure Map.empty
 
 instance
-  ( mkO ~ 'ObjectWrapper o
+  ( KnownSymbol oType
+  , KnownSymbol cmd
+  , Eval GetIsDirected dir Bool
+  , mkO ~ 'ObjectWrapper o oType
   , mkA ~ 'ActionWrapper a dir cmd
-  , Eval MakeGameAction (ObjAct o a) GameAction
-  , Eval MakeGameAction (TraverseActs mkO acts) GameAction
+  , Eval MakeActorAction (ObjAct o a) ActorAction
+  , Eval MakeGameActions (TraverseActs mkO acts) GameActions
   ) =>
-  Eval MakeGameAction (TraverseActs mkO (mkA ': acts)) GameAction where
+  Eval MakeGameActions (TraverseActs mkO (mkA ': acts)) GameActions where
   eval proxy _ = do
-    act1 <- eval proxy $ Proxy @(TraverseActs mkO acts)
-    act2 <- eval (Proxy @MakeGameAction) $ Proxy @(ObjAct o a)
-    pure $ \sysBus pos -> do
-      act1 sysBus pos
-      act2 sysBus pos
+    isDirected <- eval (Proxy @GetIsDirected) $ Proxy @dir
+    let cmd   = show $ symbolVal $ Proxy @cmd
+    let oType = show $ symbolVal $ Proxy @oType
+
+    actorAct <- eval (Proxy @MakeActorAction)
+                     (Proxy @(ObjAct o a))
+
+    gameActs <- eval proxy $ Proxy @(TraverseActs mkO acts)
+
+    let singActorActions :: ActorActions = Map.singleton oType actorAct
+
+    pure $ case Map.lookup cmd gameActs of
+      Nothing -> Map.insert cmd (isDirected, singActorActions) gameActs
+      Just (_, actorActs) -> let
+        actorActs' = Map.insert oType actorAct actorActs
+        gameActs'  = Map.insert cmd (isDirected, actorActs') gameActs
+        in gameActs'
+
+
+instance
+  Eval GetIsDirected 'True Bool where
+  eval _ _ = pure True
+
+instance
+  Eval GetIsDirected 'False Bool where
+  eval _ _ = pure False

@@ -5,11 +5,13 @@ import CPrelude
 import GHC.TypeLits
 
 
-data IObject where
-  ObjectWrapper :: a -> IObject
+type OType = Symbol
 
-type family MkObject a :: IObject where
-  MkObject a = ObjectWrapper a
+data IObject where
+  ObjectWrapper :: a -> OType -> IObject
+
+type family MkObject a ot :: IObject where
+  MkObject a ot = ObjectWrapper a ot
 
 type IsCommandDirected = Bool
 type BaseCommand = Symbol
@@ -29,4 +31,4 @@ data Game
   (player :: IObject)
   (emptyCell :: IObject)
   (supportedObjects :: [IObject])
-  (supportedActions :: [IAction])
+  (supportedActions :: [IAction])     -- TODO: validate command uniqueness

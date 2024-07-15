@@ -15,11 +15,11 @@ data ActorEvent
 
 data SystemEvent
   = PlayerInputInvitedEvent
-  | PlayerInputEvent PlayerPos !Text
+  | PlayerInputEvent PlayerPos Text
   | PopulateCellDescriptionEvent
   | FieldIconEvent Pos Char
 
-  | ActorEvent ActorPos ActorEvent
+  | ActorRequestEvent ActorPos ActorEvent
   deriving (Show, Eq, Ord)
 
 type EventQueueVar = MVar [SystemEvent]
@@ -65,7 +65,15 @@ data GamePhase
 
 type GameIO a = IO a
 
-type GameAction = SystemBus -> Pos -> GameIO ()
+type TextCommand = Text
+type ObjectType = Text
+
+type ActorAction  = SystemBus -> Pos -> GameIO ()
+type ActorActions = Map.Map ObjectType ActorAction
+type GameActions  = Map.Map TextCommand (Bool, ActorActions)
 
 data Direction = U | D | L | R
-  deriving (Show, Eq, Ord)
+  deriving (Show, Eq, Ord, Read)
+
+data PlayerCommand
+  = PlayerCommand (Maybe Direction) ActorActions

@@ -29,7 +29,7 @@ data LandmineImpl
     -- ^ Detonation power from 1 to 3.
     --   1 == only explodes itself
     --   n == triggers neighbor bombs to explode in the nth radius
-type Landmine i p = MkObject (LandmineImpl i p)
+type Landmine i p = MkObject (LandmineImpl i p) "landmine"
 
 instance
   ( KnownSymbol i

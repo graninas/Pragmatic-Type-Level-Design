@@ -17,10 +17,9 @@ import GHC.TypeLits
 
 
 instance
-  Eval MakeGameAction
+  Eval MakeActorAction
        (ObjAct (LandmineImpl ch p) PutFlagImpl)
-       GameAction where
-  eval _ _ = do
-    pure $ \sysBus pos -> do
-      publishEvent sysBus $ ActorEvent pos $ AddOverhaulIcon '🚩'
-      publishEvent sysBus $ ActorEvent pos $ SetEnabled False
+       ActorAction where
+  eval _ _ = pure $ \sysBus pos -> do
+    publishEvent sysBus $ ActorRequestEvent pos $ AddOverhaulIcon '🚩'
+    publishEvent sysBus $ ActorRequestEvent pos $ SetEnabled False

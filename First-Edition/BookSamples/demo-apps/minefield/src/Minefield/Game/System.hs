@@ -86,3 +86,11 @@ isFieldIconEvent _ = False
 isPopulateCellDescriptionEvent :: SystemEvent -> Bool
 isPopulateCellDescriptionEvent PopulateCellDescriptionEvent = True
 isPopulateCellDescriptionEvent _ = False
+
+
+
+movePos :: Pos -> Direction -> Pos
+movePos (x, y) U = (x, y-1)
+movePos (x, y) D = (x, y+1)
+movePos (x, y) L = (x-1, y)
+movePos (x, y) R = (x+1, y)

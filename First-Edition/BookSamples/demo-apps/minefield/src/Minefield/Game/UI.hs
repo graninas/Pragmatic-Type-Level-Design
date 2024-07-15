@@ -24,7 +24,7 @@ printTitle str = do
 
 printStatus :: String -> IO ()
 printStatus str = do
-  setCursorPosition 10 0
+  setCursorPosition 15 0
   clearLine
   putStr str
 

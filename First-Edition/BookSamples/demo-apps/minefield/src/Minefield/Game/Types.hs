@@ -4,12 +4,22 @@ import CPrelude
 
 import qualified Data.Map as Map
 
+type Pos = (Int, Int)
+type PlayerPos = Pos
+type ActorPos  = Pos
+
+data ActorEvent
+  = AddOverhaulIcon Char
+  | SetEnabled Bool
+  deriving (Show, Eq, Ord)
 
 data SystemEvent
   = PlayerInputInvitedEvent
-  | PlayerInputEvent !Text
+  | PlayerInputEvent PlayerPos !Text
   | PopulateCellDescriptionEvent
-  | FieldEvent (Int, Int) Char
+  | FieldIconEvent Pos Char
+
+  | ActorEvent ActorPos ActorEvent
   deriving (Show, Eq, Ord)
 
 type EventQueueVar = MVar [SystemEvent]
@@ -53,6 +63,9 @@ data GamePhase
   = RefreshUI
   | PlayerInput
 
-type PlayerCommands = Int
-type PlayerCommand = Int
+type GameIO a = IO a
 
+type GameAction = SystemBus -> Pos -> GameIO ()
+
+data Direction = U | D | L | R
+  deriving (Show, Eq, Ord)

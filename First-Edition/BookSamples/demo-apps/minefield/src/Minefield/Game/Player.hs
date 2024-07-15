@@ -17,7 +17,7 @@ playerWorker
   -> EventQueueVar
   -> (Int, Int)
   -> Char
-  -> IO ()
+  -> GameIO ()
 playerWorker sysBus tickChan queueVar p ch = do
 
   waitForTick tickChan
@@ -29,16 +29,22 @@ playerWorker sysBus tickChan queueVar p ch = do
 
   playerWorker sysBus tickChan queueVar p ch
 
+processPlayerEvent
+  :: SystemBus
+  -> Pos
+  -> Char
+  -> SystemEvent
+  -> GameIO ()
 processPlayerEvent sysBus p ch PopulateCellDescriptionEvent =
-  publishEvent sysBus $ FieldEvent p ch
+  publishEvent sysBus $ FieldIconEvent p ch
 processPlayerEvent sysBus p ch PlayerInputInvitedEvent = do
   line <- withInputInvitation "Type your command:"
-  publishEvent sysBus $ PlayerInputEvent line
+  publishEvent sysBus $ PlayerInputEvent p line
 processPlayerEvent _ _ _ _ = pure ()
 
 
 parsePlayerCommand
-  :: PlayerCommands
+  :: GameAction
   -> Text
-  -> Maybe PlayerCommand
+  -> Maybe String
 parsePlayerCommand cmds line = Nothing

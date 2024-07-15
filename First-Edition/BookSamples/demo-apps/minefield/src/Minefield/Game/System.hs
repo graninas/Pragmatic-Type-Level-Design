@@ -3,7 +3,7 @@ module Minefield.Game.System where
 import CPrelude
 
 import Minefield.Core.Eval
-import Minefield.Core.Language
+import Minefield.Core.Interface
 import Minefield.Game.Types
 
 import GHC.TypeLits
@@ -72,16 +72,16 @@ createQueueVar :: IO EventQueueVar
 createQueueVar = newMVar []
 
 isPlayerInputEvent :: SystemEvent -> Bool
-isPlayerInputEvent (PlayerInputEvent _) = True
+isPlayerInputEvent (PlayerInputEvent _ _) = True
 isPlayerInputEvent _ = False
 
 isPlayerInputInvitedEvent :: SystemEvent -> Bool
 isPlayerInputInvitedEvent PlayerInputInvitedEvent = True
 isPlayerInputInvitedEvent _ = False
 
-isFieldEvent :: SystemEvent -> Bool
-isFieldEvent (FieldEvent _ _) = True
-isFieldEvent _ = False
+isFieldIconEvent :: SystemEvent -> Bool
+isFieldIconEvent (FieldIconEvent _ _) = True
+isFieldIconEvent _ = False
 
 isPopulateCellDescriptionEvent :: SystemEvent -> Bool
 isPopulateCellDescriptionEvent PopulateCellDescriptionEvent = True

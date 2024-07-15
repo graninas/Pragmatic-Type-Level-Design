@@ -2,7 +2,7 @@ module Minefield.Extensions.Nouns.EmptyCell where
 
 import CPrelude
 
-import Minefield.Core.Language
+import Minefield.Core.Interface
 import Minefield.Core.Eval
 
 import Minefield.Extensions.Materialization
@@ -18,4 +18,4 @@ instance
   ( KnownSymbol i
   ) =>
   Eval GetIcon (EmptyCellImpl i) Char where
-  eval _ _ = head $ symbolVal $ Proxy @i
+  eval _ _ = pure $ head $ symbolVal $ Proxy @i

@@ -4,8 +4,8 @@ module Minefield.Game.Game where
 
 import CPrelude
 
-import Minefield.Core.Language
 import Minefield.Core.Eval
+import Minefield.Core.Interface
 
 import Minefield.Game.Types
 import Minefield.Game.RndGen
@@ -14,6 +14,7 @@ import Minefield.Game.System
 import Minefield.Game.UI
 
 import Minefield.Extensions.Materialization
+import Minefield.Extensions.Implementation
 
 import GHC.TypeLits
 import qualified Data.List as L
@@ -26,7 +27,7 @@ import System.Console.ANSI
 createRandomGame
   :: forall g field player emptyCell objects actions
    . ( g ~ Game field player emptyCell objects actions
-     , Eval MakeCommands (ObjsActs objects actions) PlayerCommands
+     , Eval MakeGameAction (ObjsActs objects actions) GameAction
      , Eval GetIcon player Char
      , Eval GetIcon emptyCell Char
      , Eval GetIcon (Objects objects) [Char]
@@ -39,12 +40,12 @@ createRandomGame emptyCellsPercent (w, h) = do
   printTitle "Minefield game"
 
   let getIcon  = Proxy @GetIcon
-  let pIcon    = eval getIcon $ Proxy @player
-  let ecIcon   = eval getIcon $ Proxy @emptyCell
-  let objIcons = eval getIcon $ Proxy @(Objects objects)
+  pIcon    <- eval getIcon $ Proxy @player
+  ecIcon   <- eval getIcon $ Proxy @emptyCell
+  objIcons <- eval getIcon $ Proxy @(Objects objects)
 
-  let makeCommands = Proxy @MakeCommands
-  let cmds = eval makeCommands $ Proxy @(ObjsActs objects actions)
+  let makeActions = Proxy @MakeGameAction
+  actions <- eval makeActions $ Proxy @(ObjsActs objects actions)
 
   let coords = [(x, y) | x <- [0..w-1], y <- [0..h-1]]
 
@@ -74,7 +75,7 @@ createRandomGame emptyCellsPercent (w, h) = do
   pure $ GameRuntime
     fieldRef
     (w, h)
-    (runGameOrchestrator sysBus orchQueueVar actors cmds)
+    (runGameOrchestrator sysBus orchQueueVar actors actions)
 
 
 -- | Game orchestrator. Manages events and provides a game loop.
@@ -82,9 +83,9 @@ runGameOrchestrator
   :: SystemBus
   -> EventQueueVar
   -> Actors
-  -> PlayerCommands
-  -> IO ()
-runGameOrchestrator sysBus queueVar actors cmds = do
+  -> GameAction
+  -> GameIO ()
+runGameOrchestrator sysBus queueVar actors actions = do
   -- print "Starting game orchestrator..."
   gameOrchestratorWorker RefreshUI
 
@@ -118,11 +119,11 @@ runGameOrchestrator sysBus queueVar actors cmds = do
       -- print "Processing events..."
       let inputEvs = [ev | ev <- evs, isPlayerInputEvent ev]
       case inputEvs of
-        (PlayerInputEvent "quit" : _) -> print "Bye-bye"
-        (PlayerInputEvent "exit" : _) -> print "Bye-bye"
-        (PlayerInputEvent line : _) -> do
+        (PlayerInputEvent _ "quit" : _) -> printStatus "Bye-bye"
+        (PlayerInputEvent _ "exit" : _) -> printStatus "Bye-bye"
+        (PlayerInputEvent _ line : _) -> do
 
-          let mbCmd = parsePlayerCommand cmds line
+          -- let mbCmd = parsePlayerCommand cmds line
 
           gameOrchestratorWorker RefreshUI
         _ -> gameOrchestratorWorker RefreshUI
@@ -131,7 +132,7 @@ runGameOrchestrator sysBus queueVar actors cmds = do
 createFieldWatcherActor
   :: (Int, Int)
   -> SystemBus
-  -> IO Actor
+  -> GameIO Actor
 createFieldWatcherActor (w, h) sysBus = do
   inVar  <- newEmptyMVar
   outVar <- newEmptyMVar
@@ -143,7 +144,7 @@ createFieldWatcherActor (w, h) sysBus = do
   queueVar <- createQueueVar
   tId <- forkIO $ fieldWatcherWorker tickChan queueVar (w, h)
 
-  let sub = isFieldEvent
+  let sub = isFieldIconEvent
   subscribeRecipient sysBus $ Subscription sub queueVar
 
   pure $ Actor tId tickChan queueVar
@@ -164,7 +165,7 @@ createFieldWatcherActor (w, h) sysBus = do
 createActor
   :: SystemBus
   -> ((Int, Int), Char)
-  -> IO ((Int, Int), Actor)
+  -> GameIO ((Int, Int), Actor)
 createActor sysBus (p, ch) = do
   inVar  <- newEmptyMVar
   outVar <- newEmptyMVar
@@ -195,7 +196,7 @@ createActor sysBus (p, ch) = do
       -> EventQueueVar
       -> (Int, Int)
       -> Char
-      -> IO ()
+      -> GameIO ()
     actorWorker tickChan queueVar p ch = do
 
       waitForTick tickChan
@@ -208,17 +209,28 @@ createActor sysBus (p, ch) = do
       actorWorker tickChan queueVar p ch
 
 
-tickActors :: Actors -> IO ()
+tickActors :: Actors -> GameIO ()
 tickActors actors = mapM_ doTick actors
   where
     doTick (_, Actor _ tickChan _) = do
       sendTick tickChan
       waitForFinishedTick tickChan
 
+processActorEvent
+  :: SystemBus
+  -> Pos
+  -> Char
+  -> SystemEvent
+  -> GameIO ()
 processActorEvent sysBus p ch PopulateCellDescriptionEvent =
-  publishEvent sysBus $ FieldEvent p ch
+  publishEvent sysBus $ FieldIconEvent p ch
 processActorEvent _ _ _ _ = pure ()
 
-processFieldWatcherEvent sysBus (w, h) (FieldEvent pos ch) =
+processFieldWatcherEvent
+  :: SystemBus
+  -> Pos
+  -> SystemEvent
+  -> GameIO ()
+processFieldWatcherEvent sysBus (w, h) (FieldIconEvent pos ch) =
   drawFieldObject pos ch
 processFieldWatcherEvent _ _ _ = pure ()

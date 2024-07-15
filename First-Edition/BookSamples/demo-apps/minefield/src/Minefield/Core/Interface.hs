@@ -1,4 +1,4 @@
-module Minefield.Core.Language where
+module Minefield.Core.Interface where
 
 import CPrelude
 
@@ -11,16 +11,18 @@ data IObject where
 type family MkObject a :: IObject where
   MkObject a = ObjectWrapper a
 
-
+type IsCommandDirected = Bool
+type BaseCommand = Symbol
 
 data IAction where
-  ActionWrapper :: a -> IAction
+  ActionWrapper
+    :: a
+    -> IsCommandDirected
+    -> BaseCommand
+    -> IAction
 
-type family MkAction a :: IAction where
-  MkAction a = ActionWrapper a
-
-
-data Direction = U | D | L | R
+type family MkAction a dir cmd :: IAction where
+  MkAction a dir cmd = ActionWrapper a dir cmd
 
 data Game
   (minefield :: [Symbol])

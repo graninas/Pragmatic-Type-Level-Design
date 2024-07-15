@@ -4,10 +4,14 @@ import CPrelude
 
 import System.Console.ANSI
 import System.IO (hFlush, stdout)
+import qualified System.IO as SIO
 
 
 resetScreen :: IO ()
-resetScreen = setSGR [Reset] >> clearScreen >> setCursorPosition 0 0
+resetScreen = do
+  setSGR [Reset]
+  clearScreen
+  setCursorPosition 0 0
 
 flushScreen :: IO ()
 flushScreen = hFlush stdout
@@ -15,6 +19,12 @@ flushScreen = hFlush stdout
 printTitle :: String -> IO ()
 printTitle str = do
   setCursorPosition 1 0
+  clearLine
+  putStr str
+
+printStatus :: String -> IO ()
+printStatus str = do
+  setCursorPosition 10 0
   clearLine
   putStr str
 
@@ -28,7 +38,6 @@ withInputInvitation msg = do
   hFlush stdout
   line <- getLine
   pure line
-
 
 clearField :: (Int, Int) -> IO ()
 clearField (w, h) = mapM_ (\h' -> do

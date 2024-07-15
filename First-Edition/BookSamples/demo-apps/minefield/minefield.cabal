@@ -16,7 +16,8 @@ library
   exposed-modules:
       Main
       Minefield.Core.Eval
-      Minefield.Core.Language
+      Minefield.Core.Interface
+      Minefield.Extensions.Implementation
       Minefield.Extensions.Materialization
       Minefield.Extensions.Nouns.EmptyCell
       Minefield.Extensions.Nouns.Landmine
@@ -86,7 +87,8 @@ executable minefield
   main-is: Main.hs
   other-modules:
       Minefield.Core.Eval
-      Minefield.Core.Language
+      Minefield.Core.Interface
+      Minefield.Extensions.Implementation
       Minefield.Extensions.Materialization
       Minefield.Extensions.Nouns.EmptyCell
       Minefield.Extensions.Nouns.Landmine

@@ -15,7 +15,7 @@ data ActorEvent
 
 data SystemEvent
   = PlayerInputInvitedEvent
-  | PlayerInputEvent PlayerPos Text
+  | PlayerInputEvent PlayerPos String
   | PopulateCellDescriptionEvent
   | FieldIconEvent Pos Char
 
@@ -65,8 +65,8 @@ data GamePhase
 
 type GameIO a = IO a
 
-type TextCommand = Text
-type ObjectType = Text
+type TextCommand = String
+type ObjectType = String
 
 type ActorAction  = SystemBus -> Pos -> GameIO ()
 type ActorActions = Map.Map ObjectType ActorAction

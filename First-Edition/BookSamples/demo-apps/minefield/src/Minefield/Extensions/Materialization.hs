@@ -8,6 +8,7 @@ import Minefield.Core.Eval
 import Minefield.Core.Interface
 
 import Minefield.Game.Types
+import Minefield.Game.UI
 
 import GHC.TypeLits
 import qualified Data.Map as Map
@@ -87,8 +88,10 @@ instance
   Eval MakeGameActions (TraverseActs mkO (mkA ': acts)) GameActions where
   eval proxy _ = do
     isDirected <- eval (Proxy @GetIsDirected) $ Proxy @dir
-    let cmd   = show $ symbolVal $ Proxy @cmd
-    let oType = show $ symbolVal $ Proxy @oType
+    let cmd   = symbolVal $ Proxy @cmd
+    let oType = symbolVal $ Proxy @oType
+
+    printDebugString $ "Cmd: " <> show cmd <> " " <> show oType
 
     actorAct <- eval (Proxy @MakeActorAction)
                      (Proxy @(ObjAct o a))

@@ -2,6 +2,8 @@ module Minefield.Game.Player where
 
 import CPrelude
 
+import qualified Prelude as P
+
 import Minefield.Game.Types
 import Minefield.Game.System
 import Minefield.Game.UI
@@ -67,23 +69,23 @@ performPlayerCommand sysBus pos (PlayerCommand mbDir actorActions) = do
     performActorAction pos' (_, act) = act sysBus pos'
 
 parsePlayerCommand
-  :: Text
+  :: String
   -> GameActions
   -> GameIO (Either String PlayerCommand)
 parsePlayerCommand line actions = do
 
-  let ws = T.words line
+  let ws = P.words line
 
   case ws of
-    [] -> pure $ Left $ "Empty command: " <> show line
+    [] -> pure $ Left $ "Empty command: " <> line
     (cmd : rest) -> do
       case Map.lookup cmd actions of
-        Nothing                -> pure $ Left $ "Command not found: " <> show cmd
+        Nothing                -> pure $ Left $ "Command not found: " <> cmd
         Just (isDirected, act) -> do
           case (isDirected, rest) of
             (False, _)        -> pure $ Right $ PlayerCommand Nothing act
-            (True, [])        -> pure $ Left $ "Directed command lacks direction: " <> show line
+            (True, [])        -> pure $ Left $ "Directed command lacks direction: " <> line
             (True, (arg : _)) ->
               case readMaybe arg of
-                Nothing  -> pure $ Left $ "Direction parse error: " <> show arg
+                Nothing  -> pure $ Left $ "Direction parse error: " <> arg
                 Just dir -> pure $ Right $ PlayerCommand (Just dir) act

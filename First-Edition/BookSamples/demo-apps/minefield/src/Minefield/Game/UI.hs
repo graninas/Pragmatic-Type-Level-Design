@@ -5,7 +5,7 @@ import CPrelude
 import System.Console.ANSI
 import System.IO (hFlush, stdout)
 import qualified System.IO as SIO
-
+import qualified Data.Text as T
 
 resetScreen :: IO ()
 resetScreen = do
@@ -28,7 +28,13 @@ printStatus str = do
   clearLine
   putStr str
 
-withInputInvitation :: String -> IO Text
+printDebugString :: String -> IO ()
+printDebugString str = do
+  setCursorPosition 16 0
+  clearLine
+  putStr str
+
+withInputInvitation :: String -> IO String
 withInputInvitation msg = do
   setCursorPosition 4 0
   clearFromCursorToLineEnd
@@ -37,7 +43,7 @@ withInputInvitation msg = do
   setCursorPosition 4 (length msg + 1)
   hFlush stdout
   line <- getLine
-  pure line
+  pure $ T.unpack line
 
 clearField :: (Int, Int) -> IO ()
 clearField (w, h) = mapM_ (\h' -> do

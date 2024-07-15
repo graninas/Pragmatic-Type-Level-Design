@@ -26,6 +26,7 @@ library
       Minefield.Extensions.Verbs.Dig
       Minefield.Extensions.Verbs.PutFlag
       Minefield.Extensions.Verbs.UseLandmineDetector
+      Minefield.Game.Actor
       Minefield.Game.Game
       Minefield.Game.Player
       Minefield.Game.RndGen
@@ -97,6 +98,7 @@ executable minefield
       Minefield.Extensions.Verbs.Dig
       Minefield.Extensions.Verbs.PutFlag
       Minefield.Extensions.Verbs.UseLandmineDetector
+      Minefield.Game.Actor
       Minefield.Game.Game
       Minefield.Game.Player
       Minefield.Game.RndGen

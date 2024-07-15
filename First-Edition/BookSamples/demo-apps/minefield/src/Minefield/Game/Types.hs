@@ -24,14 +24,14 @@ data SystemEvent
 
 type EventQueueVar = MVar [SystemEvent]
 
-data SystemBus = SystemBus
-  { sbEventsVar :: EventQueueVar
-  , sbSubscriptionsVar :: MVar [Subscription]
-  }
-
 data Subscription = Subscription
   { sCondition :: SystemEvent -> Bool
   , sRecipientQueueVar :: EventQueueVar
+  }
+
+data SystemBus = SystemBus
+  { sbEventsVar :: EventQueueVar
+  , sbSubscriptionsVar :: MVar [Subscription]
   }
 
 data Channel inT outT = Channel

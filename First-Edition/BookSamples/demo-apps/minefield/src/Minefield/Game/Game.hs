@@ -11,6 +11,7 @@ import Minefield.Game.Types
 import Minefield.Game.RndGen
 import Minefield.Game.Player
 import Minefield.Game.System
+import Minefield.Game.Actor
 import Minefield.Game.UI
 
 import Minefield.Extensions.Materialization
@@ -28,9 +29,9 @@ createRandomGame
   :: forall g field player emptyCell objects actions
    . ( g ~ Game field player emptyCell objects actions
      , Eval MakeGameActions (ObjsActs objects actions) GameActions
-     , Eval GetIcon player Char
-     , Eval GetIcon emptyCell Char
-     , Eval GetIcon (Objects objects) [Char]
+     , Eval GetObjectInfo player (ObjectType, Char)
+     , Eval GetObjectInfo emptyCell (ObjectType, Char)
+     , Eval GetObjectInfo (Objects objects) [(ObjectType, Char)]
      )
   => EmptyCellsPercent
   -> (Int, Int)
@@ -39,17 +40,17 @@ createRandomGame emptyCellsPercent (w, h) = do
   resetScreen
   printTitle "Minefield game"
 
-  let getIcon  = Proxy @GetIcon
-  pIcon    <- eval getIcon $ Proxy @player
-  ecIcon   <- eval getIcon $ Proxy @emptyCell
-  objIcons <- eval getIcon $ Proxy @(Objects objects)
+  let getObjectInfo = Proxy @GetObjectInfo
+  pIcon  <- eval getObjectInfo $ Proxy @player
+  ecIcon <- eval getObjectInfo $ Proxy @emptyCell
+  objs   <- eval getObjectInfo $ Proxy @(Objects objects)
 
   let makeActions = Proxy @MakeGameActions
   actions <- eval makeActions $ Proxy @(ObjsActs objects actions)
 
   let coords = [(x, y) | x <- [0..w-1], y <- [0..h-1]]
 
-  cells1 <- mapM (createRandomCell objIcons) coords
+  cells1 <- mapM (createRandomCell objs) coords
   cells2 <- writeRandomEmptyCells ecIcon emptyCellsPercent cells1
   cells3 <- writeRandomPlayer (w, h) pIcon cells2
 
@@ -129,7 +130,7 @@ runGameOrchestrator sysBus queueVar actors actions = do
           case eCmd of
             Left err        -> printStatus err
             Right playerCmd -> do
-              printStatus $ "Command recognized: " <> show line
+              -- printStatus $ "Command recognized: " <> show line
               performPlayerCommand sysBus playerPos playerCmd
 
           gameOrchestratorWorker RefreshUI
@@ -169,69 +170,12 @@ createFieldWatcherActor (w, h) sysBus = do
       fieldWatcherWorker tickChan queueVar (w, h)
 
 
-createActor
-  :: SystemBus
-  -> ((Int, Int), Char)
-  -> GameIO ((Int, Int), Actor)
-createActor sysBus (p, ch) = do
-  inVar  <- newEmptyMVar
-  outVar <- newEmptyMVar
-  let tickChan = Channel inVar outVar
-
-  queueVar <- createQueueVar
-
-  -- TODO: FIXME: Hardcode
-  (threadId, subCond) <- case ch of
-    '@' -> do
-      tId <- forkIO (playerWorker sysBus tickChan queueVar p ch)
-      let sub ev =
-            isPlayerInputInvitedEvent ev
-            || isPopulateCellDescriptionEvent ev
-      pure (tId, sub)
-
-    _   -> do
-      tId <- forkIO (actorWorker tickChan queueVar p ch)
-      let sub = isPopulateCellDescriptionEvent
-      pure (tId, sub)
-
-  subscribeRecipient sysBus $ Subscription subCond queueVar
-
-  pure (p, Actor threadId tickChan queueVar)
-  where
-    actorWorker
-      :: TickChannel
-      -> EventQueueVar
-      -> (Int, Int)
-      -> Char
-      -> GameIO ()
-    actorWorker tickChan queueVar p ch = do
-
-      waitForTick tickChan
-
-      evs <- takeEvents queueVar
-      mapM_ (processActorEvent sysBus p ch) evs
-
-      reportTickFinished tickChan
-
-      actorWorker tickChan queueVar p ch
-
-
 tickActors :: Actors -> GameIO ()
 tickActors actors = mapM_ doTick actors
   where
     doTick (_, Actor _ tickChan _) = do
       sendTick tickChan
       waitForFinishedTick tickChan
-
-processActorEvent
-  :: SystemBus
-  -> Pos
-  -> Char
-  -> SystemEvent
-  -> GameIO ()
-processActorEvent sysBus p ch PopulateCellDescriptionEvent =
-  publishEvent sysBus $ FieldIconEvent p ch
-processActorEvent _ _ _ _ = pure ()
 
 processFieldWatcherEvent
   :: SystemBus

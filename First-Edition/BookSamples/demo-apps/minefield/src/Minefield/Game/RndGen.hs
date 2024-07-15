@@ -11,19 +11,19 @@ import System.Random (randomRIO)
 
 
 createRandomCell
-  :: [Char]
+  :: [(ObjectType, Char)]
   -> (Int, Int)
-  -> IO ((Int, Int), Char)
+  -> IO ((Int, Int), (ObjectType, Char))
 createRandomCell icons pos = do
   rndIdx <- randomRIO (0, (length icons) - 1)
   pure (pos, icons !! rndIdx)
 
 writeRandomEmptyCells
-  :: Char
+  :: (ObjectType, Char)
   -> Float
-  -> [((Int, Int), Char)]
-  -> IO (Map.Map (Int, Int) Char)
-writeRandomEmptyCells ecIcon percent cells = do
+  -> [((Int, Int), (ObjectType, Char))]
+  -> IO (Map.Map (Int, Int) (ObjectType, Char))
+writeRandomEmptyCells iconObj percent cells = do
 
   let maxIdx = (length cells) - 1
   let cnt = truncate (percent * fromIntegral maxIdx)
@@ -34,7 +34,7 @@ writeRandomEmptyCells ecIcon percent cells = do
 
   let rndCells = map (\idx -> cells !! idx) rndIndeces
 
-  let newMap1 = foldr (\(p, _) -> Map.insert p ecIcon) Map.empty rndCells
+  let newMap1 = foldr (\(p, _) -> Map.insert p iconObj) Map.empty rndCells
   let newMap2 = foldr maybeInsert newMap1 cells
 
   pure newMap2
@@ -45,11 +45,11 @@ writeRandomEmptyCells ecIcon percent cells = do
 
 writeRandomPlayer
   :: (Int, Int)
-  -> Char
-  -> Map.Map (Int, Int) Char
-  -> IO (Map.Map (Int, Int) Char)
-writeRandomPlayer (w, h) ch cells = do
+  -> (ObjectType, Char)
+  -> Map.Map (Int, Int) (ObjectType, Char)
+  -> IO (Map.Map (Int, Int) (ObjectType, Char))
+writeRandomPlayer (w, h) obj cells = do
   x <- randomRIO (0, w - 1)
   y <- randomRIO (0, h - 1)
-  pure $ Map.insert (x, y) ch cells
+  pure $ Map.insert (x, y) obj cells
 

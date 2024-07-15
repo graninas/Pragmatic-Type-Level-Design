@@ -45,16 +45,6 @@ processPlayerEvent sysBus p ch PlayerInputInvitedEvent = do
   publishEvent sysBus $ PlayerInputEvent p line
 processPlayerEvent _ _ _ _ = pure ()
 
-
--- type ActorAction  = SystemBus -> Pos -> GameIO ()
--- type ActorActions = Map.Map ObjectType ActorAction
--- type GameActions  = Map.Map TextCommand (Bool, ActorActions)
-
--- data Direction = U | D | L | R
---   deriving (Show, Eq, Ord)
-
--- data PlayerCommand
---   = PlayerCommand (Maybe Direction) ActorAction
 performPlayerCommand
   :: SystemBus
   -> PlayerPos

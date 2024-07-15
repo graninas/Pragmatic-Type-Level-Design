@@ -16,11 +16,23 @@ data PlayerImpl
   (objectType :: Symbol)
 type Player i = MkObject (PlayerImpl i "player")
 
+-- Implementation
+
 instance
   ( KnownSymbol i
   ) =>
   Eval GetIcon (PlayerImpl i ot) Char where
   eval _ _ = pure $ head $ symbolVal $ Proxy @i
+
+instance
+  ( KnownSymbol i
+  , KnownSymbol ot
+  ) =>
+  Eval GetObjectInfo (PlayerImpl i ot) (OType, Char) where
+  eval _ _ = do
+    let oType = symbolVal $ Proxy @ot
+    let icon = head $ symbolVal $ Proxy @i
+    pure (oType, icon)
 
 instance
   ( KnownSymbol ot

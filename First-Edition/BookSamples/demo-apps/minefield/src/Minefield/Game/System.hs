@@ -87,6 +87,9 @@ isPopulateCellDescriptionEvent :: SystemEvent -> Bool
 isPopulateCellDescriptionEvent PopulateCellDescriptionEvent = True
 isPopulateCellDescriptionEvent _ = False
 
+isActorRequestEvent :: SystemEvent -> Bool
+isActorRequestEvent (ActorRequestEvent _ _ _) = True
+isActorRequestEvent _ = False
 
 
 movePos :: Pos -> Direction -> Pos

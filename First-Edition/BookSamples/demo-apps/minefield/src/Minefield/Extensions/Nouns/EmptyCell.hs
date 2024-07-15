@@ -15,11 +15,23 @@ data EmptyCellImpl
   (objectType :: Symbol)
 type EmptyCell i = MkObject (EmptyCellImpl i "empty-cell")
 
+-- Implementations
+
 instance
   ( KnownSymbol i
   ) =>
   Eval GetIcon (EmptyCellImpl i ot) Char where
   eval _ _ = pure $ head $ symbolVal $ Proxy @i
+
+instance
+  ( KnownSymbol i
+  , KnownSymbol ot
+  ) =>
+  Eval GetObjectInfo (EmptyCellImpl i ot) (OType, Char) where
+  eval _ _ = do
+    let oType = symbolVal $ Proxy @ot
+    let icon = head $ symbolVal $ Proxy @i
+    pure (oType, icon)
 
 instance
   ( KnownSymbol ot

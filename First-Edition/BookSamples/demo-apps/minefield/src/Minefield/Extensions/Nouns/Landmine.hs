@@ -32,11 +32,23 @@ data LandmineImpl
     --   n == triggers neighbor bombs to explode in the nth radius
 type Landmine i p = MkObject (LandmineImpl i "landmine" p)
 
+-- Implementation
+
 instance
   ( KnownSymbol i
   ) =>
   Eval GetIcon (LandmineImpl i ot p) Char where
   eval _ _ = pure $ head $ symbolVal $ Proxy @i
+
+instance
+  ( KnownSymbol i
+  , KnownSymbol ot
+  ) =>
+  Eval GetObjectInfo (LandmineImpl i ot p) (OType, Char) where
+  eval _ _ = do
+    let oType = symbolVal $ Proxy @ot
+    let icon = head $ symbolVal $ Proxy @i
+    pure (oType, icon)
 
 instance
   ( KnownSymbol ot

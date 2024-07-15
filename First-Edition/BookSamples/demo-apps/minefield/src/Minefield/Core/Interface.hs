@@ -5,7 +5,7 @@ import CPrelude
 import GHC.TypeLits
 
 
-type OType = Symbol
+type OType = String
 
 data IObject where
   ObjectWrapper :: a -> IObject

@@ -15,6 +15,8 @@ import qualified Data.Map as Map
 
 
 data GetIcon
+data GetOType
+data GetObjectInfo
 data GetObjectType
 data MakeActorAction
 data MakeGameAction
@@ -45,6 +47,28 @@ instance
   , Eval GetIcon (Objects os) [Char]
   ) =>
   Eval GetIcon (Objects (o ': os)) [Char] where
+  eval vProxy _ = do
+    o  <- eval vProxy $ Proxy @o
+    os <- eval vProxy $ Proxy @(Objects os)
+    pure $ o : os
+
+-- Get object info
+
+instance
+  ( Eval GetObjectInfo o (OType, Char)
+  ) =>
+  Eval GetObjectInfo ('ObjectWrapper o) (OType, Char) where
+  eval vProxy _ = eval vProxy $ Proxy @o
+
+instance
+  Eval GetObjectInfo (Objects '[]) [(OType, Char)] where
+  eval _ _ = pure []
+
+instance
+  ( Eval GetObjectInfo o (OType, Char)
+  , Eval GetObjectInfo (Objects os) [(OType, Char)]
+  ) =>
+  Eval GetObjectInfo (Objects (o ': os)) [(OType, Char)] where
   eval vProxy _ = do
     o  <- eval vProxy $ Proxy @o
     os <- eval vProxy $ Proxy @(Objects os)
@@ -82,7 +106,7 @@ instance
   , Eval GetIsDirected dir Bool
   , mkO ~ 'ObjectWrapper o
   , mkA ~ 'ActionWrapper a dir cmd
-  , Eval MakeActorAction (ObjAct o a) (ObjectType, ActorAction)
+  , Eval MakeActorAction (ObjAct o a) (OType, ActorAction)
   , Eval MakeGameActions (TraverseActs mkO acts) GameActions
   ) =>
   Eval MakeGameActions (TraverseActs mkO (mkA ': acts)) GameActions where

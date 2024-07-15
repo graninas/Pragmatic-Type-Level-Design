@@ -61,6 +61,6 @@ instance
 -- Object
 
 data LandmineObject = LandmineObject
-  { lObjectInfo :: ObjectInfo
-  , lPower :: Int
+  { loObjectInfoRef :: IORef ObjectInfo
+  , loPowerRef      :: IORef Int
   }

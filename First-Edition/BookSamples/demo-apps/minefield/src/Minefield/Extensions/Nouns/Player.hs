@@ -45,5 +45,5 @@ instance
 -- Object
 
 data PlayerObject = PlayerObject
-  { pObjectInfo :: ObjectInfo
+  { poObjectInfoRef :: IORef ObjectInfo
   }

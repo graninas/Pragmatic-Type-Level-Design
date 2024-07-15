@@ -46,8 +46,8 @@ distributeEvents (SystemBus evsVar subsVar) = do
       evs <- takeMVar queueVar
       putMVar queueVar $ ev : evs
 
-takeEvents :: EventQueueVar -> IO [SystemEvent]
-takeEvents eqVar = do
+extractEvents :: EventQueueVar -> IO [SystemEvent]
+extractEvents eqVar = do
   evs <- takeMVar eqVar
   putMVar eqVar []
   pure evs
@@ -56,6 +56,12 @@ dropEvents :: EventQueueVar -> IO ()
 dropEvents eqVar = do
   _ <- takeMVar eqVar
   putMVar eqVar []
+
+createTickChannel :: IO TickChannel
+createTickChannel = do
+  inVar  <- newEmptyMVar
+  outVar <- newEmptyMVar
+  pure $ Channel inVar outVar
 
 waitForTick :: TickChannel -> IO ()
 waitForTick (Channel inVar _) = takeMVar inVar
@@ -98,3 +104,16 @@ movePos (x, y) U = (x, y-1)
 movePos (x, y) D = (x, y+1)
 movePos (x, y) L = (x-1, y)
 movePos (x, y) R = (x+1, y)
+
+
+actorWorker
+  :: TickChannel
+  -> EventQueueVar
+  -> (SystemEvent -> GameIO ())
+  -> GameIO ()
+actorWorker tickChan queueVar processActorEvent = forever $ do
+  waitForTick tickChan
+  evs <- extractEvents queueVar
+  mapM_ processActorEvent evs
+  reportTickFinished tickChan
+

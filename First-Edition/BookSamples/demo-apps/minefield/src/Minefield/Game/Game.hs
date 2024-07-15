@@ -12,7 +12,6 @@ import Minefield.Game.Types
 import Minefield.Game.RndGen
 import Minefield.Game.Player
 import Minefield.Game.System
-import Minefield.Game.Actor
 import Minefield.Game.UI
 
 import Minefield.Extensions.Materialization
@@ -36,9 +35,9 @@ createRandomGame
           (Objects (player ': emptyCell ': objects))
           [Actor]
 
-     , Eval () GetObjectInfo player (ObjectType, Char)
-     , Eval () GetObjectInfo emptyCell (ObjectType, Char)
-     , Eval () GetObjectInfo (Objects objects) [(ObjectType, Char)]
+     , Eval () GetObjectType player ObjectType
+     , Eval () GetObjectType emptyCell ObjectType
+     , Eval () GetObjectType (Objects objects) [ObjectType]
      )
   => EmptyCellsPercent
   -> (Int, Int)
@@ -51,15 +50,15 @@ createRandomGame emptyCellsPercent (w, h) = do
 
   -- Creating a random game
 
-  let getObjectInfo = Proxy @GetObjectInfo
-  pInfo  <- eval () getObjectInfo $ Proxy @player
-  ecInfo <- eval () getObjectInfo $ Proxy @emptyCell
-  objs   <- eval () getObjectInfo $ Proxy @(Objects objects)
+  let getObjectType = Proxy @GetObjectType
+  pType  <- eval () getObjectType $ Proxy @player
+  ecType <- eval () getObjectType $ Proxy @emptyCell
+  objs   <- eval () getObjectType $ Proxy @(Objects objects)
 
   let coords = [(x, y) | x <- [0..w-1], y <- [0..h-1]]
   cells1 <- mapM (createRandomCell objs) coords
-  cells2 <- writeRandomEmptyCells ecInfo emptyCellsPercent cells1
-  cells3 <- writeRandomPlayer (w, h) pInfo cells2
+  cells2 <- writeRandomEmptyCells ecType emptyCellsPercent cells1
+  cells3 <- writeRandomPlayer (w, h) pType cells2
 
   -- Subscribing the orchestrator
   let orchCond ev = isPlayerInputEvent ev
@@ -120,7 +119,7 @@ runGameOrchestrator sysBus queueVar actors actions = do
       distributeEvents sysBus
 
       -- print "Reading orchestrator's events..."
-      evs <- takeEvents queueVar
+      evs <- extractEvents queueVar
       -- print $ "Events: " <> show evs
 
       -- print "Processing events..."
@@ -168,7 +167,7 @@ createFieldWatcherActor (w, h) sysBus = do
 
       waitForTick tickChan
 
-      evs <- takeEvents queueVar
+      evs <- extractEvents queueVar
       mapM_ (processFieldWatcherEvent sysBus (w, h)) evs
 
       reportTickFinished tickChan

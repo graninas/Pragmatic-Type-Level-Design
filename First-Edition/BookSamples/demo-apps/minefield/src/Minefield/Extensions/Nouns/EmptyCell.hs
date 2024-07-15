@@ -44,5 +44,5 @@ instance
 -- Object
 
 data EmptyCellObject = EmptyCellObject
-  { ecoObjectInfo :: ObjectInfo
+  { ecoObjectInfoRef :: IORef ObjectInfo
   }

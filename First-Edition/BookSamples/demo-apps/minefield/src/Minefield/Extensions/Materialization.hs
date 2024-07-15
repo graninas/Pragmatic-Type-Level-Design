@@ -22,6 +22,7 @@ data MakeActorAction
 data MakeGameAction
 data MakeGameActions
 data MakeActors
+data MakeActor
 data GetIsDirected
 
 data Objects a
@@ -70,6 +71,28 @@ instance
   , Eval () GetObjectInfo (Objects os) [(ObjectType, Char)]
   ) =>
   Eval () GetObjectInfo (Objects (o ': os)) [(ObjectType, Char)] where
+  eval () vProxy _ = do
+    o  <- eval () vProxy $ Proxy @o
+    os <- eval () vProxy $ Proxy @(Objects os)
+    pure $ o : os
+
+-- Get object type
+
+instance
+  ( Eval () GetObjectType o ObjectType
+  ) =>
+  Eval () GetObjectType ('ObjectWrapper o) ObjectType where
+  eval () vProxy _ = eval () vProxy $ Proxy @o
+
+instance
+  Eval () GetObjectType (Objects '[]) [ObjectType] where
+  eval () _ _ = pure []
+
+instance
+  ( Eval () GetObjectType o ObjectType
+  , Eval () GetObjectType (Objects os) [ObjectType]
+  ) =>
+  Eval () GetObjectType (Objects (o ': os)) [ObjectType] where
   eval () vProxy _ = do
     o  <- eval () vProxy $ Proxy @o
     os <- eval () vProxy $ Proxy @(Objects os)
@@ -144,8 +167,45 @@ instance
 -- Make actors
 
 instance
+  ( Eval
+      (SystemBus, Pos, ObjectType)
+       MakeActor
+       (Objects objects)
+       Actor
+  ) =>
   Eval (SystemBus, FieldObjects)
        MakeActors
-       (Objects (player ': emptyCell ': objects))
+       (Objects objects)
        [Actor] where
-  eval _ _ _ = pure []
+  eval (sysBus, fObjs) _ objs = do
+    let makeActor = Proxy @MakeActor
+    let evalAct p oType = eval (sysBus, p, oType) makeActor objs
+    actors <- mapM (\(p, oType) -> evalAct p oType)
+              $ Map.toList fObjs
+    pure actors
+
+instance
+  Eval
+    (SystemBus, Pos, ObjectType)
+     MakeActor
+     (Objects '[])
+     Actor where
+  eval (_, pos, oType) _ _ =
+    error $ "Object not found for " <> show oType <> " at " <> show pos
+
+instance
+  ( Eval () GetObjectInfo o (ObjectType, Char)
+  , Eval (SystemBus, Pos) MakeActor o Actor
+  , Eval (SystemBus, Pos, ObjectType)
+         MakeActor (Objects os) Actor
+  ) =>
+  Eval
+    (SystemBus, Pos, ObjectType)
+     MakeActor
+     (Objects ('ObjectWrapper o ': os))
+     Actor where
+  eval payload@(sysBus, pos, oType) makeActor _ = do
+    (oType', _) <- eval () (Proxy @GetObjectInfo) $ Proxy @o
+    if oType == oType'
+      then eval (sysBus, pos) (Proxy @MakeActor) $ Proxy @o
+      else eval payload makeActor $ Proxy @(Objects os)

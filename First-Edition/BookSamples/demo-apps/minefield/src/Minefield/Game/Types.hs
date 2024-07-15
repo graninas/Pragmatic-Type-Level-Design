@@ -19,7 +19,7 @@ data SystemEvent
   | PopulateCellDescriptionEvent
   | FieldIconEvent Pos Char
 
-  | ActorRequestEvent ActorPos ActorEvent
+  | ActorRequestEvent ObjectType ActorPos ActorEvent
   deriving (Show, Eq, Ord)
 
 type EventQueueVar = MVar [SystemEvent]

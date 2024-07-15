@@ -25,14 +25,21 @@ import GHC.TypeLits
 -- | Landmine with variable power.
 data LandmineImpl
   (icon :: Symbol)
+  (objectType :: Symbol)
   (power :: Nat)
     -- ^ Detonation power from 1 to 3.
     --   1 == only explodes itself
     --   n == triggers neighbor bombs to explode in the nth radius
-type Landmine i p = MkObject (LandmineImpl i p) "landmine"
+type Landmine i p = MkObject (LandmineImpl i "landmine" p)
 
 instance
   ( KnownSymbol i
   ) =>
-  Eval GetIcon (LandmineImpl i p) Char where
+  Eval GetIcon (LandmineImpl i ot p) Char where
   eval _ _ = pure $ head $ symbolVal $ Proxy @i
+
+instance
+  ( KnownSymbol ot
+  ) =>
+  Eval GetObjectType (LandmineImpl i ot p) String where
+  eval _ _ = pure $ symbolVal $ Proxy @ot

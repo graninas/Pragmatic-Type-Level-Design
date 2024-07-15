@@ -15,6 +15,7 @@ import qualified Data.Map as Map
 
 
 data GetIcon
+data GetObjectType
 data MakeActorAction
 data MakeGameAction
 data MakeGameActions
@@ -32,7 +33,7 @@ data ObjAct o a
 instance
   ( Eval GetIcon o Char
   ) =>
-  Eval GetIcon ('ObjectWrapper o ot) Char where
+  Eval GetIcon ('ObjectWrapper o) Char where
   eval vProxy _ = eval vProxy $ Proxy @o
 
 instance
@@ -77,24 +78,22 @@ instance
   eval _ _ = pure Map.empty
 
 instance
-  ( KnownSymbol oType
-  , KnownSymbol cmd
+  ( KnownSymbol cmd
   , Eval GetIsDirected dir Bool
-  , mkO ~ 'ObjectWrapper o oType
+  , mkO ~ 'ObjectWrapper o
   , mkA ~ 'ActionWrapper a dir cmd
-  , Eval MakeActorAction (ObjAct o a) ActorAction
+  , Eval MakeActorAction (ObjAct o a) (ObjectType, ActorAction)
   , Eval MakeGameActions (TraverseActs mkO acts) GameActions
   ) =>
   Eval MakeGameActions (TraverseActs mkO (mkA ': acts)) GameActions where
   eval proxy _ = do
     isDirected <- eval (Proxy @GetIsDirected) $ Proxy @dir
     let cmd   = symbolVal $ Proxy @cmd
-    let oType = symbolVal $ Proxy @oType
+
+    (oType, actorAct) <- eval (Proxy @MakeActorAction)
+                              (Proxy @(ObjAct o a))
 
     printDebugString $ "Cmd: " <> show cmd <> " " <> show oType
-
-    actorAct <- eval (Proxy @MakeActorAction)
-                     (Proxy @(ObjAct o a))
 
     gameActs <- eval proxy $ Proxy @(TraverseActs mkO acts)
 

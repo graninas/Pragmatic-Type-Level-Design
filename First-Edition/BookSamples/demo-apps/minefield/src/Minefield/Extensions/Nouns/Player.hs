@@ -13,10 +13,17 @@ import GHC.TypeLits
 
 data PlayerImpl
   (icon :: Symbol)
-type Player i = MkObject (PlayerImpl i) "player"
+  (objectType :: Symbol)
+type Player i = MkObject (PlayerImpl i "player")
 
 instance
   ( KnownSymbol i
   ) =>
-  Eval GetIcon (PlayerImpl i) Char where
+  Eval GetIcon (PlayerImpl i ot) Char where
   eval _ _ = pure $ head $ symbolVal $ Proxy @i
+
+instance
+  ( KnownSymbol ot
+  ) =>
+  Eval GetObjectType (PlayerImpl i ot) String where
+  eval _ _ = pure $ symbolVal $ Proxy @ot

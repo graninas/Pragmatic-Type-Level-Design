@@ -8,10 +8,10 @@ import GHC.TypeLits
 type OType = Symbol
 
 data IObject where
-  ObjectWrapper :: a -> OType -> IObject
+  ObjectWrapper :: a -> IObject
 
-type family MkObject a ot :: IObject where
-  MkObject a ot = ObjectWrapper a ot
+type family MkObject a :: IObject where
+  MkObject a = ObjectWrapper a
 
 type IsCommandDirected = Bool
 type BaseCommand = Symbol

@@ -14,12 +14,19 @@ import GHC.TypeLits
 --   Power is always 2.
 data TimerBombImpl
   (icon :: Symbol)
+  (objectType :: Symbol)
   (turns :: Nat)
     -- ^ How much turns before the bomb explodes
-type TimerBomb i t = MkObject (TimerBombImpl i t) "timer-bomb"
+type TimerBomb i t = MkObject (TimerBombImpl i "timer-bomb" t)
 
 instance
   ( KnownSymbol i
   ) =>
   Eval GetIcon (TimerBombImpl i t) Char where
   eval _ _ = pure $ head $ symbolVal $ Proxy @i
+
+instance
+  ( KnownSymbol ot
+  ) =>
+  Eval GetObjectType (TimerBombImpl i ot t) String where
+  eval _ _ = pure $ symbolVal $ Proxy @ot

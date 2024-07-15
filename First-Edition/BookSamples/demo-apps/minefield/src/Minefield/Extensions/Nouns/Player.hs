@@ -23,15 +23,15 @@ type Player i = MkObject (PlayerImpl i "player")
 instance
   ( KnownSymbol i
   ) =>
-  Eval GetIcon (PlayerImpl i ot) Icon where
-  eval _ _ = pure $ head $ symbolVal $ Proxy @i
+  Eval () GetIcon (PlayerImpl i ot) Icon where
+  eval () _ _ = pure $ head $ symbolVal $ Proxy @i
 
 instance
   ( KnownSymbol i
   , KnownSymbol ot
   ) =>
-  Eval GetObjectInfo (PlayerImpl i ot) (ObjectType, Icon) where
-  eval _ _ = do
+  Eval () GetObjectInfo (PlayerImpl i ot) (ObjectType, Icon) where
+  eval () _ _ = do
     let oType = symbolVal $ Proxy @ot
     let icon = head $ symbolVal $ Proxy @i
     pure (oType, icon)
@@ -39,8 +39,8 @@ instance
 instance
   ( KnownSymbol ot
   ) =>
-  Eval GetObjectType (PlayerImpl i ot) ObjectType where
-  eval _ _ = pure $ symbolVal $ Proxy @ot
+  Eval () GetObjectType (PlayerImpl i ot) ObjectType where
+  eval () _ _ = pure $ symbolVal $ Proxy @ot
 
 -- Object
 

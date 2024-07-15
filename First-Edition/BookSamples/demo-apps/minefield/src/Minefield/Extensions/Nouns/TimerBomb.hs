@@ -26,15 +26,15 @@ type TimerBomb i t = MkObject (TimerBombImpl i "timer-bomb" t)
 instance
   ( KnownSymbol i
   ) =>
-  Eval GetIcon (TimerBombImpl i ot t) Icon where
-  eval _ _ = pure $ head $ symbolVal $ Proxy @i
+  Eval () GetIcon (TimerBombImpl i ot t) Icon where
+  eval () _ _ = pure $ head $ symbolVal $ Proxy @i
 
 instance
   ( KnownSymbol i
   , KnownSymbol ot
   ) =>
-  Eval GetObjectInfo (TimerBombImpl i ot t) (ObjectType, Icon) where
-  eval _ _ = do
+  Eval () GetObjectInfo (TimerBombImpl i ot t) (ObjectType, Icon) where
+  eval () _ _ = do
     let oType = symbolVal $ Proxy @ot
     let icon = head $ symbolVal $ Proxy @i
     pure (oType, icon)
@@ -42,8 +42,8 @@ instance
 instance
   ( KnownSymbol ot
   ) =>
-  Eval GetObjectType (TimerBombImpl i ot t) ObjectType where
-  eval _ _ = pure $ symbolVal $ Proxy @ot
+  Eval () GetObjectType (TimerBombImpl i ot t) ObjectType where
+  eval () _ _ = pure $ symbolVal $ Proxy @ot
 
 -- Object
 

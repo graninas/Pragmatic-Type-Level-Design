@@ -3,6 +3,6 @@ module Minefield.Core.Eval where
 import CPrelude
 
 
-class Eval tag payload ret
-  | tag payload -> ret where
-  eval :: Proxy tag -> Proxy payload -> IO ret
+class Eval payload tag item ret
+  | tag item -> ret where
+  eval :: payload -> Proxy tag -> Proxy item -> IO ret

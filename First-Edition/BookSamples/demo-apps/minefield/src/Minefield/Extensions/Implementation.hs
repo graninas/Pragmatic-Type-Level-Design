@@ -18,13 +18,13 @@ import GHC.TypeLits
 
 instance
   ( obj ~ LandmineImpl ch ot p
-  , Eval GetObjectType obj String
+  , Eval () GetObjectType obj String
   ) =>
-  Eval MakeActorAction
+  Eval () MakeActorAction
        (ObjAct obj PutFlagImpl)
        (ObjectType, ActorAction) where
-  eval _ _ = do
-    oType <- eval (Proxy @GetObjectType) $ Proxy @obj
+  eval () _ _ = do
+    oType <- eval () (Proxy @GetObjectType) $ Proxy @obj
 
     let act = \sysBus pos -> do
           publishEvent sysBus $ ActorRequestEvent oType pos $ AddOverhaulIcon '🚩'

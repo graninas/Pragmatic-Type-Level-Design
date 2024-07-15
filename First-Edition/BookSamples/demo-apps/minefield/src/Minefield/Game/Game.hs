@@ -29,10 +29,13 @@ import System.Console.ANSI
 createRandomGame
   :: forall g field player emptyCell objects actions
    . ( g ~ Game field player emptyCell objects actions
-     , Eval MakeGameActions (ObjsActs objects actions) GameActions
-     , Eval GetObjectInfo player (ObjectType, Char)
-     , Eval GetObjectInfo emptyCell (ObjectType, Char)
-     , Eval GetObjectInfo (Objects objects) [(ObjectType, Char)]
+     , Eval () MakeGameActions (ObjsActs objects actions) GameActions
+
+    --  , Eval SysBus MakeActors (ObjsActs objects) [Actor]
+
+     , Eval () GetObjectInfo player (ObjectType, Char)
+     , Eval () GetObjectInfo emptyCell (ObjectType, Char)
+     , Eval () GetObjectInfo (Objects objects) [(ObjectType, Char)]
      )
   => EmptyCellsPercent
   -> (Int, Int)
@@ -41,22 +44,21 @@ createRandomGame emptyCellsPercent (w, h) = do
   resetScreen
   printTitle "Minefield game"
 
+  sysBus <- createSystemBus
+
   let getObjectInfo = Proxy @GetObjectInfo
-  pInfo  <- eval getObjectInfo $ Proxy @player
-  ecInfo <- eval getObjectInfo $ Proxy @emptyCell
-  objs   <- eval getObjectInfo $ Proxy @(Objects objects)
+  pInfo  <- eval () getObjectInfo $ Proxy @player
+  ecInfo <- eval () getObjectInfo $ Proxy @emptyCell
+  objs   <- eval () getObjectInfo $ Proxy @(Objects objects)
 
   let makeActions = Proxy @MakeGameActions
-  actions <- eval makeActions $ Proxy @(ObjsActs objects actions)
+  actions <- eval () makeActions $ Proxy @(ObjsActs objects actions)
 
   let coords = [(x, y) | x <- [0..w-1], y <- [0..h-1]]
 
   cells1 <- mapM (createRandomCell objs) coords
   cells2 <- writeRandomEmptyCells ecInfo emptyCellsPercent cells1
   cells3 <- writeRandomPlayer (w, h) pInfo cells2
-
-
-  sysBus <- createSystemBus
 
   -- Subscribing the orchestrator
   let orchCond ev = isPlayerInputEvent ev

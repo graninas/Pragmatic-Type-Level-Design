@@ -31,7 +31,10 @@ createRandomGame
    . ( g ~ Game field player emptyCell objects actions
      , Eval () MakeGameActions (ObjsActs objects actions) GameActions
 
-    --  , Eval SysBus MakeActors (ObjsActs objects) [Actor]
+     , Eval (SystemBus, FieldObjects)
+          MakeActors
+          (Objects (player ': emptyCell ': objects))
+          [Actor]
 
      , Eval () GetObjectInfo player (ObjectType, Char)
      , Eval () GetObjectInfo emptyCell (ObjectType, Char)
@@ -46,16 +49,14 @@ createRandomGame emptyCellsPercent (w, h) = do
 
   sysBus <- createSystemBus
 
+  -- Creating a random game
+
   let getObjectInfo = Proxy @GetObjectInfo
   pInfo  <- eval () getObjectInfo $ Proxy @player
   ecInfo <- eval () getObjectInfo $ Proxy @emptyCell
   objs   <- eval () getObjectInfo $ Proxy @(Objects objects)
 
-  let makeActions = Proxy @MakeGameActions
-  actions <- eval () makeActions $ Proxy @(ObjsActs objects actions)
-
   let coords = [(x, y) | x <- [0..w-1], y <- [0..h-1]]
-
   cells1 <- mapM (createRandomCell objs) coords
   cells2 <- writeRandomEmptyCells ecInfo emptyCellsPercent cells1
   cells3 <- writeRandomPlayer (w, h) pInfo cells2
@@ -66,18 +67,20 @@ createRandomGame emptyCellsPercent (w, h) = do
   let orchSub = Subscription orchCond orchQueueVar
   subscribeRecipient sysBus orchSub
 
-  fieldWatcher <- createFieldWatcherActor (w, h) sysBus
-  -- TODO: subscribe the field watcher
-
   -- Creating actors for each cell
-  fieldActors <- mapM (createActor sysBus) $ Map.toList cells3
-  let field = Map.fromList fieldActors
-  fieldRef <- newIORef field
+  let makeActors   = Proxy @MakeActors
+  let fieldObjects = Proxy @(Objects (player ': emptyCell ': objects))
+  fieldActors <- eval (sysBus, cells3) makeActors fieldObjects
 
-  let actors = ((-1, -1), fieldWatcher) : fieldActors
+  -- Creating a special actor - field watcher
+  fieldWatcher <- createFieldWatcherActor (w, h) sysBus
+  let actors = fieldWatcher : fieldActors
+
+  -- Making actions
+  let makeActions = Proxy @MakeGameActions
+  actions <- eval () makeActions $ Proxy @(ObjsActs objects actions)
 
   pure $ GameRuntime
-    fieldRef
     (w, h)
     (runGameOrchestrator sysBus orchQueueVar actors actions)
 
@@ -176,10 +179,10 @@ createFieldWatcherActor (w, h) sysBus = do
 tickActors :: Actors -> GameIO ()
 tickActors actors = mapM_ doTick actors
   where
-    doTick (_, Actor _ tickChan _) = do
+    doTick (Actor _ tickChan _) = do
       sendTick tickChan
       waitForFinishedTick tickChan
-    doTick (_, SystemActor _ tickChan _) = do
+    doTick (SystemActor _ tickChan _) = do
       sendTick tickChan
       waitForFinishedTick tickChan
 

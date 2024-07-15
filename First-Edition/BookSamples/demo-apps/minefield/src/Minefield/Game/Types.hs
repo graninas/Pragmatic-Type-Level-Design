@@ -55,11 +55,10 @@ data Actor = Actor
     }
 
 type Field = Map.Map (Int, Int) Actor
-type Actors = [((Int, Int), Actor)]
+type Actors = [Actor]
 
 data GameRuntime = GameRuntime
-  { grFieldRef :: IORef Field
-  , grFieldSize :: (Int, Int)
+  { grFieldSize :: (Int, Int)
   , grGameOrchestrator :: IO ()
   }
 
@@ -82,3 +81,6 @@ data Direction = U | D | L | R
 
 data PlayerCommand
   = PlayerCommand (Maybe Direction) ActorActions
+
+
+type FieldObjects = Map.Map (Int, Int) (ObjectType, Icon)

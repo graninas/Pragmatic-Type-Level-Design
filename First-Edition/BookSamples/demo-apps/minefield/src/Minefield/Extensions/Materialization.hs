@@ -143,3 +143,9 @@ instance
 
 -- Make actors
 
+instance
+  Eval (SystemBus, FieldObjects)
+       MakeActors
+       (Objects (player ': emptyCell ': objects))
+       [Actor] where
+  eval _ _ _ = pure []

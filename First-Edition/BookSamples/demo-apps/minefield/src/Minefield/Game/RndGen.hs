@@ -23,7 +23,7 @@ writeRandomEmptyCells
   :: (ObjectType, Char)
   -> Float
   -> [((Int, Int), (ObjectType, Char))]
-  -> IO (Map.Map (Int, Int) (ObjectType, Char))
+  -> IO FieldObjects
 writeRandomEmptyCells iconObj percent cells = do
 
   let maxIdx = (length cells) - 1
@@ -47,8 +47,8 @@ writeRandomEmptyCells iconObj percent cells = do
 writeRandomPlayer
   :: (Int, Int)
   -> (ObjectType, Char)
-  -> Map.Map (Int, Int) (ObjectType, Char)
-  -> IO (Map.Map (Int, Int) (ObjectType, Char))
+  -> FieldObjects
+  -> IO FieldObjects
 writeRandomPlayer (w, h) obj cells = do
   x <- randomRIO (0, w - 1)
   y <- randomRIO (0, h - 1)

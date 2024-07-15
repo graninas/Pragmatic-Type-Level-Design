@@ -3,6 +3,7 @@ module Main where
 import CPrelude
 
 import Minefield.Core.Eval
+import Minefield.Core.Types
 import Minefield.Core.Interface
 import Minefield.Game.Types
 import Minefield.Game.Game

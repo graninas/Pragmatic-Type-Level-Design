@@ -17,6 +17,8 @@ library
       Main
       Minefield.Core.Eval
       Minefield.Core.Interface
+      Minefield.Core.Object
+      Minefield.Core.Types
       Minefield.Extensions.Implementation
       Minefield.Extensions.Materialization
       Minefield.Extensions.Nouns.EmptyCell
@@ -89,6 +91,8 @@ executable minefield
   other-modules:
       Minefield.Core.Eval
       Minefield.Core.Interface
+      Minefield.Core.Object
+      Minefield.Core.Types
       Minefield.Extensions.Implementation
       Minefield.Extensions.Materialization
       Minefield.Extensions.Nouns.EmptyCell

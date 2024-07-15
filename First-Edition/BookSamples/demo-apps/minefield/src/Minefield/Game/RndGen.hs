@@ -2,6 +2,7 @@ module Minefield.Game.RndGen where
 
 import CPrelude
 
+import Minefield.Core.Types
 import Minefield.Game.Types
 import Minefield.Game.System
 

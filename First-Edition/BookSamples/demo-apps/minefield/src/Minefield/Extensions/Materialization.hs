@@ -5,6 +5,7 @@ module Minefield.Extensions.Materialization where
 import CPrelude
 
 import Minefield.Core.Eval
+import Minefield.Core.Types
 import Minefield.Core.Interface
 
 import Minefield.Game.Types
@@ -15,7 +16,6 @@ import qualified Data.Map as Map
 
 
 data GetIcon
-data GetOType
 data GetObjectInfo
 data GetObjectType
 data MakeActorAction
@@ -55,20 +55,20 @@ instance
 -- Get object info
 
 instance
-  ( Eval GetObjectInfo o (OType, Char)
+  ( Eval GetObjectInfo o (ObjectType, Char)
   ) =>
-  Eval GetObjectInfo ('ObjectWrapper o) (OType, Char) where
+  Eval GetObjectInfo ('ObjectWrapper o) (ObjectType, Char) where
   eval vProxy _ = eval vProxy $ Proxy @o
 
 instance
-  Eval GetObjectInfo (Objects '[]) [(OType, Char)] where
+  Eval GetObjectInfo (Objects '[]) [(ObjectType, Char)] where
   eval _ _ = pure []
 
 instance
-  ( Eval GetObjectInfo o (OType, Char)
-  , Eval GetObjectInfo (Objects os) [(OType, Char)]
+  ( Eval GetObjectInfo o (ObjectType, Char)
+  , Eval GetObjectInfo (Objects os) [(ObjectType, Char)]
   ) =>
-  Eval GetObjectInfo (Objects (o ': os)) [(OType, Char)] where
+  Eval GetObjectInfo (Objects (o ': os)) [(ObjectType, Char)] where
   eval vProxy _ = do
     o  <- eval vProxy $ Proxy @o
     os <- eval vProxy $ Proxy @(Objects os)
@@ -106,7 +106,7 @@ instance
   , Eval GetIsDirected dir Bool
   , mkO ~ 'ObjectWrapper o
   , mkA ~ 'ActionWrapper a dir cmd
-  , Eval MakeActorAction (ObjAct o a) (OType, ActorAction)
+  , Eval MakeActorAction (ObjAct o a) (ObjectType, ActorAction)
   , Eval MakeGameActions (TraverseActs mkO acts) GameActions
   ) =>
   Eval MakeGameActions (TraverseActs mkO (mkA ': acts)) GameActions where

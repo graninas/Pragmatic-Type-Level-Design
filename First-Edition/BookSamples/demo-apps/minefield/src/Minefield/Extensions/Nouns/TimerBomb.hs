@@ -2,8 +2,10 @@ module Minefield.Extensions.Nouns.TimerBomb where
 
 import CPrelude
 
-import Minefield.Core.Interface
 import Minefield.Core.Eval
+import Minefield.Core.Types
+import Minefield.Core.Interface
+import Minefield.Core.Object
 
 import Minefield.Extensions.Materialization
 
@@ -24,14 +26,14 @@ type TimerBomb i t = MkObject (TimerBombImpl i "timer-bomb" t)
 instance
   ( KnownSymbol i
   ) =>
-  Eval GetIcon (TimerBombImpl i ot t) Char where
+  Eval GetIcon (TimerBombImpl i ot t) Icon where
   eval _ _ = pure $ head $ symbolVal $ Proxy @i
 
 instance
   ( KnownSymbol i
   , KnownSymbol ot
   ) =>
-  Eval GetObjectInfo (TimerBombImpl i ot t) (OType, Char) where
+  Eval GetObjectInfo (TimerBombImpl i ot t) (ObjectType, Icon) where
   eval _ _ = do
     let oType = symbolVal $ Proxy @ot
     let icon = head $ symbolVal $ Proxy @i
@@ -40,5 +42,12 @@ instance
 instance
   ( KnownSymbol ot
   ) =>
-  Eval GetObjectType (TimerBombImpl i ot t) String where
+  Eval GetObjectType (TimerBombImpl i ot t) ObjectType where
   eval _ _ = pure $ symbolVal $ Proxy @ot
+
+-- Object
+
+data TimerBombObject = TimerBombObject
+  { tbObjectInfo :: ObjectInfo
+  , tbTurns :: Int
+  }

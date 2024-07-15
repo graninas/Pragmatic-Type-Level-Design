@@ -3,6 +3,7 @@ module Minefield.Extensions.Implementation where
 import CPrelude
 
 import Minefield.Core.Eval
+import Minefield.Core.Types
 import Minefield.Core.Interface
 
 import Minefield.Game.Types

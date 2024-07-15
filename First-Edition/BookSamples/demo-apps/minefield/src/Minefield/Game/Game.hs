@@ -5,6 +5,7 @@ module Minefield.Game.Game where
 import CPrelude
 
 import Minefield.Core.Eval
+import Minefield.Core.Types
 import Minefield.Core.Interface
 
 import Minefield.Game.Types
@@ -41,8 +42,8 @@ createRandomGame emptyCellsPercent (w, h) = do
   printTitle "Minefield game"
 
   let getObjectInfo = Proxy @GetObjectInfo
-  pIcon  <- eval getObjectInfo $ Proxy @player
-  ecIcon <- eval getObjectInfo $ Proxy @emptyCell
+  pInfo  <- eval getObjectInfo $ Proxy @player
+  ecInfo <- eval getObjectInfo $ Proxy @emptyCell
   objs   <- eval getObjectInfo $ Proxy @(Objects objects)
 
   let makeActions = Proxy @MakeGameActions
@@ -51,8 +52,8 @@ createRandomGame emptyCellsPercent (w, h) = do
   let coords = [(x, y) | x <- [0..w-1], y <- [0..h-1]]
 
   cells1 <- mapM (createRandomCell objs) coords
-  cells2 <- writeRandomEmptyCells ecIcon emptyCellsPercent cells1
-  cells3 <- writeRandomPlayer (w, h) pIcon cells2
+  cells2 <- writeRandomEmptyCells ecInfo emptyCellsPercent cells1
+  cells3 <- writeRandomPlayer (w, h) pInfo cells2
 
 
   sysBus <- createSystemBus
@@ -155,7 +156,7 @@ createFieldWatcherActor (w, h) sysBus = do
   let sub = isFieldIconEvent
   subscribeRecipient sysBus $ Subscription sub queueVar
 
-  pure $ Actor tId tickChan queueVar
+  pure $ SystemActor tId tickChan queueVar
 
   where
     fieldWatcherWorker tickChan queueVar (w, h) = do
@@ -174,6 +175,9 @@ tickActors :: Actors -> GameIO ()
 tickActors actors = mapM_ doTick actors
   where
     doTick (_, Actor _ tickChan _) = do
+      sendTick tickChan
+      waitForFinishedTick tickChan
+    doTick (_, SystemActor _ tickChan _) = do
       sendTick tickChan
       waitForFinishedTick tickChan
 

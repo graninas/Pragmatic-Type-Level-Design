@@ -2,10 +2,11 @@ module Minefield.Core.Interface where
 
 import CPrelude
 
+import Minefield.Core.Types
+
 import GHC.TypeLits
 
 
-type OType = String
 
 data IObject where
   ObjectWrapper :: a -> IObject

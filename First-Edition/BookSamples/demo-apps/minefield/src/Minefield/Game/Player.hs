@@ -4,6 +4,8 @@ import CPrelude
 
 import qualified Prelude as P
 
+import Minefield.Core.Types
+
 import Minefield.Game.Types
 import Minefield.Game.System
 import Minefield.Game.UI

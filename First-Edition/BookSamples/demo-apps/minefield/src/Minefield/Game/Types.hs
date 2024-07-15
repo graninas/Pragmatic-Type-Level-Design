@@ -2,9 +2,10 @@ module Minefield.Game.Types where
 
 import CPrelude
 
+import Minefield.Core.Types
+
 import qualified Data.Map as Map
 
-type Pos = (Int, Int)
 type PlayerPos = Pos
 type ActorPos  = Pos
 
@@ -47,6 +48,11 @@ data Actor = Actor
   , aTickChannel :: TickChannel
   , aInEventQueueVar :: EventQueueVar
   }
+  | SystemActor
+    { aThreadId :: ThreadId
+    , aTickChannel :: TickChannel
+    , aInEventQueueVar :: EventQueueVar
+    }
 
 type Field = Map.Map (Int, Int) Actor
 type Actors = [((Int, Int), Actor)]
@@ -66,7 +72,6 @@ data GamePhase
 type GameIO a = IO a
 
 type TextCommand = String
-type ObjectType = String
 
 type ActorAction  = SystemBus -> Pos -> GameIO ()
 type ActorActions = Map.Map ObjectType ActorAction

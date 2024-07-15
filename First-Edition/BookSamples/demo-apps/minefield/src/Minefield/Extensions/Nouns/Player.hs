@@ -3,8 +3,10 @@ module Minefield.Extensions.Nouns.Player where
 
 import CPrelude
 
-import Minefield.Core.Interface
 import Minefield.Core.Eval
+import Minefield.Core.Types
+import Minefield.Core.Interface
+import Minefield.Core.Object
 
 import Minefield.Extensions.Materialization
 
@@ -21,14 +23,14 @@ type Player i = MkObject (PlayerImpl i "player")
 instance
   ( KnownSymbol i
   ) =>
-  Eval GetIcon (PlayerImpl i ot) Char where
+  Eval GetIcon (PlayerImpl i ot) Icon where
   eval _ _ = pure $ head $ symbolVal $ Proxy @i
 
 instance
   ( KnownSymbol i
   , KnownSymbol ot
   ) =>
-  Eval GetObjectInfo (PlayerImpl i ot) (OType, Char) where
+  Eval GetObjectInfo (PlayerImpl i ot) (ObjectType, Icon) where
   eval _ _ = do
     let oType = symbolVal $ Proxy @ot
     let icon = head $ symbolVal $ Proxy @i
@@ -37,5 +39,11 @@ instance
 instance
   ( KnownSymbol ot
   ) =>
-  Eval GetObjectType (PlayerImpl i ot) String where
+  Eval GetObjectType (PlayerImpl i ot) ObjectType where
   eval _ _ = pure $ symbolVal $ Proxy @ot
+
+-- Object
+
+data PlayerObject = PlayerObject
+  { pObjectInfo :: ObjectInfo
+  }

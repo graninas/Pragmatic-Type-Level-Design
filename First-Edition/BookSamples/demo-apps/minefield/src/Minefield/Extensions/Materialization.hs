@@ -142,8 +142,6 @@ instance
     (oType, actorAct) <- eval () (Proxy @MakeActorAction)
                               (Proxy @(ObjAct o a))
 
-    printDebugString $ "Cmd: " <> show cmd <> " " <> show oType
-
     gameActs <- eval () proxy $ Proxy @(TraverseActs mkO acts)
 
     let singActorActions :: ActorActions = Map.singleton oType actorAct

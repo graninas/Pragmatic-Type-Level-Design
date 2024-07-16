@@ -25,6 +25,18 @@ import System.Random (randomRIO)
 import System.Console.ANSI
 
 
+ticksInTurn :: Int
+ticksInTurn = 10
+
+
+data GamePhase
+  = RefreshUI
+  | PlayerInput
+  | DoTurn
+
+type TicksLeft = Int
+type GameTurn = (GamePhase, TicksLeft)
+
 -- | Creates a random game of given field size.
 createRandomGame
   :: forall g field player emptyCell objects actions
@@ -93,41 +105,31 @@ runGameOrchestrator
   -> GameActions
   -> GameIO ()
 runGameOrchestrator sysBus queueVar actors actions = do
-  gameOrchestratorWorker RefreshUI
+  gameOrchestratorWorker (RefreshUI, ticksInTurn)
 
   where
 
-    gameOrchestratorWorker RefreshUI = do
+    gameOrchestratorWorker (RefreshUI, ticksLeft) = do
       publishEvent sysBus PopulateCellDescriptionEvent
       distributeEvents sysBus
       stepActors actors
 
-      gameOrchestratorWorker PlayerInput
+      gameOrchestratorWorker (PlayerInput, ticksLeft)
 
-    gameOrchestratorWorker DoTurn = do
+    gameOrchestratorWorker (DoTurn, ticksLeft) = do
 
-      mapM_ (\(n :: Int) -> do
+      mapM_ (\n -> do
         printStatus $ "Performing a tick: " <> show n
-        publishEvent sysBus TickEvent
-        distributeEvents sysBus
-        stepActors actors
-
-        publishEvent sysBus PopulateCellDescriptionEvent
-        distributeEvents sysBus
-        stepActors actors
-
-        flushScreen
-
-        threadDelay $ 1000 * 10
-        ) [1..9]
+        doTick sysBus actors
+        ) [1..ticksLeft]
 
       publishEvent sysBus TurnEvent
       distributeEvents sysBus
       stepActors actors
 
-      gameOrchestratorWorker RefreshUI
+      gameOrchestratorWorker (RefreshUI, ticksInTurn)
 
-    gameOrchestratorWorker PlayerInput = do
+    gameOrchestratorWorker (PlayerInput, ticksLeft) = do
       publishEvent sysBus PlayerInputInvitedEvent
       distributeEvents sysBus
 
@@ -139,7 +141,12 @@ runGameOrchestrator sysBus queueVar actors actions = do
       -- TODO: proper event processing
       let inputEvs = [ev | ev <- evs, isPlayerInputEvent ev]
       case inputEvs of
-        (PlayerInputEvent _ "turn" : _) -> gameOrchestratorWorker DoTurn
+        (PlayerInputEvent _ "tick" : _) -> case ticksLeft of
+          0 -> gameOrchestratorWorker (DoTurn, ticksInTurn)
+          _ -> do
+            doTick sysBus actors
+            gameOrchestratorWorker (PlayerInput, ticksLeft - 1)
+        (PlayerInputEvent _ "turn" : _) -> gameOrchestratorWorker (DoTurn, ticksInTurn)
         (PlayerInputEvent _ "quit" : _) -> printStatus "Bye-bye"
         (PlayerInputEvent _ "exit" : _) -> printStatus "Bye-bye"
         (PlayerInputEvent playerPos line : _) -> do
@@ -149,14 +156,28 @@ runGameOrchestrator sysBus queueVar actors actions = do
           case eCmd of
             Left err -> do
               printStatus err
-              gameOrchestratorWorker RefreshUI
+              gameOrchestratorWorker (RefreshUI, ticksLeft)
             Right playerCmd -> do
               performPlayerCommand sysBus playerPos playerCmd
-              gameOrchestratorWorker DoTurn
+              gameOrchestratorWorker (DoTurn, ticksInTurn)
 
         _ -> do
 
-          gameOrchestratorWorker RefreshUI
+          gameOrchestratorWorker (RefreshUI, ticksLeft)
+
+doTick :: SystemBus -> Actors -> GameIO ()
+doTick sysBus actors = do
+  publishEvent sysBus TickEvent
+  distributeEvents sysBus
+  stepActors actors
+
+  publishEvent sysBus PopulateCellDescriptionEvent
+  distributeEvents sysBus
+  stepActors actors
+
+  flushScreen
+
+  threadDelay $ 1000 * 50
 
 
 createFieldWatcherActor

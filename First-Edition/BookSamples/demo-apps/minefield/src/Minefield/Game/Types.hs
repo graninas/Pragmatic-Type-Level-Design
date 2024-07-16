@@ -68,11 +68,6 @@ data GameRuntime = GameRuntime
 
 type EmptyCellsPercent = Float
 
-data GamePhase
-  = RefreshUI
-  | PlayerInput
-  | DoTurn
-
 type GameIO a = IO a
 
 type TextCommand = String
@@ -81,7 +76,9 @@ type ActorAction  = SystemBus -> Pos -> GameIO ()
 type ActorActions = Map.Map ObjectType ActorAction
 type GameActions  = Map.Map TextCommand (Bool, ActorActions)
 
-data Direction = U | D | L | R
+data Direction
+  = U | D | L | R
+  | UL | UR | DL | DR
   deriving (Show, Eq, Ord, Read)
 
 data PlayerCommand

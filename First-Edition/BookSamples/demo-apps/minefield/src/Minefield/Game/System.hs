@@ -112,6 +112,10 @@ movePos (x, y) U = (x, y-1)
 movePos (x, y) D = (x, y+1)
 movePos (x, y) L = (x-1, y)
 movePos (x, y) R = (x+1, y)
+movePos pos DL = movePos (movePos pos L) D
+movePos pos UR = movePos (movePos pos R) U
+movePos pos UL = movePos (movePos pos L) U
+movePos pos DR = movePos (movePos pos R) D
 
 
 actorWorker

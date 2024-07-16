@@ -67,6 +67,8 @@ instance
     let sub ev =
           isPopulateCellDescriptionEvent ev
           || isObjectRequestEvent ev
+          || isTickEvent ev
+          || isTurnEvent ev
 
     subscribeRecipient sysBus $ Subscription sub queueVar
 
@@ -81,5 +83,19 @@ processTimerBombEvent
   -> TimerBombObject
   -> SystemEvent
   -> GameIO ()
+processTimerBombEvent sysBus obj TurnEvent = do
+  turnsLeft <- readIORef $ tboTurnsRef obj
+  objInf    <- readIORef $ tboObjectInfoRef obj
+  case (oiEnabled objInf, turnsLeft) of
+    (True, 0)  -> makeExplosion sysBus obj
+    (True, n)  -> do
+      writeIORef (tboTurnsRef obj) $ turnsLeft - 1
+      writeIORef (tboObjectInfoRef obj)
+        $ objInf { oiIcon = head $ show n }
+    (False, _) -> pure ()
+
 processTimerBombEvent sysBus obj commonEv =
   processCommonEvent sysBus (tboObjectInfoRef obj) commonEv
+
+
+makeExplosion sysBus obj = error "explosion not impl"

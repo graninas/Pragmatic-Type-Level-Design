@@ -92,7 +92,6 @@ runGameOrchestrator
   -> GameActions
   -> GameIO ()
 runGameOrchestrator sysBus queueVar actors actions = do
-  -- print "Starting game orchestrator..."
   gameOrchestratorWorker RefreshUI
 
   where
@@ -100,32 +99,46 @@ runGameOrchestrator sysBus queueVar actors actions = do
     gameOrchestratorWorker RefreshUI = do
       publishEvent sysBus PopulateCellDescriptionEvent
       distributeEvents sysBus
-
-      -- print "RefreshUI: stepping actors..."
-
       stepActors actors
 
-      -- print "TODO: RefreshUI: stepping field watcher..."
-
       gameOrchestratorWorker PlayerInput
+
+    gameOrchestratorWorker DoTurn = do
+
+      mapM_ (\(n :: Int) -> do
+        printStatus $ "Performing a tick: " <> show n
+        publishEvent sysBus TickEvent
+        distributeEvents sysBus
+        stepActors actors
+
+        publishEvent sysBus PopulateCellDescriptionEvent
+        distributeEvents sysBus
+        stepActors actors
+
+        flushScreen
+
+        threadDelay $ 1000 * 10
+        ) [1..9]
+
+      publishEvent sysBus TurnEvent
+      distributeEvents sysBus
+      stepActors actors
+
+      gameOrchestratorWorker RefreshUI
 
     gameOrchestratorWorker PlayerInput = do
       publishEvent sysBus PlayerInputInvitedEvent
       distributeEvents sysBus
 
-      -- print "Stepping actors..."
       stepActors actors
-
       distributeEvents sysBus
 
-      -- print "Reading orchestrator's events..."
       evs <- extractEvents queueVar
-      -- print $ "Events: " <> show evs
 
-      -- print "Processing events..."
-      -- tODO: proper event processing
+      -- TODO: proper event processing
       let inputEvs = [ev | ev <- evs, isPlayerInputEvent ev]
       case inputEvs of
+        (PlayerInputEvent _ "turn" : _) -> gameOrchestratorWorker DoTurn
         (PlayerInputEvent _ "quit" : _) -> printStatus "Bye-bye"
         (PlayerInputEvent _ "exit" : _) -> printStatus "Bye-bye"
         (PlayerInputEvent playerPos line : _) -> do
@@ -133,13 +146,16 @@ runGameOrchestrator sysBus queueVar actors actions = do
           eCmd <- parsePlayerCommand line actions
 
           case eCmd of
-            Left err        -> printStatus err
+            Left err -> do
+              printStatus err
+              gameOrchestratorWorker RefreshUI
             Right playerCmd -> do
-              -- printStatus $ "Command recognized: " <> show line
               performPlayerCommand sysBus playerPos playerCmd
+              gameOrchestratorWorker DoTurn
+
+        _ -> do
 
           gameOrchestratorWorker RefreshUI
-        _ -> gameOrchestratorWorker RefreshUI
 
 
 createFieldWatcherActor

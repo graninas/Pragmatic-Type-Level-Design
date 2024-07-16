@@ -20,6 +20,8 @@ data SystemEvent
   | PlayerInputEvent PlayerPos String
   | PopulateCellDescriptionEvent
   | FieldIconEvent Pos Icon
+  | TickEvent
+  | TurnEvent
 
   | ObjectRequestEvent ObjectType ActorPos ObjectRequestEvent
   deriving (Show, Eq, Ord)
@@ -69,6 +71,7 @@ type EmptyCellsPercent = Float
 data GamePhase
   = RefreshUI
   | PlayerInput
+  | DoTurn
 
 type GameIO a = IO a
 

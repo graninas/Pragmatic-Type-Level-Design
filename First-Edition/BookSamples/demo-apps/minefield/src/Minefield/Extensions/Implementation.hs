@@ -186,8 +186,10 @@ processCommonEvent sysBus oInfRef (ObjectRequestEvent oType pos ev) = do
   if match
     then processObjectRequestEvent sysBus oInfRef ev
     else pure ()
-processCommonEvent _ _ _ = error "Common request not implemented"
 
+processCommonEvent _ _ TurnEvent = pure ()
+processCommonEvent _ _ TickEvent = pure ()
+processCommonEvent _ _ _ = error "Common request not implemented"
 
 processObjectRequestEvent
   :: SystemBus

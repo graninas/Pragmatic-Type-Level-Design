@@ -98,6 +98,14 @@ isObjectRequestEvent :: SystemEvent -> Bool
 isObjectRequestEvent (ObjectRequestEvent _ _ _) = True
 isObjectRequestEvent _ = False
 
+isTickEvent :: SystemEvent -> Bool
+isTickEvent TickEvent = True
+isTickEvent _ = False
+
+isTurnEvent :: SystemEvent -> Bool
+isTurnEvent TurnEvent = True
+isTurnEvent _ = False
+
 
 movePos :: Pos -> Direction -> Pos
 movePos (x, y) U = (x, y-1)

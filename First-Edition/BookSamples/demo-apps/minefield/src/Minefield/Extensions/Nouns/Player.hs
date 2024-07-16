@@ -30,11 +30,11 @@ instance
   ( KnownSymbol i
   , KnownSymbol ot
   ) =>
-  Eval () GetObjectInfo (PlayerImpl i ot) (ObjectType, Icon) where
+  Eval () GetObjectInfo (PlayerImpl i ot) ObjectInfo where
   eval () _ _ = do
     let oType = symbolVal $ Proxy @ot
     let icon = head $ symbolVal $ Proxy @i
-    pure (oType, icon)
+    pure $ ObjectInfo icon (-1, -1) oType True []
 
 instance
   ( KnownSymbol ot

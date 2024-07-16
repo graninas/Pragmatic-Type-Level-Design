@@ -33,11 +33,11 @@ instance
   ( KnownSymbol i
   , KnownSymbol ot
   ) =>
-  Eval () GetObjectInfo (TimerBombImpl i ot t) (ObjectType, Icon) where
+  Eval () GetObjectInfo (TimerBombImpl i ot t) ObjectInfo where
   eval () _ _ = do
     let oType = symbolVal $ Proxy @ot
     let icon = head $ symbolVal $ Proxy @i
-    pure (oType, icon)
+    pure $ ObjectInfo icon (-1, -1) oType True []
 
 instance
   ( KnownSymbol ot

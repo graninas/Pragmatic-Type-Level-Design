@@ -44,12 +44,12 @@ type MyGame = Game
   Minefield         -- not used for now
   (Player "@")
   (EmptyCell " ")
-  '[ Landmine "6" 6
-   , Landmine "7" 7
-   , Landmine "8" 8
-  --  , TimerBomb "A" 16
+  '[ Landmine "F" 6
+   , Landmine "G" 7
+   , Landmine "H" 8
+   , TimerBomb "A" 16
   --  , TimerBomb "B" 18
-   , TimerBomb "C" 20
+  --  , TimerBomb "C" 20
    ]
   '[ PutFlag
   --  , Dig

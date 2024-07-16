@@ -40,7 +40,7 @@ instance
           publishEvent sysBus
             $ ObjectRequestEvent oType pos
             $ AddOverhaulIcon
-            $ OverhaulIcon '🚩' (TurnsCount (-1)) (TicksCount 0)
+            $ OverhaulIcon '!' (TurnsCount (-1)) (TicksCount 0)
           publishEvent sysBus
             $ ObjectRequestEvent oType pos
             $ SetEnabled False

@@ -88,4 +88,4 @@ data PlayerCommand
   = PlayerCommand (Maybe Direction) ActorActions
 
 
-type FieldObjects = Map.Map (Int, Int) ObjectType
+type FieldObjects = Map.Map (Int, Int) ObjectInfo

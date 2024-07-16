@@ -7,6 +7,7 @@ import CPrelude
 import Minefield.Core.Eval
 import Minefield.Core.Types
 import Minefield.Core.Interface
+import Minefield.Core.Object
 
 import Minefield.Game.Types
 import Minefield.Game.RndGen
@@ -35,9 +36,9 @@ createRandomGame
           (Objects (player ': emptyCell ': objects))
           [Actor]
 
-     , Eval () GetObjectType player ObjectType
-     , Eval () GetObjectType emptyCell ObjectType
-     , Eval () GetObjectType (Objects objects) [ObjectType]
+     , Eval () GetObjectInfo player ObjectInfo
+     , Eval () GetObjectInfo emptyCell ObjectInfo
+     , Eval () GetObjectInfo (Objects objects) [ObjectInfo]
      )
   => EmptyCellsPercent
   -> (Int, Int)
@@ -50,15 +51,15 @@ createRandomGame emptyCellsPercent (w, h) = do
 
   -- Creating a random game
 
-  let getObjectType = Proxy @GetObjectType
-  pType  <- eval () getObjectType $ Proxy @player
-  ecType <- eval () getObjectType $ Proxy @emptyCell
-  objs   <- eval () getObjectType $ Proxy @(Objects objects)
+  let getObjectInfo = Proxy @GetObjectInfo
+  pInfo  <- eval () getObjectInfo $ Proxy @player
+  ecInfo <- eval () getObjectInfo $ Proxy @emptyCell
+  objs   <- eval () getObjectInfo $ Proxy @(Objects objects)
 
   let coords = [(x, y) | x <- [0..w-1], y <- [0..h-1]]
   cells1 <- mapM (createRandomCell objs) coords
-  cells2 <- writeRandomEmptyCells ecType emptyCellsPercent cells1
-  cells3 <- writeRandomPlayer (w, h) pType cells2
+  cells2 <- writeRandomEmptyCells ecInfo emptyCellsPercent cells1
+  cells3 <- writeRandomPlayer (w, h) pInfo cells2
 
   -- Subscribing the orchestrator
   let orchCond ev = isPlayerInputEvent ev

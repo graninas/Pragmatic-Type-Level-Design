@@ -36,21 +36,30 @@ type Landmine i p = MkObject (LandmineImpl i "landmine" p)
 
 -- Implementation
 
-instance
-  ( KnownSymbol i
-  ) =>
-  Eval () GetIcon (LandmineImpl i ot p) Icon where
-  eval () _ _ = pure $ head $ symbolVal $ Proxy @i
+getLandmineIcon p = ['A'..'Z'] !! p
 
 instance
-  ( KnownSymbol i
+  ( KnownNat p
+  ) =>
+  Eval () GetIcon (LandmineImpl i ot p) Icon where
+  eval () _ _ = pure
+    $ getLandmineIcon
+    $ fromIntegral
+    $ natVal
+    $ Proxy @p
+
+instance
+  ( KnownNat p
   , KnownSymbol ot
   ) =>
-  Eval () GetObjectInfo (LandmineImpl i ot p) (ObjectType, Icon) where
+  Eval () GetObjectInfo (LandmineImpl i ot p) ObjectInfo where
   eval () _ _ = do
     let oType = symbolVal $ Proxy @ot
-    let icon = head $ symbolVal $ Proxy @i
-    pure (oType, icon)
+    let icon =  getLandmineIcon
+                  $ fromIntegral
+                  $ natVal
+                  $ Proxy @p
+    pure $ ObjectInfo icon (-1, -1) oType True []
 
 instance
   ( KnownSymbol ot

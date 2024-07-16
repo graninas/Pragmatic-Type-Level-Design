@@ -7,6 +7,7 @@ import CPrelude
 import Minefield.Core.Eval
 import Minefield.Core.Types
 import Minefield.Core.Interface
+import Minefield.Core.Object
 
 import Minefield.Game.Types
 import Minefield.Game.UI
@@ -57,20 +58,20 @@ instance
 -- Get object info
 
 instance
-  ( Eval () GetObjectInfo o (ObjectType, Char)
+  ( Eval () GetObjectInfo o ObjectInfo
   ) =>
-  Eval () GetObjectInfo ('ObjectWrapper o) (ObjectType, Char) where
+  Eval () GetObjectInfo ('ObjectWrapper o) ObjectInfo where
   eval () vProxy _ = eval () vProxy $ Proxy @o
 
 instance
-  Eval () GetObjectInfo (Objects '[]) [(ObjectType, Char)] where
+  Eval () GetObjectInfo (Objects '[]) [ObjectInfo] where
   eval () _ _ = pure []
 
 instance
-  ( Eval () GetObjectInfo o (ObjectType, Char)
-  , Eval () GetObjectInfo (Objects os) [(ObjectType, Char)]
+  ( Eval () GetObjectInfo o ObjectInfo
+  , Eval () GetObjectInfo (Objects os) [ObjectInfo]
   ) =>
-  Eval () GetObjectInfo (Objects (o ': os)) [(ObjectType, Char)] where
+  Eval () GetObjectInfo (Objects (o ': os)) [ObjectInfo] where
   eval () vProxy _ = do
     o  <- eval () vProxy $ Proxy @o
     os <- eval () vProxy $ Proxy @(Objects os)
@@ -167,7 +168,7 @@ instance
 
 instance
   ( Eval
-      (SystemBus, Pos, ObjectType)
+      (SystemBus, Pos, ObjectInfo)
        MakeActor
        (Objects objects)
        Actor
@@ -178,33 +179,35 @@ instance
        [Actor] where
   eval (sysBus, fObjs) _ objs = do
     let makeActor = Proxy @MakeActor
-    let evalAct p oType = eval (sysBus, p, oType) makeActor objs
-    actors <- mapM (\(p, oType) -> evalAct p oType)
+    let evalAct p oInfo = eval (sysBus, p, oInfo) makeActor objs
+    actors <- mapM (\(p, oInfo) -> evalAct p oInfo)
               $ Map.toList fObjs
     pure actors
 
 instance
   Eval
-    (SystemBus, Pos, ObjectType)
+    (SystemBus, Pos, ObjectInfo)
      MakeActor
      (Objects '[])
      Actor where
-  eval (_, pos, oType) _ _ =
-    error $ "Object not found for " <> show oType <> " at " <> show pos
+  eval (_, pos, oInfo) _ _ =
+    error $ "Object not found for " <> show oInfo <> " at " <> show pos
 
 instance
-  ( Eval () GetObjectInfo o (ObjectType, Char)
+  ( Eval () GetObjectInfo o ObjectInfo
   , Eval (SystemBus, Pos) MakeActor o Actor
-  , Eval (SystemBus, Pos, ObjectType)
+  , Eval (SystemBus, Pos, ObjectInfo)
          MakeActor (Objects os) Actor
   ) =>
   Eval
-    (SystemBus, Pos, ObjectType)
+    (SystemBus, Pos, ObjectInfo)
      MakeActor
      (Objects ('ObjectWrapper o ': os))
      Actor where
-  eval payload@(sysBus, pos, oType) makeActor _ = do
-    (oType', _) <- eval () (Proxy @GetObjectInfo) $ Proxy @o
-    if oType == oType'
+  eval payload@(sysBus, pos, oInfo) makeActor _ = do
+    oRawInfo <- eval () (Proxy @GetObjectInfo) $ Proxy @o
+    let oTypeEq = oiObjectType oRawInfo == oiObjectType oInfo
+    let iconEq  = oiIcon oRawInfo == oiIcon oInfo
+    if oTypeEq && iconEq
       then eval (sysBus, pos) (Proxy @MakeActor) $ Proxy @o
       else eval payload makeActor $ Proxy @(Objects os)

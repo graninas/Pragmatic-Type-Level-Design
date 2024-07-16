@@ -20,6 +20,7 @@ import Minefield.Extensions.Verbs.PutFlag
 import GHC.TypeLits
 
 
+-- Landmine
 
 instance
   ( obj ~ LandmineImpl ch ot p
@@ -41,9 +42,6 @@ instance
             $ SetEnabled False
 
     pure (oType, act)
-
-
--- Landmine
 
 instance
   ( KnownSymbol i

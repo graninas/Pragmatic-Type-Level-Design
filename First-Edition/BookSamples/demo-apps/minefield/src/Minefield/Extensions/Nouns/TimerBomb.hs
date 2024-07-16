@@ -48,6 +48,6 @@ instance
 -- Object
 
 data TimerBombObject = TimerBombObject
-  { tbObjectInfo :: ObjectInfo
-  , tbTurns :: Int
+  { tboObjectInfoRef :: IORef ObjectInfo
+  , tboTurnsRef      :: IORef Int
   }

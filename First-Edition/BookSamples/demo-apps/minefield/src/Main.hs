@@ -1,3 +1,5 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
+
 module Main where
 
 import CPrelude
@@ -15,6 +17,10 @@ import Minefield.Extensions.Nouns.TimerBomb
 import Minefield.Extensions.Verbs.Dig
 import Minefield.Extensions.Verbs.PutFlag
 import Minefield.Extensions.Verbs.UseLandmineDetector
+
+import Minefield.Extensions.Materialization
+import Minefield.Extensions.Implementation
+import Extra.Implementation
 
 import GHC.TypeLits
 
@@ -43,7 +49,7 @@ type MyGame = Game
    , Landmine "8" 8
   --  , TimerBomb "A" 16
   --  , TimerBomb "B" 18
-  --  , TimerBomb "C" 20
+   , TimerBomb "C" 20
    ]
   '[ PutFlag
   --  , Dig
@@ -51,8 +57,27 @@ type MyGame = Game
    ]
 
 
+createTestGame
+  :: forall g field player emptyCell objects actions
+   . ( g ~ Game field player emptyCell objects actions
+     , Eval () MakeGameActions (ObjsActs objects actions) GameActions
+
+     , Eval (SystemBus, FieldObjects)
+          MakeActors
+          (Objects (player ': emptyCell ': objects))
+          [Actor]
+
+     , Eval () GetObjectType player ObjectType
+     , Eval () GetObjectType emptyCell ObjectType
+     , Eval () GetObjectType (Objects objects) [ObjectType]
+     )
+  => IO GameRuntime
+createTestGame = error "not implemented"
+
+
 main :: IO ()
 main = do
-  game <- createRandomGame @MyGame 0.8 (7, 7)
+  -- game <- createRandomGame @MyGame 0.8 (7, 7)
+  game <- createTestGame @MyGame
 
   grGameOrchestrator game

@@ -154,7 +154,6 @@ instance
         gameActs'  = Map.insert cmd (isDirected, actorActs') gameActs
         in gameActs'
 
-
 instance
   Eval () GetIsDirected 'True Bool where
   eval () _ _ = pure True

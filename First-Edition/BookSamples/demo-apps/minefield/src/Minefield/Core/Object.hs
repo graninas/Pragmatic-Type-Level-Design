@@ -14,8 +14,8 @@ import GHC.TypeLits
 
 data OverhaulIcon = OverhaulIcon
   { ovhIcon  :: Icon
-  , ovhturns :: TurnsCount
-  , ovhticks :: TicksCount
+  , ovhTurns :: TurnsCount
+  , ovhTicks :: TicksCount
   }
   deriving (Show, Eq, Ord)
 

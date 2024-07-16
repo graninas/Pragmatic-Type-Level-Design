@@ -57,27 +57,8 @@ type MyGame = Game
    ]
 
 
-createTestGame
-  :: forall g field player emptyCell objects actions
-   . ( g ~ Game field player emptyCell objects actions
-     , Eval () MakeGameActions (ObjsActs objects actions) GameActions
-
-     , Eval (SystemBus, FieldObjects)
-          MakeActors
-          (Objects (player ': emptyCell ': objects))
-          [Actor]
-
-     , Eval () GetObjectType player ObjectType
-     , Eval () GetObjectType emptyCell ObjectType
-     , Eval () GetObjectType (Objects objects) [ObjectType]
-     )
-  => IO GameRuntime
-createTestGame = error "not implemented"
-
-
 main :: IO ()
 main = do
-  -- game <- createRandomGame @MyGame 0.8 (7, 7)
-  game <- createTestGame @MyGame
+  game <- createRandomGame @MyGame 0.8 (7, 7)
 
   grGameOrchestrator game

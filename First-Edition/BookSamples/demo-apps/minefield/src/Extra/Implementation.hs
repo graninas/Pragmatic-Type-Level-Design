@@ -21,6 +21,27 @@ import GHC.TypeLits
 
 -- TimerBomb
 
+
+instance
+  ( KnownSymbol ot
+  ) =>
+  Eval () MakeActorAction
+       (ObjAct (TimerBombImpl i ot p) PutFlagImpl)
+       (ObjectType, ActorAction) where
+  eval () _ _ = do
+    let oType = symbolVal $ Proxy @ot
+
+    let act = \sysBus pos -> do
+          publishEvent sysBus
+            $ ObjectRequestEvent oType pos
+            $ AddOverhaulIcon
+            $ OverhaulIcon '🚩' (TurnsCount (-1)) (TicksCount 0)
+          publishEvent sysBus
+            $ ObjectRequestEvent oType pos
+            $ SetEnabled False
+
+    pure (oType, act)
+
 instance
   ( KnownSymbol i
   , KnownSymbol ot
@@ -35,7 +56,8 @@ instance
     let oType = symbolVal $ Proxy @ot
     let turns = fromIntegral $ natVal $ Proxy @turns
 
-    let oInfo = ObjectInfo icon pos oType True []
+    let oInfo = ObjectInfo icon pos oType True
+          $ map toTimerBombOvhIcon [turns .. 1]
     obj <- TimerBombObject
       <$> newIORef oInfo
       <*> newIORef turns
@@ -49,6 +71,10 @@ instance
     subscribeRecipient sysBus $ Subscription sub queueVar
 
     pure $ Actor tId tickChan queueVar
+
+toTimerBombOvhIcon :: Int -> OverhaulIcon
+toTimerBombOvhIcon turns =
+  OverhaulIcon (head $ show turns) (TurnsCount 1) (TicksCount 0)
 
 processTimerBombEvent
   :: SystemBus

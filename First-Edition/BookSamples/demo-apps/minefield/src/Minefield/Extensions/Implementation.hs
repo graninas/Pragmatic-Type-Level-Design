@@ -23,14 +23,18 @@ import GHC.TypeLits
 -- Landmine
 
 instance
-  ( obj ~ LandmineImpl ch ot p
-  , Eval () GetObjectType obj String
+  ( KnownSymbol ot
+
+  -- For some reason, this syntax is not universal.
+  -- It prevents other objects from being accepted
+  -- when unwrapping from ObjectWrapper.
+  -- , obj ~ LandmineImpl i ot p
   ) =>
   Eval () MakeActorAction
-       (ObjAct obj PutFlagImpl)
+       (ObjAct (LandmineImpl i ot p) PutFlagImpl)
        (ObjectType, ActorAction) where
   eval () _ _ = do
-    oType <- eval () (Proxy @GetObjectType) $ Proxy @obj
+    let oType = symbolVal $ Proxy @ot
 
     let act = \sysBus pos -> do
           publishEvent sysBus

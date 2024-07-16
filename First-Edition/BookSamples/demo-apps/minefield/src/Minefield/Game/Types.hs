@@ -3,14 +3,15 @@ module Minefield.Game.Types where
 import CPrelude
 
 import Minefield.Core.Types
+import Minefield.Core.Object
 
 import qualified Data.Map as Map
 
 type PlayerPos = Pos
 type ActorPos  = Pos
 
-data ActorEvent
-  = AddOverhaulIcon Char
+data ObjectRequestEvent
+  = AddOverhaulIcon OverhaulIcon
   | SetEnabled Bool
   deriving (Show, Eq, Ord)
 
@@ -18,9 +19,9 @@ data SystemEvent
   = PlayerInputInvitedEvent
   | PlayerInputEvent PlayerPos String
   | PopulateCellDescriptionEvent
-  | FieldIconEvent Pos Char
+  | FieldIconEvent Pos Icon
 
-  | ActorRequestEvent ObjectType ActorPos ActorEvent
+  | ObjectRequestEvent ObjectType ActorPos ObjectRequestEvent
   deriving (Show, Eq, Ord)
 
 type EventQueueVar = MVar [SystemEvent]

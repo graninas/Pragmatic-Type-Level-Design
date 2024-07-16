@@ -32,8 +32,13 @@ instance
     oType <- eval () (Proxy @GetObjectType) $ Proxy @obj
 
     let act = \sysBus pos -> do
-          publishEvent sysBus $ ActorRequestEvent oType pos $ AddOverhaulIcon '🚩'
-          publishEvent sysBus $ ActorRequestEvent oType pos $ SetEnabled False
+          publishEvent sysBus
+            $ ObjectRequestEvent oType pos
+            $ AddOverhaulIcon
+            $ OverhaulIcon '🚩' (TurnsCount (-1)) (TicksCount 0)
+          publishEvent sysBus
+            $ ObjectRequestEvent oType pos
+            $ SetEnabled False
 
     pure (oType, act)
 
@@ -54,7 +59,7 @@ instance
     let oType = symbolVal $ Proxy @ot
     let p     = fromIntegral $ natVal $ Proxy @p
 
-    let oInfo = ObjectInfo icon pos oType
+    let oInfo = ObjectInfo icon pos oType True []
     obj <- LandmineObject
       <$> newIORef oInfo
       <*> newIORef p
@@ -63,7 +68,7 @@ instance
                   $ processLandmineEvent sysBus obj
     let sub ev =
           isPopulateCellDescriptionEvent ev
-          || isActorRequestEvent ev
+          || isObjectRequestEvent ev
 
     subscribeRecipient sysBus $ Subscription sub queueVar
 
@@ -74,17 +79,8 @@ processLandmineEvent
   -> LandmineObject
   -> SystemEvent
   -> GameIO ()
-processLandmineEvent sysBus obj PopulateCellDescriptionEvent = do
-  oInf <- readIORef $ loObjectInfoRef obj
-  publishEvent sysBus $ FieldIconEvent (oiPos oInf) (oiIcon oInf)
-processLandmineEvent sysBus obj (ActorRequestEvent oType pos ev) = do
-  oInf <- readIORef $ loObjectInfoRef obj
-  let curOType = oiObjectType oInf
-  let curPos = oiPos oInf
-  if curOType == oType && curPos == pos
-    then error $ "Landmine match! " <> show pos
-    else pure ()
-processLandmineEvent _ _ _ = error "Landmine event not supported"
+processLandmineEvent sysBus obj commonEv =
+  processCommonEvent sysBus (loObjectInfoRef obj) commonEv
 
 
 -- Player
@@ -101,7 +97,7 @@ instance
     let icon  = head $ symbolVal $ Proxy @i
     let oType = symbolVal $ Proxy @ot
 
-    let oInfo = ObjectInfo icon pos oType
+    let oInfo = ObjectInfo icon pos oType True []
     obj <- PlayerObject
       <$> newIORef oInfo
 
@@ -109,7 +105,7 @@ instance
                   $ processPlayerEvent sysBus obj
     let sub ev =
           isPopulateCellDescriptionEvent ev
-          || isActorRequestEvent ev
+          || isObjectRequestEvent ev
           || isPlayerInputInvitedEvent ev
 
     subscribeRecipient sysBus $ Subscription sub queueVar
@@ -125,19 +121,8 @@ processPlayerEvent sysBus obj PlayerInputInvitedEvent = do
   oInf <- readIORef $ poObjectInfoRef obj
   line <- withInputInvitation "Type your command:"
   publishEvent sysBus $ PlayerInputEvent (oiPos oInf) line
-processPlayerEvent sysBus obj PopulateCellDescriptionEvent = do
-  oInf <- readIORef $ poObjectInfoRef obj
-  publishEvent sysBus $ FieldIconEvent (oiPos oInf) (oiIcon oInf)
-processPlayerEvent sysBus obj (ActorRequestEvent oType pos ev) = do
-  oInf <- readIORef $ poObjectInfoRef obj
-  let curOType = oiObjectType oInf
-  let curPos = oiPos oInf
-  if curOType == oType && curPos == pos
-    then error $ "Player match!" <> show pos
-    else pure ()
-processPlayerEvent _ _ _ = error "Player event not supported"
-
-
+processPlayerEvent sysBus obj commonEv =
+  processCommonEvent sysBus (poObjectInfoRef obj) commonEv
 
 -- Empty cell
 
@@ -153,7 +138,7 @@ instance
     let icon  = head $ symbolVal $ Proxy @i
     let oType = symbolVal $ Proxy @ot
 
-    let oInfo = ObjectInfo icon pos oType
+    let oInfo = ObjectInfo icon pos oType True []
     obj <- EmptyCellObject
             <$> newIORef oInfo
 
@@ -161,7 +146,7 @@ instance
                   $ processEmptyCellEvent sysBus obj
     let sub ev =
           isPopulateCellDescriptionEvent ev
-          || isActorRequestEvent ev
+          || isObjectRequestEvent ev
 
     subscribeRecipient sysBus $ Subscription sub queueVar
 
@@ -172,14 +157,48 @@ processEmptyCellEvent
   -> EmptyCellObject
   -> SystemEvent
   -> GameIO ()
-processEmptyCellEvent sysBus obj PopulateCellDescriptionEvent = do
-  oInf <- readIORef $ ecoObjectInfoRef obj
-  publishEvent sysBus $ FieldIconEvent (oiPos oInf) (oiIcon oInf)
-processEmptyCellEvent sysBus obj (ActorRequestEvent oType pos ev) = do
-  oInf <- readIORef $ ecoObjectInfoRef obj
+processEmptyCellEvent sysBus obj commonEv =
+  processCommonEvent sysBus (ecoObjectInfoRef obj) commonEv
+
+
+-- Common events
+
+processCommonEvent
+  :: SystemBus
+  -> IORef ObjectInfo
+  -> SystemEvent
+  -> GameIO ()
+processCommonEvent sysBus oInfRef PopulateCellDescriptionEvent = do
+  oInf <- readIORef oInfRef
+  let icon = case oiOverhaulIcons oInf of
+              [] -> oiIcon oInf
+              (i : _) -> ovhIcon i
+  publishEvent sysBus
+    $ FieldIconEvent (oiPos oInf) icon
+
+processCommonEvent sysBus oInfRef (ObjectRequestEvent oType pos ev) = do
+  oInf <- readIORef oInfRef
   let curOType = oiObjectType oInf
   let curPos = oiPos oInf
-  if curOType == oType && curPos == pos
-    then error $ "Empty cell match!" <> show pos
+  let match = curOType == oType && curPos == pos
+  if match
+    then processObjectRequestEvent sysBus oInfRef ev
     else pure ()
-processEmptyCellEvent _ _ _ = error "Empty cell event not supported"
+processCommonEvent _ _ _ = error "Common request not implemented"
+
+
+processObjectRequestEvent
+  :: SystemBus
+  -> IORef ObjectInfo
+  -> ObjectRequestEvent
+  -> GameIO ()
+processObjectRequestEvent sysBus oInfRef ev = do
+  case ev of
+    AddOverhaulIcon i -> do
+      oInf <- readIORef oInfRef
+      writeIORef oInfRef
+        $ oInf {oiOverhaulIcons = i : oiOverhaulIcons oInf}
+    SetEnabled en -> do
+      oInf <- readIORef oInfRef
+      writeIORef oInfRef
+        $ oInf {oiEnabled = en}

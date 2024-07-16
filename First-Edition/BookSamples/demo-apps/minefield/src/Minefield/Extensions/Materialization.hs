@@ -25,7 +25,7 @@ data MakeActors
 data MakeActor
 data GetIsDirected
 
-data Objects a
+data Objects (a :: [IObject])
 
 data ObjsActs objs acts
 data TraverseObjs objs acts

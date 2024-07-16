@@ -54,7 +54,7 @@ instance
   ) =>
   Eval (SystemBus, Pos) MakeActor (LandmineImpl i ot p) Actor where
   eval (sysBus, pos) _ _ = do
-    tickChan <- createTickChannel
+    stepChan <- createStepChannel
     queueVar <- createQueueVar
 
     let icon  = head $ symbolVal $ Proxy @i
@@ -66,7 +66,7 @@ instance
       <$> newIORef oInfo
       <*> newIORef p
 
-    tId <- forkIO $ actorWorker tickChan queueVar
+    tId <- forkIO $ actorWorker stepChan queueVar
                   $ processLandmineEvent sysBus obj
     let sub ev =
           isPopulateCellDescriptionEvent ev
@@ -74,7 +74,7 @@ instance
 
     subscribeRecipient sysBus $ Subscription sub queueVar
 
-    pure $ Actor tId tickChan queueVar
+    pure $ Actor tId stepChan queueVar
 
 processLandmineEvent
   :: SystemBus
@@ -93,7 +93,7 @@ instance
   ) =>
   Eval (SystemBus, Pos) MakeActor (PlayerImpl i ot) Actor where
   eval (sysBus, pos) _ _ = do
-    tickChan <- createTickChannel
+    stepChan <- createStepChannel
     queueVar <- createQueueVar
 
     let icon  = head $ symbolVal $ Proxy @i
@@ -103,7 +103,7 @@ instance
     obj <- PlayerObject
       <$> newIORef oInfo
 
-    tId <- forkIO $ actorWorker tickChan queueVar
+    tId <- forkIO $ actorWorker stepChan queueVar
                   $ processPlayerEvent sysBus obj
     let sub ev =
           isPopulateCellDescriptionEvent ev
@@ -112,7 +112,7 @@ instance
 
     subscribeRecipient sysBus $ Subscription sub queueVar
 
-    pure $ Actor tId tickChan queueVar
+    pure $ Actor tId stepChan queueVar
 
 processPlayerEvent
   :: SystemBus
@@ -134,7 +134,7 @@ instance
   ) =>
   Eval (SystemBus, Pos) MakeActor (EmptyCellImpl i ot) Actor where
   eval (sysBus, pos) _ _ = do
-    tickChan <- createTickChannel
+    stepChan <- createStepChannel
     queueVar <- createQueueVar
 
     let icon  = head $ symbolVal $ Proxy @i
@@ -144,7 +144,7 @@ instance
     obj <- EmptyCellObject
             <$> newIORef oInfo
 
-    tId <- forkIO $ actorWorker tickChan queueVar
+    tId <- forkIO $ actorWorker stepChan queueVar
                   $ processEmptyCellEvent sysBus obj
     let sub ev =
           isPopulateCellDescriptionEvent ev
@@ -152,7 +152,7 @@ instance
 
     subscribeRecipient sysBus $ Subscription sub queueVar
 
-    pure $ Actor tId tickChan queueVar
+    pure $ Actor tId stepChan queueVar
 
 processEmptyCellEvent
   :: SystemBus

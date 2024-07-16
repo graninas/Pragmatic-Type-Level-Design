@@ -101,11 +101,11 @@ runGameOrchestrator sysBus queueVar actors actions = do
       publishEvent sysBus PopulateCellDescriptionEvent
       distributeEvents sysBus
 
-      -- print "RefreshUI: ticking actors..."
+      -- print "RefreshUI: stepping actors..."
 
-      tickActors actors
+      stepActors actors
 
-      -- print "TODO: RefreshUI: ticking field watcher..."
+      -- print "TODO: RefreshUI: stepping field watcher..."
 
       gameOrchestratorWorker PlayerInput
 
@@ -113,8 +113,8 @@ runGameOrchestrator sysBus queueVar actors actions = do
       publishEvent sysBus PlayerInputInvitedEvent
       distributeEvents sysBus
 
-      -- print "Ticking actors..."
-      tickActors actors
+      -- print "Stepping actors..."
+      stepActors actors
 
       distributeEvents sysBus
 
@@ -149,41 +149,41 @@ createFieldWatcherActor
 createFieldWatcherActor (w, h) sysBus = do
   inVar  <- newEmptyMVar
   outVar <- newEmptyMVar
-  let tickChan = Channel inVar outVar
+  let stepChan = Channel inVar outVar
 
   clearField (w, h)
   drawFieldFrame (w, h)
 
   queueVar <- createQueueVar
-  tId <- forkIO $ fieldWatcherWorker tickChan queueVar (w, h)
+  tId <- forkIO $ fieldWatcherWorker stepChan queueVar (w, h)
 
   let sub = isFieldIconEvent
   subscribeRecipient sysBus $ Subscription sub queueVar
 
-  pure $ SystemActor tId tickChan queueVar
+  pure $ SystemActor tId stepChan queueVar
 
   where
-    fieldWatcherWorker tickChan queueVar (w, h) = do
+    fieldWatcherWorker stepChan queueVar (w, h) = do
 
-      waitForTick tickChan
+      waitForStep stepChan
 
       evs <- extractEvents queueVar
       mapM_ (processFieldWatcherEvent sysBus (w, h)) evs
 
-      reportTickFinished tickChan
+      reportStepFinished stepChan
 
-      fieldWatcherWorker tickChan queueVar (w, h)
+      fieldWatcherWorker stepChan queueVar (w, h)
 
 
-tickActors :: Actors -> GameIO ()
-tickActors actors = mapM_ doTick actors
+stepActors :: Actors -> GameIO ()
+stepActors actors = mapM_ doStep actors
   where
-    doTick (Actor _ tickChan _) = do
-      sendTick tickChan
-      waitForFinishedTick tickChan
-    doTick (SystemActor _ tickChan _) = do
-      sendTick tickChan
-      waitForFinishedTick tickChan
+    doStep (Actor _ stepChan _) = do
+      sendStep stepChan
+      waitForFinishedStep stepChan
+    doStep (SystemActor _ stepChan _) = do
+      sendStep stepChan
+      waitForFinishedStep stepChan
 
 processFieldWatcherEvent
   :: SystemBus

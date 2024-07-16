@@ -41,17 +41,18 @@ data Channel inT outT = Channel
   , cOutVar :: MVar outT
   }
 
-type TickChannel = Channel () ()
+type StepChannel = Channel () ()
 type EndGameVar = MVar ()
 
-data Actor = Actor
-  { aThreadId :: ThreadId
-  , aTickChannel :: TickChannel
-  , aInEventQueueVar :: EventQueueVar
-  }
+data Actor
+  = Actor
+    { aThreadId :: ThreadId
+    , aStepChannel :: StepChannel
+    , aInEventQueueVar :: EventQueueVar
+    }
   | SystemActor
     { aThreadId :: ThreadId
-    , aTickChannel :: TickChannel
+    , aStepChannel :: StepChannel
     , aInEventQueueVar :: EventQueueVar
     }
 

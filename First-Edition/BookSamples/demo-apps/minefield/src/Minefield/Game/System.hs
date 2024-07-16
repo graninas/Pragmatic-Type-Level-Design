@@ -57,23 +57,23 @@ dropEvents eqVar = do
   _ <- takeMVar eqVar
   putMVar eqVar []
 
-createTickChannel :: IO TickChannel
-createTickChannel = do
+createStepChannel :: IO StepChannel
+createStepChannel = do
   inVar  <- newEmptyMVar
   outVar <- newEmptyMVar
   pure $ Channel inVar outVar
 
-waitForTick :: TickChannel -> IO ()
-waitForTick (Channel inVar _) = takeMVar inVar
+waitForStep :: StepChannel -> IO ()
+waitForStep (Channel inVar _) = takeMVar inVar
 
-reportTickFinished :: TickChannel -> IO ()
-reportTickFinished (Channel _ outVar) = putMVar outVar ()
+reportStepFinished :: StepChannel -> IO ()
+reportStepFinished (Channel _ outVar) = putMVar outVar ()
 
-sendTick :: TickChannel -> IO ()
-sendTick (Channel inVar _) = putMVar inVar ()
+sendStep :: StepChannel -> IO ()
+sendStep (Channel inVar _) = putMVar inVar ()
 
-waitForFinishedTick :: TickChannel -> IO ()
-waitForFinishedTick (Channel _ outVar) = takeMVar outVar
+waitForFinishedStep :: StepChannel -> IO ()
+waitForFinishedStep (Channel _ outVar) = takeMVar outVar
 
 createQueueVar :: IO EventQueueVar
 createQueueVar = newMVar []
@@ -107,13 +107,13 @@ movePos (x, y) R = (x+1, y)
 
 
 actorWorker
-  :: TickChannel
+  :: StepChannel
   -> EventQueueVar
   -> (SystemEvent -> GameIO ())
   -> GameIO ()
-actorWorker tickChan queueVar processActorEvent = forever $ do
-  waitForTick tickChan
+actorWorker stepChan queueVar processActorEvent = forever $ do
+  waitForStep stepChan
   evs <- extractEvents queueVar
   mapM_ processActorEvent evs
-  reportTickFinished tickChan
+  reportStepFinished stepChan
 

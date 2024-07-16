@@ -49,7 +49,7 @@ instance
   ) =>
   Eval (SystemBus, Pos) MakeActor (TimerBombImpl i ot turns) Actor where
   eval (sysBus, pos) _ _ = do
-    tickChan <- createTickChannel
+    tickChan <- createStepChannel
     queueVar <- createQueueVar
 
     let icon  = head $ symbolVal $ Proxy @i

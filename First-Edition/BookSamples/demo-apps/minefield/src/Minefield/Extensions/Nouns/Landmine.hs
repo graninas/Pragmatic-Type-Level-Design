@@ -14,7 +14,7 @@ module Minefield.Extensions.Nouns.Landmine where
 
 import CPrelude
 
-import Minefield.Core.Eval
+import TypeLevelDSL.Eval
 import Minefield.Core.Types
 import Minefield.Core.Interface
 import Minefield.Core.Object
@@ -41,8 +41,8 @@ getLandmineIcon p = ['A'..'Z'] !! p
 instance
   ( KnownNat p
   ) =>
-  Eval () GetIcon (LandmineImpl i ot p) Icon where
-  eval () _ _ = pure
+  EvalIO () GetIcon (LandmineImpl i ot p) Icon where
+  evalIO () _ _ = pure
     $ getLandmineIcon
     $ fromIntegral
     $ natVal
@@ -52,8 +52,8 @@ instance
   ( KnownNat p
   , KnownSymbol ot
   ) =>
-  Eval () GetObjectInfo (LandmineImpl i ot p) ObjectInfo where
-  eval () _ _ = do
+  EvalIO () GetObjectInfo (LandmineImpl i ot p) ObjectInfo where
+  evalIO () _ _ = do
     let oType = symbolVal $ Proxy @ot
     let icon =  getLandmineIcon
                   $ fromIntegral
@@ -64,8 +64,8 @@ instance
 instance
   ( KnownSymbol ot
   ) =>
-  Eval () GetObjectType (LandmineImpl i ot p) ObjectType where
-  eval () _ _ = pure $ symbolVal $ Proxy @ot
+  EvalIO () GetObjectType (LandmineImpl i ot p) ObjectType where
+  evalIO () _ _ = pure $ symbolVal $ Proxy @ot
 
 -- Object
 

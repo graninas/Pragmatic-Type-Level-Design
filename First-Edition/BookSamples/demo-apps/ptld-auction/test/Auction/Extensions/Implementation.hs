@@ -30,35 +30,35 @@ data AsImplMoneyConst = AsImplMoneyConst
 instance
   ( KnownSymbol val
   ) =>
-  Eval AsImplMoneyConst (MoneyValImpl val) (IO T.Money) where
-  eval _ _ = pure $ read $ symbolVal $ Proxy @val     -- unsafe
+  Eval () AsImplMoneyConst (MoneyValImpl val) (IO T.Money) where
+  eval () _ _ = pure $ read $ symbolVal $ Proxy @val     -- unsafe
 
 -- Money const wrapper
 
 instance
-  ( Eval AsImplMoneyConst a (IO T.Money)
+  ( Eval () AsImplMoneyConst a (IO T.Money)
   ) =>
-  Eval AsImplMoneyConst (MoneyConstWrapper a) (IO T.Money) where
-  eval _ _ = eval AsImplMoneyConst $ Proxy @a
+  Eval () AsImplMoneyConst (MoneyConstWrapper a) (IO T.Money) where
+  eval () _ _ = eval () AsImplMoneyConst $ Proxy @a
 
 -- Extensions implementation
 
 -- Dynamic (runtime) value. For now hardcoded by can be obtained from any source.
 type MinBid202 = 'ValNameS "202 min bid"
 instance
-  Eval AsImplMoneyConst (DynValImpl MinBid202) (IO T.Money) where
-  eval _ _ = pure 20000
+  Eval () AsImplMoneyConst (DynValImpl MinBid202) (IO T.Money) where
+  eval () _ _ = pure 20000
 
 -- Payload
 
 instance
-  ( Eval AsImplMoneyConst minBid (IO T.Money)
+  ( Eval () AsImplMoneyConst minBid (IO T.Money)
   ) =>
-  Eval AsImplLotPayload
+  Eval () AsImplLotPayload
     (EFLotPayloadImpl minBid)
     (IO StCtx.StateContext) where
-  eval _ _ = do
+  eval () _ _ = do
     stCtx <- StCtx.createStateContext
-    v <- eval AsImplMoneyConst $ Proxy @minBid
+    v <- eval () AsImplMoneyConst $ Proxy @minBid
     StCtx.insertValue "minBid" (Dyn.toDyn v) stCtx
     pure stCtx

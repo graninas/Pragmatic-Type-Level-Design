@@ -4,7 +4,7 @@ module Minefield.Game.Game where
 
 import CPrelude
 
-import Minefield.Core.Eval
+import TypeLevelDSL.Eval
 import Minefield.Core.Types
 import Minefield.Core.Interface
 import Minefield.Core.Object
@@ -41,16 +41,16 @@ type GameTurn = (GamePhase, TicksLeft)
 createRandomGame
   :: forall g field player emptyCell objects actions
    . ( g ~ Game field player emptyCell objects actions
-     , Eval () MakeGameActions (ObjsActs objects actions) GameActions
+     , EvalIO () MakeGameActions (ObjsActs objects actions) GameActions
 
-     , Eval (SystemBus, FieldObjects)
+     , EvalIO (SystemBus, FieldObjects)
           MakeActors
           (Objects (player ': emptyCell ': objects))
           [Actor]
 
-     , Eval () GetObjectInfo player ObjectInfo
-     , Eval () GetObjectInfo emptyCell ObjectInfo
-     , Eval () GetObjectInfo (Objects objects) [ObjectInfo]
+     , EvalIO () GetObjectInfo player ObjectInfo
+     , EvalIO () GetObjectInfo emptyCell ObjectInfo
+     , EvalIO () GetObjectInfo (Objects objects) [ObjectInfo]
      )
   => EmptyCellsPercent
   -> (Int, Int)
@@ -63,10 +63,9 @@ createRandomGame emptyCellsPercent (w, h) = do
 
   -- Creating a random game
 
-  let getObjectInfo = Proxy @GetObjectInfo
-  pInfo  <- eval () getObjectInfo $ Proxy @player
-  ecInfo <- eval () getObjectInfo $ Proxy @emptyCell
-  objs   <- eval () getObjectInfo $ Proxy @(Objects objects)
+  pInfo  <- evalIO () GetObjectInfo $ Proxy @player
+  ecInfo <- evalIO () GetObjectInfo $ Proxy @emptyCell
+  objs   <- evalIO () GetObjectInfo $ Proxy @(Objects objects)
 
   let coords = [(x, y) | x <- [0..w-1], y <- [0..h-1]]
   cells1 <- mapM (createRandomCell objs) coords
@@ -80,17 +79,16 @@ createRandomGame emptyCellsPercent (w, h) = do
   subscribeRecipient sysBus orchSub
 
   -- Creating actors for each cell
-  let makeActors   = Proxy @MakeActors
   let fieldObjects = Proxy @(Objects (player ': emptyCell ': objects))
-  fieldActors <- eval (sysBus, cells3) makeActors fieldObjects
+  fieldActors <- evalIO (sysBus, cells3) MakeActors fieldObjects
 
   -- Creating a special actor - field watcher
   fieldWatcher <- createFieldWatcherActor (w, h) sysBus
   let actors = fieldWatcher : fieldActors
 
   -- Making actions
-  let makeActions = Proxy @MakeGameActions
-  actions <- eval () makeActions $ Proxy @(ObjsActs objects actions)
+  actions <- evalIO () MakeGameActions
+    $ Proxy @(ObjsActs objects actions)
 
   pure $ GameRuntime
     (w, h)

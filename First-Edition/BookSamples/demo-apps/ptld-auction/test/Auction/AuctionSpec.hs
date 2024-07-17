@@ -107,14 +107,14 @@ spec = do
   describe "Type level eDSL Auction: Introspection" $ do
 
     it "AuctionInfo test" $ do
-      strs <- eval I.AsIntroInfo $ Proxy @WorldArtsInfo
+      strs <- eval () I.AsIntroInfo $ Proxy @WorldArtsInfo
       strs `shouldBe`
         [ "Name: World arts"
         , "Holder: UK Bank"
         ]
 
     it "Auction Lots test" $ do
-      strs <- eval I.AsIntroLot $ Proxy @WorldArtsLots
+      strs <- eval () I.AsIntroLot $ Proxy @WorldArtsLots
       strs `shouldBe`
         [ "Lot: 101"
         , "Description: Dali artwork"
@@ -158,12 +158,12 @@ spec = do
         ]
 
   describe "Type level eDSL Auction: Implementation" $ do
-    it "evalCtx Action ReadRef WriteRef ReadRef test" $ do
+    it "eval Action ReadRef WriteRef ReadRef test" $ do
       ctx <- TestData <$> newIORef (Map.fromList
         [ ("ref1", Dyn.toDyn (10 :: Int))
         ]) <*> pure Map.empty
 
-      void $ evalCtx ctx Impl.AsImplAction $ Proxy @(
+      void $ eval ctx Impl.AsImplAction $ Proxy @(
             '[ ReadRef "ref1" Int (WriteRef "ref2" Int)
              , ReadRef "ref2" Int Drop
              ])
@@ -171,12 +171,12 @@ spec = do
       verifyRef ctx "ref1" (10 :: Int)
       verifyRef ctx "ref2" (10 :: Int)
 
-    it "evalCtx Action GetPayloadValue test" $ do
+    it "eval Action GetPayloadValue test" $ do
       ctx <- TestData <$> newIORef (Map.fromList
         [ (Dyn.toTypeableKey @MinBid, Dyn.toDyn (10.0 :: Float))
         ]) <*> pure Map.empty
 
-      void $ evalCtx ctx Impl.AsImplAction $ Proxy @(
+      void $ eval ctx Impl.AsImplAction $ Proxy @(
             '[ GetPayloadValue MinBid Float Print
              , GetPayloadValue MinBid Float (WriteRef "f" Float)
              ])
@@ -184,24 +184,24 @@ spec = do
       verifyRef ctx (Dyn.toTypeableKey @MinBid) (10.0 :: Float)
       verifyRef ctx "f" (10.0 :: Float)
 
-    it "evalCtx EnglishAuctionLotAction1 test (separate actions LotName LotDescr)" $ do
+    it "eval EnglishAuctionLotAction1 test (separate actions LotName LotDescr)" $ do
       ctx <- TestData <$> newIORef (Map.fromList
           [ ("LotName", Dyn.toDyn ("101" :: String))
           , ("LotDescr", Dyn.toDyn ("Dali artwork" :: String))
           ]) <*> pure Map.empty
 
-      void $ evalCtx ctx Impl.AsImplAction
+      void $ eval ctx Impl.AsImplAction
            $ Proxy @EnglishAuctionLotAction1
 
       verifyRef ctx "LotName" ("101" :: String)
 
-    it "evalCtx EnglishAuctionLotAction2 test (unified action)" $ do
+    it "eval EnglishAuctionLotAction2 test (unified action)" $ do
       ctx <- TestData <$> newIORef (Map.fromList
         [ ("LotName", Dyn.toDyn ("101" :: String))
         , ("LotDescr", Dyn.toDyn ("Dali artwork" :: String))
         ]) <*> pure Map.empty
 
-      void $ evalCtx ctx Impl.AsImplAction
+      void $ eval ctx Impl.AsImplAction
            $ Proxy @EnglishAuctionLotAction2
 
       verifyRef ctx "LotName" ("101" :: String)

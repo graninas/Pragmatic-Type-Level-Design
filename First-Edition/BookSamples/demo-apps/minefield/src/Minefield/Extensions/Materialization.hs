@@ -4,7 +4,8 @@ module Minefield.Extensions.Materialization where
 
 import CPrelude
 
-import Minefield.Core.Eval
+import TypeLevelDSL.Eval
+
 import Minefield.Core.Types
 import Minefield.Core.Interface
 import Minefield.Core.Object
@@ -16,15 +17,15 @@ import GHC.TypeLits
 import qualified Data.Map as Map
 
 
-data GetIcon
-data GetObjectInfo
-data GetObjectType
-data MakeActorAction
-data MakeGameAction
-data MakeGameActions
-data MakeActors
-data MakeActor
-data GetIsDirected
+data GetIcon         = GetIcon
+data GetObjectInfo   = GetObjectInfo
+data GetObjectType   = GetObjectType
+data MakeActorAction = MakeActorAction
+data MakeGameAction  = MakeGameAction
+data MakeGameActions = MakeGameActions
+data MakeActors      = MakeActors
+data MakeActor       = MakeActor
+data GetIsDirected   = GetIsDirected
 
 data Objects (a :: [IObject])
 
@@ -36,113 +37,113 @@ data ObjAct o a
 -- Get icon
 
 instance
-  ( Eval () GetIcon o Char
+  ( EvalIO () GetIcon o Char
   ) =>
-  Eval () GetIcon ('ObjectWrapper o) Char where
-  eval () vProxy _ = eval () vProxy $ Proxy @o
+  EvalIO () GetIcon ('ObjectWrapper o) Char where
+  evalIO () verb _ = evalIO () verb $ Proxy @o
 
 instance
-  Eval () GetIcon (Objects '[]) [Char] where
-  eval () _ _ = pure []
+  EvalIO () GetIcon (Objects '[]) [Char] where
+  evalIO () _ _ = pure []
 
 instance
-  ( Eval () GetIcon o Char
-  , Eval () GetIcon (Objects os) [Char]
+  ( EvalIO () GetIcon o Char
+  , EvalIO () GetIcon (Objects os) [Char]
   ) =>
-  Eval () GetIcon (Objects (o ': os)) [Char] where
-  eval () vProxy _ = do
-    o  <- eval () vProxy $ Proxy @o
-    os <- eval () vProxy $ Proxy @(Objects os)
+  EvalIO () GetIcon (Objects (o ': os)) [Char] where
+  evalIO () verb _ = do
+    o  <- evalIO () verb $ Proxy @o
+    os <- evalIO () verb $ Proxy @(Objects os)
     pure $ o : os
 
 -- Get object info
 
 instance
-  ( Eval () GetObjectInfo o ObjectInfo
+  ( EvalIO () GetObjectInfo o ObjectInfo
   ) =>
-  Eval () GetObjectInfo ('ObjectWrapper o) ObjectInfo where
-  eval () vProxy _ = eval () vProxy $ Proxy @o
+  EvalIO () GetObjectInfo ('ObjectWrapper o) ObjectInfo where
+  evalIO () verb _ = evalIO () verb $ Proxy @o
 
 instance
-  Eval () GetObjectInfo (Objects '[]) [ObjectInfo] where
-  eval () _ _ = pure []
+  EvalIO () GetObjectInfo (Objects '[]) [ObjectInfo] where
+  evalIO () _ _ = pure []
 
 instance
-  ( Eval () GetObjectInfo o ObjectInfo
-  , Eval () GetObjectInfo (Objects os) [ObjectInfo]
+  ( EvalIO () GetObjectInfo o ObjectInfo
+  , EvalIO () GetObjectInfo (Objects os) [ObjectInfo]
   ) =>
-  Eval () GetObjectInfo (Objects (o ': os)) [ObjectInfo] where
-  eval () vProxy _ = do
-    o  <- eval () vProxy $ Proxy @o
-    os <- eval () vProxy $ Proxy @(Objects os)
+  EvalIO () GetObjectInfo (Objects (o ': os)) [ObjectInfo] where
+  evalIO () verb _ = do
+    o  <- evalIO () verb $ Proxy @o
+    os <- evalIO () verb $ Proxy @(Objects os)
     pure $ o : os
 
 -- Get object type
 
 instance
-  ( Eval () GetObjectType o ObjectType
+  ( EvalIO () GetObjectType o ObjectType
   ) =>
-  Eval () GetObjectType ('ObjectWrapper o) ObjectType where
-  eval () vProxy _ = eval () vProxy $ Proxy @o
+  EvalIO () GetObjectType ('ObjectWrapper o) ObjectType where
+  evalIO () verb _ = evalIO () verb $ Proxy @o
 
 instance
-  Eval () GetObjectType (Objects '[]) [ObjectType] where
-  eval () _ _ = pure []
+  EvalIO () GetObjectType (Objects '[]) [ObjectType] where
+  evalIO () _ _ = pure []
 
 instance
-  ( Eval () GetObjectType o ObjectType
-  , Eval () GetObjectType (Objects os) [ObjectType]
+  ( EvalIO () GetObjectType o ObjectType
+  , EvalIO () GetObjectType (Objects os) [ObjectType]
   ) =>
-  Eval () GetObjectType (Objects (o ': os)) [ObjectType] where
-  eval () vProxy _ = do
-    o  <- eval () vProxy $ Proxy @o
-    os <- eval () vProxy $ Proxy @(Objects os)
+  EvalIO () GetObjectType (Objects (o ': os)) [ObjectType] where
+  evalIO () verb _ = do
+    o  <- evalIO () verb $ Proxy @o
+    os <- evalIO () verb $ Proxy @(Objects os)
     pure $ o : os
 
 -- Make game action
 
 instance
-  ( Eval () MakeGameActions (TraverseObjs os acts) GameActions
+  ( EvalIO () MakeGameActions (TraverseObjs os acts) GameActions
   ) =>
-  Eval () MakeGameActions (ObjsActs os acts) GameActions where
-  eval () proxy _ =
-    eval () proxy $ Proxy @(TraverseObjs os acts)
+  EvalIO () MakeGameActions (ObjsActs os acts) GameActions where
+  evalIO () verb _ =
+    evalIO () verb $ Proxy @(TraverseObjs os acts)
 
 instance
-  Eval () MakeGameActions (TraverseObjs '[] acts) GameActions where
-  eval () _ _ = pure Map.empty
+  EvalIO () MakeGameActions (TraverseObjs '[] acts) GameActions where
+  evalIO () _ _ = pure Map.empty
 
 instance
-  ( Eval () MakeGameActions (TraverseObjs os acts) GameActions
-  , Eval () MakeGameActions (TraverseActs o acts) GameActions
+  ( EvalIO () MakeGameActions (TraverseObjs os acts) GameActions
+  , EvalIO () MakeGameActions (TraverseActs o acts) GameActions
   ) =>
-  Eval () MakeGameActions (TraverseObjs (o ': os) acts) GameActions where
-  eval () proxy _ = do
-    act1 <- eval () proxy $ Proxy @(TraverseActs o acts)
-    act2 <- eval () proxy $ Proxy @(TraverseObjs os acts)
+  EvalIO () MakeGameActions (TraverseObjs (o ': os) acts) GameActions where
+  evalIO () verb _ = do
+    act1 <- evalIO () verb $ Proxy @(TraverseActs o acts)
+    act2 <- evalIO () verb $ Proxy @(TraverseObjs os acts)
     pure $ Map.union act1 act2
 
 instance
-  Eval () MakeGameActions (TraverseActs o '[]) GameActions where
-  eval () _ _ = pure Map.empty
+  EvalIO () MakeGameActions (TraverseActs o '[]) GameActions where
+  evalIO () _ _ = pure Map.empty
 
 instance
   ( KnownSymbol cmd
-  , Eval () GetIsDirected dir Bool
+  , EvalIO () GetIsDirected dir Bool
   , mkO ~ 'ObjectWrapper o
   , mkA ~ 'ActionWrapper a dir cmd
-  , Eval () MakeActorAction (ObjAct o a) (ObjectType, ActorAction)
-  , Eval () MakeGameActions (TraverseActs mkO acts) GameActions
+  , EvalIO () MakeActorAction (ObjAct o a) (ObjectType, ActorAction)
+  , EvalIO () MakeGameActions (TraverseActs mkO acts) GameActions
   ) =>
-  Eval () MakeGameActions (TraverseActs mkO (mkA ': acts)) GameActions where
-  eval () proxy _ = do
-    isDirected <- eval () (Proxy @GetIsDirected) $ Proxy @dir
+  EvalIO () MakeGameActions (TraverseActs mkO (mkA ': acts)) GameActions where
+  evalIO () verb _ = do
+    isDirected <- evalIO () GetIsDirected $ Proxy @dir
     let cmd   = symbolVal $ Proxy @cmd
 
-    (oType, actorAct) <- eval () (Proxy @MakeActorAction)
-                              (Proxy @(ObjAct o a))
+    (oType, actorAct) <- evalIO () MakeActorAction
+                                   (Proxy @(ObjAct o a))
 
-    gameActs <- eval () proxy $ Proxy @(TraverseActs mkO acts)
+    gameActs <- evalIO () verb $ Proxy @(TraverseActs mkO acts)
 
     let singActorActions :: ActorActions = Map.singleton oType actorAct
 
@@ -154,58 +155,57 @@ instance
         in gameActs'
 
 instance
-  Eval () GetIsDirected 'True Bool where
-  eval () _ _ = pure True
+  EvalIO () GetIsDirected 'True Bool where
+  evalIO () _ _ = pure True
 
 instance
-  Eval () GetIsDirected 'False Bool where
-  eval () _ _ = pure False
+  EvalIO () GetIsDirected 'False Bool where
+  evalIO () _ _ = pure False
 
 
 -- Make actors
 
 instance
-  ( Eval
+  ( EvalIO
       (SystemBus, Pos, ObjectInfo)
        MakeActor
        (Objects objects)
        Actor
   ) =>
-  Eval (SystemBus, FieldObjects)
+  EvalIO (SystemBus, FieldObjects)
        MakeActors
        (Objects objects)
        [Actor] where
-  eval (sysBus, fObjs) _ objs = do
-    let makeActor = Proxy @MakeActor
-    let evalAct p oInfo = eval (sysBus, p, oInfo) makeActor objs
-    actors <- mapM (\(p, oInfo) -> evalAct p oInfo)
+  evalIO (sysBus, fObjs) _ objs = do
+    let evalIOAct p oInfo = evalIO (sysBus, p, oInfo) MakeActor objs
+    actors <- mapM (\(p, oInfo) -> evalIOAct p oInfo)
               $ Map.toList fObjs
     pure actors
 
 instance
-  Eval
+  EvalIO
     (SystemBus, Pos, ObjectInfo)
      MakeActor
      (Objects '[])
      Actor where
-  eval (_, pos, oInfo) _ _ =
+  evalIO (_, pos, oInfo) _ _ =
     error $ "Object not found for " <> show oInfo <> " at " <> show pos
 
 instance
-  ( Eval () GetObjectInfo o ObjectInfo
-  , Eval (SystemBus, Pos) MakeActor o Actor
-  , Eval (SystemBus, Pos, ObjectInfo)
+  ( EvalIO () GetObjectInfo o ObjectInfo
+  , EvalIO (SystemBus, Pos) MakeActor o Actor
+  , EvalIO (SystemBus, Pos, ObjectInfo)
          MakeActor (Objects os) Actor
   ) =>
-  Eval
+  EvalIO
     (SystemBus, Pos, ObjectInfo)
      MakeActor
      (Objects ('ObjectWrapper o ': os))
      Actor where
-  eval payload@(sysBus, pos, oInfo) makeActor _ = do
-    oRawInfo <- eval () (Proxy @GetObjectInfo) $ Proxy @o
+  evalIO payload@(sysBus, pos, oInfo) makeActor _ = do
+    oRawInfo <- evalIO () GetObjectInfo $ Proxy @o
     let oTypeEq = oiObjectType oRawInfo == oiObjectType oInfo
     let iconEq  = oiIcon oRawInfo == oiIcon oInfo
     if oTypeEq && iconEq
-      then eval (sysBus, pos) (Proxy @MakeActor) $ Proxy @o
-      else eval payload makeActor $ Proxy @(Objects os)
+      then evalIO (sysBus, pos) makeActor $ Proxy @o
+      else evalIO payload makeActor $ Proxy @(Objects os)

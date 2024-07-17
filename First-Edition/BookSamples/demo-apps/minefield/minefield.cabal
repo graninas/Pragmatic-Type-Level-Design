@@ -16,7 +16,6 @@ library
   exposed-modules:
       Extra.Implementation
       Main
-      Minefield.Core.Eval
       Minefield.Core.Interface
       Minefield.Core.Object
       Minefield.Core.Types
@@ -90,7 +89,6 @@ executable minefield
   main-is: Main.hs
   other-modules:
       Extra.Implementation
-      Minefield.Core.Eval
       Minefield.Core.Interface
       Minefield.Core.Object
       Minefield.Core.Types

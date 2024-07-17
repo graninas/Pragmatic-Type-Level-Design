@@ -37,7 +37,7 @@ spec = do
         [ ("val1", Dyn.toDyn (10 :: Int))
         ]) <*> pure Map.empty
 
-      void $ evalCtx ctx Impl.AsImplAction (Proxy @Actions)
+      void $ eval ctx Impl.AsImplAction (Proxy @Actions)
 
       verifyRef ctx "val1" (10 :: Int)
       verifyRef ctx "val2" (10 :: Int)

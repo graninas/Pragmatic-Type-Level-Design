@@ -2,7 +2,8 @@ module Minefield.Extensions.Implementation where
 
 import CPrelude
 
-import Minefield.Core.Eval
+import TypeLevelDSL.Eval
+
 import Minefield.Core.Types
 import Minefield.Core.Interface
 import Minefield.Core.Object
@@ -30,10 +31,10 @@ instance
   -- when unwrapping from ObjectWrapper.
   -- , obj ~ LandmineImpl i ot p
   ) =>
-  Eval () MakeActorAction
+  EvalIO () MakeActorAction
        (ObjAct (LandmineImpl i ot p) PutFlagImpl)
        (ObjectType, ActorAction) where
-  eval () _ _ = do
+  evalIO () _ _ = do
     let oType = symbolVal $ Proxy @ot
 
     let act = \sysBus pos -> do
@@ -52,8 +53,11 @@ instance
   , KnownSymbol ot
   , KnownNat p
   ) =>
-  Eval (SystemBus, Pos) MakeActor (LandmineImpl i ot p) Actor where
-  eval (sysBus, pos) _ _ = do
+  EvalIO (SystemBus, Pos)
+         MakeActor
+         (LandmineImpl i ot p)
+         Actor where
+  evalIO (sysBus, pos) _ _ = do
     stepChan <- createStepChannel
     queueVar <- createQueueVar
 
@@ -91,8 +95,8 @@ instance
   ( KnownSymbol i
   , KnownSymbol ot
   ) =>
-  Eval (SystemBus, Pos) MakeActor (PlayerImpl i ot) Actor where
-  eval (sysBus, pos) _ _ = do
+  EvalIO (SystemBus, Pos) MakeActor (PlayerImpl i ot) Actor where
+  evalIO (sysBus, pos) _ _ = do
     stepChan <- createStepChannel
     queueVar <- createQueueVar
 
@@ -132,8 +136,8 @@ instance
   ( KnownSymbol i
   , KnownSymbol ot
   ) =>
-  Eval (SystemBus, Pos) MakeActor (EmptyCellImpl i ot) Actor where
-  eval (sysBus, pos) _ _ = do
+  EvalIO (SystemBus, Pos) MakeActor (EmptyCellImpl i ot) Actor where
+  evalIO (sysBus, pos) _ _ = do
     stepChan <- createStepChannel
     queueVar <- createQueueVar
 

@@ -52,52 +52,52 @@ data AsImplAuction    = AsImplAuction
 -- -- Lot payload
 
 instance
-  ( Eval AsImplLotPayload p (IO StateContext)
+  ( Eval () AsImplLotPayload p (IO StateContext)
   ) =>
-  Eval AsImplLotPayload
+  Eval () AsImplLotPayload
     (L.LotPayloadWrapper p)
     (IO StateContext) where
-  eval _ _ = eval AsImplLotPayload $ Proxy @p
+  eval () _ _ = eval () AsImplLotPayload $ Proxy @p
 
 -- -- Lot wrapper
 
 instance
-  ( Eval AsImplLot p (IO [LotDescr])
+  ( Eval () AsImplLot p (IO [LotDescr])
   ) =>
-  Eval AsImplLot (L.LotWrapper p) (IO [LotDescr]) where
-  eval _ _ = eval AsImplLot $ Proxy @p
+  Eval () AsImplLot (L.LotWrapper p) (IO [LotDescr]) where
+  eval () _ _ = eval () AsImplLot $ Proxy @p
 
 -- Instances
 
 -- -- List of lots
 
 instance
-  ( Eval AsImplLot lot (IO LotDescr)
-  , Eval AsImplLot lots (IO [LotDescr])
+  ( Eval () AsImplLot lot (IO LotDescr)
+  , Eval () AsImplLot lots (IO [LotDescr])
   ) =>
-  Eval AsImplLot (lot ': lots) (IO [LotDescr]) where
-  eval _ _ = do
-    d  <- eval AsImplLot $ Proxy @lot
-    ds <- eval AsImplLot $ Proxy @lots
+  Eval () AsImplLot (lot ': lots) (IO [LotDescr]) where
+  eval () _ _ = do
+    d  <- eval () AsImplLot $ Proxy @lot
+    ds <- eval () AsImplLot $ Proxy @lots
     pure $ d : ds
 
 instance
-  Eval AsImplLot '[] (IO [LotDescr]) where
-  eval _ _ = pure []
+  Eval () AsImplLot '[] (IO [LotDescr]) where
+  eval () _ _ = pure []
 
 -- -- Lot
 
 -- N.B., currency and censorship are not implemented yet
 instance
-  ( Eval AsImplLotPayload payload (IO StateContext)
+  ( Eval () AsImplLotPayload payload (IO StateContext)
   , KnownSymbol name
   , KnownSymbol descr
   ) =>
-  Eval AsImplLot
+  Eval () AsImplLot
     (L.LotImpl name descr payload currency_ censorship_)
     (IO LotDescr) where
-  eval _ _ = do
-    payloadCtx <- eval AsImplLotPayload $ Proxy @payload
+  eval () _ _ = do
+    payloadCtx <- eval () AsImplLotPayload $ Proxy @payload
     pure $ LotDescr
       { ldName           = symbolVal $ Proxy @name
       , ldDescription    = symbolVal $ Proxy @descr
@@ -180,12 +180,12 @@ initLotState (AuctionState {..}) lotDescr = do
 
 -- N.B., flow and info are not implemented yet
 instance
-  ( Eval AsImplLot lots (IO LotDescrs)
+  ( Eval () AsImplLot lots (IO LotDescrs)
   ) =>
-  Eval AsImplAuction
+  Eval () AsImplAuction
     (L.AuctionImpl flow_ info_ lots)
     (IO ()) where
-  eval _ _ = do
+  eval () _ _ = do
 
     auctionState <- AuctionState
       <$> registerParticipants
@@ -203,7 +203,7 @@ instance
 
     let ctx = auctionState
 
-    lotDescrs   <- eval AsImplLot $ Proxy @lots
+    lotDescrs   <- eval () AsImplLot $ Proxy @lots
 
     for_ lotDescrs $ \lotDescr -> do
       putStrLn $ "New lot: " <> ldName lotDescr
@@ -251,7 +251,7 @@ lotProcess' st@(AuctionState {..}) = do
           lotProcess' st
 
 runAuction
-  :: Eval AsImplAuction auction (IO ())
+  :: Eval () AsImplAuction auction (IO ())
   => Proxy auction
   -> IO ()
-runAuction p = eval AsImplAuction p
+runAuction p = eval () AsImplAuction p

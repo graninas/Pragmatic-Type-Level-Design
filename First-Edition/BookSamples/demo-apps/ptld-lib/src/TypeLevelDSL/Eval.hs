@@ -17,22 +17,19 @@ import           GHC.TypeLits (Symbol)
 -- | The Eval type class.
 -- Allows to pattern match over a type level DSL,
 -- while interpreting it into something real.
+-- The FunDep is needed to simplify the return type inference.
 
--- This FunDep is needed to simplify the return type inference.
-class Eval tag payload ret
-  | tag payload -> ret where
-  eval :: tag -> Proxy payload -> ret
+class Eval payload verb noun ret
+  | verb noun -> ret where
+  eval :: payload -> verb -> Proxy noun -> ret
 
--- Eval with context.
--- Currently, the context should be passed as an argument.
+-- | A version for a shorter type class instances
+class EvalIO payload verb noun ret
+  | verb noun -> ret where
+  evalIO :: payload -> verb -> Proxy noun -> IO ret
 
-class EvalCtx ctx tag payload ret
-  | tag payload -> ret where
-  evalCtx :: ctx -> tag -> Proxy payload -> ret
-
--- Eval lambda with context and input
--- Currently, the context should be passed as an argument.
-
-class EvalLambdaCtx ctx input tag payload ret
-  | tag payload -> ret where
-  evalLambdaCtx :: ctx -> input -> tag -> Proxy payload -> ret
+-- | Evaluate with an input parameter
+-- (interpret a lambda-like combinator)
+class EvalLambda payload input verb noun ret
+  | verb noun -> ret where
+  evalLambda :: payload -> input -> verb -> Proxy noun -> ret

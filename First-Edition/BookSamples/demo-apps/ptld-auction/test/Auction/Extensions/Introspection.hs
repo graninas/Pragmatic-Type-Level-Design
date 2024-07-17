@@ -27,14 +27,14 @@ data AsIntroMoneyConst = AsIntroMoneyConst
 instance
   ( KnownSymbol val
   ) =>
-  Eval AsIntroMoneyConst (MoneyValImpl val) (IO String) where
-  eval _ _ = pure $ symbolVal $ Proxy @val
+  Eval () AsIntroMoneyConst (MoneyValImpl val) (IO String) where
+  eval () _ _ = pure $ symbolVal $ Proxy @val
 
 instance
-  ( Eval AsIntroMoneyConst m (IO String)
+  ( Eval () AsIntroMoneyConst m (IO String)
   ) =>
-  Eval AsIntroMoneyConst (MoneyConstWrapper m) (IO String) where
-  eval _ _ = eval AsIntroMoneyConst $ Proxy @m
+  Eval () AsIntroMoneyConst (MoneyConstWrapper m) (IO String) where
+  eval () _ _ = eval () AsIntroMoneyConst $ Proxy @m
 
 
 -- Interpreting of the participants list
@@ -42,16 +42,16 @@ instance
 data AsIntroParticipants = AsIntroParticipants
 
 instance
-  Eval AsIntroParticipants '[] (IO String) where
-  eval _ _ = pure []
+  Eval () AsIntroParticipants '[] (IO String) where
+  eval () _ _ = pure []
 
 instance
   ( ParticipantInfo p
-  , Eval AsIntroParticipants xs (IO String)
+  , Eval () AsIntroParticipants xs (IO String)
   ) =>
-  Eval AsIntroParticipants (p ': xs) (IO String) where
-  eval _ _ = do
-    ps <- eval AsIntroParticipants $ Proxy @xs
+  Eval () AsIntroParticipants (p ': xs) (IO String) where
+  eval () _ _ = do
+    ps <- eval () AsIntroParticipants $ Proxy @xs
     let p = showParticipant $ Proxy @p
     pure $ p <> ", " <> ps
 
@@ -59,26 +59,26 @@ instance
 -- Interpreting of the AllowedCountries censorship
 
 instance
-  ( Eval AsIntroParticipants participants (IO String)
+  ( Eval () AsIntroParticipants participants (IO String)
   ) =>
-  Eval AsIntroCensorship
+  Eval () AsIntroCensorship
     (AllowedCountriesImpl name participants)
     (IO [String]) where
-  eval _ _ = do
-    participants <- eval AsIntroParticipants $ Proxy @participants
+  eval () _ _ = do
+    participants <- eval () AsIntroParticipants $ Proxy @participants
     pure [ "Eligible participants: " <> participants ]
 
 
 -- Interpreting of the specific currency
 
-instance Eval AsIntroCurrency GBP (IO [String]) where
-  eval _ _ = pure [ "Currency: " <> showCurrency (Proxy @GBP) ]
+instance Eval () AsIntroCurrency GBP (IO [String]) where
+  eval () _ _ = pure [ "Currency: " <> showCurrency (Proxy @GBP) ]
 
-instance Eval AsIntroCurrency USD (IO [String]) where
-  eval _ _ = pure [ "Currency: " <> showCurrency (Proxy @USD) ]
+instance Eval () AsIntroCurrency USD (IO [String]) where
+  eval () _ _ = pure [ "Currency: " <> showCurrency (Proxy @USD) ]
 
-instance Eval AsIntroCurrency EUR (IO [String]) where
-  eval _ _ = pure [ "Currency: " <> showCurrency (Proxy @EUR) ]
+instance Eval () AsIntroCurrency EUR (IO [String]) where
+  eval () _ _ = pure [ "Currency: " <> showCurrency (Proxy @EUR) ]
 
 -- Interpreting other extensions
 
@@ -86,14 +86,14 @@ instance Eval AsIntroCurrency EUR (IO [String]) where
 -- N.B., this sample does not check for type safety of the money value.
 type MinBid202 = 'ValNameS "202 min bid"
 instance
-  Eval AsIntroMoneyConst (DynValImpl MinBid202) (IO String) where
-  eval _ _ = pure "20000"
+  Eval () AsIntroMoneyConst (DynValImpl MinBid202) (IO String) where
+  eval () _ _ = pure "20000"
 
 -- Payload
 instance
-  ( Eval AsIntroMoneyConst minBid (IO String)
+  ( Eval () AsIntroMoneyConst minBid (IO String)
   ) =>
-  Eval AsIntroLotPayload (EFLotPayloadImpl minBid) (IO String) where
-  eval _ _ = do
-    v <- eval AsIntroMoneyConst $ Proxy @minBid
+  Eval () AsIntroLotPayload (EFLotPayloadImpl minBid) (IO String) where
+  eval () _ _ = do
+    v <- eval () AsIntroMoneyConst $ Proxy @minBid
     pure $ "Minimum bid: " <> v

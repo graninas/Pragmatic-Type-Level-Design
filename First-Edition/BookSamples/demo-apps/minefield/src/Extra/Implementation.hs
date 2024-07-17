@@ -2,7 +2,7 @@ module Extra.Implementation where
 
 import CPrelude
 
-import Minefield.Core.Eval
+import TypeLevelDSL.Eval
 import Minefield.Core.Types
 import Minefield.Core.Interface
 import Minefield.Core.Object
@@ -25,10 +25,10 @@ import GHC.TypeLits
 instance
   ( KnownSymbol ot
   ) =>
-  Eval () MakeActorAction
+  EvalIO () MakeActorAction
        (ObjAct (TimerBombImpl i ot p) PutFlagImpl)
        (ObjectType, ActorAction) where
-  eval () _ _ = do
+  evalIO () _ _ = do
     let oType = symbolVal $ Proxy @ot
 
     let act = \sysBus pos -> do
@@ -47,8 +47,8 @@ instance
   , KnownSymbol ot
   , KnownNat turns
   ) =>
-  Eval (SystemBus, Pos) MakeActor (TimerBombImpl i ot turns) Actor where
-  eval (sysBus, pos) _ _ = do
+  EvalIO (SystemBus, Pos) MakeActor (TimerBombImpl i ot turns) Actor where
+  evalIO (sysBus, pos) _ _ = do
     tickChan <- createStepChannel
     queueVar <- createQueueVar
 

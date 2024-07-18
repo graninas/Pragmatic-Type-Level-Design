@@ -36,6 +36,7 @@ type Landmine i p = MkObject (LandmineImpl i "landmine" p)
 
 -- Implementation
 
+getLandmineIcon :: Int -> Icon
 getLandmineIcon p = ['A'..'Z'] !! p
 
 instance

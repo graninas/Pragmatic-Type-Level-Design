@@ -7,6 +7,7 @@ import CPrelude
 import TypeLevelDSL.Eval
 import Minefield.Core.Types
 import Minefield.Core.Interface
+import Minefield.Core.Game
 import Minefield.Core.Object
 
 import Minefield.Game.Types
@@ -37,10 +38,69 @@ data GamePhase
 type TicksLeft = Int
 type GameTurn = (GamePhase, TicksLeft)
 
+-- | Creates a game from a definition.
+createGame
+  :: forall g field player emptyCell objects actions
+   . ( g ~ GameDef field player emptyCell objects actions
+     , EvalIO () MakeGameActions (ObjsActs objects actions) GameActions
+
+     , EvalIO (SystemBus, FieldObjects)
+          MakeActors
+          (Objects (player ': emptyCell ': objects))
+          [Actor]
+
+     , EvalIO () GetObjectInfo player ObjectInfo
+     , EvalIO () GetObjectInfo emptyCell ObjectInfo
+     , EvalIO () GetObjectInfo (Objects objects) [ObjectInfo]
+     , EvalIO (Int, Map Icon ObjectInfo) MaterializeField field FieldObjects
+     )
+  => IO GameRuntime
+createGame = do
+  resetScreen
+  printTitle "Minefield game"
+
+  sysBus <- createSystemBus
+
+  -- Creating a random game
+
+  pInfo  <- evalIO () GetObjectInfo $ Proxy @player
+  ecInfo <- evalIO () GetObjectInfo $ Proxy @emptyCell
+  objs   <- evalIO () GetObjectInfo $ Proxy @(Objects objects)
+
+  let objs' = pInfo : ecInfo : objs
+  let objInfosMap = Map.fromList $ map (\o -> (oiIcon o, o)) objs'
+
+  field <- evalIO ( 0 :: Int, objInfosMap) MaterializeField
+      $ Proxy @field
+  let ((x, y), _) = Map.findMax field
+  let (w, h) = (x + 1, y + 1)
+
+  -- Subscribing the orchestrator
+  let orchCond ev = isPlayerInputEvent ev
+  orchQueueVar <- createQueueVar
+  let orchSub = Subscription orchCond orchQueueVar
+  subscribeRecipient sysBus orchSub
+
+  -- Creating actors for each cell
+  fieldActors <- evalIO (sysBus, field) MakeActors
+      $ Proxy @(Objects (player ': emptyCell ': objects))
+
+  -- Creating a special actor - field watcher
+  fieldWatcher <- createFieldWatcherActor (w, h) sysBus
+  let actors = fieldWatcher : fieldActors
+
+  -- Making actions
+  actions <- evalIO () MakeGameActions
+    $ Proxy @(ObjsActs objects actions)
+
+  pure $ GameRuntime
+    (w, h)
+    (runGameOrchestrator sysBus orchQueueVar actors actions)
+
 -- | Creates a random game of given field size.
 createRandomGame
   :: forall g field player emptyCell objects actions
-   . ( g ~ Game field player emptyCell objects actions
+   . ( g ~ GameDef field player emptyCell objects actions
      , EvalIO () MakeGameActions (ObjsActs objects actions) GameActions
 
      , EvalIO (SystemBus, FieldObjects)
@@ -79,8 +139,8 @@ createRandomGame emptyCellsPercent (w, h) = do
   subscribeRecipient sysBus orchSub
 
   -- Creating actors for each cell
-  let fieldObjects = Proxy @(Objects (player ': emptyCell ': objects))
-  fieldActors <- evalIO (sysBus, cells3) MakeActors fieldObjects
+  fieldActors <- evalIO (sysBus, cells3) MakeActors
+      $ Proxy @(Objects (player ': emptyCell ': objects))
 
   -- Creating a special actor - field watcher
   fieldWatcher <- createFieldWatcherActor (w, h) sysBus

@@ -26,6 +26,8 @@ data MakeGameActions = MakeGameActions
 data MakeActors      = MakeActors
 data MakeActor       = MakeActor
 data GetIsDirected   = GetIsDirected
+data MaterializeField = MaterializeField
+data MaterializeFieldImpl = MaterializeFieldImpl
 
 data Objects (a :: [IObject])
 
@@ -209,3 +211,38 @@ instance
     if oTypeEq && iconEq
       then evalIO (sysBus, pos) makeActor $ Proxy @o
       else evalIO payload makeActor $ Proxy @(Objects os)
+
+
+-- Materializing the field
+
+type ObjInfoMap = Map.Map Icon ObjectInfo
+
+instance
+  ( EvalIO (Int, ObjInfoMap) MaterializeFieldImpl rs FieldObjects
+  ) =>
+  EvalIO (Int, ObjInfoMap) MaterializeField rs FieldObjects where
+  evalIO p _ _ = do
+    field <- evalIO p MaterializeFieldImpl $ Proxy @rs
+    let field' = Map.mapKeys (\(x, y) -> (x, abs y)) field
+    pure field'
+
+
+instance
+  EvalIO (Int, ObjInfoMap) MaterializeFieldImpl '[] FieldObjects where
+  evalIO _ _ _ = pure Map.empty
+
+instance
+  ( KnownSymbol r
+  , EvalIO (Int, ObjInfoMap) MaterializeFieldImpl rs FieldObjects
+  ) =>
+  EvalIO (Int, ObjInfoMap) MaterializeFieldImpl (r:rs) FieldObjects where
+  evalIO (rIdx, oInfos) _ _ = do
+    field <- evalIO (rIdx - 1, oInfos) MaterializeFieldImpl $ Proxy @rs
+    let row = symbolVal $ Proxy @r
+    let field' = foldr (insertObj rIdx oInfos) field $ zip [0..] row
+    pure field'
+
+insertObj rIdx oInfos (cIdx, icon) field =
+  case Map.lookup icon oInfos of
+    Nothing -> error $ "Icon not found: " <> show icon
+    Just oi -> Map.insert (cIdx, rIdx) oi field

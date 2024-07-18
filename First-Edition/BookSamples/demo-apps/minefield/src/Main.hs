@@ -5,6 +5,7 @@ module Main where
 import CPrelude
 
 import Minefield.Core.Interface
+import Minefield.Core.Game
 import Minefield.Game.Types
 import Minefield.Game.Game
 
@@ -38,13 +39,15 @@ type Minefield =
    , "  A C     7 C"
    ]
 
-type MyGame = Game
-  Minefield         -- not used for now
+type MyGame = GameDef
+  Minefield
   (Player "@")
   (EmptyCell " ")
   '[ Landmine "A" 1
    , Landmine "B" 2
    , Landmine "C" 3
+   , TimerBomb "6" 6
+   , TimerBomb "7" 7
    , TimerBomb "8" 8
    ]
   '[ PutFlag
@@ -55,6 +58,7 @@ type MyGame = Game
 
 main :: IO ()
 main = do
-  game <- createRandomGame @MyGame 0.8 (7, 7)
+  -- game <- createRandomGame @MyGame 0.8 (7, 7)
+  game <- createGame @MyGame
 
   grGameOrchestrator game

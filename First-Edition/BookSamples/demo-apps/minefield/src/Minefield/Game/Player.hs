@@ -27,7 +27,7 @@ performPlayerCommand sysBus pos (PlayerCommand mbDir actorActions) = do
     Nothing  -> mapM_ (performActorAction pos) acts
     Just dir -> mapM_ (performActorAction (movePos pos dir)) acts
   where
-    performActorAction pos' (_, act) = act sysBus pos'
+    performActorAction pos' (oType, act) = act sysBus oType pos'
 
 parsePlayerCommand
   :: String

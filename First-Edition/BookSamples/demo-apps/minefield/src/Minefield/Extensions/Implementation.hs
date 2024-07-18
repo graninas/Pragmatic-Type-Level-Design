@@ -21,6 +21,19 @@ import Minefield.Extensions.Verbs.PutFlag
 import GHC.TypeLits
 
 
+-- Common effects
+
+disableBombEffect :: ActorAction
+disableBombEffect sysBus oType pos = do
+  publishEvent sysBus
+     $ ObjectRequestEvent oType pos
+     $ AddOverhaulIcon
+     $ OverhaulIcon '!' (TurnsCount (-1)) (TicksCount 0)
+  publishEvent sysBus
+     $ ObjectRequestEvent oType pos
+     $ SetEnabled False
+
+
 -- Landmine
 
 instance
@@ -36,17 +49,7 @@ instance
        (ObjectType, ActorAction) where
   evalIO () _ _ = do
     let oType = symbolVal $ Proxy @ot
-
-    let act = \sysBus pos -> do
-          publishEvent sysBus
-            $ ObjectRequestEvent oType pos
-            $ AddOverhaulIcon
-            $ OverhaulIcon '!' (TurnsCount (-1)) (TicksCount 0)
-          publishEvent sysBus
-            $ ObjectRequestEvent oType pos
-            $ SetEnabled False
-
-    pure (oType, act)
+    pure (oType, disableBombEffect)
 
 instance
   ( KnownSymbol i

@@ -72,7 +72,7 @@ type GameIO a = IO a
 
 type TextCommand = String
 
-type ActorAction  = SystemBus -> Pos -> GameIO ()
+type ActorAction  = SystemBus -> ObjectType -> Pos -> GameIO ()
 type ActorActions = Map.Map ObjectType ActorAction
 type GameActions  = Map.Map TextCommand (Bool, ActorActions)
 

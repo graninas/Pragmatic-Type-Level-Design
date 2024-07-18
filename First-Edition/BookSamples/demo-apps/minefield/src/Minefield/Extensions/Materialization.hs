@@ -131,7 +131,7 @@ instance
   ( KnownSymbol cmd
   , EvalIO () GetIsDirected dir Bool
   , mkO ~ 'ObjectWrapper o
-  , mkA ~ 'ActionWrapper a dir cmd
+  , mkA ~ 'ActionWrapper a cmd dir
   , EvalIO () MakeActorAction (ObjAct o a) (ObjectType, ActorAction)
   , EvalIO () MakeGameActions (TraverseActs mkO acts) GameActions
   ) =>

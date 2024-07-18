@@ -9,4 +9,4 @@ import GHC.TypeLits
 data UseLandmineDetectorImpl
 
 type UseLandmineDetector =
-  MkAction UseLandmineDetectorImpl 'True "scan"
+  MkAction UseLandmineDetectorImpl "scan" 'True

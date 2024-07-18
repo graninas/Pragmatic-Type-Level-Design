@@ -9,5 +9,5 @@ import GHC.TypeLits
 
 data PutFlagImpl
 
-type PutFlag = MkAction PutFlagImpl 'True "flag"
+type PutFlag = MkAction PutFlagImpl "flag" 'True
 

@@ -8,4 +8,4 @@ import GHC.TypeLits
 
 data DigImpl
 
-type Dig = MkAction DigImpl 'True "dig"
+type Dig = MkAction DigImpl "dig" 'True

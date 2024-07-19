@@ -35,13 +35,20 @@ instance
   ( Eval ctx AsImplAction act (IO [String])
   , Eval ctx AsImplAction acts (IO [String])
   ) =>
-  Eval ctx AsImplAction
-    (ActionWrapper act ': acts)
-    (IO [String]) where
+  Eval ctx AsImplAction (act ': acts) (IO [String]) where
   eval ctx _ _ = do
     strs1 <- eval ctx AsImplAction $ Proxy @act
     strs2 <- eval ctx AsImplAction $ Proxy @acts
     pure $ strs1 <> strs2
+
+instance
+  ( Eval ctx AsImplAction act (IO [String])
+  ) =>
+  Eval ctx AsImplAction
+      ('ActionWrapper act)
+      (IO [String]) where
+  eval ctx _ _ =
+    eval ctx AsImplAction $ Proxy @act
 
 -- Lambda mechanism
 
@@ -111,7 +118,6 @@ instance
       $ \(val :: refType) -> evalLambda ctx val AsImplLambda (Proxy :: Proxy lam)
     pure []
 
-
 -- Both lambda
 
 instance
@@ -128,7 +134,7 @@ instance
 
 -- Print lambda
 instance Show val
-  => EvalLambda ctx val AsImplLambda PrintImpl (IO [String]) where
+  => EvalLambda ctx val AsImplLambda PrintFImpl (IO [String]) where
   evalLambda _ val _ _ = pure [show val]
 
 -- Drop lambda

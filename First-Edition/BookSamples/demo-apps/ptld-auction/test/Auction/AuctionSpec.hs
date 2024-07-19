@@ -63,23 +63,23 @@ type PayloadLot3 = ExtL.EFLotPayload (ExtL.MoneyVal "40000")
 -- Auction algorithm
 
 type EnglishAuctionLotAction1 =
-  '[ GetLotName (ConcatL "New lot: " Print)
-   , GetLotDescr Print
+  '[ GetLotName (ConcatL "New lot: " PrintF)
+   , GetLotDescr PrintF
    ]
 
 type EnglishAuctionLotAction2 =
   '[ GetLotName2
         (ConcatL "New lot: "
-          (Both (WriteRef "LotName result" String) Print))
+          (Both (WriteRef "LotName result" String) PrintF))
 
    , GetLotDescr2 (ConcatL "Lot description: "
-        (Both (WriteRef "LotDescr result" String) Print))
+        (Both (WriteRef "LotDescr result" String) PrintF))
    ]
 
 type EnglishAuctionFlow = AuctionFlow EnglishAuctionLotAction1
 
 type TestFlow = AuctionFlow
-  '[ ReadRef "curRound" Int Print
+  '[ ReadRef "curRound" Int PrintF
    , ReadRef "curCost" Int Drop
    ]
 
@@ -177,7 +177,7 @@ spec = do
         ]) <*> pure Map.empty
 
       void $ eval ctx Impl.AsImplAction $ Proxy @(
-            '[ GetPayloadValue MinBid Float Print
+            '[ GetPayloadValue MinBid Float PrintF
              , GetPayloadValue MinBid Float (WriteRef "f" Float)
              ])
 

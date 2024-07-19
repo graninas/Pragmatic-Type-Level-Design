@@ -20,20 +20,35 @@ type family MkLambda (a :: *) :: ILambda a
 
 data IAction where
   ActionWrapper :: a -> IAction
+
 type family MkAction a :: IAction where
   MkAction a = ActionWrapper a
 
 -- Lambda & action implementations
 
 data BothImpl lam1 lam2
-data PrintImpl
+data IfImpl (cond :: bool) (then_ :: ILambda a) (else_ :: ILambda a)
+
+data PrintFImpl
+data PrintLineImpl (str :: Symbol)
+data GetLineImpl (lam :: ILambda a)
+
 data DropImpl
+data TakeImpl
 data ConcatLImpl (str :: Symbol) (lam :: ILambda a)
 data ConcatRImpl (lam :: ILambda a) (str :: Symbol)
 
+type If cond then_ else_
+  = MkLambda (IfImpl cond then_ else_)
 type Both lam1 lam2  = MkLambda (BothImpl lam1 lam2)
-type Print           = MkLambda PrintImpl
+
+type GetLine lam     = MkAction (GetLineImpl lam)
+type PrintLine str   = MkAction (PrintLineImpl str)
+
+type PrintF          = MkLambda PrintFImpl
+
 type Drop            = MkLambda DropImpl
+type Take            = MkLambda TakeImpl
 type ConcatL str lam = MkLambda (ConcatLImpl str lam)
 type ConcatR lam str = MkLambda (ConcatRImpl lam str)
 

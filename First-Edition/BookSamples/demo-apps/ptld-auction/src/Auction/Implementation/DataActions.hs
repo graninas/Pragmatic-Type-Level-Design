@@ -143,7 +143,7 @@ instance
   ) =>
   EvalLambda ctx String
     AsImplLambda
-    (ConcatRImpl lam str)
+    (ConcatRImpl str lam)
     (IO [String]) where
   evalLambda ctx val _ _ = do
     let rStr = symbolVal $ Proxy @str

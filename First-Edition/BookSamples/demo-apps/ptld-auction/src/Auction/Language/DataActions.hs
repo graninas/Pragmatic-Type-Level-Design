@@ -27,12 +27,20 @@ data IAction where
 type family MkAction lam :: IAction where
   MkAction lam = ActionWrapper lam
 
+-- | Denotes a value with name, type-level type and runtime type.
+data ITag where
+  TagWrapper :: Symbol -> t -> dynT -> ITag
+
+type family MkTag (name :: Symbol) t dynT :: ITag where
+  MkTag name t dynT = TagWrapper name t dynT
+
 -- Lambda & action implementations
 
 data BothImpl
   (lam1 :: ILambda inT outT)
   (lam2 :: ILambda inT outT)
 
+-- Not implemented yet
 data IfImpl
   (cond :: Bool)
   (then_ :: ILambda inT outT)
@@ -54,9 +62,10 @@ data ConcatLImpl
   (lam :: ILambda Symbol outT)
 
 data ConcatRImpl
-  (lam :: ILambda Symbol outT)
   (str :: Symbol)
+  (lam :: ILambda Symbol outT)
 
+-- Not implemented yet
 type If
   (cond :: Bool)
   (then_ :: ILambda inT outT)
@@ -89,9 +98,9 @@ type ConcatL
   = MkLambda Symbol Symbol (ConcatLImpl str lam)
 
 type ConcatR
-  (lam :: ILambda Symbol outT)
   (str :: Symbol)
-  = MkLambda Symbol Symbol (ConcatRImpl lam str)
+  (lam :: ILambda Symbol outT)
+  = MkLambda Symbol Symbol (ConcatRImpl str lam)
 
 data ReadRefImpl
   (rtT :: *)
@@ -112,14 +121,6 @@ type WriteRef
   (rtT :: *)
   (refName :: Symbol)
   = MkLambda rtT () (WriteRefImpl rtT refName)
-
-
-
-data ITag where
-  TagWrapper :: Symbol -> t -> dynT -> ITag
-
-type family MkTag (name :: Symbol) t dynT :: ITag where
-  MkTag name t dynT = TagWrapper name t dynT
 
 data GetPayloadValueImpl
   (tag :: ITag)

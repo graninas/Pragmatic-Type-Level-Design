@@ -101,3 +101,16 @@ instance
     let str = symbolVal $ Proxy @str
     strs <- evalLambda () () AsIntroLambda $ Proxy @lam
     pure $ "ConcatLImpl reached" : str : strs
+
+instance
+  ( KnownSymbol str
+  , EvalLambda () () AsIntroLambda lam (IO [String])
+  ) =>
+  EvalLambda () ()
+    AsIntroLambda
+    (ConcatRImpl str lam)
+    (IO [String]) where
+  evalLambda _ _ _ _ = do
+    let str = symbolVal $ Proxy @str
+    strs <- evalLambda () () AsIntroLambda $ Proxy @lam
+    pure $ "ConcatRImpl reached" : str : strs

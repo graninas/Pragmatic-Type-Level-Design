@@ -32,12 +32,12 @@ type Actions =
    , ReadRef Int "val2" (WriteRef Int "val1")
    ]
 
-type PrintingNameAction =
-  GetLine ((ConcatL "Hello, " (ConcatR PrintF "!")))
+type GreetingsLambda =
+  ConcatL "Hello, " (ConcatR "!" PrintF)
 
 type Greetings =
   '[ PrintLine "What is your name?"
-   , PrintingNameAction
+   , GetLine GreetingsLambda
    ]
 
 -- Instance for tests and demo purposes

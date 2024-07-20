@@ -62,26 +62,26 @@ type PayloadLot3 = ExtL.EFLotPayload (ExtL.MoneyVal "40000")
 
 -- Auction algorithm
 
--- type EnglishAuctionLotAction1 =
---   '[ GetLotName (ConcatL "New lot: " PrintF)
---    , GetLotDescr PrintF
---    ]
+type EnglishAuctionLotAction1 =
+  '[ GetLotName (ConcatL "New lot: " PrintF)
+   , GetLotDescr PrintF
+   ]
 
--- type EnglishAuctionLotAction2 =
---   '[ GetLotName
---         (ConcatL "New lot: "
---           (Both (WriteRef "LotName result" Symbol) PrintF))
+type EnglishAuctionLotAction2 =
+  '[ GetLotName
+        (ConcatL "New lot: "
+          (Both (WriteRef Symbol "lot name result") PrintF))
 
---    , GetLotDescr (ConcatL "Lot description: "
---         (Both (WriteRef "LotDescr result" Symbol) PrintF))
---    ]
+   , GetLotDescr (ConcatL "Lot description: "
+        (Both (WriteRef Symbol "lot descr result") PrintF))
+   ]
 
--- type EnglishAuctionFlow = AuctionFlow EnglishAuctionLotAction1
+type EnglishAuctionFlow = AuctionFlow EnglishAuctionLotAction1
 
--- type TestFlow = AuctionFlow
---   '[ ReadRef "curRound" Int PrintF
---    , ReadRef "curCost" Int PrintF
---    ]
+type TestFlow = AuctionFlow
+  '[ ReadRef Int "curRound" (ShowF Int PrintF)
+   , ReadRef Int "curCost" (ShowF Int PrintF)
+   ]
 
 -- Auction
 
@@ -153,8 +153,12 @@ spec = do
         , "Minimum bid: 40000"
         , "Currency: USD"
         , "AuctionFlow"
-        , "GetLotNameImpl reached"
-        , "GetLotDescrImpl reached"
+        , "GetPayloadValueImpl reached"
+        , "ConcatLImpl reached"
+        , "New lot: "
+        , "PrintFImpl reached"
+        , "GetPayloadValueImpl reached"
+        , "PrintFImpl reached"
         ]
 
   describe "Type level eDSL Auction: Implementation" $ do
@@ -183,27 +187,27 @@ spec = do
       verifyRef ctx (symbolVal $ Proxy @ExtL.MinBid) (10.0 :: Float)
       verifyRef ctx "f" (10.0 :: Float)
 
-    it "eval EnglishAuctionLotAction1 test (separate actions LotName LotDescr)" $ do
+    it "eval EnglishAuctionLotAction1 test (separate actions lot name, lot descr)" $ do
       ctx <- TestData <$> newIORef (Map.fromList
-          [ ("LotName", Dyn.toDyn ("101" :: String))
-          , ("LotDescr", Dyn.toDyn ("Dali artwork" :: String))
+          [ ("lot name", Dyn.toDyn ("101" :: String))
+          , ("lot descr", Dyn.toDyn ("Dali artwork" :: String))
           ]) <*> pure Map.empty
 
       void $ eval ctx Impl.AsImplAction
            $ Proxy @EnglishAuctionLotAction1
 
-      verifyRef ctx "LotName" ("101" :: String)
+      verifyRef ctx "lot name" ("101" :: String)
 
     it "eval EnglishAuctionLotAction2 test (unified action)" $ do
       ctx <- TestData <$> newIORef (Map.fromList
-        [ ("LotName", Dyn.toDyn ("101" :: String))
-        , ("LotDescr", Dyn.toDyn ("Dali artwork" :: String))
+        [ ("lot name", Dyn.toDyn ("101" :: String))
+        , ("lot descr", Dyn.toDyn ("Dali artwork" :: String))
         ]) <*> pure Map.empty
 
       void $ eval ctx Impl.AsImplAction
            $ Proxy @EnglishAuctionLotAction2
 
-      verifyRef ctx "LotName" ("101" :: String)
-      verifyRef ctx "LotDescr" ("Dali artwork" :: String)
-      verifyRef ctx "LotName result" ("New lot: 101" :: String)
-      verifyRef ctx "LotDescr result" ("Lot description: Dali artwork" :: String)
+      verifyRef ctx "lot name" ("101" :: String)
+      verifyRef ctx "lot descr" ("Dali artwork" :: String)
+      verifyRef ctx "lot name result" ("New lot: 101" :: String)
+      verifyRef ctx "lot descr result" ("Lot description: Dali artwork" :: String)

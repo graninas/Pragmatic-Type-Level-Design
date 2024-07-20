@@ -11,6 +11,7 @@ import CPrelude
 
 import qualified Prelude
 
+import Auction.Language.Auction
 import Auction.Language.DataActions
 import qualified Auction.Implementation.DataActions as Impl
 import TypeLevelDSL.Eval
@@ -26,21 +27,18 @@ import qualified Data.Map as Map
 import qualified Data.Dynamic as Dyn
 
 
--- type Actions =
---   '[ ReadRef Int "val1" (WriteRef Int "val2")
---    , ReadRef Int "val2" (WriteRef Int "val1")
---    ]
+type Actions =
+  '[ ReadRef Int "val1" (WriteRef Int "val2")
+   , ReadRef Int "val2" (WriteRef Int "val1")
+   ]
 
--- type PrintingNameAction =
---   GetLine ((ConcatL "Hello, " (ConcatR PrintF "!")))
+type PrintingNameAction =
+  GetLine ((ConcatL "Hello, " (ConcatR PrintF "!")))
 
--- type Greetings =
---   '[ PrintLine "What is your name?"
---    , PrintingNameAction
---    ]
-
-
-
+type Greetings =
+  '[ PrintLine "What is your name?"
+   , PrintingNameAction
+   ]
 
 -- Instance for tests and demo purposes
 instance

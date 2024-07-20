@@ -52,10 +52,10 @@ instance
     eval ctx AsImplAction $ Proxy @act
 
 instance
-  ( EvalLambda ctx valType AsImplLambda lam (IO [String])
+  ( EvalLambda ctx val AsImplLambda lam (IO [String])
   ) =>
   EvalLambda
-    ctx valType
+    ctx val
     AsImplLambda
     ('LambdaWrapper lam)
     (IO [String]) where
@@ -65,32 +65,42 @@ instance
 instance
   ( Context ctx
   , KnownSymbol name
-  , Dyn.Typeable dynT
-  , EvalLambda ctx dynT AsImplLambda lam (IO [String])
+  , Dyn.Typeable valT
+  , EvalLambda ctx valT AsImplLambda lam (IO [String])
   ) =>
   Eval ctx AsImplAction
-       (GetPayloadValueImpl ('TagWrapper name t dynT) lam)
+       (GetPayloadValueImpl ('TagWrapper name t valT) lam)
        (IO [String]) where
   eval ctx _ _ = do
     let key = symbolVal $ Proxy @name
     withContextValue ctx key
-      $ \(val :: dynT) -> evalLambda ctx val AsImplLambda (Proxy :: Proxy lam)
+      $ \(val :: valT) -> evalLambda ctx val AsImplLambda $ Proxy @lam
     pure []
 
--- instance
---   ( Context ctx
---   , KnownSymbol refName
---   , Dyn.Typeable refType
---   , EvalLambda ctx refType AsImplLambda lam (IO [String])
---   )
---   => Eval ctx AsImplAction (ReadRefImpl refName refType lam) (IO [String]) where
---   eval ctx _ _ = do
---     let valName = symbolVal (Proxy :: Proxy refName)
---     withContextValue ctx valName
---       $ \(val :: refType) -> evalLambda ctx val AsImplLambda (Proxy :: Proxy lam)
---     pure []
+instance
+  ( Context ctx
+  , KnownSymbol refName
+  , Dyn.Typeable valT
+  , EvalLambda ctx valT AsImplLambda lam (IO [String])
+  )
+  => Eval ctx AsImplAction (ReadRefImpl valT refName lam) (IO [String]) where
+  eval ctx _ _ = do
+    let valName = symbolVal $ Proxy @refName
+    withContextValue ctx valName
+      $ \(val :: valT) -> evalLambda ctx val AsImplLambda $ Proxy @lam
+    pure []
 
--- -- Both lambda
+instance
+  ( Show val
+  , EvalLambda ctx String AsImplLambda lam (IO [String])
+  ) =>
+  EvalLambda ctx val
+  AsImplLambda
+  (ShowFImpl ('LambdaWrapper lam))
+  (IO [String]) where
+  evalLambda ctx val _ _ = do
+    let valStr = show val
+    evalLambda ctx valStr AsImplLambda $ Proxy @lam
 
 instance
   ( Context ctx
@@ -107,8 +117,6 @@ instance
     evalLambda ctx val AsImplLambda (Proxy :: Proxy lam2)
     pure []
 
-
--- -- Print lambda
 instance
   ( Show val
   ) =>
@@ -120,8 +128,7 @@ instance
   , KnownSymbol str
   , EvalLambda ctx String AsImplLambda lam (IO [String])
   ) =>
-  EvalLambda
-    ctx String
+  EvalLambda ctx String
     AsImplLambda
     (ConcatLImpl str lam)
     (IO [String]) where
@@ -134,8 +141,7 @@ instance
   , KnownSymbol str
   , EvalLambda ctx String AsImplLambda lam (IO [String])
   ) =>
-  EvalLambda
-    ctx String
+  EvalLambda ctx String
     AsImplLambda
     (ConcatRImpl lam str)
     (IO [String]) where
@@ -146,12 +152,11 @@ instance
 instance
   ( Context ctx
   , KnownSymbol refName
-  , Dyn.Typeable refType
+  , Dyn.Typeable t
   ) =>
-  EvalLambda
-    ctx refType
+  EvalLambda ctx t
     AsImplLambda
-    (WriteRefImpl refType refName)
+    (WriteRefImpl valT refName)
     (IO [String]) where
   evalLambda ctx val _ _ = do
     let valName = symbolVal $ Proxy @refName
@@ -159,14 +164,13 @@ instance
     setDyn ctx valName dynVal
     pure []
 
-
 withContextValue
-  :: forall refType ctx a
+  :: forall valT ctx a
    . Context ctx
-  => Dyn.Typeable refType
+  => Dyn.Typeable valT
   => ctx
   -> String
-  -> (refType -> IO a)
+  -> (valT -> IO a)
   -> IO a
 withContextValue ctx valName f = do
     mbDyn <- getDyn ctx valName
@@ -174,6 +178,6 @@ withContextValue ctx valName f = do
       Nothing -> error $ "Value " <> valName <> " not found."
       Just dyn -> case Dyn.fromDynamic dyn of
         Nothing -> error $ "Value " <> valName <> " not parsed."
-        Just (val :: refType) -> do
+        Just (val :: valT) -> do
           putStrLn $ "Successfully fetched value " <> valName <> "."
           f val

@@ -87,3 +87,17 @@ instance
     eval _ _ _ = do
       strs <- evalLambda () () AsIntroLambda $ Proxy @lam
       pure $ "GetPayloadValueImpl reached" : strs
+
+
+instance
+  ( KnownSymbol str
+  , EvalLambda () () AsIntroLambda lam (IO [String])
+  ) =>
+  EvalLambda () ()
+    AsIntroLambda
+    (ConcatLImpl str lam)
+    (IO [String]) where
+  evalLambda _ _ _ _ = do
+    let str = symbolVal $ Proxy @str
+    strs <- evalLambda () () AsIntroLambda $ Proxy @lam
+    pure $ "ConcatLImpl reached" : str : strs

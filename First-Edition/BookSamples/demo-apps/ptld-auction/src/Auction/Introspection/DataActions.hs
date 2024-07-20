@@ -19,6 +19,7 @@ import GHC.TypeLits (KnownSymbol, Symbol, KnownNat, Nat, symbolVal)
 
 
 data AsIntroAction = AsIntroAction
+data AsIntroLambda = AsIntroLambda
 
 instance Eval () AsIntroAction '[] (IO [String]) where
   eval () _ _ = pure []
@@ -35,13 +36,54 @@ instance
     strs2 <- eval () AsIntroAction $ Proxy @acts
     pure $ strs1 <> strs2
 
--- Specific actions
 
-instance Eval () AsIntroAction (GetPayloadValueImpl valName valType lam) (IO [String]) where
-  eval () _ _ = pure ["GetPayloadValueImpl reached"]
 
-instance Eval () AsIntroAction (GetLotNameImpl lam) (IO [String]) where
-  eval () _ _ = pure ["GetLotNameImpl reached"]
+instance
+  ( KnownSymbol refName
+  ) =>
+  EvalLambda () ()
+    AsIntroLambda
+    (WriteRefImpl rtType refName)
+    (IO [String]) where
+  evalLambda _ _ _ _ =
+    pure ["WriteRefImpl reached", symbolVal $ Proxy @refName]
 
-instance Eval () AsIntroAction (GetLotDescrImpl lam) (IO [String]) where
-  eval () _ _ = pure ["GetLotDescrImpl reached"]
+instance
+  EvalLambda () ()
+    AsIntroLambda
+    PrintFImpl
+    (IO [String]) where
+  evalLambda _ _ _ _ =
+    pure ["PrintFImpl reached"]
+
+instance
+  ( EvalLambda () () AsIntroLambda lam (IO [String])
+  ) =>
+  EvalLambda () ()
+    AsIntroLambda
+    (ShowFImpl lam)
+    (IO [String]) where
+  evalLambda _ _ _ _ = do
+    strs <- evalLambda () () AsIntroLambda $ Proxy @lam
+    pure $ "ShowFImpl reached" : strs
+
+instance
+  ( EvalLambda () () AsIntroLambda lam (IO [String])
+  ) =>
+  EvalLambda () ()
+    AsIntroLambda
+    ('LambdaWrapper lam)
+    (IO [String]) where
+  evalLambda _ _ _ _ =
+    evalLambda () () AsIntroLambda $ Proxy @lam
+
+instance
+  ( EvalLambda () () AsIntroLambda lam (IO [String])
+  ) =>
+  Eval ()
+    AsIntroAction
+    (GetPayloadValueImpl tag lam)
+    (IO [String]) where
+    eval _ _ _ = do
+      strs <- evalLambda () () AsIntroLambda $ Proxy @lam
+      pure $ "GetPayloadValueImpl reached" : strs

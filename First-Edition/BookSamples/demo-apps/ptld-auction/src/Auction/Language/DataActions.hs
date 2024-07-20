@@ -15,69 +15,119 @@ import GHC.TypeLits (Symbol, Nat)
 
 -- Interfaces
 
-data ILambda a
-type family MkLambda (a :: *) :: ILambda a
+data ILambda inT outT where
+  LambdaWrapper :: a -> ILambda inT outT
+
+type family MkLambda inT outT a :: ILambda inT outT where
+  MkLambda inT outT a = LambdaWrapper a
 
 data IAction where
-  ActionWrapper :: a -> IAction
+  ActionWrapper :: lam -> IAction
 
-type family MkAction a :: IAction where
-  MkAction a = ActionWrapper a
+type family MkAction lam :: IAction where
+  MkAction lam = ActionWrapper lam
 
 -- Lambda & action implementations
 
-data BothImpl lam1 lam2
-data IfImpl (cond :: bool) (then_ :: ILambda a) (else_ :: ILambda a)
+data BothImpl
+  (lam1 :: ILambda inT outT)
+  (lam2 :: ILambda inT outT)
+
+data IfImpl
+  (cond :: Bool)
+  (then_ :: ILambda inT outT)
+  (else_ :: ILambda inT outT)
+
+data ShowFImpl
+  (lam :: ILambda Symbol outT)
 
 data PrintFImpl
-data PrintLineImpl (str :: Symbol)
-data GetLineImpl (lam :: ILambda a)
 
-data DropImpl
-data TakeImpl
-data ConcatLImpl (str :: Symbol) (lam :: ILambda a)
-data ConcatRImpl (lam :: ILambda a) (str :: Symbol)
+data PrintLineImpl
+  (str :: Symbol)
 
-type If cond then_ else_
-  = MkLambda (IfImpl cond then_ else_)
-type Both lam1 lam2  = MkLambda (BothImpl lam1 lam2)
+data GetLineImpl
+  (lam :: ILambda Symbol outT)
 
-type GetLine lam     = MkAction (GetLineImpl lam)
-type PrintLine str   = MkAction (PrintLineImpl str)
+data ConcatLImpl
+  (str :: Symbol)
+  (lam :: ILambda Symbol outT)
 
-type PrintF          = MkLambda PrintFImpl
+data ConcatRImpl
+  (lam :: ILambda Symbol outT)
+  (str :: Symbol)
 
-type Drop            = MkLambda DropImpl
-type Take            = MkLambda TakeImpl
-type ConcatL str lam = MkLambda (ConcatLImpl str lam)
-type ConcatR lam str = MkLambda (ConcatRImpl lam str)
+type If
+  (cond :: Bool)
+  (then_ :: ILambda inT outT)
+  (else_ :: ILambda inT outT)
+  = MkLambda inT outT (IfImpl cond then_ else_)
 
-data LotName
-data LotDescr
+type Both
+  (lam1 :: ILambda inT outT)
+  (lam2 :: ILambda inT outT)
+  = MkLambda inT outT (BothImpl lam1 lam2)
 
--- Should valName be a Symbol?
-data GetPayloadValueImpl (val :: *) (valType :: *) (lam :: ILambda a)
-data GetLotNameImpl (lam :: ILambda a)      -- custom methods
-data GetLotDescrImpl (lam :: ILambda a)     -- custom methods
+type GetLine
+  (lam :: ILambda Symbol outT)
+  = MkAction (GetLineImpl lam)
+
+type PrintLine
+  (str :: Symbol)
+  = MkAction (PrintLineImpl str)
+
+type ShowF
+  inT
+  (lam :: ILambda Symbol outT)
+  = MkLambda inT outT (ShowFImpl lam)
+
+type PrintF = MkLambda Symbol () PrintFImpl
+
+type ConcatL
+  (str :: Symbol)
+  (lam :: ILambda Symbol outT)
+  = MkLambda Symbol Symbol (ConcatLImpl str lam)
+
+type ConcatR
+  (lam :: ILambda Symbol outT)
+  (str :: Symbol)
+  = MkLambda Symbol Symbol (ConcatRImpl lam str)
 
 data ReadRefImpl
+  (rtT :: *)
   (refName :: Symbol)
-  (t :: *)
-  (lam :: ILambda a)
-type ReadRef n t lam = MkAction (ReadRefImpl n t lam)
+  (lam :: ILambda rtT outT)
 
 data WriteRefImpl
+  (rtT :: *)
   (refName :: Symbol)
-  (t :: *)
-type WriteRef n t = MkLambda (WriteRefImpl n t)
 
-type GetPayloadValue tag typ lam
-  = MkAction (GetPayloadValueImpl tag typ lam)
-type GetLotName lam
-  = MkAction (GetLotNameImpl lam)     -- Custom methods
-type GetLotDescr lam
-  = MkAction (GetLotDescrImpl lam)    -- Custom methods
-type GetLotName2 lam
-  = MkAction (GetPayloadValueImpl LotName  String lam)
-type GetLotDescr2 lam
-  = MkAction (GetPayloadValueImpl LotDescr String lam)
+type ReadRef
+  (rtT :: *)
+  (refName :: Symbol)
+  (lam :: ILambda rtT outT)
+  = MkAction (ReadRefImpl rtT refName lam)
+
+type WriteRef
+  (rtT :: *)
+  (refName :: Symbol)
+  = MkLambda rtT () (WriteRefImpl rtT refName)
+
+
+
+
+data ITag where
+  TagWrapper :: Symbol -> t -> dynT -> ITag
+
+type family MkTag (name :: Symbol) t dynT :: ITag where
+  MkTag name t dynT = TagWrapper name t dynT
+
+data GetPayloadValueImpl
+  (tag :: ITag)
+  (lam :: ILambda inT outT)
+
+type GetPayloadValue
+  (tag :: ITag)
+  (lam :: ILambda inT outT)
+  = MkAction (GetPayloadValueImpl tag lam)
+

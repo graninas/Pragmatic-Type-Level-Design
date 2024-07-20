@@ -62,26 +62,26 @@ type PayloadLot3 = ExtL.EFLotPayload (ExtL.MoneyVal "40000")
 
 -- Auction algorithm
 
-type EnglishAuctionLotAction1 =
-  '[ GetLotName (ConcatL "New lot: " PrintF)
-   , GetLotDescr PrintF
-   ]
+-- type EnglishAuctionLotAction1 =
+--   '[ GetLotName (ConcatL "New lot: " PrintF)
+--    , GetLotDescr PrintF
+--    ]
 
-type EnglishAuctionLotAction2 =
-  '[ GetLotName2
-        (ConcatL "New lot: "
-          (Both (WriteRef "LotName result" String) PrintF))
+-- type EnglishAuctionLotAction2 =
+--   '[ GetLotName
+--         (ConcatL "New lot: "
+--           (Both (WriteRef "LotName result" Symbol) PrintF))
 
-   , GetLotDescr2 (ConcatL "Lot description: "
-        (Both (WriteRef "LotDescr result" String) PrintF))
-   ]
+--    , GetLotDescr (ConcatL "Lot description: "
+--         (Both (WriteRef "LotDescr result" Symbol) PrintF))
+--    ]
 
-type EnglishAuctionFlow = AuctionFlow EnglishAuctionLotAction1
+-- type EnglishAuctionFlow = AuctionFlow EnglishAuctionLotAction1
 
-type TestFlow = AuctionFlow
-  '[ ReadRef "curRound" Int PrintF
-   , ReadRef "curCost" Int Drop
-   ]
+-- type TestFlow = AuctionFlow
+--   '[ ReadRef "curRound" Int PrintF
+--    , ReadRef "curCost" Int PrintF
+--    ]
 
 -- Auction
 
@@ -164,8 +164,7 @@ spec = do
         ]) <*> pure Map.empty
 
       void $ eval ctx Impl.AsImplAction $ Proxy @(
-            '[ ReadRef "ref1" Int (WriteRef "ref2" Int)
-             , ReadRef "ref2" Int Drop
+            '[ ReadRef Int "ref1" (WriteRef Int "ref2")
              ])
 
       verifyRef ctx "ref1" (10 :: Int)
@@ -173,15 +172,15 @@ spec = do
 
     it "eval Action GetPayloadValue test" $ do
       ctx <- TestData <$> newIORef (Map.fromList
-        [ (Dyn.toTypeableKey @MinBid, Dyn.toDyn (10.0 :: Float))
+        [ (symbolVal $ Proxy @ExtL.MinBid, Dyn.toDyn (10.0 :: Float))
         ]) <*> pure Map.empty
 
       void $ eval ctx Impl.AsImplAction $ Proxy @(
-            '[ GetPayloadValue MinBid Float PrintF
-             , GetPayloadValue MinBid Float (WriteRef "f" Float)
+            '[ GetPayloadValue ExtL.MinBidTag (ShowF Float PrintF)
+             , GetPayloadValue ExtL.MinBidTag (WriteRef Float "f")
              ])
 
-      verifyRef ctx (Dyn.toTypeableKey @MinBid) (10.0 :: Float)
+      verifyRef ctx (symbolVal $ Proxy @ExtL.MinBid) (10.0 :: Float)
       verifyRef ctx "f" (10.0 :: Float)
 
     it "eval EnglishAuctionLotAction1 test (separate actions LotName LotDescr)" $ do

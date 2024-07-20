@@ -57,3 +57,7 @@ type AllowedCountries name cs
   = Censorship (AllowedCountriesImpl name cs)
 
 type EFLotPayload b = MkLotPayload (EFLotPayloadImpl b)
+
+
+type MinBid = "min bid"
+type MinBidTag  = MkTag MinBid Float Float

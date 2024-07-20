@@ -28,8 +28,9 @@ class EvalIO payload verb noun ret
   | verb noun -> ret where
   evalIO :: payload -> verb -> Proxy noun -> IO ret
 
--- | Evaluate with an input parameter
+-- | Evaluate a lambda that has 1 input argument
 -- (interpret a lambda-like combinator)
-class EvalLambda payload input verb noun ret
+-- rtInputType is a runtime type of the argument
+class EvalLambda payload rtInputType verb noun ret
   | verb noun -> ret where
-  evalLambda :: payload -> input -> verb -> Proxy noun -> ret
+  evalLambda :: payload -> rtInputType -> verb -> Proxy noun -> ret

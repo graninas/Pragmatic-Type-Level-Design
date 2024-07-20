@@ -8,6 +8,7 @@
 {-# LANGUAGE FlexibleInstances        #-}
 {-# LANGUAGE ScopedTypeVariables      #-}
 {-# LANGUAGE TypeApplications         #-}
+{-# LANGUAGE UndecidableInstances     #-}
 
 module Auction.Implementation.DataActions where
 
@@ -50,128 +51,110 @@ instance
   eval ctx _ _ =
     eval ctx AsImplAction $ Proxy @act
 
--- Lambda mechanism
-
 instance
-  ( mkLam ~ MkLambda lam
-  , EvalLambda ctx valType AsImplLambda lam (IO [String])
+  ( EvalLambda ctx valType AsImplLambda lam (IO [String])
   ) =>
-  EvalLambda ctx valType AsImplLambda mkLam (IO [String]) where
+  EvalLambda
+    ctx valType
+    AsImplLambda
+    ('LambdaWrapper lam)
+    (IO [String]) where
   evalLambda ctx val _ _ =
     evalLambda ctx val AsImplLambda $ Proxy @lam
 
--- Specific actions
-
--- -- GetPayloadValue
-
 instance
   ( Context ctx
-  , Typeable valTag
-  , Dyn.Typeable valType
-  , EvalLambda ctx valType AsImplLambda lam (IO [String])
+  , KnownSymbol name
+  , Dyn.Typeable dynT
+  , EvalLambda ctx dynT AsImplLambda lam (IO [String])
   ) =>
-  Eval ctx AsImplAction (GetPayloadValueImpl valTag valType lam) (IO [String]) where
+  Eval ctx AsImplAction
+       (GetPayloadValueImpl ('TagWrapper name t dynT) lam)
+       (IO [String]) where
   eval ctx _ _ = do
-    let key = Dyn.toTypeableKey @valTag
+    let key = symbolVal $ Proxy @name
     withContextValue ctx key
-      $ \(val :: valType) -> evalLambda ctx val AsImplLambda (Proxy :: Proxy lam)
+      $ \(val :: dynT) -> evalLambda ctx val AsImplLambda (Proxy :: Proxy lam)
     pure []
 
--- GetLotName
+-- instance
+--   ( Context ctx
+--   , KnownSymbol refName
+--   , Dyn.Typeable refType
+--   , EvalLambda ctx refType AsImplLambda lam (IO [String])
+--   )
+--   => Eval ctx AsImplAction (ReadRefImpl refName refType lam) (IO [String]) where
+--   eval ctx _ _ = do
+--     let valName = symbolVal (Proxy :: Proxy refName)
+--     withContextValue ctx valName
+--       $ \(val :: refType) -> evalLambda ctx val AsImplLambda (Proxy :: Proxy lam)
+--     pure []
 
-instance
-  ( Context ctx
-  , EvalLambda ctx String AsImplLambda lam (IO [String])
-  ) =>
-  Eval ctx AsImplAction (GetLotNameImpl lam) (IO [String]) where
-  eval ctx _ _ = do
-    let key = "LotName"         -- FIXME: magic constant
-    withContextValue ctx key
-      $ \(lotName :: String) -> evalLambda ctx lotName AsImplLambda (Proxy :: Proxy lam)
-    pure []
-
--- GetLotDescr
-
-instance
-  ( Context ctx
-  , EvalLambda ctx String AsImplLambda lam (IO [String])
-  ) =>
-  Eval ctx AsImplAction (GetLotDescrImpl lam) (IO [String]) where
-  eval ctx _ _ = do
-    let key = "LotDescr"         -- FIXME: magic constant
-    withContextValue ctx key
-      $ \(lotDescr :: String) -> evalLambda ctx lotDescr AsImplLambda (Proxy :: Proxy lam)
-    pure []
-
--- ReadRef
-
-instance
-  ( Context ctx
-  , KnownSymbol refName
-  , Dyn.Typeable refType
-  , EvalLambda ctx refType AsImplLambda lam (IO [String])
-  )
-  => Eval ctx AsImplAction (ReadRefImpl refName refType lam) (IO [String]) where
-  eval ctx _ _ = do
-    let valName = symbolVal (Proxy :: Proxy refName)
-    withContextValue ctx valName
-      $ \(val :: refType) -> evalLambda ctx val AsImplLambda (Proxy :: Proxy lam)
-    pure []
-
--- Both lambda
+-- -- Both lambda
 
 instance
   ( Context ctx
   , EvalLambda ctx val AsImplLambda lam1 (IO [String])
   , EvalLambda ctx val AsImplLambda lam2 (IO [String])
-  )
-  => EvalLambda ctx val AsImplLambda (BothImpl lam1 lam2) (IO [String]) where
+  ) =>
+  EvalLambda
+    ctx val
+    AsImplLambda
+    (BothImpl lam1 lam2)
+    (IO [String]) where
   evalLambda ctx val _ _ = do
     evalLambda ctx val AsImplLambda (Proxy :: Proxy lam1)
     evalLambda ctx val AsImplLambda (Proxy :: Proxy lam2)
     pure []
 
 
--- Print lambda
-instance Show val
-  => EvalLambda ctx val AsImplLambda PrintFImpl (IO [String]) where
+-- -- Print lambda
+instance
+  ( Show val
+  ) =>
+  EvalLambda ctx val AsImplLambda PrintFImpl (IO [String]) where
   evalLambda _ val _ _ = pure [show val]
 
--- Drop lambda
-instance EvalLambda ctx val AsImplLambda DropImpl (IO [String]) where
-  evalLambda _ _ _ _ = pure []
-
--- ConcatL lambda
 instance
   ( Context ctx
   , KnownSymbol str
   , EvalLambda ctx String AsImplLambda lam (IO [String])
-  )
-  => EvalLambda ctx String AsImplLambda (ConcatLImpl str lam) (IO [String]) where
+  ) =>
+  EvalLambda
+    ctx String
+    AsImplLambda
+    (ConcatLImpl str lam)
+    (IO [String]) where
   evalLambda ctx val _ _ = do
     let lStr = symbolVal (Proxy :: Proxy str)
     evalLambda ctx (lStr ++ val) AsImplLambda (Proxy :: Proxy lam)
 
--- ConcatR lambda
 instance
   ( Context ctx
   , KnownSymbol str
   , EvalLambda ctx String AsImplLambda lam (IO [String])
-  )
-  => EvalLambda ctx String AsImplLambda (ConcatRImpl lam str) (IO [String]) where
+  ) =>
+  EvalLambda
+    ctx String
+    AsImplLambda
+    (ConcatRImpl lam str)
+    (IO [String]) where
   evalLambda ctx val _ _ = do
-    let rStr = symbolVal (Proxy :: Proxy str)
-    evalLambda ctx (val ++ rStr) AsImplLambda (Proxy :: Proxy lam)
+    let rStr = symbolVal $ Proxy @str
+    evalLambda ctx (val ++ rStr) AsImplLambda $ Proxy @lam
 
--- WriteRef lambda
 instance
   ( Context ctx
   , KnownSymbol refName
   , Dyn.Typeable refType
-  )
-  => EvalLambda ctx refType AsImplLambda (WriteRefImpl refName refType) (IO [String]) where
+  ) =>
+  EvalLambda
+    ctx refType
+    AsImplLambda
+    (WriteRefImpl refType refName)
+    (IO [String]) where
   evalLambda ctx val _ _ = do
-    let valName = symbolVal (Proxy :: Proxy refName)
+    let valName = symbolVal $ Proxy @refName
     let dynVal = Dyn.toDyn val
     setDyn ctx valName dynVal
     pure []

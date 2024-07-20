@@ -12,7 +12,8 @@ module Auction.Language.Auction where
 
 import GHC.TypeLits (Symbol)
 
-import Auction.Language.Flow as X
+import Auction.Language.DataActions
+import Auction.Language.Flow
 
 
 data Country
@@ -20,8 +21,6 @@ data Country
   | UK
   | UA
   deriving (Show, Read, Eq, Ord)
-
-data MinBid
 
 newtype ValNameSymb = ValNameS Symbol
 
@@ -99,3 +98,58 @@ data NoCensorshipImpl
 data NoLotPayloadImpl
 type NoCensorship = MkCensorship NoCensorshipImpl
 type NoLotPayload = MkLotPayload NoLotPayloadImpl
+
+
+-- Specials
+
+type LotNameTag  = MkTag "lot name" Symbol String
+type LotDescrTag = MkTag "lot descr" Symbol String
+
+type GetLotName
+  (lam :: ILambda Symbol outT)
+  = GetPayloadValue LotNameTag lam
+
+type GetLotDescr
+  (lam :: ILambda Symbol outT)
+  = GetPayloadValue LotDescrTag lam
+
+
+
+
+-- Test scenarios
+
+
+type EnglishAuctionLotAction1 =
+  '[ GetLotName (ConcatL "New lot: " PrintF)
+   , GetLotDescr PrintF
+   ]
+
+type EnglishAuctionLotAction2 =
+  '[ GetLotName
+        (ConcatL "New lot: "
+          (Both (WriteRef Symbol "LotName result") PrintF))
+
+   , GetLotDescr (ConcatL "Lot description: "
+        (Both (WriteRef Symbol "LotDescr result") PrintF))
+   ]
+
+type EnglishAuctionFlow = AuctionFlow EnglishAuctionLotAction1
+
+type TestFlow = AuctionFlow
+  '[ ReadRef Int "curRound" (ShowF Int PrintF)
+   , ReadRef Int "curCost" (ShowF Int PrintF)
+   ]
+
+
+type Actions =
+  '[ ReadRef Int "val1" (WriteRef Int "val2")
+   , ReadRef Int "val2" (WriteRef Int "val1")
+   ]
+
+type PrintingNameAction =
+  GetLine ((ConcatL "Hello, " (ConcatR PrintF "!")))
+
+type Greetings =
+  '[ PrintLine "What is your name?"
+   , PrintingNameAction
+   ]

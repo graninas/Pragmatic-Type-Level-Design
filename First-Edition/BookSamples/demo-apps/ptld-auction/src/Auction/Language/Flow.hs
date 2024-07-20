@@ -25,3 +25,7 @@ data AuctionFlowImpl (acts :: [IAction])
 
 type AuctionFlow acts
   = MkAuctionFlow (AuctionFlowImpl acts)
+
+
+
+

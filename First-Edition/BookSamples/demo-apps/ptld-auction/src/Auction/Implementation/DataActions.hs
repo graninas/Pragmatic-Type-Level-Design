@@ -113,9 +113,9 @@ instance
     (BothImpl lam1 lam2)
     (IO [String]) where
   evalLambda ctx val _ _ = do
-    evalLambda ctx val AsImplLambda (Proxy :: Proxy lam1)
-    evalLambda ctx val AsImplLambda (Proxy :: Proxy lam2)
-    pure []
+    strs1 <- evalLambda ctx val AsImplLambda (Proxy :: Proxy lam1)
+    strs2 <- evalLambda ctx val AsImplLambda (Proxy :: Proxy lam2)
+    pure $ strs1 <> strs2
 
 instance
   ( Show val

@@ -37,8 +37,8 @@ type family MkTag (name :: Symbol) t dynT :: ITag where
 -- Lambda & action implementations
 
 data BothImpl
-  (lam1 :: ILambda inT outT)
-  (lam2 :: ILambda inT outT)
+  (lam1 :: ILambda inT outT1)
+  (lam2 :: ILambda inT outT2)
 
 -- Not implemented yet
 data IfImpl
@@ -73,9 +73,9 @@ type If
   = MkLambda inT outT (IfImpl cond then_ else_)
 
 type Both
-  (lam1 :: ILambda inT outT)
-  (lam2 :: ILambda inT outT)
-  = MkLambda inT outT (BothImpl lam1 lam2)
+  (lam1 :: ILambda inT outT1)
+  (lam2 :: ILambda inT outT2)
+  = MkLambda inT () (BothImpl lam1 lam2)
 
 type GetLine
   (lam :: ILambda Symbol outT)

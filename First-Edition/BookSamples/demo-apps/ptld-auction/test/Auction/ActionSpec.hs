@@ -40,6 +40,13 @@ type Greetings =
    , GetLine GreetingsLambda
    ]
 
+type StoreName = WriteRef Symbol "name"
+
+type Greetings2 =
+  '[ PrintLine "What is your name?"
+   , GetLine (Both GreetingsLambda StoreName)
+   ]
+
 -- Instance for tests and demo purposes
 instance
   ( Context ctx
@@ -73,7 +80,7 @@ spec = do
       verifyRef ctx "val1" (10 :: Int)
       verifyRef ctx "val2" (10 :: Int)
 
-    it "Combinators test" $ do
+    it "Combinators test 1" $ do
       ctx <- TestData
               <$> newIORef Map.empty
               <*> pure Map.empty
@@ -84,3 +91,18 @@ spec = do
         [ "What is your name?"
         , "\"Hello, John Doe!\""
         ]
+
+    it "Combinators test 2" $ do
+      ctx <- TestData
+              <$> newIORef Map.empty
+              <*> pure Map.empty
+
+      lines <- eval ctx Impl.AsImplAction (Proxy @Greetings2)
+
+      lines `shouldBe`
+        [ "What is your name?"
+        , "\"Hello, John Doe!\""
+        ]
+
+      verifyRef ctx "name" ("John Doe" :: String)
+

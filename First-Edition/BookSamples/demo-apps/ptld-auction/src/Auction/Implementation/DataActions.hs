@@ -113,8 +113,8 @@ instance
     (BothImpl lam1 lam2)
     (IO [String]) where
   evalLambda ctx val _ _ = do
-    strs1 <- evalLambda ctx val AsImplLambda (Proxy :: Proxy lam1)
-    strs2 <- evalLambda ctx val AsImplLambda (Proxy :: Proxy lam2)
+    strs1 <- evalLambda ctx val AsImplLambda $ Proxy @lam1
+    strs2 <- evalLambda ctx val AsImplLambda $ Proxy @lam2
     pure $ strs1 <> strs2
 
 instance
@@ -124,8 +124,7 @@ instance
   evalLambda _ val _ _ = pure [show val]
 
 instance
-  ( Context ctx
-  , KnownSymbol str
+  ( KnownSymbol str
   , EvalLambda ctx String AsImplLambda lam (IO [String])
   ) =>
   EvalLambda ctx String
@@ -133,12 +132,11 @@ instance
     (ConcatLImpl str lam)
     (IO [String]) where
   evalLambda ctx val _ _ = do
-    let lStr = symbolVal (Proxy :: Proxy str)
-    evalLambda ctx (lStr ++ val) AsImplLambda (Proxy :: Proxy lam)
+    let lStr = symbolVal $ Proxy @str
+    evalLambda ctx (lStr ++ val) AsImplLambda $ Proxy @lam
 
 instance
-  ( Context ctx
-  , KnownSymbol str
+  ( KnownSymbol str
   , EvalLambda ctx String AsImplLambda lam (IO [String])
   ) =>
   EvalLambda ctx String

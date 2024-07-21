@@ -103,24 +103,24 @@ type ConcatR
   = MkLambda Symbol Symbol (ConcatRImpl str lam)
 
 data ReadRefImpl
-  (rtT :: *)
+  (valT :: *)
   (refName :: Symbol)
-  (lam :: ILambda rtT outT)
+  (lam :: ILambda valT outT)
 
 data WriteRefImpl
-  (rtT :: *)
+  (valT :: *)
   (refName :: Symbol)
 
 type ReadRef
-  (rtT :: *)
+  (valT :: *)
   (refName :: Symbol)
-  (lam :: ILambda rtT outT)
-  = MkAction (ReadRefImpl rtT refName lam)
+  (lam :: ILambda valT outT)
+  = MkAction (ReadRefImpl valT refName lam)
 
 type WriteRef
-  (rtT :: *)
+  (valT :: *)
   (refName :: Symbol)
-  = MkLambda rtT () (WriteRefImpl rtT refName)
+  = MkLambda valT () (WriteRefImpl valT refName)
 
 data GetPayloadValueImpl
   (tag :: ITag)

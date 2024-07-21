@@ -92,7 +92,7 @@ spec = do
         , "\"Hello, John Doe!\""
         ]
 
-    it "Combinators test 2" $ do
+    it "Both combinator test" $ do
       ctx <- TestData
               <$> newIORef Map.empty
               <*> pure Map.empty

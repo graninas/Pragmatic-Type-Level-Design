@@ -93,6 +93,8 @@ createGame = do
   actions <- evalIO () MakeGameActions
     $ Proxy @(ObjsActs objects actions)
 
+  printActions actions
+
   pure $ GameRuntime
     (w, h)
     (runGameOrchestrator sysBus orchQueueVar actors actions)
@@ -150,9 +152,16 @@ createRandomGame emptyCellsPercent (w, h) = do
   actions <- evalIO () MakeGameActions
     $ Proxy @(ObjsActs objects actions)
 
+  printActions actions
+
   pure $ GameRuntime
     (w, h)
     (runGameOrchestrator sysBus orchQueueVar actors actions)
+
+printActions :: GameActions -> GameIO ()
+printActions actions = do
+  let cmds = map (\(a, (isDir, _)) -> (a, isDir)) $ Map.toList actions
+  printCommands cmds
 
 
 -- | Game orchestrator. Manages events and provides a game loop.

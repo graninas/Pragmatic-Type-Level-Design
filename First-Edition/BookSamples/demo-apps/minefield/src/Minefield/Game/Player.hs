@@ -13,6 +13,7 @@ import Minefield.Game.UI
 import qualified Data.List as L
 import qualified Data.Map as Map
 import qualified Data.Text as T
+import qualified Data.Char as Ch
 import System.Random (randomRIO)
 
 

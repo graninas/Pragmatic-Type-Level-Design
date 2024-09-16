@@ -71,10 +71,11 @@ type EmptyCellsPercent = Float
 type GameIO a = IO a
 
 type TextCommand = String
+type IsDirected = Bool
 
 type ActorAction  = SystemBus -> ObjectType -> Pos -> GameIO ()
 type ActorActions = Map.Map ObjectType ActorAction
-type GameActions  = Map.Map TextCommand (Bool, ActorActions)
+type GameActions  = Map.Map TextCommand (IsDirected, ActorActions)
 
 data Direction
   = U | D | L | R

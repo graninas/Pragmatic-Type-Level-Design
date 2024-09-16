@@ -7,6 +7,10 @@ import System.IO (hFlush, stdout)
 import qualified System.IO as SIO
 import qualified Data.Text as T
 
+-- TODO: remove hardcode
+-- TODO: support fields of arbitrary size
+-- TODO: use ncurses or similar tools to make a directly controlled UI
+
 resetScreen :: IO ()
 resetScreen = do
   setSGR [Reset]
@@ -27,6 +31,32 @@ printStatus str = do
   setCursorPosition 15 0
   clearLine
   putStr str
+
+-- FXIME: hardcode
+directions :: String
+directions = "U | D | L | R | UL | UR | DL | DR"
+
+printCommands :: [(String, Bool)] -> IO ()
+printCommands cmds = do
+  setCursorPosition 17 0
+
+  putStrLn @String "Commands:"
+
+  printSystemCommands
+
+  forM_ cmds (\(cmd, isDir) -> do
+    putStr cmd
+    if isDir then (putStrLn ("   " <> directions))
+             else putStrLn @String "")
+
+  flushScreen
+
+  where
+    printSystemCommands = do
+      putStrLn @String "quit | exit"
+      putStrLn @String "turn"
+      putStrLn @String "tick"
+
 
 printDebugString :: String -> IO ()
 printDebugString str = do

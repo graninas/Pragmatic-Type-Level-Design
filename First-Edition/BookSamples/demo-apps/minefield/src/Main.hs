@@ -56,6 +56,7 @@ type MyGame = GameDef
    ]
 
 
+-- N.B., field sizes other than (7,7) are not properly supported
 main :: IO ()
 main = do
   -- game <- createRandomGame @MyGame 0.8 (7, 7)

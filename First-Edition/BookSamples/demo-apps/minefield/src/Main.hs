@@ -59,7 +59,9 @@ type MyGame = GameDef
 -- N.B., field sizes other than (7,7) are not properly supported
 main :: IO ()
 main = do
-  -- game <- createRandomGame @MyGame 0.8 (7, 7)
-  game <- createGame @MyGame
+  -- appRt <- createRandomGameApp @MyGame 0.8 (7, 7)
+  appRt <- createGameApp @MyGame
 
-  grGameOrchestrator game
+  let gameRt = arGameRuntime appRt
+  let orchestrator = arGameOrchestratorWorker appRt
+  orchestrator gameRt Start

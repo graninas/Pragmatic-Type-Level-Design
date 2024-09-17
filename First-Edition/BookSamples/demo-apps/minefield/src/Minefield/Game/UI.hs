@@ -26,11 +26,19 @@ printTitle str = do
   clearLine
   putStr str
 
-printStatus :: String -> IO ()
-printStatus str = do
+printStatus :: Int -> Int -> Int -> String -> IO ()
+printStatus turn tick ticksInTurn str = do
   setCursorPosition 15 0
   clearLine
+  putStr @String $ "Turn " <> show turn
+    <> " (" <> show tick <> "/" <> show ticksInTurn <> ")\t\t"
   putStr str
+
+printFarewell :: IO ()
+printFarewell = do
+  setCursorPosition 30 0
+  clearLine
+  putStrLn @String "Bye-bye"
 
 -- FXIME: hardcode
 directions :: String
@@ -48,8 +56,6 @@ printCommands cmds = do
     putStr cmd
     if isDir then (putStrLn ("   " <> directions))
              else putStrLn @String "")
-
-  flushScreen
 
   where
     printSystemCommands = do

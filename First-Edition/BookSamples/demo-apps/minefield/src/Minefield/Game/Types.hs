@@ -7,6 +7,10 @@ import Minefield.Core.Object
 
 import qualified Data.Map as Map
 
+
+-- TODO: refactor this mess
+
+
 type PlayerPos = Pos
 type ActorPos  = Pos
 
@@ -61,9 +65,26 @@ data Actor
 type Field = Map.Map (Int, Int) Actor
 type Actors = [Actor]
 
+data GamePhase
+  = Start
+  | Idle
+  | PlayerInput
+  | DoTurn
+  | DoTick
+
 data GameRuntime = GameRuntime
-  { grFieldSize :: (Int, Int)
-  , grGameOrchestrator :: IO ()
+  { grSysBus :: SystemBus
+  , grActors :: Actors
+  , grGameActions :: GameActions
+  , grFieldSize :: (Int, Int)
+  , grTicksInTurn :: Int
+  , grTurnRef :: IORef Int
+  , grTickRef :: IORef Int
+  }
+
+data AppRuntime = AppRuntime
+  { arGameRuntime :: GameRuntime
+  , arGameOrchestratorWorker :: GameRuntime -> GamePhase -> IO ()
   }
 
 type EmptyCellsPercent = Float

@@ -26,20 +26,15 @@ import System.Random (randomRIO)
 import System.Console.ANSI
 
 
-ticksInTurn :: Int
-ticksInTurn = 10
+defaultTicksInTurn :: Int
+defaultTicksInTurn = 10
 
+tickThreadDelay :: Int
+tickThreadDelay = 1000 * 50
 
-data GamePhase
-  = RefreshUI
-  | PlayerInput
-  | DoTurn
-
-type TicksLeft = Int
-type GameTurn = (GamePhase, TicksLeft)
 
 -- | Creates a game from a definition.
-createGame
+createGameApp
   :: forall g field player emptyCell objects actions
    . ( g ~ GameDef field player emptyCell objects actions
      , EvalIO () MakeGameActions (ObjsActs objects actions) GameActions
@@ -54,8 +49,8 @@ createGame
      , EvalIO () GetObjectInfo (Objects objects) [ObjectInfo]
      , EvalIO (Int, Map Icon ObjectInfo) MaterializeField field FieldObjects
      )
-  => IO GameRuntime
-createGame = do
+  => IO AppRuntime
+createGameApp = do
   resetScreen
   printTitle "Minefield game"
 
@@ -95,12 +90,22 @@ createGame = do
 
   printActions actions
 
-  pure $ GameRuntime
-    (w, h)
-    (runGameOrchestrator sysBus orchQueueVar actors actions)
+  turnRef <- newIORef 1
+  tickRef <- newIORef 1
+  let gr = GameRuntime
+            sysBus
+            actors
+            actions
+            (w, h)
+            defaultTicksInTurn
+            turnRef
+            tickRef
+
+  let orchestrator = gameOrchestratorWorker orchQueueVar
+  pure $ AppRuntime gr orchestrator
 
 -- | Creates a random game of given field size.
-createRandomGame
+createRandomGameApp
   :: forall g field player emptyCell objects actions
    . ( g ~ GameDef field player emptyCell objects actions
      , EvalIO () MakeGameActions (ObjsActs objects actions) GameActions
@@ -116,8 +121,8 @@ createRandomGame
      )
   => EmptyCellsPercent
   -> (Int, Int)
-  -> IO GameRuntime
-createRandomGame emptyCellsPercent (w, h) = do
+  -> IO AppRuntime
+createRandomGameApp emptyCellsPercent (w, h) = do
   resetScreen
   printTitle "Minefield game"
 
@@ -154,98 +159,82 @@ createRandomGame emptyCellsPercent (w, h) = do
 
   printActions actions
 
-  pure $ GameRuntime
-    (w, h)
-    (runGameOrchestrator sysBus orchQueueVar actors actions)
+  turnRef <- newIORef 1
+  tickRef <- newIORef 1
+  let gr = GameRuntime
+            sysBus
+            actors
+            actions
+            (w, h)
+            defaultTicksInTurn
+            turnRef
+            tickRef
 
-printActions :: GameActions -> GameIO ()
-printActions actions = do
-  let cmds = map (\(a, (isDir, _)) -> (a, isDir)) $ Map.toList actions
-  printCommands cmds
-
+  let orchestrator = gameOrchestratorWorker orchQueueVar
+  pure $ AppRuntime gr orchestrator
 
 -- | Game orchestrator. Manages events and provides a game loop.
-runGameOrchestrator
-  :: SystemBus
-  -> EventQueueVar
-  -> Actors
-  -> GameActions
+gameOrchestratorWorker
+  :: EventQueueVar
+  -> GameRuntime
+  -> GamePhase
   -> GameIO ()
-runGameOrchestrator sysBus queueVar actors actions = do
-  gameOrchestratorWorker (RefreshUI, ticksInTurn)
+gameOrchestratorWorker queueVar gr phase = do
+  goWorker phase
 
   where
+    goWorker Start = do
+      publishEvent (grSysBus gr) TurnEvent
+      refreshUI False gr
+      goWorker PlayerInput
 
-    gameOrchestratorWorker (RefreshUI, ticksLeft) = do
-      publishEvent sysBus PopulateCellDescriptionEvent
-      distributeEvents sysBus
-      stepActors actors
+    goWorker Idle = do
+      refreshUI False gr
+      goWorker PlayerInput
 
-      gameOrchestratorWorker (PlayerInput, ticksLeft)
+    goWorker DoTick = do
+      turnFinished <- performTick gr
+      refreshUI turnFinished gr
+      goWorker PlayerInput
 
-    gameOrchestratorWorker (DoTurn, ticksLeft) = do
+    goWorker DoTurn = do
+      lastTick <- performTick gr
+      refreshUI lastTick gr
+      threadDelay tickThreadDelay
 
-      mapM_ (\n -> do
-        printStatus $ "Performing a tick: " <> show n
-        doTick sysBus actors
-        ) [1..ticksLeft]
+      if lastTick
+        then goWorker PlayerInput
+        else goWorker DoTurn
 
-      publishEvent sysBus TurnEvent
-      distributeEvents sysBus
-      stepActors actors
+    goWorker PlayerInput = do
+      let sysBus = grSysBus gr
 
-      gameOrchestratorWorker (RefreshUI, ticksInTurn)
-
-    gameOrchestratorWorker (PlayerInput, ticksLeft) = do
       publishEvent sysBus PlayerInputInvitedEvent
-      distributeEvents sysBus
-
-      stepActors actors
-      distributeEvents sysBus
+      performActors gr
+      distributeEvents sysBus     -- expecting special player input event
 
       evs <- extractEvents queueVar
 
       -- TODO: proper event processing
       let inputEvs = [ev | ev <- evs, isPlayerInputEvent ev]
       case inputEvs of
-        (PlayerInputEvent _ "tick" : _) -> case ticksLeft of
-          0 -> gameOrchestratorWorker (DoTurn, ticksInTurn)
-          _ -> do
-            doTick sysBus actors
-            gameOrchestratorWorker (PlayerInput, ticksLeft - 1)
-        (PlayerInputEvent _ "turn" : _) -> gameOrchestratorWorker (DoTurn, ticksInTurn)
-        (PlayerInputEvent _ "quit" : _) -> printStatus "Bye-bye"
-        (PlayerInputEvent _ "exit" : _) -> printStatus "Bye-bye"
+        (PlayerInputEvent _ "." : _)    -> goWorker DoTick
+        (PlayerInputEvent _ "t" : _)    -> goWorker DoTurn
+        (PlayerInputEvent _ "tick" : _) -> goWorker DoTick
+        (PlayerInputEvent _ "turn" : _) -> goWorker DoTurn
+        (PlayerInputEvent _ "quit" : _) -> printFarewell
+        (PlayerInputEvent _ "exit" : _) -> printFarewell
         (PlayerInputEvent playerPos line : _) -> do
 
-          eCmd <- parsePlayerCommand line actions
+          eCmd <- parsePlayerCommand line $ grGameActions gr
 
           case eCmd of
-            Left err -> do
-              printStatus err
-              gameOrchestratorWorker (RefreshUI, ticksLeft)
+            Left err -> goWorker Idle
             Right playerCmd -> do
               performPlayerCommand sysBus playerPos playerCmd
-              gameOrchestratorWorker (DoTurn, ticksInTurn)
+              goWorker DoTurn
 
-        _ -> do
-
-          gameOrchestratorWorker (RefreshUI, ticksLeft)
-
-doTick :: SystemBus -> Actors -> GameIO ()
-doTick sysBus actors = do
-  publishEvent sysBus TickEvent
-  distributeEvents sysBus
-  stepActors actors
-
-  publishEvent sysBus PopulateCellDescriptionEvent
-  distributeEvents sysBus
-  stepActors actors
-
-  flushScreen
-
-  threadDelay $ 1000 * 50
-
+        _ -> goWorker Idle
 
 createFieldWatcherActor
   :: (Int, Int)
@@ -298,3 +287,76 @@ processFieldWatcherEvent
 processFieldWatcherEvent sysBus (w, h) (FieldIconEvent pos ch) =
   drawFieldObject pos ch
 processFieldWatcherEvent _ _ _ = pure ()
+
+printActions :: GameActions -> GameIO ()
+printActions actions = do
+  let cmds = map (\(a, (isDir, _)) -> (a, isDir)) $ Map.toList actions
+  printCommands cmds
+
+performActors :: GameRuntime -> GameIO ()
+performActors gr = do
+  distributeEvents $ grSysBus gr
+  stepActors $ grActors gr
+
+refreshUI :: Bool -> GameRuntime -> GameIO ()
+refreshUI turnFinished gr = do
+  let sysBus = grSysBus gr
+  publishEvent sysBus PopulateCellDescriptionEvent
+  performActors gr
+
+  tick <- readIORef $ grTickRef gr
+  turn <- readIORef $ grTurnRef gr
+  let ticksInTurn = grTicksInTurn gr
+  if turnFinished
+    then printStatus turn tick ticksInTurn "Turn finished."
+    else printStatus turn tick ticksInTurn ""
+
+  flushScreen
+
+performTick :: GameRuntime -> GameIO Bool
+performTick gr = do
+  -- N.B. Tick should be correct
+  tick <- readIORef $ grTickRef gr
+  turn <- readIORef $ grTurnRef gr
+  let ticksInTurn = grTicksInTurn gr
+  let sysBus = grSysBus gr
+  let actors = grActors gr
+
+  publishEvent sysBus TickEvent
+
+  let newTick = tick + 1
+  if newTick >= ticksInTurn
+    then do
+      let newTurn = turn + 1
+      publishEvent sysBus TurnEvent
+
+      writeIORef (grTurnRef gr) newTurn
+      writeIORef (grTickRef gr) 1
+    else do
+      writeIORef (grTickRef gr) newTick
+
+  pure $ newTick >= ticksInTurn
+
+
+
+--  1    2    3
+--  |    |    |
+--  ===============
+--  1234512345
+--  ^^^^^
+--       ^
+--       ^^^^^
+--            ^
+--
+--  1
+--  1
+
+-- do turn:
+-- last ticks
+--    (does turn as well)
+
+-- do tick:
+-- tick
+-- if last tick
+--    then turn
+--    else ()

@@ -6,20 +6,22 @@ import CPrelude
 
 import Minefield.Core.Interface
 import Minefield.Core.Game
-import Minefield.Game.Types
-import Minefield.Game.Game
+import Minefield.Core.Types
+import Minefield.Core.System.Types
+import Minefield.App.Game
+import Minefield.App.Runtime
 
-import Minefield.Extensions.Nouns.Player
-import Minefield.Extensions.Nouns.EmptyCell
+import Minefield.Implementation.Materialization
+
+import Minefield.Implementation.SystemNouns.Player
+import Minefield.Implementation.SystemNouns.EmptyCell
+import Minefield.Implementation.SystemVerbs.PutFlag
+
 import Minefield.Extensions.Nouns.Landmine
 import Minefield.Extensions.Nouns.TimerBomb
 import Minefield.Extensions.Verbs.Dig
-import Minefield.Extensions.Verbs.PutFlag
 import Minefield.Extensions.Verbs.UseLandmineDetector
 
-import Minefield.Extensions.Materialization
-import Minefield.Extensions.Implementation
-import Extra.Implementation
 
 import GHC.TypeLits
 

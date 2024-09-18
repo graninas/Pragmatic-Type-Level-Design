@@ -7,21 +7,20 @@ import Minefield.Core.Types
 import GHC.TypeLits
 
 
--- | Field objects that become actors
-data IObject where
-  ObjectWrapper :: a -> IObject
+type CommandDef = Symbol
 
-type family MkObject a :: IObject where
-  MkObject a = ObjectWrapper a
+-- | Field object templates that become actors
+data IObjectTemplate where
+  ObjectTemplateWrapper :: a -> IObjectTemplate
 
-type Command = Symbol
-type IsDirected = Bool
+type family MkObjectTemplate a :: IObjectTemplate where
+  MkObjectTemplate a = ObjectTemplateWrapper a
 
 -- | Anything the player can do
 data IAction where
   ActionWrapper
     :: a
-    -> Command
+    -> CommandDef
     -> IsDirected
     -> IAction
 
@@ -30,7 +29,7 @@ type family MkAction a cmd dir :: IAction where
 
 data Game
   (minefield :: [Symbol])
-  (player :: IObject)
-  (emptyCell :: IObject)
-  (supportedObjects :: [IObject])
+  (player :: IObjectTemplate)
+  (emptyCell :: IObjectTemplate)
+  (supportedObjects :: [IObjectTemplate])
   (supportedActions :: [IAction])     -- TODO: validate command uniqueness

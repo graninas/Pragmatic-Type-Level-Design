@@ -1,6 +1,8 @@
-module Minefield.Game.UI where
+module Minefield.App.UI where
 
 import CPrelude
+
+import Minefield.Core.Defaults
 
 import System.Console.ANSI
 import System.IO (hFlush, stdout)
@@ -26,8 +28,8 @@ printTitle str = do
   clearLine
   putStr str
 
-printStatus :: Int -> Int -> Int -> String -> IO ()
-printStatus turn tick ticksInTurn str = do
+printStatus :: Int -> Int -> String -> IO ()
+printStatus turn tick str = do
   setCursorPosition 15 0
   clearLine
   putStr @String $ "Turn " <> show turn

@@ -10,7 +10,7 @@ import GHC.TypeLits
 
 data GameDef
   (minefield :: [Symbol])
-  (player :: IObject)
-  (emptyCell :: IObject)
-  (supportedObjects :: [IObject])
+  (player :: IObjectTemplate)
+  (emptyCell :: IObjectTemplate)
+  (supportedObjects :: [IObjectTemplate])
   (supportedActions :: [IAction])     -- TODO: validate command uniqueness

@@ -14,28 +14,51 @@ build-type:     Simple
 
 library
   exposed-modules:
-      Extra.Implementation
       Main
+      Minefield.App.Game
+      Minefield.App.Player
+      Minefield.App.RndGen
+      Minefield.App.Runtime
+      Minefield.App.UI
+      Minefield.Core.Commons
+      Minefield.Core.Defaults
       Minefield.Core.Game
       Minefield.Core.Interface
       Minefield.Core.Object
+      Minefield.Core.System.Actor
+      Minefield.Core.System.Event
+      Minefield.Core.System.Types
       Minefield.Core.Types
-      Minefield.Extensions.Implementation
-      Minefield.Extensions.Materialization
-      Minefield.Extensions.Nouns.EmptyCell
       Minefield.Extensions.Nouns.Landmine
-      Minefield.Extensions.Nouns.Player
+      Minefield.Extensions.Nouns.Landmine.Def
+      Minefield.Extensions.Nouns.Landmine.Implementation
+      Minefield.Extensions.Nouns.Landmine.Object
+      Minefield.Extensions.Nouns.Landmine.Template
+      Minefield.Extensions.Nouns.Landmine.Verbs
       Minefield.Extensions.Nouns.TimerBomb
+      Minefield.Extensions.Nouns.TimerBomb.Def
+      Minefield.Extensions.Nouns.TimerBomb.Implementation
+      Minefield.Extensions.Nouns.TimerBomb.Object
+      Minefield.Extensions.Nouns.TimerBomb.Template
+      Minefield.Extensions.Nouns.TimerBomb.Verbs
       Minefield.Extensions.Verbs.Dig
-      Minefield.Extensions.Verbs.PutFlag
       Minefield.Extensions.Verbs.UseLandmineDetector
-      Minefield.Extensions.Verbs.Walk
-      Minefield.Game.Game
-      Minefield.Game.Player
-      Minefield.Game.RndGen
-      Minefield.Game.System
-      Minefield.Game.Types
-      Minefield.Game.UI
+      Minefield.Implementation.Commons
+      Minefield.Implementation.Materialization
+      Minefield.Implementation.SystemNouns.EmptyCell
+      Minefield.Implementation.SystemNouns.EmptyCell.Def
+      Minefield.Implementation.SystemNouns.EmptyCell.Implementation
+      Minefield.Implementation.SystemNouns.EmptyCell.Object
+      Minefield.Implementation.SystemNouns.EmptyCell.Template
+      Minefield.Implementation.SystemNouns.EmptyCell.Verbs
+      Minefield.Implementation.SystemNouns.Player
+      Minefield.Implementation.SystemNouns.Player.Def
+      Minefield.Implementation.SystemNouns.Player.Implementation
+      Minefield.Implementation.SystemNouns.Player.Object
+      Minefield.Implementation.SystemNouns.Player.Template
+      Minefield.Implementation.SystemNouns.Player.Verbs
+      Minefield.Implementation.SystemVerbs.PutFlag
+      Minefield.Implementation.SystemVerbs.Walk
   other-modules:
       Paths_minefield
   hs-source-dirs:
@@ -90,27 +113,50 @@ library
 executable minefield
   main-is: Main.hs
   other-modules:
-      Extra.Implementation
+      Minefield.App.Game
+      Minefield.App.Player
+      Minefield.App.RndGen
+      Minefield.App.Runtime
+      Minefield.App.UI
+      Minefield.Core.Commons
+      Minefield.Core.Defaults
       Minefield.Core.Game
       Minefield.Core.Interface
       Minefield.Core.Object
+      Minefield.Core.System.Actor
+      Minefield.Core.System.Event
+      Minefield.Core.System.Types
       Minefield.Core.Types
-      Minefield.Extensions.Implementation
-      Minefield.Extensions.Materialization
-      Minefield.Extensions.Nouns.EmptyCell
       Minefield.Extensions.Nouns.Landmine
-      Minefield.Extensions.Nouns.Player
+      Minefield.Extensions.Nouns.Landmine.Def
+      Minefield.Extensions.Nouns.Landmine.Implementation
+      Minefield.Extensions.Nouns.Landmine.Object
+      Minefield.Extensions.Nouns.Landmine.Template
+      Minefield.Extensions.Nouns.Landmine.Verbs
       Minefield.Extensions.Nouns.TimerBomb
+      Minefield.Extensions.Nouns.TimerBomb.Def
+      Minefield.Extensions.Nouns.TimerBomb.Implementation
+      Minefield.Extensions.Nouns.TimerBomb.Object
+      Minefield.Extensions.Nouns.TimerBomb.Template
+      Minefield.Extensions.Nouns.TimerBomb.Verbs
       Minefield.Extensions.Verbs.Dig
-      Minefield.Extensions.Verbs.PutFlag
       Minefield.Extensions.Verbs.UseLandmineDetector
-      Minefield.Extensions.Verbs.Walk
-      Minefield.Game.Game
-      Minefield.Game.Player
-      Minefield.Game.RndGen
-      Minefield.Game.System
-      Minefield.Game.Types
-      Minefield.Game.UI
+      Minefield.Implementation.Commons
+      Minefield.Implementation.Materialization
+      Minefield.Implementation.SystemNouns.EmptyCell
+      Minefield.Implementation.SystemNouns.EmptyCell.Def
+      Minefield.Implementation.SystemNouns.EmptyCell.Implementation
+      Minefield.Implementation.SystemNouns.EmptyCell.Object
+      Minefield.Implementation.SystemNouns.EmptyCell.Template
+      Minefield.Implementation.SystemNouns.EmptyCell.Verbs
+      Minefield.Implementation.SystemNouns.Player
+      Minefield.Implementation.SystemNouns.Player.Def
+      Minefield.Implementation.SystemNouns.Player.Implementation
+      Minefield.Implementation.SystemNouns.Player.Object
+      Minefield.Implementation.SystemNouns.Player.Template
+      Minefield.Implementation.SystemNouns.Player.Verbs
+      Minefield.Implementation.SystemVerbs.PutFlag
+      Minefield.Implementation.SystemVerbs.Walk
       Paths_minefield
   hs-source-dirs:
       ./src

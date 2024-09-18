@@ -1,4 +1,4 @@
-module Minefield.Extensions.Verbs.Walk where
+module Minefield.Implementation.SystemVerbs.Walk where
 
 import CPrelude
 

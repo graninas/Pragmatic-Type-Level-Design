@@ -1,35 +1,30 @@
 {-# LANGUAGE UndecidableInstances #-}
 
-module Minefield.Extensions.Materialization where
+module Minefield.Implementation.Materialization where
 
 import CPrelude
 
 import TypeLevelDSL.Eval
 
 import Minefield.Core.Types
+import Minefield.Core.System.Types
 import Minefield.Core.Interface
 import Minefield.Core.Object
-
-import Minefield.Game.Types
-import Minefield.Game.UI
 
 import GHC.TypeLits
 import qualified Data.Map as Map
 
 
-data GetIcon         = GetIcon
-data GetObjectInfo   = GetObjectInfo
-data GetObjectType   = GetObjectType
-data MakeActorAction = MakeActorAction
-data MakeGameAction  = MakeGameAction
-data MakeGameActions = MakeGameActions
-data MakeActors      = MakeActors
-data MakeActor       = MakeActor
-data GetIsDirected   = GetIsDirected
-data MaterializeField = MaterializeField
+data MakeActorAction      = MakeActorAction
+data MakeGameAction       = MakeGameAction
+data MakeGameActions      = MakeGameActions
+data MakeActors           = MakeActors
+data MakeActor            = MakeActor
+data GetIsDirected        = GetIsDirected
+data MaterializeField     = MaterializeField
 data MaterializeFieldImpl = MaterializeFieldImpl
 
-data Objects (a :: [IObject])
+data Objects (a :: [IObjectTemplate])
 
 data ObjsActs objs acts
 data TraverseObjs objs acts
@@ -41,7 +36,7 @@ data ObjAct o a
 instance
   ( EvalIO () GetIcon o Char
   ) =>
-  EvalIO () GetIcon ('ObjectWrapper o) Char where
+  EvalIO () GetIcon ('ObjectTemplateWrapper o) Char where
   evalIO () verb _ = evalIO () verb $ Proxy @o
 
 instance
@@ -63,7 +58,7 @@ instance
 instance
   ( EvalIO () GetObjectInfo o ObjectInfo
   ) =>
-  EvalIO () GetObjectInfo ('ObjectWrapper o) ObjectInfo where
+  EvalIO () GetObjectInfo ('ObjectTemplateWrapper o) ObjectInfo where
   evalIO () verb _ = evalIO () verb $ Proxy @o
 
 instance
@@ -85,7 +80,7 @@ instance
 instance
   ( EvalIO () GetObjectType o ObjectType
   ) =>
-  EvalIO () GetObjectType ('ObjectWrapper o) ObjectType where
+  EvalIO () GetObjectType ('ObjectTemplateWrapper o) ObjectType where
   evalIO () verb _ = evalIO () verb $ Proxy @o
 
 instance
@@ -132,7 +127,7 @@ instance
 instance
   ( KnownSymbol cmd
   , EvalIO () GetIsDirected dir Bool
-  , mkO ~ 'ObjectWrapper o
+  , mkO ~ 'ObjectTemplateWrapper o
   , mkA ~ 'ActionWrapper a cmd dir
   , EvalIO () MakeActorAction (ObjAct o a) (ObjectType, ActorAction)
   , EvalIO () MakeGameActions (TraverseActs mkO acts) GameActions
@@ -202,12 +197,12 @@ instance
   EvalIO
     (SystemBus, Pos, ObjectInfo)
      MakeActor
-     (Objects ('ObjectWrapper o ': os))
+     (Objects ('ObjectTemplateWrapper o ': os))
      Actor where
   evalIO payload@(sysBus, pos, oInfo) makeActor _ = do
     oRawInfo <- evalIO () GetObjectInfo $ Proxy @o
     let oTypeEq = oiObjectType oRawInfo == oiObjectType oInfo
-    let iconEq  = oiIcon oRawInfo == oiIcon oInfo
+    let iconEq  = (fst (oiIcons oRawInfo)) == (fst (oiIcons oInfo))
     if oTypeEq && iconEq
       then evalIO (sysBus, pos) makeActor $ Proxy @o
       else evalIO payload makeActor $ Proxy @(Objects os)

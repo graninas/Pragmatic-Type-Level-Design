@@ -1,4 +1,4 @@
-module Minefield.Extensions.Verbs.PutFlag where
+module Minefield.Implementation.SystemVerbs.PutFlag where
 
 import CPrelude
 

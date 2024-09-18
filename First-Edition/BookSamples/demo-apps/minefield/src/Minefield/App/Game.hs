@@ -1,23 +1,27 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 
-module Minefield.Game.Game where
+module Minefield.App.Game where
 
 import CPrelude
 
 import TypeLevelDSL.Eval
 import Minefield.Core.Types
+import Minefield.Core.System.Types
+import Minefield.Core.System.Event
+import Minefield.Core.System.Actor
 import Minefield.Core.Interface
 import Minefield.Core.Game
 import Minefield.Core.Object
+import Minefield.Core.Defaults
 
-import Minefield.Game.Types
-import Minefield.Game.RndGen
-import Minefield.Game.Player
-import Minefield.Game.System
-import Minefield.Game.UI
+import Minefield.App.Runtime
+import Minefield.App.RndGen
+import Minefield.App.Player
+import Minefield.App.UI
 
-import Minefield.Extensions.Materialization
-import Minefield.Extensions.Implementation
+import Minefield.Implementation.Materialization
+import Minefield.Implementation.SystemNouns.Player
+import Minefield.Implementation.SystemNouns.EmptyCell
 
 import GHC.TypeLits
 import qualified Data.List as L
@@ -26,12 +30,8 @@ import System.Random (randomRIO)
 import System.Console.ANSI
 
 
-defaultTicksInTurn :: Int
-defaultTicksInTurn = 10
-
 tickThreadDelay :: Int
 tickThreadDelay = 1000 * 50
-
 
 -- | Creates a game from a definition.
 createGameApp
@@ -63,7 +63,7 @@ createGameApp = do
   objs   <- evalIO () GetObjectInfo $ Proxy @(Objects objects)
 
   let objs' = pInfo : ecInfo : objs
-  let objInfosMap = Map.fromList $ map (\o -> (oiIcon o, o)) objs'
+  let objInfosMap = Map.fromList $ map (\o -> (fst $ oiIcons o, o)) objs'
 
   field <- evalIO ( 0 :: Int, objInfosMap) MaterializeField
       $ Proxy @field
@@ -97,7 +97,6 @@ createGameApp = do
             actors
             actions
             (w, h)
-            defaultTicksInTurn
             turnRef
             tickRef
 
@@ -166,7 +165,6 @@ createRandomGameApp emptyCellsPercent (w, h) = do
             actors
             actions
             (w, h)
-            defaultTicksInTurn
             turnRef
             tickRef
 
@@ -184,7 +182,6 @@ gameOrchestratorWorker queueVar gr phase = do
 
   where
     goWorker Start = do
-      publishEvent (grSysBus gr) TurnEvent
       refreshUI False gr
       goWorker PlayerInput
 
@@ -301,15 +298,14 @@ performActors gr = do
 refreshUI :: Bool -> GameRuntime -> GameIO ()
 refreshUI turnFinished gr = do
   let sysBus = grSysBus gr
-  publishEvent sysBus PopulateCellDescriptionEvent
+  publishEvent sysBus PopulateIconEvent
   performActors gr
 
   tick <- readIORef $ grTickRef gr
   turn <- readIORef $ grTurnRef gr
-  let ticksInTurn = grTicksInTurn gr
   if turnFinished
-    then printStatus turn tick ticksInTurn "Turn finished."
-    else printStatus turn tick ticksInTurn ""
+    then printStatus turn tick "Turn finished."
+    else printStatus turn tick ""
 
   flushScreen
 
@@ -318,26 +314,26 @@ performTick gr = do
   -- N.B. Tick should be correct
   tick <- readIORef $ grTickRef gr
   turn <- readIORef $ grTurnRef gr
-  let ticksInTurn = grTicksInTurn gr
   let sysBus = grSysBus gr
   let actors = grActors gr
 
-  publishEvent sysBus TickEvent
+  publishEvent sysBus $ TickEvent tick
 
   let newTick = tick + 1
-  if newTick >= ticksInTurn
+  if newTick > ticksInTurn
     then do
       let newTurn = turn + 1
-      publishEvent sysBus TurnEvent
+      publishEvent sysBus $ TurnEvent turn
 
       writeIORef (grTurnRef gr) newTurn
       writeIORef (grTickRef gr) 1
     else do
       writeIORef (grTickRef gr) newTick
 
-  pure $ newTick >= ticksInTurn
+  pure $ newTick > ticksInTurn
 
 
+-- Ticks and turns
 
 --  1    2    3
 --  |    |    |
@@ -345,18 +341,7 @@ performTick gr = do
 --  1234512345
 --  ^^^^^
 --       ^
+--       end of turn 1 (Turn 1 will be sent)
 --       ^^^^^
 --            ^
---
---  1
---  1
-
--- do turn:
--- last ticks
---    (does turn as well)
-
--- do tick:
--- tick
--- if last tick
---    then turn
---    else ()
+--            end of turn 2

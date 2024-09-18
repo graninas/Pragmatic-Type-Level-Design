@@ -1,20 +1,16 @@
-module Minefield.Game.Player where
+module Minefield.App.Player where
 
 import CPrelude
 
 import qualified Prelude as P
 
 import Minefield.Core.Types
+import Minefield.Core.System.Types
+import Minefield.Core.Commons
+import Minefield.Core.Defaults
+import Minefield.App.Runtime
 
-import Minefield.Game.Types
-import Minefield.Game.System
-import Minefield.Game.UI
-
-import qualified Data.List as L
 import qualified Data.Map as Map
-import qualified Data.Text as T
-import qualified Data.Char as Ch
-import System.Random (randomRIO)
 
 
 performPlayerCommand

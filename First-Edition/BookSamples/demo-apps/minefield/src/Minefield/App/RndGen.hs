@@ -1,11 +1,10 @@
-module Minefield.Game.RndGen where
+module Minefield.App.RndGen where
 
 import CPrelude
 
 import Minefield.Core.Types
+import Minefield.Core.System.Types
 import Minefield.Core.Object
-import Minefield.Game.Types
-import Minefield.Game.System
 
 import qualified Data.List as L
 import qualified Data.Map as Map

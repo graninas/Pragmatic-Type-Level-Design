@@ -22,6 +22,8 @@ data SystemEvent
   | TickEvent Int   -- Current tick
   | TurnEvent Int   -- Current turn
 
+  | DebugMessageEvent String
+
   | ObjectRequestEvent ObjectType ActorPos ObjectRequestEvent
   deriving (Show, Eq, Ord)
 

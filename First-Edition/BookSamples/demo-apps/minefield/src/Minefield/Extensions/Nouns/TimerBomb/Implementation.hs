@@ -40,19 +40,12 @@ instance
     queueVar <- createQueueVar
 
     let turns = fromIntegral $ natVal $ Proxy @turns
-    let ticksToLive = ticksInTurn * turns
+    let ticksToLive = (ticksInTurn * turns) - 1
 
     -- TODO: objectID
-
-    let countDownIcons =
-          [ OverhaulIcon Nothing (head $ show n) (Just (ticksInTurn - 1))
-          | n <- [turns..1]
-          ]
-    let icons' = countDownIcons <> explosionIcons
-
     -- TODO: lens or dot syntax
     let (i, icons) = oiIcons oInfo
-    let oInfo' = oInfo {oiIcons = (i, icons'), oiPos = Just pos}
+    let oInfo' = oInfo {oiIcons = (i, icons), oiPos = Just pos}
 
     obj <- TimerBombObject
       <$> newIORef oInfo'
@@ -78,29 +71,53 @@ processTimerBombEvent
   -> SystemEvent
   -> GameIO ()
 processTimerBombEvent sysBus obj (TurnEvent _) = pure ()
-processTimerBombEvent sysBus obj (TickEvent _) = do
+processTimerBombEvent sysBus obj (TickEvent tick) = do
   let stateRef = tboStateRef obj
   let oInfRef  = tboObjectInfoRef obj
-
+  oInfo <- readIORef oInfRef
   state <- readIORef stateRef
 
   case state of
     TimerBombTicking ticksLeft
       | ticksLeft > 0 -> do
           writeIORef stateRef $ TimerBombTicking $ ticksLeft - 1
-          tickOverhaulIcons oInfRef
+
+          when (ticksLeft `mod` ticksInTurn == 0) $ do
+              let icon = head $ show $ ticksLeft `div` ticksInTurn
+              let ovhIcon = OverhaulIcon Nothing icon Nothing
+              let (i, icons) = oiIcons oInfo
+              writeIORef oInfRef $ oInfo {oiIcons = (i, [ovhIcon])}
+
+          publishEvent sysBus $ DebugMessageEvent
+            $ "[" <> show tick <> "] TimerBomb ticking; ticks left: " <> show ticksLeft
+
       | otherwise -> do
-          writeIORef stateRef $ TimerBombExplosion ticksInTurn
+          -- this is a new tick, and it should be counted as happened.
+          writeIORef stateRef $ TimerBombExplosion $ ticksInTurn - 1
+          let (i, _) = oiIcons oInfo
+          writeIORef oInfRef $ oInfo {oiIcons = (i, explosionIcons)}
+
+          publishEvent sysBus $ DebugMessageEvent
+            $ "[" <> show tick <> "] TimerBomb explosion started"
+
           tickOverhaulIcons oInfRef
           makeExplosion sysBus obj
 
     TimerBombExplosion ticksLeft
       | ticksLeft > 0 -> do
           writeIORef stateRef $ TimerBombExplosion $ ticksLeft - 1
+
+          publishEvent sysBus $ DebugMessageEvent
+            $ "[" <> show tick <> "] TimerBomb explosion; ticks left: " <> show ticksLeft
+
           tickOverhaulIcons oInfRef
+
       | otherwise -> do
           writeIORef stateRef TimerBombDead
-          tickOverhaulIcons oInfRef
+
+          publishEvent sysBus $ DebugMessageEvent
+            $ "[" <> show tick <> "] TimerBomb dead"
+
           disableObject oInfRef
 
     TimerBombDead -> pure ()

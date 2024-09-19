@@ -62,6 +62,10 @@ isObjectRequestEvent :: SystemEvent -> Bool
 isObjectRequestEvent (ObjectRequestEvent _ _ _) = True
 isObjectRequestEvent _ = False
 
+isDebugMessageEvent :: SystemEvent -> Bool
+isDebugMessageEvent (DebugMessageEvent _) = True
+isDebugMessageEvent _ = False
+
 isTickEvent :: SystemEvent -> Bool
 isTickEvent (TickEvent _) = True
 isTickEvent _ = False

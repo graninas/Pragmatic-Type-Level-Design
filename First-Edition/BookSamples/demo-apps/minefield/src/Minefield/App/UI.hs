@@ -36,6 +36,13 @@ printStatus turn tick str = do
     <> " (" <> show tick <> "/" <> show ticksInTurn <> ")\t\t"
   putStr str
 
+printDebugMessage :: String -> IO ()
+printDebugMessage msg = do
+  setCursorPosition 16 0
+  clearLine
+  putStr @String $ "DBG "
+  putStr msg
+
 printFarewell :: IO ()
 printFarewell = do
   setCursorPosition 30 0

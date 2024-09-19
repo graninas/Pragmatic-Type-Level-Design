@@ -20,6 +20,10 @@ tickOverhaulIcons oInfRef = do
   case icons of
     (OverhaulIcon iId icon (Just 0) : rest) ->
       writeIORef oInfRef $ oInf { oiIcons = (i, rest) }
+
+    (OverhaulIcon iId icon (Just 1) : rest) ->
+      writeIORef oInfRef $ oInf { oiIcons = (i, rest) }
+
     (OverhaulIcon iId icon (Just n) : rest) -> do
       let icons' = OverhaulIcon iId icon (Just $ n - 1) : rest
       writeIORef oInfRef $ oInf { oiIcons = (i, icons') }
@@ -50,15 +54,16 @@ processCommonEvent
 processCommonEvent sysBus oInfRef PopulateIconEvent = do
   oInf <- readIORef oInfRef
 
-  let icon = case oiIcons oInf of
-              (_, oi : _ ) -> ovhIcon oi
-              (i, [])      -> i
+  when (oiEnabled oInf) $ do
+    let icon = case oiIcons oInf of
+                (_, oi : _ ) -> ovhIcon oi
+                (i, [])      -> i
 
-  let pos = case oiPos oInf of
-              Nothing -> (-1, -1)
-              Just pos -> pos
+    let pos = case oiPos oInf of
+                Nothing -> (-1, -1)
+                Just pos -> pos
 
-  publishEvent sysBus $ FieldIconEvent pos icon
+    publishEvent sysBus $ FieldIconEvent pos icon
 
 -- Object request event
 processCommonEvent sysBus oInfRef (ObjectRequestEvent oType pos ev) = do

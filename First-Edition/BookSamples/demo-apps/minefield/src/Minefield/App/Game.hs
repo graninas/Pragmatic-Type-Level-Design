@@ -65,7 +65,7 @@ createGameApp = do
   let objs' = pInfo : ecInfo : objs
   let objInfosMap = Map.fromList $ map (\o -> (fst $ oiIcons o, o)) objs'
 
-  field <- evalIO ( 0 :: Int, objInfosMap) MaterializeField
+  field <- evalIO (0 :: Int, objInfosMap) MaterializeField
       $ Proxy @field
   let ((x, y), _) = Map.findMax field
   let (w, h) = (x + 1, y + 1)
@@ -91,7 +91,7 @@ createGameApp = do
   printActions actions
 
   turnRef <- newIORef 1
-  tickRef <- newIORef 1
+  tickRef <- newIORef $ head ticksInTurnList
   let gr = GameRuntime
             sysBus
             actors
@@ -159,7 +159,7 @@ createRandomGameApp emptyCellsPercent (w, h) = do
   printActions actions
 
   turnRef <- newIORef 1
-  tickRef <- newIORef 1
+  tickRef <- newIORef $ head ticksInTurnList
   let gr = GameRuntime
             sysBus
             actors
@@ -248,7 +248,7 @@ createFieldWatcherActor (w, h) sysBus = do
   queueVar <- createQueueVar
   tId <- forkIO $ fieldWatcherWorker stepChan queueVar (w, h)
 
-  let sub = isFieldIconEvent
+  let sub ev = isFieldIconEvent ev || isDebugMessageEvent ev
   subscribeRecipient sysBus $ Subscription sub queueVar
 
   pure $ SystemActor tId stepChan queueVar
@@ -283,6 +283,8 @@ processFieldWatcherEvent
   -> GameIO ()
 processFieldWatcherEvent sysBus (w, h) (FieldIconEvent pos ch) =
   drawFieldObject pos ch
+processFieldWatcherEvent _ _ (DebugMessageEvent msg) =
+  printDebugMessage msg
 processFieldWatcherEvent _ _ _ = pure ()
 
 printActions :: GameActions -> GameIO ()
@@ -311,26 +313,25 @@ refreshUI turnFinished gr = do
 
 performTick :: GameRuntime -> GameIO Bool
 performTick gr = do
-  -- N.B. Tick should be correct
   tick <- readIORef $ grTickRef gr
   turn <- readIORef $ grTurnRef gr
   let sysBus = grSysBus gr
   let actors = grActors gr
 
-  publishEvent sysBus $ TickEvent tick
-
   let newTick = tick + 1
-  if newTick > ticksInTurn
+  publishEvent sysBus $ TickEvent newTick
+
+  if newTick == ticksInTurn
     then do
       let newTurn = turn + 1
       publishEvent sysBus $ TurnEvent turn
 
       writeIORef (grTurnRef gr) newTurn
-      writeIORef (grTickRef gr) 1
+      writeIORef (grTickRef gr) $ head ticksInTurnList
     else do
       writeIORef (grTickRef gr) newTick
 
-  pure $ newTick > ticksInTurn
+  pure $ newTick == ticksInTurn
 
 
 -- Ticks and turns
@@ -338,7 +339,7 @@ performTick gr = do
 --  1    2    3
 --  |    |    |
 --  ===============
---  1234512345
+--  0123401234
 --  ^^^^^
 --       ^
 --       end of turn 1 (Turn 1 will be sent)

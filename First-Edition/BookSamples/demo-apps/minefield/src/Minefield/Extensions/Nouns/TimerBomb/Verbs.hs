@@ -25,7 +25,7 @@ instance
   ( KnownSymbol ot
   ) =>
   EvalIO () MakeActorAction
-       (ObjAct (TimerBombDef i ot p) PutFlagImpl)
+       (ObjAct (TimerBombDef i ot p) PutFlagDef)
        (ObjectType, ActorAction) where
   evalIO () _ _ = do
     let oType = symbolVal $ Proxy @ot

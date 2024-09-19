@@ -28,7 +28,7 @@ instance
   -- , obj ~ LandmineDef i ot p
   ) =>
   EvalIO () MakeActorAction
-       (ObjAct (LandmineDef i ot p) PutFlagImpl)
+       (ObjAct (LandmineDef i ot p) PutFlagDef)
        (ObjectType, ActorAction) where
   evalIO () _ _ = do
     let oType = symbolVal $ Proxy @ot

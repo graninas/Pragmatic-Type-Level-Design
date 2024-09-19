@@ -7,7 +7,7 @@ import Minefield.Core.Interface
 import GHC.TypeLits
 
 
-data PutFlagImpl
+data PutFlagDef
 
-type PutFlag = MkAction PutFlagImpl "flag" 'True
+type PutFlag = MkAction PutFlagDef "flag" 'True
 

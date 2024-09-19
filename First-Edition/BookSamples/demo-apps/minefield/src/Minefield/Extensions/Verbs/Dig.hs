@@ -6,6 +6,7 @@ import Minefield.Core.Interface
 
 import GHC.TypeLits
 
-data DigImpl
 
-type Dig = MkAction DigImpl "dig" 'True
+data DigDef
+
+type Dig = MkAction DigDef "dig" 'True

@@ -7,7 +7,7 @@ import Minefield.Core.Interface
 import GHC.TypeLits
 
 
-data WalkImpl
+data WalkDef
 
-type Walk = MkAction WalkImpl "" 'True
+type Walk = MkAction WalkDef "" 'True
 

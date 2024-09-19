@@ -6,7 +6,8 @@ import Minefield.Core.Interface
 
 import GHC.TypeLits
 
-data UseLandmineDetectorImpl
+
+data UseLandmineDetectorDef
 
 type UseLandmineDetector =
-  MkAction UseLandmineDetectorImpl "scan" 'True
+  MkAction UseLandmineDetectorDef "scan" 'True

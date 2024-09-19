@@ -242,9 +242,6 @@ createFieldWatcherActor (w, h) sysBus = do
   outVar <- newEmptyMVar
   let stepChan = Channel inVar outVar
 
-  clearField (w, h)
-  drawFieldFrame (w, h)
-
   queueVar <- createQueueVar
   tId <- forkIO $ fieldWatcherWorker stepChan queueVar (w, h)
 
@@ -257,6 +254,9 @@ createFieldWatcherActor (w, h) sysBus = do
     fieldWatcherWorker stepChan queueVar (w, h) = do
 
       waitForStep stepChan
+
+      clearField (w, h)
+      drawFieldFrame (w, h)
 
       evs <- extractEvents queueVar
       mapM_ (processFieldWatcherEvent sysBus (w, h)) evs

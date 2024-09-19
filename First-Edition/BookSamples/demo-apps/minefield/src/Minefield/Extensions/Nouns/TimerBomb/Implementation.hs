@@ -100,7 +100,6 @@ processTimerBombEvent sysBus obj (TickEvent tick) = do
           publishEvent sysBus $ DebugMessageEvent
             $ "[" <> show tick <> "] TimerBomb explosion started"
 
-          tickOverhaulIcons oInfRef
           makeExplosion sysBus obj
 
     TimerBombExplosion ticksLeft

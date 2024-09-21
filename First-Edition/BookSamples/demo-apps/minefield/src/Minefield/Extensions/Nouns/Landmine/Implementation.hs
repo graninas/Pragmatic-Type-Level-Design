@@ -43,10 +43,10 @@ instance
     let p = fromIntegral $ natVal $ Proxy @p
 
     oInfo <- evalIO () GetObjectInfo $ Proxy @t
-    let oInfo' = oInfo { oiPos = Just pos }
 
     obj <- LandmineObject
-      <$> newIORef oInfo'
+      <$> newIORef oInfo
+      <*> pure pos
       <*> newIORef p
 
     tId <- forkIO $ actorWorker stepChan queueVar
@@ -70,5 +70,5 @@ processLandmineEvent
   -> SystemEvent
   -> GameIO ()
 processLandmineEvent sysBus obj commonEv =
-  processCommonEvent sysBus (loObjectInfoRef obj) commonEv
+  processCommonEvent sysBus (loObjectInfoRef obj) (loPos obj) commonEv
 

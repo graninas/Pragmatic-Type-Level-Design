@@ -47,11 +47,12 @@ disableBombEffect sysBus oType pos = do
 processCommonEvent
   :: SystemBus
   -> IORef ObjectInfo
+  -> Pos
   -> SystemEvent
   -> GameIO ()
 
 -- Populate cell icon event
-processCommonEvent sysBus oInfRef PopulateIconEvent = do
+processCommonEvent sysBus oInfRef objPos PopulateIconEvent = do
   oInf <- readIORef oInfRef
 
   when (oiEnabled oInf) $ do
@@ -59,25 +60,20 @@ processCommonEvent sysBus oInfRef PopulateIconEvent = do
                 (_, oi : _ ) -> ovhIcon oi
                 (i, [])      -> i
 
-    let pos = case oiPos oInf of
-                Nothing -> (-1, -1)
-                Just pos -> pos
-
-    publishEvent sysBus $ FieldIconEvent pos icon
+    publishEvent sysBus $ FieldIconEvent objPos icon
 
 -- Object request event
-processCommonEvent sysBus oInfRef (ObjectRequestEvent oType pos ev) = do
+processCommonEvent sysBus oInfRef objPos (ObjectRequestEvent oType pos ev) = do
   oInf <- readIORef oInfRef
   let curOType = oiObjectType oInf
-  let mbCurPos = oiPos oInf
-  let match = curOType == oType && mbCurPos == Just pos
+  let match = curOType == oType && objPos == pos
   if match
     then processObjectRequestEvent sysBus oInfRef ev
     else pure ()
 
-processCommonEvent _ _ (TurnEvent _) = pure ()
-processCommonEvent _ _ (TickEvent _) = pure ()
-processCommonEvent _ _ _ = error "Common request not implemented"
+processCommonEvent _ _ _ (TurnEvent _) = pure ()
+processCommonEvent _ _ _ (TickEvent _) = pure ()
+processCommonEvent _ _ _ _ = error "Common request not implemented"
 
 processObjectRequestEvent
   :: SystemBus

@@ -22,15 +22,12 @@ data ObjectInfo = ObjectInfo
   { oiObjectType :: ObjectType
     -- ^ Object template id
 
-  , oiObjectId :: Maybe ObjectId
+  , oiObjectId :: ObjectId
     -- ^ Object identifier among runtime objects
 
   , oiEnabled :: Bool
     -- ^ If the object is disabled, it doesn't participate in events
     -- and doesn't show its icon
-
-  , oiPos :: Maybe Pos
-    -- ^ Object position (if available)
 
   , oiIcons :: (Icon, [OverhaulIcon])
   -- ^ Base icon and all active icons, head icon is top.

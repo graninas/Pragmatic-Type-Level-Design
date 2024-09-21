@@ -39,9 +39,9 @@ instance
     queueVar <- createQueueVar
 
     oInfo <- evalIO () GetObjectInfo $ Proxy @t
-    let oInfo' = oInfo { oiPos = Just pos }
     obj <- PlayerObject
-      <$> newIORef oInfo'
+      <$> newIORef oInfo
+      <*> newIORef pos
 
     tId <- forkIO $ actorWorker stepChan queueVar
                   $ processPlayerEvent sysBus obj
@@ -61,11 +61,10 @@ processPlayerEvent
   -> SystemEvent
   -> GameIO ()
 processPlayerEvent sysBus obj PlayerInputInvitedEvent = do
-  oInf <- readIORef $ poObjectInfoRef obj
-  case oiPos oInf of
-    Nothing -> pure ()      -- TODO: error here?
-    Just pos -> do
-      line <- withInputInvitation "Type your command:"
-      publishEvent sysBus $ PlayerInputEvent pos line
-processPlayerEvent sysBus obj commonEv =
-  processCommonEvent sysBus (poObjectInfoRef obj) commonEv
+  pos  <- readIORef $ poPos obj
+  line <- withInputInvitation "Type your command:"
+  publishEvent sysBus $ PlayerInputEvent pos line
+
+processPlayerEvent sysBus obj commonEv = do
+  pos <- readIORef $ poPos obj
+  processCommonEvent sysBus (poObjectInfoRef obj) pos commonEv

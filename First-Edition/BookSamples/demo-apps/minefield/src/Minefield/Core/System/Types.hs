@@ -24,6 +24,8 @@ data SystemEvent
 
   | DebugMessageEvent String
 
+  | DestroyActorEvent ObjectId
+
   | ObjectRequestEvent ObjectType ActorPos ObjectRequestEvent
   deriving (Show, Eq, Ord)
 

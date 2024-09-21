@@ -37,9 +37,9 @@ instance
     queueVar <- createQueueVar
 
     oInfo <- evalIO () GetObjectInfo $ Proxy @t
-    let oInfo' = oInfo { oiPos = Just pos }
     obj <- EmptyCellObject
-            <$> newIORef oInfo'
+            <$> newIORef oInfo
+            <*> pure pos
 
     tId <- forkIO $ actorWorker stepChan queueVar
                   $ processEmptyCellEvent sysBus obj
@@ -60,5 +60,5 @@ processEmptyCellEvent
   -> SystemEvent
   -> GameIO ()
 processEmptyCellEvent sysBus obj commonEv =
-  processCommonEvent sysBus (ecoObjectInfoRef obj) commonEv
+  processCommonEvent sysBus (ecoObjectInfoRef obj) (ecoPos obj) commonEv
 

@@ -8,6 +8,7 @@ import TypeLevelDSL.Eval
 
 import Minefield.Core.Types
 import Minefield.Core.Object
+import Minefield.Core.Defaults
 import Minefield.Extensions.Nouns.TimerBomb.Def
 
 import GHC.TypeLits
@@ -41,6 +42,6 @@ instance
   evalIO () _ _ = do
     oType <- evalIO () GetObjectType $ Proxy @t
     icon  <- evalIO () GetIcon $ Proxy @t
-    pure $ ObjectInfo oType Nothing True Nothing (icon, [])
+    pure $ ObjectInfo oType noObjectId True (icon, [])
 
 

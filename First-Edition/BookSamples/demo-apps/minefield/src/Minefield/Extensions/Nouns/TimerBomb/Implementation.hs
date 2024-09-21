@@ -34,21 +34,17 @@ instance
   ) =>
   EvalIO (SystemBus, Pos) MakeActor (TimerBombDef i ot turns) Actor where
   evalIO (sysBus, pos) _ _ = do
-    oInfo <- evalIO () GetObjectInfo $ Proxy @t
-
     tickChan <- createStepChannel
     queueVar <- createQueueVar
 
     let turns = fromIntegral $ natVal $ Proxy @turns
     let ticksToLive = (ticksInTurn * turns) - 1
 
+    oInfo <- evalIO () GetObjectInfo $ Proxy @t
     -- TODO: objectID
-    -- TODO: lens or dot syntax
-    let (i, icons) = oiIcons oInfo
-    let oInfo' = oInfo {oiIcons = (i, icons), oiPos = Just pos}
-
     obj <- TimerBombObject
-      <$> newIORef oInfo'
+      <$> newIORef oInfo
+      <*> pure pos
       <*> newIORef (TimerBombTicking ticksToLive)
 
     tId <- forkIO $ actorWorker tickChan queueVar
@@ -117,12 +113,14 @@ processTimerBombEvent sysBus obj (TickEvent tick) = do
           publishEvent sysBus $ DebugMessageEvent
             $ "[" <> show tick <> "] TimerBomb dead"
 
+          -- publishEvent sysBus $ DestroyActorEvent oiObjectId
+
           disableObject oInfRef
 
     TimerBombDead -> pure ()
 
 processTimerBombEvent sysBus obj commonEv =
-  processCommonEvent sysBus (tboObjectInfoRef obj) commonEv
+  processCommonEvent sysBus (tboObjectInfoRef obj) (tboPos obj) commonEv
 
 -- TODO: explosion
 makeExplosion sysBus obj = pure ()

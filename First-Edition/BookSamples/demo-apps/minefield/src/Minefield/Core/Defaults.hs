@@ -20,3 +20,6 @@ nowherePos = (-1, -1)
 -- | Special number indicating the absence of object id
 noObjectId :: ObjectId
 noObjectId = 0
+
+disarmedIcon :: Icon
+disarmedIcon = '!'

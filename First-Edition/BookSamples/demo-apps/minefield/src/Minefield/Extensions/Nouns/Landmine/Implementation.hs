@@ -48,6 +48,7 @@ instance
       <$> newIORef oInfo
       <*> pure pos
       <*> newIORef p
+      <*> newIORef LandmineActive
 
     tId <- forkIO $ actorWorker stepChan queueVar
                   $ processLandmineEvent sysBus obj
@@ -69,6 +70,19 @@ processLandmineEvent
   -> LandmineObject
   -> SystemEvent
   -> GameIO ()
+processLandmineEvent sysBus obj (ObjectRequestEvent oType pos ev) = do
+  let oInfoRef = loObjectInfoRef obj
+  let objPos   = loPos obj
+  oInfo <- readIORef oInfoRef
+  let curOType = oiObjectType oInfo
+  match <- eventTargetMatch oInfoRef objPos oType pos
+  when match $ do
+    case ev of
+      SetDisarmed en -> do
+        addOverhaulIcon oInfoRef $ OverhaulIcon Nothing disarmedIcon Nothing
+        writeIORef (loStateRef obj) LandmineDisarmed
+      _ -> processObjectRequest sysBus oInfoRef ev
+
 processLandmineEvent sysBus obj commonEv =
   processCommonEvent sysBus (loObjectInfoRef obj) (loPos obj) commonEv
 

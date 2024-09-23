@@ -12,6 +12,7 @@ data TimerBombState
   = TimerBombTicking Int        -- ticks left
   | TimerBombExplosion Int      -- ticks left
   | TimerBombDead
+  | TimerBombDisarmed
 
 data TimerBombObject = TimerBombObject
   { tboObjectInfoRef :: IORef ObjectInfo

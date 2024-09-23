@@ -57,8 +57,8 @@ type MyGame = GameDef
 
 
 type SimpleMinefield =
-  '[ "            @"
-   , "            6"
+  '[ "           6@"
+   , "            A"
    , "             "
    , "             "
    , "             "
@@ -71,6 +71,7 @@ type SimpleGame = GameDef
   (Player "@")
   (EmptyCell " ")
   '[ TimerBomb "6" 6
+   , Landmine "A" 1
    ]
   '[ PutFlag
    ]
@@ -79,7 +80,7 @@ type SimpleGame = GameDef
 main :: IO ()
 main = do
   -- appRt <- createRandomGameApp @MyGame 0.8 (7, 7)
-  appRt <- createGameApp @MyGame
+  appRt <- createGameApp @SimpleGame
 
   let gameRt = arGameRuntime appRt
   let orchestrator = arGameOrchestratorWorker appRt

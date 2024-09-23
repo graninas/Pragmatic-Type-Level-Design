@@ -27,11 +27,6 @@ instance
   ) =>
   EvalIO () GetIcon (LandmineDef i ot p) Icon where
   evalIO () _ _ = pure $ head $ symbolVal $ Proxy @i
-  -- evalIO () _ _ = pure
-  --   $ getLandmineIcon
-  --   $ fromIntegral
-  --   $ natVal
-  --   $ Proxy @p
 
 -- -- Get object type of the template
 instance

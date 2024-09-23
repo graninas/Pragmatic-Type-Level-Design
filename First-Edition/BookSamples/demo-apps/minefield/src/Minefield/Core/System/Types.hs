@@ -8,15 +8,19 @@ import Minefield.Core.Object
 import qualified Data.Map as Map
 
 
-data ObjectRequestEvent
+data ObjectRequest
   = AddOverhaulIcon OverhaulIcon
   | SetEnabled Bool
+  | SetDisarmed Bool
+
+  | GenericRequest String
+      -- ^ Any request that can be encoded as string
   deriving (Show, Eq, Ord)
 
 data SystemEvent
   = PlayerInputInvitedEvent
   | PlayerInputEvent PlayerPos String
-  | PopulateIconEvent        -- rename to PopulateIcon
+  | PopulateIconEvent
   | FieldIconEvent Pos Icon
 
   | TickEvent Int   -- Current tick
@@ -24,9 +28,7 @@ data SystemEvent
 
   | DebugMessageEvent String
 
-  | DestroyActorEvent ObjectId
-
-  | ObjectRequestEvent ObjectType ActorPos ObjectRequestEvent
+  | ObjectRequestEvent ObjectType ActorPos ObjectRequest
   deriving (Show, Eq, Ord)
 
 data Subscription = Subscription

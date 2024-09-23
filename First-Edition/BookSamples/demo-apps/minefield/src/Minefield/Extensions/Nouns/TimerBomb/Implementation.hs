@@ -69,8 +69,8 @@ processTimerBombEvent
 processTimerBombEvent sysBus obj (TurnEvent _) = pure ()
 processTimerBombEvent sysBus obj (TickEvent tick) = do
   let stateRef = tboStateRef obj
-  let oInfRef  = tboObjectInfoRef obj
-  oInfo <- readIORef oInfRef
+  let oInfoRef = tboObjectInfoRef obj
+  oInfo <- readIORef oInfoRef
   state <- readIORef stateRef
 
   case state of
@@ -80,9 +80,7 @@ processTimerBombEvent sysBus obj (TickEvent tick) = do
 
           when (ticksLeft `mod` ticksInTurn == 0) $ do
               let icon = head $ show $ ticksLeft `div` ticksInTurn
-              let ovhIcon = OverhaulIcon Nothing icon Nothing
-              let (i, icons) = oiIcons oInfo
-              writeIORef oInfRef $ oInfo {oiIcons = (i, [ovhIcon])}
+              addOverhaulIcon oInfoRef $ OverhaulIcon Nothing icon Nothing
 
           publishEvent sysBus $ DebugMessageEvent
             $ "[" <> show tick <> "] TimerBomb ticking; ticks left: " <> show ticksLeft
@@ -91,7 +89,7 @@ processTimerBombEvent sysBus obj (TickEvent tick) = do
           -- this is a new tick, and it should be counted as happened.
           writeIORef stateRef $ TimerBombExplosion $ ticksInTurn - 1
           let (i, _) = oiIcons oInfo
-          writeIORef oInfRef $ oInfo {oiIcons = (i, explosionIcons)}
+          writeIORef oInfoRef $ oInfo {oiIcons = (i, explosionIcons)}
 
           publishEvent sysBus $ DebugMessageEvent
             $ "[" <> show tick <> "] TimerBomb explosion started"
@@ -105,7 +103,7 @@ processTimerBombEvent sysBus obj (TickEvent tick) = do
           publishEvent sysBus $ DebugMessageEvent
             $ "[" <> show tick <> "] TimerBomb explosion; ticks left: " <> show ticksLeft
 
-          tickOverhaulIcons oInfRef
+          tickOverhaulIcons oInfoRef
 
       | otherwise -> do
           writeIORef stateRef TimerBombDead
@@ -113,11 +111,21 @@ processTimerBombEvent sysBus obj (TickEvent tick) = do
           publishEvent sysBus $ DebugMessageEvent
             $ "[" <> show tick <> "] TimerBomb dead"
 
-          -- publishEvent sysBus $ DestroyActorEvent oiObjectId
-
-          disableObject oInfRef
+          disableObject oInfoRef
 
     TimerBombDead -> pure ()
+    TimerBombDisarmed -> pure ()
+
+processTimerBombEvent sysBus obj (ObjectRequestEvent oType pos ev) = do
+  let oInfoRef = tboObjectInfoRef obj
+  let objPos  = tboPos obj
+  match <- eventTargetMatch oInfoRef objPos oType pos
+  when match $ do
+    case ev of
+      SetDisarmed en -> do
+        addOverhaulIcon oInfoRef $ OverhaulIcon Nothing disarmedIcon Nothing
+        writeIORef (tboStateRef obj) TimerBombDisarmed
+      _ -> processObjectRequest sysBus oInfoRef ev
 
 processTimerBombEvent sysBus obj commonEv =
   processCommonEvent sysBus (tboObjectInfoRef obj) (tboPos obj) commonEv

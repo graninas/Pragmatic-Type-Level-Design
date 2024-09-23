@@ -15,9 +15,6 @@ import GHC.TypeLits
 import qualified Data.Map as Map
 
 
-data MakeActorAction      = MakeActorAction
-data MakeGameAction       = MakeGameAction
-data MakeGameActions      = MakeGameActions
 data MakeActors           = MakeActors
 data MakeActor            = MakeActor
 data GetIsDirected        = GetIsDirected
@@ -26,10 +23,10 @@ data MaterializeFieldImpl = MaterializeFieldImpl
 
 data Objects (a :: [IObjectTemplate])
 
-data ObjsActs objs acts
-data TraverseObjs objs acts
-data TraverseActs obj acts
-data ObjAct o a
+-- data ObjsActs objs acts
+-- data TraverseObjs objs acts
+-- data TraverseActs obj acts
+-- data ObjAct o a
 
 -- Get icon
 
@@ -99,57 +96,13 @@ instance
 
 -- Make game action
 
-instance
-  ( EvalIO () MakeGameActions (TraverseObjs os acts) GameActions
-  ) =>
-  EvalIO () MakeGameActions (ObjsActs os acts) GameActions where
-  evalIO () verb _ =
-    evalIO () verb $ Proxy @(TraverseObjs os acts)
+data MakeActorAction      = MakeActorAction
+data MakeGameAction       = MakeGameAction
+data MakeGameActions      = MakeGameActions
 
-instance
-  EvalIO () MakeGameActions (TraverseObjs '[] acts) GameActions where
-  evalIO () _ _ = pure Map.empty
-
-instance
-  ( EvalIO () MakeGameActions (TraverseObjs os acts) GameActions
-  , EvalIO () MakeGameActions (TraverseActs o acts) GameActions
-  ) =>
-  EvalIO () MakeGameActions (TraverseObjs (o ': os) acts) GameActions where
-  evalIO () verb _ = do
-    act1 <- evalIO () verb $ Proxy @(TraverseActs o acts)
-    act2 <- evalIO () verb $ Proxy @(TraverseObjs os acts)
-    pure $ Map.union act1 act2
-
-instance
-  EvalIO () MakeGameActions (TraverseActs o '[]) GameActions where
-  evalIO () _ _ = pure Map.empty
-
-instance
-  ( KnownSymbol cmd
-  , EvalIO () GetIsDirected dir Bool
-  , mkO ~ 'ObjectTemplateWrapper o
-  , mkA ~ 'ActionWrapper a cmd dir
-  , EvalIO () MakeActorAction (ObjAct o a) (ObjectType, ActorAction)
-  , EvalIO () MakeGameActions (TraverseActs mkO acts) GameActions
-  ) =>
-  EvalIO () MakeGameActions (TraverseActs mkO (mkA ': acts)) GameActions where
-  evalIO () verb _ = do
-    isDirected <- evalIO () GetIsDirected $ Proxy @dir
-    let cmd   = symbolVal $ Proxy @cmd
-
-    (oType, actorAct) <- evalIO () MakeActorAction
-                                   (Proxy @(ObjAct o a))
-
-    gameActs <- evalIO () verb $ Proxy @(TraverseActs mkO acts)
-
-    let singActorActions :: ActorActions = Map.singleton oType actorAct
-
-    pure $ case Map.lookup cmd gameActs of
-      Nothing -> Map.insert cmd (isDirected, singActorActions) gameActs
-      Just (_, actorActs) -> let
-        actorActs' = Map.insert oType actorAct actorActs
-        gameActs'  = Map.insert cmd (isDirected, actorActs') gameActs
-        in gameActs'
+data ActsObjs acts objs
+data GAct act objs
+data ObjectVerb obj act
 
 instance
   EvalIO () GetIsDirected 'True Bool where
@@ -159,6 +112,65 @@ instance
   EvalIO () GetIsDirected 'False Bool where
   evalIO () _ _ = pure False
 
+instance
+  EvalIO () MakeGameActions (ActsObjs '[] objs) GameActions where
+  evalIO () _ _ = pure Map.empty
+
+instance
+  EvalIO () MakeGameActions (ActsObjs acts '[]) GameActions where
+  evalIO () _ _ = pure Map.empty
+
+instance
+  ( EvalIO () MakeGameAction (GAct act objs)
+              (TextCommand, IsDirected, ActorActions)
+  , EvalIO () MakeGameActions (ActsObjs acts objs) GameActions
+  ) =>
+  EvalIO () MakeGameActions (ActsObjs (act ': acts) objs) GameActions where
+  evalIO () verb _ = do
+    (cmd, isDirected, aActs) <- evalIO () MakeGameAction $ Proxy @(GAct act objs)
+    gActs <- evalIO () MakeGameActions $ Proxy @(ActsObjs acts objs)
+
+    when (Map.member cmd gActs) $ error $ show $ "Duplicate cmd: " <> cmd
+
+    pure $ Map.insert cmd (isDirected, aActs) gActs
+
+
+instance
+  ( KnownSymbol cmd
+  , EvalIO () GetIsDirected dir IsDirected
+  ) =>
+  EvalIO () MakeGameAction (GAct ('ActionWrapper a cmd dir) '[])
+            (TextCommand, IsDirected, ActorActions) where
+  evalIO () _ _ = do
+    isDirected <- evalIO () GetIsDirected $ Proxy @dir
+    let cmd = symbolVal $ Proxy @cmd
+    pure (cmd, isDirected, Map.empty)
+
+instance
+  ( EvalIO () MakeGameAction (GAct a os) (TextCommand, IsDirected, ActorActions)
+  , EvalIO () MakeActorAction (ObjectVerb o a) (ObjectType, ActorAction)
+  ) =>
+  EvalIO () MakeGameAction (GAct a (o ': os)) (TextCommand, IsDirected, ActorActions) where
+  evalIO () _ _ = do
+    (cmd, isDirected, acts) <- evalIO () MakeGameAction $ Proxy @(GAct a os)
+
+    -- extension point
+    (oType, act) <- evalIO () MakeActorAction $ Proxy @(ObjectVerb o a)
+
+    when (Map.member oType acts) $ error $ show $ "Duplicate oType: " <> oType
+
+    pure (cmd, isDirected, Map.insert oType act acts)
+
+-- extension point entry
+instance
+  ( EvalIO () MakeActorAction (ObjectVerb o a) (ObjectType, ActorAction)
+  ) =>
+  EvalIO () MakeActorAction
+    (ObjectVerb ('ObjectTemplateWrapper o)
+                ('ActionWrapper a cmd dir))
+    (ObjectType, ActorAction) where
+  evalIO () _ _ =
+    evalIO () MakeActorAction $ Proxy @(ObjectVerb o a)
 
 -- Make actors
 

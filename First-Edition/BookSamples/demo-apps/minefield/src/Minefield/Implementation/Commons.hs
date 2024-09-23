@@ -9,38 +9,40 @@ import Minefield.Core.System.Event
 
 
 disableObject :: IORef ObjectInfo -> IO ()
-disableObject oInfRef = do
-  oInf <- readIORef oInfRef
-  writeIORef oInfRef $ oInf { oiEnabled = False }
+disableObject oInfoRef = do
+  oInfo <- readIORef oInfoRef
+  writeIORef oInfoRef $ oInfo { oiEnabled = False }
+
+addOverhaulIcon :: IORef ObjectInfo -> OverhaulIcon -> IO ()
+addOverhaulIcon oInfoRef ovhIcon = do
+  oInfo <- readIORef oInfoRef
+  let (i, icons) = oiIcons oInfo
+  writeIORef oInfoRef $ oInfo {oiIcons = (i, ovhIcon : icons)}
 
 tickOverhaulIcons :: IORef ObjectInfo -> IO ()
-tickOverhaulIcons oInfRef = do
-  oInf <- readIORef oInfRef
-  let (i, icons) = oiIcons oInf
+tickOverhaulIcons oInfoRef = do
+  oInfo <- readIORef oInfoRef
+  let (i, icons) = oiIcons oInfo
   case icons of
     (OverhaulIcon iId icon (Just 0) : rest) ->
-      writeIORef oInfRef $ oInf { oiIcons = (i, rest) }
+      writeIORef oInfoRef $ oInfo { oiIcons = (i, rest) }
 
     (OverhaulIcon iId icon (Just 1) : rest) ->
-      writeIORef oInfRef $ oInf { oiIcons = (i, rest) }
+      writeIORef oInfoRef $ oInfo { oiIcons = (i, rest) }
 
     (OverhaulIcon iId icon (Just n) : rest) -> do
       let icons' = OverhaulIcon iId icon (Just $ n - 1) : rest
-      writeIORef oInfRef $ oInf { oiIcons = (i, icons') }
+      writeIORef oInfoRef $ oInfo { oiIcons = (i, icons') }
     _ -> pure ()
 
 
 -- Common effects
 
-disableBombEffect :: ActorAction
-disableBombEffect sysBus oType pos = do
+disarmBombEffect :: ActorAction
+disarmBombEffect sysBus oType pos = do
   publishEvent sysBus
      $ ObjectRequestEvent oType pos
-     $ AddOverhaulIcon
-     $ OverhaulIcon Nothing '!' Nothing
-  publishEvent sysBus
-     $ ObjectRequestEvent oType pos
-     $ SetEnabled False
+     $ SetDisarmed True
 
 -- Common events
 
@@ -52,44 +54,54 @@ processCommonEvent
   -> GameIO ()
 
 -- Populate cell icon event
-processCommonEvent sysBus oInfRef objPos PopulateIconEvent = do
-  oInf <- readIORef oInfRef
+processCommonEvent sysBus oInfoRef objPos PopulateIconEvent = do
+  oInfo <- readIORef oInfoRef
 
-  when (oiEnabled oInf) $ do
-    let icon = case oiIcons oInf of
+  when (oiEnabled oInfo) $ do
+    let icon = case oiIcons oInfo of
                 (_, oi : _ ) -> ovhIcon oi
                 (i, [])      -> i
 
     publishEvent sysBus $ FieldIconEvent objPos icon
 
 -- Object request event
-processCommonEvent sysBus oInfRef objPos (ObjectRequestEvent oType pos ev) = do
-  oInf <- readIORef oInfRef
-  let curOType = oiObjectType oInf
-  let match = curOType == oType && objPos == pos
-  if match
-    then processObjectRequestEvent sysBus oInfRef ev
-    else pure ()
+processCommonEvent sysBus oInfoRef objPos (ObjectRequestEvent oType pos request) = do
+  match <- eventTargetMatch oInfoRef objPos oType pos
+  when match
+    $ processObjectRequest sysBus oInfoRef request
 
 processCommonEvent _ _ _ (TurnEvent _) = pure ()
 processCommonEvent _ _ _ (TickEvent _) = pure ()
-processCommonEvent _ _ _ _ = error "Common request not implemented"
+processCommonEvent _ _ _ _ = error "Common event not implemented"
 
-processObjectRequestEvent
+processObjectRequest
   :: SystemBus
   -> IORef ObjectInfo
-  -> ObjectRequestEvent
+  -> ObjectRequest
   -> GameIO ()
-processObjectRequestEvent sysBus oInfRef ev = do
-  case ev of
+processObjectRequest sysBus oInfoRef request = do
+  case request of
     AddOverhaulIcon oi -> do
-      oInf <- readIORef oInfRef
+      oInfo <- readIORef oInfoRef
 
-      let (i, icons) = oiIcons oInf
+      let (i, icons) = oiIcons oInfo
       let icons' = oi : icons
 
-      writeIORef oInfRef $ oInf {oiIcons = (i, icons')}
+      writeIORef oInfoRef $ oInfo {oiIcons = (i, icons')}
 
     SetEnabled en -> do
-      oInf <- readIORef oInfRef
-      writeIORef oInfRef $ oInf {oiEnabled = en}
+      oInfo <- readIORef oInfoRef
+      writeIORef oInfoRef $ oInfo {oiEnabled = en}
+
+    _ -> error "Common request not implemented."
+
+eventTargetMatch
+  :: IORef ObjectInfo
+  -> Pos
+  -> ObjectType
+  -> Pos
+  -> GameIO Bool
+eventTargetMatch oInfoRef objPos oType pos = do
+  oInfo <- readIORef oInfoRef
+  let curOType = oiObjectType oInfo
+  pure $ curOType == oType && objPos == pos

@@ -37,7 +37,7 @@ tickThreadDelay = 1000 * 50
 createGameApp
   :: forall g field player emptyCell objects actions
    . ( g ~ GameDef field player emptyCell objects actions
-     , EvalIO () MakeGameActions (ObjsActs objects actions) GameActions
+     , EvalIO () MakeGameActions (ActsObjs actions objects) GameActions
 
      , EvalIO (SystemBus, FieldObjects)
           MakeActors
@@ -86,7 +86,7 @@ createGameApp = do
 
   -- Making actions
   actions <- evalIO () MakeGameActions
-    $ Proxy @(ObjsActs objects actions)
+    $ Proxy @(ActsObjs actions objects)
 
   printActions actions
 
@@ -107,7 +107,7 @@ createGameApp = do
 createRandomGameApp
   :: forall g field player emptyCell objects actions
    . ( g ~ GameDef field player emptyCell objects actions
-     , EvalIO () MakeGameActions (ObjsActs objects actions) GameActions
+     , EvalIO () MakeGameActions (ActsObjs actions objects) GameActions
 
      , EvalIO (SystemBus, FieldObjects)
           MakeActors
@@ -154,7 +154,7 @@ createRandomGameApp emptyCellsPercent (w, h) = do
 
   -- Making actions
   actions <- evalIO () MakeGameActions
-    $ Proxy @(ObjsActs objects actions)
+    $ Proxy @(ActsObjs actions objects)
 
   printActions actions
 
@@ -226,7 +226,11 @@ gameOrchestratorWorker queueVar gr phase = do
           eCmd <- parsePlayerCommand line $ grGameActions gr
 
           case eCmd of
-            Left err -> goWorker Idle
+            Left err -> do
+              tick <- readIORef $ grTickRef gr
+              turn <- readIORef $ grTurnRef gr
+              printStatus turn tick err
+              goWorker Idle
             Right playerCmd -> do
               performPlayerCommand sysBus playerPos playerCmd
               goWorker DoTurn

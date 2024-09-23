@@ -1,3 +1,5 @@
+{-# LANGUAGE UndecidableInstances #-}
+
 module Minefield.Extensions.Nouns.Landmine.Verbs where
 
 import CPrelude
@@ -21,15 +23,12 @@ import GHC.TypeLits
 -- Landmine verbs implementation
 
 instance
-  ( KnownSymbol ot
-  -- For some reason, this syntax is not universal.
-  -- It prevents other objects from being accepted
-  -- when unwrapping from ObjectWrapper.
-  -- , obj ~ LandmineDef i ot p
+  ( t ~ LandmineDef i ot p
+  , EvalIO () GetObjectType t ObjectType
   ) =>
   EvalIO () MakeActorAction
-       (ObjAct (LandmineDef i ot p) PutFlagDef)
+       (ObjectVerb (LandmineDef i ot p) PutFlagDef)
        (ObjectType, ActorAction) where
   evalIO () _ _ = do
-    let oType = symbolVal $ Proxy @ot
-    pure (oType, disableBombEffect)
+    oType <- evalIO () GetObjectType $ Proxy @t
+    pure (oType, disarmBombEffect)

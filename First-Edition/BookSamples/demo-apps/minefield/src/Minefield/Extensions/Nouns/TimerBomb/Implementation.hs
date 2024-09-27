@@ -50,9 +50,9 @@ instance
     tId <- forkIO $ actorWorker tickChan queueVar
                   $ processTimerBombEvent sysBus obj
     let sub ev =
-          isPopulateIconEvent ev
+          isPopulateIconRequestEvent ev
           || isGameFlowEvent ev
-          || isObjectRequestEvent ev
+          || isActorRequestEvent ev
 
     subscribeRecipient sysBus $ Subscription sub queueVar
 
@@ -116,7 +116,7 @@ processTimerBombEvent sysBus obj (TickEvent tick) = do
     TimerBombDead -> pure ()
     TimerBombDisarmed -> pure ()
 
-processTimerBombEvent sysBus obj (ObjectRequestEvent oType pos ev) = do
+processTimerBombEvent sysBus obj (ActorRequestEvent oType pos ev) = do
   let oInfoRef = tboObjectInfoRef obj
   let objPos  = tboPos obj
   match <- eventTargetMatch oInfoRef objPos oType pos
@@ -125,7 +125,7 @@ processTimerBombEvent sysBus obj (ObjectRequestEvent oType pos ev) = do
       SetDisarmed en -> do
         addOverhaulIcon oInfoRef $ OverhaulIcon Nothing disarmedIcon Nothing
         writeIORef (tboStateRef obj) TimerBombDisarmed
-      _ -> processObjectRequest sysBus oInfoRef ev
+      _ -> processActorRequest sysBus oInfoRef ev
 
 processTimerBombEvent sysBus obj commonEv =
   processCommonEvent sysBus (tboObjectInfoRef obj) (tboPos obj) commonEv

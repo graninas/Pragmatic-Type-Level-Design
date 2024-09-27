@@ -53,9 +53,9 @@ instance
     tId <- forkIO $ actorWorker stepChan queueVar
                   $ processLandmineEvent sysBus obj
     let sub ev =
-          isPopulateIconEvent ev
+          isPopulateIconRequestEvent ev
           || isGameFlowEvent ev
-          || isObjectRequestEvent ev
+          || isActorRequestEvent ev
 
     subscribeRecipient sysBus $ Subscription sub queueVar
 
@@ -70,7 +70,7 @@ processLandmineEvent
   -> LandmineObject
   -> SystemEvent
   -> GameIO ()
-processLandmineEvent sysBus obj (ObjectRequestEvent oType pos ev) = do
+processLandmineEvent sysBus obj (ActorRequestEvent oType pos ev) = do
   let oInfoRef = loObjectInfoRef obj
   let objPos   = loPos obj
   oInfo <- readIORef oInfoRef
@@ -81,7 +81,7 @@ processLandmineEvent sysBus obj (ObjectRequestEvent oType pos ev) = do
       SetDisarmed en -> do
         addOverhaulIcon oInfoRef $ OverhaulIcon Nothing disarmedIcon Nothing
         writeIORef (loStateRef obj) LandmineDisarmed
-      _ -> processObjectRequest sysBus oInfoRef ev
+      _ -> processActorRequest sysBus oInfoRef ev
 
 processLandmineEvent sysBus obj commonEv =
   processCommonEvent sysBus (loObjectInfoRef obj) (loPos obj) commonEv

@@ -44,9 +44,9 @@ instance
     tId <- forkIO $ actorWorker stepChan queueVar
                   $ processEmptyCellEvent sysBus obj
     let sub ev =
-          isPopulateIconEvent ev
+          isPopulateIconRequestEvent ev
           || isGameFlowEvent ev
-          || isObjectRequestEvent ev
+          || isActorRequestEvent ev
 
     subscribeRecipient sysBus $ Subscription sub queueVar
 

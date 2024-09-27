@@ -60,7 +60,7 @@ type SimpleMinefield =
   '[ "           6@"
    , "            A"
    , "             "
-   , "             "
+   , "            X"
    , "             "
    , "             "
    , "             "

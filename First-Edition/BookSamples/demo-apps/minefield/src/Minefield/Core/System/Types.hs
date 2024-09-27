@@ -8,7 +8,7 @@ import Minefield.Core.Object
 import qualified Data.Map as Map
 
 
-data ObjectRequest
+data ActorRequest
   = AddOverhaulIcon OverhaulIcon
   | SetEnabled Bool
   | SetDisarmed Bool
@@ -18,25 +18,25 @@ data ObjectRequest
   deriving (Show, Eq, Ord)
 
 data SystemEvent
-  = PlayerInputInvitedEvent
+  = PlayerInputRequestEvent
   | PlayerInputEvent PlayerPos String
-  | PopulateIconEvent
-  | FieldIconEvent Pos Icon
+  | PopulateIconRequestEvent
+  | IconEvent Pos Icon
 
   | TickEvent Int   -- Current tick
   | TurnEvent Int   -- Current turn
 
   | DebugMessageEvent String
 
-  | ObjectRequestEvent ObjectType ActorPos ObjectRequest
+  | ActorRequestEvent ObjectType ActorPos ActorRequest
   deriving (Show, Eq, Ord)
+
+type EventQueueVar = MVar [SystemEvent]
 
 data Subscription = Subscription
   { sCondition :: SystemEvent -> Bool
   , sRecipientQueueVar :: EventQueueVar
   }
-
-type EventQueueVar = MVar [SystemEvent]
 
 data SystemBus = SystemBus
   { sbEventsVar :: EventQueueVar
@@ -47,13 +47,10 @@ type GameIO a = IO a
 
 type TextCommand = String
 
-data Channel inT outT = Channel
-  { cInVar  :: MVar inT
-  , cOutVar :: MVar outT
+data StepChannel = StepChannel
+  { cInVar  :: MVar ()
+  , cOutVar :: MVar ()
   }
-
-type StepChannel = Channel () ()
-type EndGameVar = MVar ()
 
 data Actor
   = Actor

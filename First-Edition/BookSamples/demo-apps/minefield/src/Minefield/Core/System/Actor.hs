@@ -27,19 +27,19 @@ createStepChannel :: IO StepChannel
 createStepChannel = do
   inVar  <- newEmptyMVar
   outVar <- newEmptyMVar
-  pure $ Channel inVar outVar
+  pure $ StepChannel inVar outVar
 
 waitForStep :: StepChannel -> IO ()
-waitForStep (Channel inVar _) = takeMVar inVar
+waitForStep (StepChannel inVar _) = takeMVar inVar
 
 reportStepFinished :: StepChannel -> IO ()
-reportStepFinished (Channel _ outVar) = putMVar outVar ()
+reportStepFinished (StepChannel _ outVar) = putMVar outVar ()
 
 sendStep :: StepChannel -> IO ()
-sendStep (Channel inVar _) = putMVar inVar ()
+sendStep (StepChannel inVar _) = putMVar inVar ()
 
 waitForFinishedStep :: StepChannel -> IO ()
-waitForFinishedStep (Channel _ outVar) = takeMVar outVar
+waitForFinishedStep (StepChannel _ outVar) = takeMVar outVar
 
 createQueueVar :: IO EventQueueVar
 createQueueVar = newMVar []

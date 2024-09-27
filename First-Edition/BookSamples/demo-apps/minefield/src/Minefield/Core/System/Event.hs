@@ -46,21 +46,21 @@ isPlayerInputEvent :: SystemEvent -> Bool
 isPlayerInputEvent (PlayerInputEvent _ _) = True
 isPlayerInputEvent _ = False
 
-isPlayerInputInvitedEvent :: SystemEvent -> Bool
-isPlayerInputInvitedEvent PlayerInputInvitedEvent = True
-isPlayerInputInvitedEvent _ = False
+isPlayerInputRequestEvent :: SystemEvent -> Bool
+isPlayerInputRequestEvent PlayerInputRequestEvent = True
+isPlayerInputRequestEvent _ = False
 
-isFieldIconEvent :: SystemEvent -> Bool
-isFieldIconEvent (FieldIconEvent _ _) = True
-isFieldIconEvent _ = False
+isIconEvent :: SystemEvent -> Bool
+isIconEvent (IconEvent _ _) = True
+isIconEvent _ = False
 
-isPopulateIconEvent :: SystemEvent -> Bool
-isPopulateIconEvent PopulateIconEvent = True
-isPopulateIconEvent _ = False
+isPopulateIconRequestEvent :: SystemEvent -> Bool
+isPopulateIconRequestEvent PopulateIconRequestEvent = True
+isPopulateIconRequestEvent _ = False
 
-isObjectRequestEvent :: SystemEvent -> Bool
-isObjectRequestEvent (ObjectRequestEvent _ _ _) = True
-isObjectRequestEvent _ = False
+isActorRequestEvent :: SystemEvent -> Bool
+isActorRequestEvent (ActorRequestEvent _ _ _) = True
+isActorRequestEvent _ = False
 
 isDebugMessageEvent :: SystemEvent -> Bool
 isDebugMessageEvent (DebugMessageEvent _) = True

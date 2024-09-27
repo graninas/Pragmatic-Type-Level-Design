@@ -52,7 +52,7 @@ createGameApp
   => IO AppRuntime
 createGameApp = do
   resetScreen
-  printTitle "Minefield game"
+  printTitle "Minefield game "
 
   sysBus <- createSystemBus
 
@@ -123,7 +123,7 @@ createRandomGameApp
   -> IO AppRuntime
 createRandomGameApp emptyCellsPercent (w, h) = do
   resetScreen
-  printTitle "Minefield game"
+  printTitle "Minefield game "
 
   sysBus <- createSystemBus
 
@@ -206,7 +206,7 @@ gameOrchestratorWorker queueVar gr phase = do
     goWorker PlayerInput = do
       let sysBus = grSysBus gr
 
-      publishEvent sysBus PlayerInputInvitedEvent
+      publishEvent sysBus PlayerInputRequestEvent
       performActors gr
       distributeEvents sysBus     -- expecting special player input event
 
@@ -244,12 +244,12 @@ createFieldWatcherActor
 createFieldWatcherActor (w, h) sysBus = do
   inVar  <- newEmptyMVar
   outVar <- newEmptyMVar
-  let stepChan = Channel inVar outVar
+  let stepChan = StepChannel inVar outVar
 
   queueVar <- createQueueVar
   tId <- forkIO $ fieldWatcherWorker stepChan queueVar (w, h)
 
-  let sub ev = isFieldIconEvent ev || isDebugMessageEvent ev
+  let sub ev = isIconEvent ev || isDebugMessageEvent ev
   subscribeRecipient sysBus $ Subscription sub queueVar
 
   pure $ SystemActor tId stepChan queueVar
@@ -285,7 +285,7 @@ processFieldWatcherEvent
   -> Pos
   -> SystemEvent
   -> GameIO ()
-processFieldWatcherEvent sysBus (w, h) (FieldIconEvent pos ch) =
+processFieldWatcherEvent sysBus (w, h) (IconEvent pos ch) =
   drawFieldObject pos ch
 processFieldWatcherEvent _ _ (DebugMessageEvent msg) =
   printDebugMessage msg
@@ -304,7 +304,7 @@ performActors gr = do
 refreshUI :: Bool -> GameRuntime -> GameIO ()
 refreshUI turnFinished gr = do
   let sysBus = grSysBus gr
-  publishEvent sysBus PopulateIconEvent
+  publishEvent sysBus PopulateIconRequestEvent
   performActors gr
 
   tick <- readIORef $ grTickRef gr

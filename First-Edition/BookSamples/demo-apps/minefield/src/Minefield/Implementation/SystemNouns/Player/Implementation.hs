@@ -46,10 +46,10 @@ instance
     tId <- forkIO $ actorWorker stepChan queueVar
                   $ processPlayerEvent sysBus obj
     let sub ev =
-          isPopulateIconEvent ev
+          isPopulateIconRequestEvent ev
           || isGameFlowEvent ev
-          || isObjectRequestEvent ev
-          || isPlayerInputInvitedEvent ev
+          || isActorRequestEvent ev
+          || isPlayerInputRequestEvent ev
 
     subscribeRecipient sysBus $ Subscription sub queueVar
 
@@ -60,7 +60,7 @@ processPlayerEvent
   -> PlayerObject
   -> SystemEvent
   -> GameIO ()
-processPlayerEvent sysBus obj PlayerInputInvitedEvent = do
+processPlayerEvent sysBus obj PlayerInputRequestEvent = do
   pos  <- readIORef $ poPos obj
   line <- withInputInvitation "Type your command:"
   publishEvent sysBus $ PlayerInputEvent pos line

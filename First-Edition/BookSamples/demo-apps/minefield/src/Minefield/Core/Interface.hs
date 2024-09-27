@@ -27,9 +27,3 @@ data IAction where
 type family MkAction a cmd dir :: IAction where
   MkAction a cmd dir = ActionWrapper a cmd dir
 
-data Game
-  (minefield :: [Symbol])
-  (player :: IObjectTemplate)
-  (emptyCell :: IObjectTemplate)
-  (supportedObjects :: [IObjectTemplate])
-  (supportedActions :: [IAction])     -- TODO: validate command uniqueness

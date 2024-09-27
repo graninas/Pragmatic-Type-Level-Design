@@ -41,7 +41,7 @@ tickOverhaulIcons oInfoRef = do
 disarmBombEffect :: ActorAction
 disarmBombEffect sysBus oType pos = do
   publishEvent sysBus
-     $ ObjectRequestEvent oType pos
+     $ ActorRequestEvent oType pos
      $ SetDisarmed True
 
 -- Common events
@@ -54,7 +54,7 @@ processCommonEvent
   -> GameIO ()
 
 -- Populate cell icon event
-processCommonEvent sysBus oInfoRef objPos PopulateIconEvent = do
+processCommonEvent sysBus oInfoRef objPos PopulateIconRequestEvent = do
   oInfo <- readIORef oInfoRef
 
   when (oiEnabled oInfo) $ do
@@ -62,24 +62,24 @@ processCommonEvent sysBus oInfoRef objPos PopulateIconEvent = do
                 (_, oi : _ ) -> ovhIcon oi
                 (i, [])      -> i
 
-    publishEvent sysBus $ FieldIconEvent objPos icon
+    publishEvent sysBus $ IconEvent objPos icon
 
 -- Object request event
-processCommonEvent sysBus oInfoRef objPos (ObjectRequestEvent oType pos request) = do
+processCommonEvent sysBus oInfoRef objPos (ActorRequestEvent oType pos request) = do
   match <- eventTargetMatch oInfoRef objPos oType pos
   when match
-    $ processObjectRequest sysBus oInfoRef request
+    $ processActorRequest sysBus oInfoRef request
 
 processCommonEvent _ _ _ (TurnEvent _) = pure ()
 processCommonEvent _ _ _ (TickEvent _) = pure ()
 processCommonEvent _ _ _ _ = error "Common event not implemented"
 
-processObjectRequest
+processActorRequest
   :: SystemBus
   -> IORef ObjectInfo
-  -> ObjectRequest
+  -> ActorRequest
   -> GameIO ()
-processObjectRequest sysBus oInfoRef request = do
+processActorRequest sysBus oInfoRef request = do
   case request of
     AddOverhaulIcon oi -> do
       oInfo <- readIORef oInfoRef

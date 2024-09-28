@@ -70,65 +70,84 @@ processTimerBombEvent sysBus obj (TurnEvent _) = pure ()
 processTimerBombEvent sysBus obj (TickEvent tick) = do
   let stateRef = tboStateRef obj
   let oInfoRef = tboObjectInfoRef obj
-  oInfo <- readIORef oInfoRef
-  state <- readIORef stateRef
 
+  state <- readIORef stateRef
   case state of
     TimerBombTicking ticksLeft
+      -- Ticking is happening
       | ticksLeft > 0 -> do
           writeIORef stateRef $ TimerBombTicking $ ticksLeft - 1
 
           when (ticksLeft `mod` ticksInTurn == 0) $ do
-              let icon = head $ show $ ticksLeft `div` ticksInTurn
-              addOverhaulIcon oInfoRef $ OverhaulIcon Nothing icon Nothing
+            let icon = head $ show $ ticksLeft `div` ticksInTurn
+            setOverhaulIcon oInfoRef $ OverhaulIcon Nothing icon Nothing
 
-          publishEvent sysBus $ DebugMessageEvent
-            $ "[" <> show tick <> "] TimerBomb ticking; ticks left: " <> show ticksLeft
-
+      -- Ticking ended; explosion just happened
       | otherwise -> do
           -- this is a new tick, and it should be counted as happened.
           writeIORef stateRef $ TimerBombExplosion $ ticksInTurn - 1
-          let (i, _) = oiIcons oInfo
-          writeIORef oInfoRef $ oInfo {oiIcons = (i, explosionIcons)}
 
-          publishEvent sysBus $ DebugMessageEvent
-            $ "[" <> show tick <> "] TimerBomb explosion started"
+          -- TODO: turn this object to an empty cell
+          -- tmp solution:
+          setOverhaulIcon oInfoRef $ OverhaulIcon Nothing ' ' Nothing
 
-          makeExplosion sysBus obj
+          addExplosionOverhaulIcons oInfoRef
 
+          sendExplosionRequests sysBus 2 (tboPos obj)
+
+    -- Explosion is happening
     TimerBombExplosion ticksLeft
+      -- Explosion animation is happening
       | ticksLeft > 0 -> do
           writeIORef stateRef $ TimerBombExplosion $ ticksLeft - 1
-
-          publishEvent sysBus $ DebugMessageEvent
-            $ "[" <> show tick <> "] TimerBomb explosion; ticks left: " <> show ticksLeft
-
           tickOverhaulIcons oInfoRef
 
+      -- Explosion animation ended
       | otherwise -> do
           writeIORef stateRef TimerBombDead
+          tickOverhaulIcons oInfoRef
 
-          publishEvent sysBus $ DebugMessageEvent
-            $ "[" <> show tick <> "] TimerBomb dead"
-
-          disableObject oInfoRef
-
-    TimerBombDead -> pure ()
-    TimerBombDisarmed -> pure ()
+    TimerBombDead     -> tickOverhaulIcons oInfoRef
+    TimerBombDisarmed -> tickOverhaulIcons oInfoRef
 
 processTimerBombEvent sysBus obj (ActorRequestEvent oType pos ev) = do
   let oInfoRef = tboObjectInfoRef obj
-  let objPos  = tboPos obj
+  let objPos   = tboPos obj
+  let stateRef = tboStateRef obj
   match <- eventTargetMatch oInfoRef objPos oType pos
   when match $ do
     case ev of
       SetDisarmed en -> do
-        addOverhaulIcon oInfoRef $ OverhaulIcon Nothing disarmedIcon Nothing
-        writeIORef (tboStateRef obj) TimerBombDisarmed
+        setOverhaulIcon oInfoRef disarmedOverhaulIcon
+        writeIORef stateRef TimerBombDisarmed
+      SetExplosion -> do
+        state <- readIORef stateRef
+        case state of
+          TimerBombDead     -> do
+            --- ??????? will this work?
+            addExplosionOverhaulIcons oInfoRef
+
+          TimerBombDisarmed -> do
+            --- ??????? will this work?
+            addExplosionOverhaulIcons oInfoRef
+
+          TimerBombTicking _ -> do
+            writeIORef stateRef $ TimerBombExplosion ticksInTurn
+
+            -- TODO: turn this object to an empty cell
+            -- tmp solution:
+            setOverhaulIcon oInfoRef $ OverhaulIcon Nothing ' ' Nothing
+            addExplosionOverhaulIcons oInfoRef
+            sendExplosionRequests sysBus 2 (tboPos obj)
+
+          TimerBombExplosion _ -> do
+            -- TODO: turn this object to an empty cell
+            -- tmp solution:
+            setOverhaulIcon oInfoRef $ OverhaulIcon Nothing ' ' Nothing
+            addExplosionOverhaulIcons oInfoRef
+
       _ -> processActorRequest sysBus oInfoRef ev
 
 processTimerBombEvent sysBus obj commonEv =
   processCommonEvent sysBus (tboObjectInfoRef obj) (tboPos obj) commonEv
 
--- TODO: explosion
-makeExplosion sysBus obj = pure ()

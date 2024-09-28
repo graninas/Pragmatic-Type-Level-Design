@@ -59,6 +59,17 @@ processEmptyCellEvent
   -> EmptyCellObject
   -> SystemEvent
   -> GameIO ()
+processEmptyCellEvent sysBus obj (TurnEvent _) = pure ()
+processEmptyCellEvent sysBus obj (TickEvent tick) = do
+  tickOverhaulIcons (ecoObjectInfoRef obj)
+processEmptyCellEvent sysBus obj (ActorRequestEvent oType pos ev) = do
+  let oInfoRef = ecoObjectInfoRef obj
+  let objPos   = ecoPos obj
+  match <- eventTargetMatch oInfoRef objPos oType pos
+  when match $ do
+    case ev of
+      SetExplosion -> addExplosionOverhaulIcons oInfoRef
+      _ -> processActorRequest sysBus oInfoRef ev
+
 processEmptyCellEvent sysBus obj commonEv =
   processCommonEvent sysBus (ecoObjectInfoRef obj) (ecoPos obj) commonEv
-

@@ -47,7 +47,7 @@ instance
     obj <- LandmineObject
       <$> newIORef oInfo
       <*> pure pos
-      <*> newIORef p
+      <*> pure p
       <*> newIORef LandmineActive
 
     tId <- forkIO $ actorWorker stepChan queueVar
@@ -70,19 +70,61 @@ processLandmineEvent
   -> LandmineObject
   -> SystemEvent
   -> GameIO ()
+processLandmineEvent sysBus obj (TurnEvent _) = pure ()
+processLandmineEvent sysBus obj (TickEvent tick) = do
+  let stateRef = loStateRef obj
+  let oInfoRef = loObjectInfoRef obj
+
+  state <- readIORef stateRef
+
+  pure ()
+  -- case state of
+  --   -- Explosion is happening
+  --   LandmineExplosion ticksLeft
+  --     -- Explosion animation is happenning
+  --     | ticksLeft > 0 -> do
+  --         writeIORef stateRef $ LandmineExplosion $ ticksLeft - 1
+  --         tickOverhaulIcons oInfoRef
+
+  --     -- Explosion animation ended
+  --     | otherwise -> do
+  --         writeIORef stateRef LandmineDead
+
+  --   LandmineDead     -> tickOverhaulIcons oInfoRef
+  --   LandmineDisarmed -> tickOverhaulIcons oInfoRef
+
 processLandmineEvent sysBus obj (ActorRequestEvent oType pos ev) = do
   let oInfoRef = loObjectInfoRef obj
   let objPos   = loPos obj
+
   oInfo <- readIORef oInfoRef
   let curOType = oiObjectType oInfo
   match <- eventTargetMatch oInfoRef objPos oType pos
-  when match $ do
-    case ev of
-      SetDisarmed en -> do
-        addOverhaulIcon oInfoRef $ OverhaulIcon Nothing disarmedIcon Nothing
-        writeIORef (loStateRef obj) LandmineDisarmed
-      _ -> processActorRequest sysBus oInfoRef ev
+
+  pure ()
+  -- when match $ do
+  --   case ev of
+  --     SetDisarmed en -> do
+  --       setOverhaulIcon oInfoRef disarmedOverhaulIcon
+  --       writeIORef (loStateRef obj) LandmineDisarmed
+  --     SetExplosion -> do
+  --       let stateRef = loStateRef obj
+  --       state <- readIORef stateRef
+  --       case state of
+  --         LandmineDead     -> do
+  --           addExplosionOverhaulIcons oInfoRef
+  --           --- ---will this work????
+  --         LandmineDisarmed -> do
+  --           addExplosionOverhaulIcons oInfoRef
+  --           --- ??????? will this work?
+  --         LandmineActive   -> do
+  --           setExplosionOverhaulIcons oInfoRef
+  --           writeIORef stateRef $ LandmineExplosion ticksInTurn
+  --           makeExplosion sysBus obj
+
+  --     _ -> processActorRequest sysBus oInfoRef ev
 
 processLandmineEvent sysBus obj commonEv =
   processCommonEvent sysBus (loObjectInfoRef obj) (loPos obj) commonEv
+
 

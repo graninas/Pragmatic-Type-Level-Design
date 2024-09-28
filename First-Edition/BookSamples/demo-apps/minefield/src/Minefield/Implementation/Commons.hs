@@ -4,6 +4,8 @@ import CPrelude
 
 import Minefield.Core.Types
 import Minefield.Core.Object
+import Minefield.Core.Defaults
+import Minefield.Core.Commons
 import Minefield.Core.System.Types
 import Minefield.Core.System.Event
 
@@ -13,11 +15,29 @@ disableObject oInfoRef = do
   oInfo <- readIORef oInfoRef
   writeIORef oInfoRef $ oInfo { oiEnabled = False }
 
+setOverhaulIcon :: IORef ObjectInfo -> OverhaulIcon -> IO ()
+setOverhaulIcon oInfoRef ovhIcon = do
+  oInfo <- readIORef oInfoRef
+  let (i, _) = oiIcons oInfo
+  writeIORef oInfoRef $ oInfo {oiIcons = (i, [ovhIcon])}
+
 addOverhaulIcon :: IORef ObjectInfo -> OverhaulIcon -> IO ()
 addOverhaulIcon oInfoRef ovhIcon = do
   oInfo <- readIORef oInfoRef
   let (i, icons) = oiIcons oInfo
   writeIORef oInfoRef $ oInfo {oiIcons = (i, ovhIcon : icons)}
+
+-- setExplosionOverhaulIcons :: IORef ObjectInfo -> IO ()
+-- setExplosionOverhaulIcons oInfoRef = do
+--   oInfo <- readIORef oInfoRef
+--   let (i, _) = oiIcons oInfo
+--   writeIORef oInfoRef $ oInfo {oiIcons = (i, explosionIcons)}
+
+addExplosionOverhaulIcons :: IORef ObjectInfo -> IO ()
+addExplosionOverhaulIcons oInfoRef = do
+  oInfo <- readIORef oInfoRef
+  let (i, icons) = oiIcons oInfo
+  writeIORef oInfoRef $ oInfo {oiIcons = (i, explosionIcons <> icons)}
 
 tickOverhaulIcons :: IORef ObjectInfo -> IO ()
 tickOverhaulIcons oInfoRef = do
@@ -104,4 +124,21 @@ eventTargetMatch
 eventTargetMatch oInfoRef objPos oType pos = do
   oInfo <- readIORef oInfoRef
   let curOType = oiObjectType oInfo
-  pure $ curOType == oType && objPos == pos
+  pure $ (curOType == oType || oType == "") && objPos == pos
+
+
+type ExplosionPower = Int
+
+sendExplosionRequests
+  :: SystemBus
+  -> ExplosionPower
+  -> Pos
+  -> GameIO ()
+sendExplosionRequests sysBus p pos = do
+  let explosionRange = case p of
+        1 -> []
+        2 -> neighboursLvl2 pos
+        3 -> neighboursLvl2 pos <> neighboursLvl3 pos
+  mapM_ (\p -> publishEvent sysBus
+                  $ ActorRequestEvent anyObjectType p SetExplosion
+        ) explosionRange

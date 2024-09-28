@@ -12,6 +12,7 @@ data ActorRequest
   = AddOverhaulIcon OverhaulIcon
   | SetEnabled Bool
   | SetDisarmed Bool
+  | SetExplosion
 
   | GenericRequest String
       -- ^ Any request that can be encoded as string
@@ -29,6 +30,7 @@ data SystemEvent
   | DebugMessageEvent String
 
   | ActorRequestEvent ObjectType ActorPos ActorRequest
+                      -- ^ Empty ObjectType means "any match"
   deriving (Show, Eq, Ord)
 
 type EventQueueVar = MVar [SystemEvent]

@@ -57,13 +57,13 @@ type MyGame = GameDef
 
 
 type SimpleMinefield =
-  '[ "           6@"
-   , "            A"
+  '[ "            @"
    , "             "
-   , "            X"
+   , "    6        "
+   , "     7       "
+   , "      8      "
    , "             "
-   , "             "
-   , "             "
+   , " 6  7 8      "
    ]
 
 type SimpleGame = GameDef
@@ -71,7 +71,9 @@ type SimpleGame = GameDef
   (Player "@")
   (EmptyCell " ")
   '[ TimerBomb "6" 6
-   , Landmine "A" 1
+   , TimerBomb "7" 7
+   , TimerBomb "8" 8
+   , Landmine  "A" 1
    ]
   '[ PutFlag
    ]

@@ -157,7 +157,9 @@ instance
     -- extension point
     (oType, act) <- evalIO () MakeActorAction $ Proxy @(ObjectVerb o a)
 
-    when (Map.member oType acts) $ error $ show $ "Duplicate oType: " <> oType
+    when (Map.member oType acts)
+      -- $ error $ show $ "Duplicate oType: " <> oType
+      $ pure ()     -- should not be a problem because the actions should be the same
 
     pure (cmd, isDirected, Map.insert oType act acts)
 

@@ -21,5 +21,5 @@ nowherePos = (-1, -1)
 noObjectId :: ObjectId
 noObjectId = 0
 
-disarmedIcon :: Icon
-disarmedIcon = '!'
+anyObjectType :: ObjectType
+anyObjectType = ""

@@ -7,14 +7,15 @@ import Minefield.Core.Object
 import Minefield.Core.Defaults
 
 
--- Explosion icons. Should indicate how many ticks to live.
+-- Explosion icons
+-- •⦿⦾✶✺✸✹○
 explosionIcons :: [OverhaulIcon]
 explosionIcons =
-  [ OverhaulIcon Nothing '*'  (Just 2)
-  , OverhaulIcon Nothing '|'  (Just 2)
-  , OverhaulIcon Nothing '/'  (Just 2)
-  , OverhaulIcon Nothing '-'  (Just 2)
-  , OverhaulIcon Nothing '\\' (Just 2)
+  [ OverhaulIcon Nothing '•' (Just 2)
+  , OverhaulIcon Nothing '✶' (Just 2)
+  , OverhaulIcon Nothing '✺' (Just 2)
+  , OverhaulIcon Nothing '○' (Just 2)
+  , OverhaulIcon Nothing '•' (Just 2)
   ]
 
 disarmedIcon :: Icon

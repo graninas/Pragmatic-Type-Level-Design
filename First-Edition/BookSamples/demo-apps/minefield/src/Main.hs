@@ -83,6 +83,7 @@ main :: IO ()
 main = do
   -- appRt <- createRandomGameApp @MyGame 0.8 (7, 7)
   appRt <- createGameApp @SimpleGame
+  -- appRt <- createGameApp @MyGame
 
   let gameRt = arGameRuntime appRt
   let orchestrator = arGameOrchestratorWorker appRt

@@ -16,17 +16,12 @@ import qualified Data.Map as Map
 
 
 data MakeActors           = MakeActors
-data MakeActor            = MakeActor
+data MakeActor            = MakeActor            -- extension point
 data GetIsDirected        = GetIsDirected
 data MaterializeField     = MaterializeField
 data MaterializeFieldImpl = MaterializeFieldImpl
 
 data Objects (a :: [IObjectTemplate])
-
--- data ObjsActs objs acts
--- data TraverseObjs objs acts
--- data TraverseActs obj acts
--- data ObjAct o a
 
 -- Get icon
 

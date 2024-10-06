@@ -17,7 +17,7 @@ glider = Map.fromList [((1, 0), Alive),
 iterateWorld :: (ca -> ca) -> Int -> ca -> ca
 iterateWorld step n world | n == 0 = world
 iterateWorld step n world | n > 0 =
-  head (drop 5 (iterate step world))
+  head (drop n (iterate step world))
 iterateWorld _ _ _ = error "Invalid iteration count"
 
 saveToFile'' :: (ca -> Board) -> FilePath -> ca -> IO ()

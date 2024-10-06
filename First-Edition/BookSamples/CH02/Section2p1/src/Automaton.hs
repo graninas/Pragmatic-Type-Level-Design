@@ -35,7 +35,7 @@ iterateWorld
   -> CellWorld rule
   -> CellWorld rule
 iterateWorld n world | n == 0 = world
-iterateWorld n world | n > 0 = head (drop 5 (iterate step world))
+iterateWorld n world | n > 0 = head (drop n (iterate step world))
 iterateWorld _ _ = error "Invalid iteration count"
 
 loadFromFile :: Automaton rule => FilePath -> IO (CellWorld rule)

@@ -37,6 +37,7 @@ AppendixB_FightClub_CPP_OOP_program
 # Rust
 
 **/rust*/target/
+**/rosetta-stone/rust/**/target/
 
 # Ignoring files related to editor configurations and temporary files
 **/*.rs.bk

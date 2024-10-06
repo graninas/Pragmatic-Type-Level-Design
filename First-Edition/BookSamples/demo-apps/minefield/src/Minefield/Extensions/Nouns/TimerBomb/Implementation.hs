@@ -41,11 +41,14 @@ instance
     let ticksToLive = (ticksInTurn * turns) - 1
 
     oInfo <- evalIO () GetObjectInfo $ Proxy @t
+
+    tickingIconsBatchRef <- newIORef $ OverhaulIconBatch []
+
     -- TODO: objectID
     obj <- TimerBombObject
       <$> newIORef oInfo
       <*> pure pos
-      <*> newIORef (TimerBombTicking ticksToLive)
+      <*> newIORef (TimerBombTicking ticksToLive tickingIconsBatchRef)
 
     tId <- forkIO $ actorWorker tickChan queueVar
                   $ processTimerBombEvent sysBus obj
@@ -71,16 +74,20 @@ processTimerBombEvent sysBus obj (TickEvent tick) = do
   let stateRef = tboStateRef obj
   let oInfoRef = tboObjectInfoRef obj
 
+  tickOverhaulIcons oInfoRef
+
   state <- readIORef stateRef
   case state of
-    TimerBombTicking ticksLeft
+    TimerBombTicking ticksLeft iconBatchRef
       -- Ticking is happening
       | ticksLeft > 0 -> do
-          writeIORef stateRef $ TimerBombTicking $ ticksLeft - 1
+          writeIORef stateRef
+            $ TimerBombTicking (ticksLeft - 1) iconBatchRef
 
           when (ticksLeft `mod` ticksInTurn == 0) $ do
             let icon = head $ show $ ticksLeft `div` ticksInTurn
-            setOverhaulIcon oInfoRef $ OverhaulIcon Nothing icon Nothing
+
+            writeIORef iconBatchRef $ OverhaulIconBatch [OverhaulIcon Nothing icon Nothing]
 
       -- Ticking ended; explosion just happened
       | otherwise -> do
@@ -89,26 +96,21 @@ processTimerBombEvent sysBus obj (TickEvent tick) = do
 
           -- TODO: turn this object to an empty cell
           -- tmp solution:
-          setOverhaulIcon oInfoRef $ OverhaulIcon Nothing ' ' Nothing
-
-          addExplosionOverhaulIcons oInfoRef
+          setIcon oInfoRef emptyCellIcon
+          writeIORef iconBatchRef $ OverhaulIconBatch explosionIcons
 
           sendExplosionRequests sysBus 2 (tboPos obj)
 
     -- Explosion is happening
     TimerBombExplosion ticksLeft
       -- Explosion animation is happening
-      | ticksLeft > 0 -> do
-          writeIORef stateRef $ TimerBombExplosion $ ticksLeft - 1
-          tickOverhaulIcons oInfoRef
+      | ticksLeft > 0 ->  writeIORef stateRef $ TimerBombExplosion $ ticksLeft - 1
 
       -- Explosion animation ended
-      | otherwise -> do
-          writeIORef stateRef TimerBombDead
-          tickOverhaulIcons oInfoRef
+      | otherwise -> writeIORef stateRef TimerBombDead
 
-    TimerBombDead     -> tickOverhaulIcons oInfoRef
-    TimerBombDisarmed -> tickOverhaulIcons oInfoRef
+    TimerBombDead     -> pure ()
+    TimerBombDisarmed -> pure ()
 
 processTimerBombEvent sysBus obj (ActorRequestEvent oType pos ev) = do
   let oInfoRef = tboObjectInfoRef obj
@@ -118,7 +120,7 @@ processTimerBombEvent sysBus obj (ActorRequestEvent oType pos ev) = do
   when match $ do
     case ev of
       SetDisarmed en -> do
-        setOverhaulIcon oInfoRef disarmedOverhaulIcon
+        setIcon oInfoRef disarmedIcon
         writeIORef stateRef TimerBombDisarmed
       SetExplosion -> do
         state <- readIORef stateRef
@@ -131,7 +133,7 @@ processTimerBombEvent sysBus obj (ActorRequestEvent oType pos ev) = do
             --- ??????? will this work?
             addExplosionOverhaulIcons oInfoRef
 
-          TimerBombTicking _ -> do
+          TimerBombTicking _ _ -> do
             writeIORef stateRef $ TimerBombExplosion ticksInTurn
 
             -- TODO: turn this object to an empty cell

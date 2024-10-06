@@ -9,8 +9,10 @@ import Minefield.Core.Object
 -- | Timer bomb runtime instance.
 
 data TimerBombState
-  = TimerBombTicking Int        -- ticks left
-  | TimerBombExplosion Int      -- ticks left
+  = TimerBombTicking Int (IORef OverhaulIconBatch)
+      -- ^ int == ticks left
+  | TimerBombExplosion Int
+      -- ^ int == ticks left
   | TimerBombDead
   | TimerBombDisarmed
 

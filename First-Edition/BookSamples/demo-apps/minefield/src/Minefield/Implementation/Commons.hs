@@ -15,46 +15,34 @@ disableObject oInfoRef = do
   oInfo <- readIORef oInfoRef
   writeIORef oInfoRef $ oInfo { oiEnabled = False }
 
-setOverhaulIcon :: IORef ObjectInfo -> OverhaulIcon -> IO ()
-setOverhaulIcon oInfoRef ovhIcon = do
+setIcon :: IORef ObjectInfo -> Icon -> IO ()
+setIcon oInfoRef icon = do
   oInfo <- readIORef oInfoRef
-  let (i, _) = oiIcons oInfo
-  writeIORef oInfoRef $ oInfo {oiIcons = (i, [ovhIcon])}
+  let (_, ovhIcons) = oiIcons oInfo
+  writeIORef oInfoRef $ oInfo {oiIcons = (icon, ovhIcons)}
 
-addOverhaulIcon :: IORef ObjectInfo -> OverhaulIcon -> IO ()
-addOverhaulIcon oInfoRef ovhIcon = do
-  oInfo <- readIORef oInfoRef
-  let (i, icons) = oiIcons oInfo
-  writeIORef oInfoRef $ oInfo {oiIcons = (i, ovhIcon : icons)}
+appendIconBatch :: IORef ObjectInfo -> OverhaulIconBatch -> IO ()
+appendIconBatch oInfoRef batch = do
+  oInfo    <- readIORef oInfoRef
+  batchRef <- newIORef batch
+  let (i, batchRefs) = oiIcons oInfo
+  writeIORef oInfoRef
+    $ oInfo {oiIcons = (i, batchRef : batchRefs)}
 
--- setExplosionOverhaulIcons :: IORef ObjectInfo -> IO ()
--- setExplosionOverhaulIcons oInfoRef = do
---   oInfo <- readIORef oInfoRef
---   let (i, _) = oiIcons oInfo
---   writeIORef oInfoRef $ oInfo {oiIcons = (i, explosionIcons)}
-
-addExplosionOverhaulIcons :: IORef ObjectInfo -> IO ()
-addExplosionOverhaulIcons oInfoRef = do
-  oInfo <- readIORef oInfoRef
-  let (i, icons) = oiIcons oInfo
-  writeIORef oInfoRef $ oInfo {oiIcons = (i, explosionIcons <> icons)}
 
 tickOverhaulIcons :: IORef ObjectInfo -> IO ()
 tickOverhaulIcons oInfoRef = do
   oInfo <- readIORef oInfoRef
-  let (i, icons) = oiIcons oInfo
-  case icons of
-    (OverhaulIcon iId icon (Just 0) : rest) ->
-      writeIORef oInfoRef $ oInfo { oiIcons = (i, rest) }
+  let (i, batchRefs) = oiIcons oInfo
 
-    (OverhaulIcon iId icon (Just 1) : rest) ->
-      writeIORef oInfoRef $ oInfo { oiIcons = (i, rest) }
-
-    (OverhaulIcon iId icon (Just n) : rest) -> do
-      let icons' = OverhaulIcon iId icon (Just $ n - 1) : rest
-      writeIORef oInfoRef $ oInfo { oiIcons = (i, icons') }
-    _ -> pure ()
-
+  forM_ batchRefs $ \batchRef -> do
+    OverhaulIconBatch icons <- readIORef batchRef
+    let icons' = OverhaulIconBatch $ case icons of
+          (OverhaulIcon iId icon (Just 0) : rest) -> rest
+          (OverhaulIcon iId icon (Just 1) : rest) -> rest
+          (OverhaulIcon iId icon (Just n) : rest) ->
+            OverhaulIcon iId icon (Just $ n - 1) : rest
+    writeIORef batchRef $ OverhaulIconBatch icons'
 
 -- Common effects
 
@@ -78,9 +66,13 @@ processCommonEvent sysBus oInfoRef objPos PopulateIconRequestEvent = do
   oInfo <- readIORef oInfoRef
 
   when (oiEnabled oInfo) $ do
-    let icon = case oiIcons oInfo of
-                (_, oi : _ ) -> ovhIcon oi
-                (i, [])      -> i
+    icon <- case oiIcons oInfo of
+      (i, [])           -> pure i
+      (i, batchRef : _) -> do
+        OverhaulIconBatch icons <- readIORef batchRef
+        case icons of
+          []         -> pure i
+          (ovhI : _) -> pure $ ovhIcon ovhI
 
     publishEvent sysBus $ IconEvent objPos icon
 
@@ -101,14 +93,6 @@ processActorRequest
   -> GameIO ()
 processActorRequest sysBus oInfoRef request = do
   case request of
-    AddOverhaulIcon oi -> do
-      oInfo <- readIORef oInfoRef
-
-      let (i, icons) = oiIcons oInfo
-      let icons' = oi : icons
-
-      writeIORef oInfoRef $ oInfo {oiIcons = (i, icons')}
-
     SetEnabled en -> do
       oInfo <- readIORef oInfoRef
       writeIORef oInfoRef $ oInfo {oiEnabled = en}

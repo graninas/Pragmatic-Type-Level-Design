@@ -9,14 +9,17 @@ import Minefield.Core.Defaults
 
 -- Explosion icons
 -- •⦿⦾✶✺✸✹○
-explosionIcons :: [OverhaulIcon]
-explosionIcons =
+explosionIconsBatch :: OverhaulIconBatch
+explosionIconsBatch = OverhaulIconBatch
   [ OverhaulIcon Nothing '•' (Just 2)
   , OverhaulIcon Nothing '✶' (Just 2)
   , OverhaulIcon Nothing '✺' (Just 2)
   , OverhaulIcon Nothing '○' (Just 2)
   , OverhaulIcon Nothing '•' (Just 2)
   ]
+
+emptyCellIcon :: Icon
+emptyCellIcon = ' '
 
 disarmedIcon :: Icon
 disarmedIcon = '!'

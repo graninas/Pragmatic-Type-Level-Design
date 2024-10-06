@@ -9,8 +9,7 @@ import qualified Data.Map as Map
 
 
 data ActorRequest
-  = AddOverhaulIcon OverhaulIcon
-  | SetEnabled Bool
+  = SetEnabled Bool
   | SetDisarmed Bool
   | SetExplosion
 

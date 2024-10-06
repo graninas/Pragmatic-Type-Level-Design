@@ -18,6 +18,11 @@ data OverhaulIcon = OverhaulIcon
   }
   deriving (Show, Eq, Ord)
 
+-- | Icon batch. Ticks simultaneously with other batches.
+-- Contains icons that tick sequentially.
+newtype OverhaulIconBatch = OverhaulIconBatch [OverhaulIcon]
+
+-- | Object info.
 data ObjectInfo = ObjectInfo
   { oiObjectType :: ObjectType
     -- ^ Object template id
@@ -29,9 +34,10 @@ data ObjectInfo = ObjectInfo
     -- ^ If the object is disabled, it doesn't participate in events
     -- and doesn't show its icon
 
-  , oiIcons :: (Icon, [OverhaulIcon])
-  -- ^ Base icon and all active icons, head icon is top.
-  --   Should only display icons from this list
+  , oiIcons :: (Icon, [IORef OverhaulIconBatch])
+  -- ^ (Base icon, batches).
+  --    Batches tick simultaneously.
+  --    Batch icons tick sequentially.
   }
   deriving (Show, Eq, Ord)
 

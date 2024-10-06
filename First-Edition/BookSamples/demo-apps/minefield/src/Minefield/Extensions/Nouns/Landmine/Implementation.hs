@@ -75,23 +75,22 @@ processLandmineEvent sysBus obj (TickEvent tick) = do
   let stateRef = loStateRef obj
   let oInfoRef = loObjectInfoRef obj
 
+  tickOverhaulIcons oInfoRef
+
   state <- readIORef stateRef
+  case state of
+    LandmineActive -> pure ()
 
-  pure ()
-  -- case state of
-  --   -- Explosion is happening
-  --   LandmineExplosion ticksLeft
-  --     -- Explosion animation is happenning
-  --     | ticksLeft > 0 -> do
-  --         writeIORef stateRef $ LandmineExplosion $ ticksLeft - 1
-  --         tickOverhaulIcons oInfoRef
+    -- Explosion is happening
+    LandmineExplosion ticksLeft
+      -- Explosion animation is happening
+      | ticksLeft > 0 ->  writeIORef stateRef $ LandmineExplosion $ ticksLeft - 1
 
-  --     -- Explosion animation ended
-  --     | otherwise -> do
-  --         writeIORef stateRef LandmineDead
+      -- Explosion animation ended
+      | otherwise -> writeIORef stateRef LandmineDead
 
-  --   LandmineDead     -> tickOverhaulIcons oInfoRef
-  --   LandmineDisarmed -> tickOverhaulIcons oInfoRef
+    LandmineDead     -> pure ()
+    LandmineDisarmed -> pure ()
 
 processLandmineEvent sysBus obj (ActorRequestEvent oType pos ev) = do
   let oInfoRef = loObjectInfoRef obj

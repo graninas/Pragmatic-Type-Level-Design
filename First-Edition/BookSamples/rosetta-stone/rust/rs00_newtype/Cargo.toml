@@ -1,5 +1,5 @@
 [package]
-name = "appendix_b_fight_club_rust_exist"
+name = "rs00_newtype"
 version = "0.1.0"
 edition = "2021"
 

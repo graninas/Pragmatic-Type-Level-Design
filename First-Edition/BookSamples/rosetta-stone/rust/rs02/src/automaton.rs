@@ -1,16 +1,18 @@
 
-pub mod gol;
 
 use std::fmt;
 
-// #[derive(Clone, Copy)]
-#[derive(Copy)]
+#[derive(Clone, Copy)]
 pub enum Cell {
   Alive,
   Dead
 }
 
 pub type Board = Vec<Vec<Cell>>;
+
+pub trait Automaton {
+  fn step(&self) -> Self;
+}
 
 
 pub fn make_empty_board(w: usize, h: usize) -> Board {
@@ -34,10 +36,7 @@ pub fn merge_boards(x: usize, y: usize, base_board: Board, from_board: Board) ->
   return new_board;
 }
 
-pub fn iterate_world (
-  step: impl Fn(Board) -> Board,
-  n: u32,
-  board: Board) -> Board {
+pub fn iterate_world<T: Automaton+Clone> (n: u32, board: T) -> T {
 
   let mut new_board = board.clone();
 
@@ -45,7 +44,7 @@ pub fn iterate_world (
     0 => return new_board,
     _ => {
       for _i in 0..n {
-        new_board = step(new_board);
+        new_board = new_board.step();
       }
     },
   }
@@ -91,10 +90,3 @@ impl fmt::Display for Cell {
   }
 }
 
-
-// TODO: use deriving instead of this (just for learning)
-impl Clone for Cell {
-  fn clone(&self) -> Self {
-    return *self;
-  }
-}

@@ -1,5 +1,5 @@
 [package]
-name = "rs00_newtype"
+name = "rsc2p1p2_adts"
 version = "0.1.0"
 edition = "2021"
 

@@ -3,6 +3,6 @@
 Simple Life-like automaton app.
 
 - Mixed-level
-- Newtype
+- Newtype idiom
 - Automaton type class (trait)
 - Simple extensibility with type classes (traits)

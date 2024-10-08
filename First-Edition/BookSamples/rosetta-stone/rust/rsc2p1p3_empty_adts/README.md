@@ -1,0 +1,2 @@
+Empty ADTs in Rust.
+

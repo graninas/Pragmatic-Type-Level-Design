@@ -1,0 +1,6 @@
+[package]
+name = "rsc2p1p6_generics"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]

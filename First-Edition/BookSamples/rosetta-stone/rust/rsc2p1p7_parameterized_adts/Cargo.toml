@@ -1,0 +1,7 @@
+[package]
+name = "rsc2p1p7_parameterized_adts"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+once_cell = "1.10"

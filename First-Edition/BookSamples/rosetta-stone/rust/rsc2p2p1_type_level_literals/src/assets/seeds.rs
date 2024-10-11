@@ -5,10 +5,10 @@ use automaton::Board;
 use automaton::CellWorld;
 use automaton::Cell;
 use automaton::IAutomaton;
+use automaton::Born;
+use automaton::Survived;
 
-pub enum SeedsRule {}
-
-pub type Seeds = CellWorld<SeedsRule>;
+pub type Seeds = CellWorld<Born<1>, Survived<0>>;
 
 fn seeds_step(board: Board) -> Board {
   let mut new_board = board.clone();
@@ -29,24 +29,36 @@ fn seeds_step(board: Board) -> Board {
 
 #[allow(dead_code)]
 pub fn make_seeds(board: Board) -> Seeds {
-  return CellWorld::CW{ board, _marker: PhantomData::<SeedsRule> };
+  return CellWorld::CW {
+    board,
+    _marker1: PhantomData::<Born<1>>,
+    _marker2: PhantomData::<Survived<0>>,
+  };
 }
 
 impl IAutomaton for Seeds {
   fn step(self) -> Self {
-    let (board, _marker) = match self {
-      CellWorld::CW {board, _marker} => (seeds_step(board), _marker)
+    let (board, _marker1, _marker2) = match self {
+      CellWorld::CW {
+        board,
+        _marker1,
+        _marker2
+      } => (seeds_step(board), _marker1, _marker2)
     };
-    return CellWorld::CW{ board, _marker };
+    return CellWorld::CW{ board, _marker1, _marker2 };
   }
 
   fn unwrap(&self) -> &Board {
-    let CellWorld::CW {board, _marker} = self;
+    let CellWorld::CW {board, ..} = self;
     return &board;
   }
 
   fn wrap(board: Board) -> Self {
-    return CellWorld::CW { board, _marker: PhantomData::<SeedsRule> };
+    return CellWorld::CW {
+      board,
+    _marker1: PhantomData::<Born<1>>,
+    _marker2: PhantomData::<Survived<0>>,
+    };
   }
 }
 

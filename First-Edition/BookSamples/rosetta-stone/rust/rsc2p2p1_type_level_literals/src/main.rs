@@ -36,4 +36,24 @@ fn main() {
   }
 
   println!("{}", strs);
+
+
+  let glider2 = automaton::merge_boards(2, 2, automaton::make_empty_board(10, 10), glider());
+  let seeds = assets::seeds::make_seeds(glider2);
+  let seeds_world = automaton::iterate_world(1, seeds);
+
+  let output_seeds = seeds_world.unwrap();
+
+  strs = String::from("");
+
+  for row in output_seeds {
+    let mut str_row = String::from("");
+    for cell in row {
+      str_row.push_str(&cell.to_string());
+    }
+    strs.push_str("\n");
+    strs.push_str(&str_row);
+  }
+
+  println!("{}", strs);
 }

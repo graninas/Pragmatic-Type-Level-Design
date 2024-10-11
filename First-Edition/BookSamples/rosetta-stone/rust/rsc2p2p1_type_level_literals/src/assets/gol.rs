@@ -5,10 +5,11 @@ use automaton::Board;
 use automaton::CellWorld;
 use automaton::Cell;
 use automaton::IAutomaton;
+use automaton::Placeholder;
 
 pub enum GoLRule {}
 
-pub type GoL = CellWorld<GoLRule>;
+pub type GoL = CellWorld<GoLRule, Placeholder>;
 
 fn gol_step(board: Board) -> Board {
   let mut new_board = board.clone();
@@ -30,23 +31,35 @@ fn gol_step(board: Board) -> Board {
 }
 
 pub fn make_gol(board: Board) -> GoL {
-  return CellWorld::CW{ board, _marker: PhantomData::<GoLRule> };
+  return CellWorld::CW {
+    board,
+    _marker1: PhantomData::<GoLRule>,
+    _marker2: PhantomData::<Placeholder>,
+  };
 }
 
 impl IAutomaton for GoL {
   fn step(self) -> Self {
-    let (board, _marker) = match self {
-      CellWorld::CW {board, _marker} => (gol_step(board), _marker)
+    let (board, _marker1, _marker2) = match self {
+      CellWorld::CW {
+        board,
+        _marker1,
+        _marker2
+      } => (gol_step(board), _marker1, _marker2)
     };
-    return CellWorld::CW{ board, _marker };
+    return CellWorld::CW{ board, _marker1, _marker2 };
   }
 
   fn unwrap(&self) -> &Board {
-    let CellWorld::CW {board, _marker} = self;
+    let CellWorld::CW {board, ..} = self;
     return &board;
   }
 
   fn wrap(board: Board) -> Self {
-    return CellWorld::CW { board, _marker: PhantomData::<GoLRule> };
+    return CellWorld::CW {
+      board,
+    _marker1: PhantomData::<GoLRule>,
+    _marker2: PhantomData::<Placeholder>,
+    };
   }
 }

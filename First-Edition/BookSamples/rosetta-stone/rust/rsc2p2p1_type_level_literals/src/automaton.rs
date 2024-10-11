@@ -9,10 +9,15 @@ pub enum Cell {
 
 pub type Board = Vec<Vec<Cell>>;
 
-pub enum CellWorld<T> {
+pub enum Born<const N:u8> {}
+pub enum Survived<const N:u8>{}
+pub enum Placeholder{}
+
+pub enum CellWorld<T, U> {
   CW {
     board: Board,
-    _marker: PhantomData<T>,
+    _marker1: PhantomData<T>,
+    _marker2: PhantomData<U>,
   },
 }
 

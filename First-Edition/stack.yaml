@@ -30,6 +30,7 @@ packages:
 - BookSamples/CH08/Section1p3
 
 - BookSamples/demo-apps/ptld-lib
+- BookSamples/demo-apps/cellular-automata
 - BookSamples/demo-apps/ptld-auction
 - BookSamples/demo-apps/turing-machine
 - BookSamples/demo-apps/minefield

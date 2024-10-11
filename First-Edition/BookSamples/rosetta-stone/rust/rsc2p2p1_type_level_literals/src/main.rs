@@ -3,7 +3,7 @@ mod assets;
 
 use automaton::Cell;
 use automaton::Board;
-use assets::gol::GoL;
+use automaton::IAutomaton;
 
 #[allow(unused_imports)]
 use assets::seeds::Seeds;
@@ -20,9 +20,10 @@ fn glider () -> Board {
 
 fn main() {
   let glider1 = automaton::merge_boards(2, 2, automaton::make_empty_board(10, 10), glider());
-  let gol_glider2 = automaton::iterate_world(1, &assets::gol::make_gol(glider1));
+  let gol = assets::gol::make_gol(glider1);
+  let gol_glider2 = automaton::iterate_world(1, gol);
 
-  let output = &gol_glider2.board;
+  let output = gol_glider2.unwrap();
 
   let mut strs = String::from("");
   for row in output {

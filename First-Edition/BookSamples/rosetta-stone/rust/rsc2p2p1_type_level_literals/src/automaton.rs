@@ -18,14 +18,10 @@ pub enum CellWorld<T> {
 
 
 pub trait IAutomaton {
-  fn step(&self) -> Self;
+  fn step(self) -> Self;
+  fn unwrap(&self) -> &Board;
+  fn wrap(board: Board) -> Self;
 }
-
-pub trait IBoard {
-  fn empty(w: usize, h: usize) -> Board;
-  fn merge(&self, other: Board) -> Board;
-}
-
 
 pub fn make_empty_board(w: usize, h: usize) -> Board {
   vec![vec![Cell::Dead; w]; h]
@@ -48,20 +44,20 @@ pub fn merge_boards(x: usize, y: usize, base_board: Board, from_board: Board) ->
   return new_board;
 }
 
-pub fn iterate_world<T: IAutomaton+Clone> (n: u32, board: T) -> T {
+pub fn iterate_world<T: IAutomaton> (n: u32, world: T) -> T {
 
-  let mut new_board = board.clone();
+  let mut new_world = T::wrap(world.unwrap().clone());
 
   match n {
-    0 => return new_board,
+    0 => return new_world,
     _ => {
       for _i in 0..n {
-        new_board = new_board.step();
+        new_world = new_world.step();
       }
     },
   }
 
-  return new_board;
+  return new_world;
 }
 
 pub fn get_neighbor_alive(x:usize, y:usize, board: &Board) -> u8 {

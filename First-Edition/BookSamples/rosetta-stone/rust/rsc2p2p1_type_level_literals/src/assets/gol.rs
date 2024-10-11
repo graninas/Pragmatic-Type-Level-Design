@@ -10,7 +10,7 @@ pub enum GoLRule {}
 
 pub type GoL = CellWorld<GoLRule>;
 
-fn gol_step(board: &Board) -> Board {
+fn gol_step(board: Board) -> Board {
   let mut new_board = board.clone();
 
   for (i, row) in board.iter().enumerate() {
@@ -29,15 +29,24 @@ fn gol_step(board: &Board) -> Board {
   return new_board;
 }
 
-pub fn make_gol(board: &Board) -> GoL {
-  return CellWorld::CW{ board: board.to_vec(), _marker: PhantomData::<GoLRule> };
+pub fn make_gol(board: Board) -> GoL {
+  return CellWorld::CW{ board, _marker: PhantomData::<GoLRule> };
 }
 
 impl IAutomaton for GoL {
-  fn step(&self) -> Self {
-    let new_board = match self {
-      CellWorld::CW {board, ..} => gol_step(&board)
+  fn step(self) -> Self {
+    let (board, _marker) = match self {
+      CellWorld::CW {board, _marker} => (gol_step(board), _marker)
     };
-    return CellWorld::CW{ board: new_board, _marker: PhantomData::<GoLRule> };
+    return CellWorld::CW{ board, _marker };
+  }
+
+  fn unwrap(&self) -> &Board {
+    let CellWorld::CW {board, _marker} = self;
+    return &board;
+  }
+
+  fn wrap(board: Board) -> Self {
+    return CellWorld::CW { board, _marker: PhantomData::<GoLRule> };
   }
 }

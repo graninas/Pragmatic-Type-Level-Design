@@ -16,8 +16,7 @@ pub enum Placeholder{}
 pub enum CellWorld<T, U> {
   CW {
     board: Board,
-    _marker1: PhantomData<T>,
-    _marker2: PhantomData<U>,
+    _marker: PhantomData<(T, U)>
   },
 }
 

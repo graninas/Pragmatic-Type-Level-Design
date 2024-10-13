@@ -33,21 +33,17 @@ fn gol_step(board: Board) -> Board {
 pub fn make_gol(board: Board) -> GoL {
   return CellWorld::CW {
     board,
-    _marker1: PhantomData::<GoLRule>,
-    _marker2: PhantomData::<Placeholder>,
+    _marker: PhantomData::<(GoLRule, Placeholder)>
   };
 }
 
 impl IAutomaton for GoL {
   fn step(self) -> Self {
-    let (board, _marker1, _marker2) = match self {
-      CellWorld::CW {
-        board,
-        _marker1,
-        _marker2
-      } => (gol_step(board), _marker1, _marker2)
+    let (board, _marker) = match self {
+      CellWorld::CW { board, _marker }  =>
+        (gol_step(board), _marker)
     };
-    return CellWorld::CW{ board, _marker1, _marker2 };
+    return CellWorld::CW{ board, _marker };
   }
 
   fn unwrap(&self) -> &Board {
@@ -58,8 +54,7 @@ impl IAutomaton for GoL {
   fn wrap(board: Board) -> Self {
     return CellWorld::CW {
       board,
-    _marker1: PhantomData::<GoLRule>,
-    _marker2: PhantomData::<Placeholder>,
+      _marker: PhantomData::<(GoLRule, Placeholder)>
     };
   }
 }

@@ -31,21 +31,17 @@ fn seeds_step(board: Board) -> Board {
 pub fn make_seeds(board: Board) -> Seeds {
   return CellWorld::CW {
     board,
-    _marker1: PhantomData::<Born<1>>,
-    _marker2: PhantomData::<Survived<0>>,
+    _marker: PhantomData::<(Born<1>, Survived<0>)>
   };
 }
 
 impl IAutomaton for Seeds {
   fn step(self) -> Self {
-    let (board, _marker1, _marker2) = match self {
-      CellWorld::CW {
-        board,
-        _marker1,
-        _marker2
-      } => (seeds_step(board), _marker1, _marker2)
+    let (board, _marker) = match self {
+      CellWorld::CW { board, _marker } =>
+        (seeds_step(board), _marker)
     };
-    return CellWorld::CW{ board, _marker1, _marker2 };
+    return CellWorld::CW{ board, _marker };
   }
 
   fn unwrap(&self) -> &Board {
@@ -56,8 +52,7 @@ impl IAutomaton for Seeds {
   fn wrap(board: Board) -> Self {
     return CellWorld::CW {
       board,
-    _marker1: PhantomData::<Born<1>>,
-    _marker2: PhantomData::<Survived<0>>,
+      _marker: PhantomData::<(Born<1>, Survived<0>)>
     };
   }
 }

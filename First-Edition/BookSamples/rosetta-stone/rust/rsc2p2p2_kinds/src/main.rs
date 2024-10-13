@@ -7,9 +7,12 @@ use adts::bool::Bool;
 use adts::bool::True;
 use adts::bool::False;
 
+use adts::user::Teacher;
+use adts::user::Student;
+use adts::user::PowerUser;
+use adts::user::RegularUser;
 
-
-// User-defined types
+// User-defined bool types
 
 type Enabled = Bool<True>;
 type Disabled = Bool<False>;
@@ -18,6 +21,11 @@ type Disabled = Bool<False>;
 type Invalid = Bool<i32>;       // will compile unless used
 
 
+
+// User-defined domain types
+
+type TeacherPowerUser = PowerUser<Teacher, true>;
+type StudentUser = RegularUser<Student, true>;
 
 fn main() {
 
@@ -28,4 +36,10 @@ fn main() {
   // won't compile
   // let invalid: Invalid = Bool::<i32> { _marker: PhantomData::<i32> };
 
+
+  let _teacher_power_user: TeacherPowerUser =
+    PowerUser::<Teacher, true> { _marker: PhantomData::<Teacher> };
+
+  let _student_user: StudentUser =
+    RegularUser::<Student, true> { _marker: PhantomData::<Student> };
 }

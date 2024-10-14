@@ -1,0 +1,7 @@
+[package]
+name = "rsc2p2p3_type_level_lists"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+once_cell = "1.10"

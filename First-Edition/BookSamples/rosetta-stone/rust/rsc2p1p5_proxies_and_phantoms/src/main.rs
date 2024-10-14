@@ -5,15 +5,11 @@ trait Description {
   fn describe(&self) -> String;
 }
 
-struct Proxy<T> {
-  _marker: PhantomData<T>,
-}
+struct Proxy<T> (PhantomData<T>);
 
 impl<T> Proxy<T> {
   fn new() -> Self {
-    Proxy {
-      _marker: PhantomData,
-    }
+    Proxy(PhantomData)
   }
 }
 

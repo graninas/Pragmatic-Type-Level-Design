@@ -31,9 +31,7 @@ type InvalidUser = RegularUser<i32, bool>;
 fn main() {
 
   let _teacher_power_user: TeacherPowerUser =
-    PowerUser::<Teacher, True> {
-      _marker: PhantomData::<(Teacher, True)>
-    };
+    PowerUser::<Teacher, True> (PhantomData::<(Teacher, True)>);
 
   let _student_user: PhantomData<StudentUser> = PhantomData;
 }

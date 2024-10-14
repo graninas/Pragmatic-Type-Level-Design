@@ -5,9 +5,7 @@ trait Description {
 }
 
 enum Benoit {}
-struct Mandelbrot<T> {
-  _marker: PhantomData<T>,
-}
+struct Mandelbrot<T> (PhantomData<T>);
 
 type Fractal = Mandelbrot<Mandelbrot<Mandelbrot<Benoit>>>;
 

@@ -13,13 +13,11 @@ impl PersonKind for Student {}
 #[allow(dead_code)]
 pub trait UserKind {}
 
-pub struct PowerUser<P: PersonKind, V: BoolKind> {
-  pub _marker: PhantomData<(P,V)>
-}
+pub struct PowerUser<P: PersonKind, V: BoolKind>
+  (pub PhantomData<(P,V)>);
 
-pub struct RegularUser<P: PersonKind, V: BoolKind> {
-  pub _marker: PhantomData<(P,V)>
-}
+pub struct RegularUser<P: PersonKind, V: BoolKind>
+  (pub PhantomData<(P,V)>);
 
 impl<P: PersonKind, V: BoolKind>
   UserKind for PowerUser<P, V> {}

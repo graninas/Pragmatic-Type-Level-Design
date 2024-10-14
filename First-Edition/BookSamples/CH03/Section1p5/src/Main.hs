@@ -56,27 +56,26 @@ data UserType = User
   , person   :: PersonType
   }
 
-type HausdorffPerson = 'Person "Felix" "Hausdorff"
-type HausdorffUser   = 'User "haus" 'True HausdorffPerson
+type Shakespeare  = 'Person "William" "Shakespeare"
+type Byron        = 'Person "George Gordon" "Byron"
+type Pushkin      = 'Person "Alexander" "Pushkin"
 
-type MandelbrotPerson = 'Person "Benoit" "Mandelbrot"
-type MandelbrotUser   = 'User "mandel" 'True MandelbrotPerson
+type PoetsList =
+  Cons Shakespeare (Cons Byron ( Cons Pushkin Empty))
 
-type ManualPersonList =
-  Cons HausdorffPerson (Cons MandelbrotPerson Empty)
-
-type StockPersonList1 = '[ HausdorffPerson, MandelbrotPerson ]
-type StockPersonList2 =
-  HausdorffPerson
-  ': MandelbrotPerson    -- TypeOperators used here
-  ': '[]                 -- TypeOperators used here
+type StockList1 = '[ Shakespeare, Byron, Pushkin ]
+type StockList2 =
+  Shakespeare
+  ': Byron               -- TypeOperators used here
+  ': Pushkin
+  ': '[]
 
 
 main :: IO ()
 main = do
-  print (describe (Proxy @ManualPersonList))
-  print (describe (Proxy @StockPersonList1))
-  print (describe (Proxy @StockPersonList2))
+  print (describe (Proxy @PoetsList))
+  print (describe (Proxy @StockList1))
+  print (describe (Proxy @StockList2))
 
 
 instance Description 'True where

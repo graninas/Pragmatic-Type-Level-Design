@@ -37,7 +37,7 @@ impl Description for Shakespeare {
 
 impl Description for Byron {
   fn describe() -> String {
-    "George Gordon Byron".to_string()
+    "Lord Byron".to_string()
   }
 }
 
@@ -50,8 +50,6 @@ impl Description for Pushkin {
 fn main() {
   type Poets = Cons<Shakespeare, Cons<Byron, Cons<Pushkin, Nil>>>;
 
-  let description = Poets::describe();
-
-  println!("{}", description);
+  println!("{}", Poets::describe());
 }
 

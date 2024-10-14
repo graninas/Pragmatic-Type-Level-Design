@@ -1,6 +1,6 @@
 # Pragmatic-Type-Level-Design
 
-Code and materials for my book [Pragmatic Type Level Design](https://leanpub.com/pragmatic-type-level-design).
+Code and materials for my advanced book [Pragmatic Type Level Design](https://leanpub.com/pragmatic-type-level-design)
 
 <p float="left">
   <a href="https://leanpub.com/pragmatic-type-level-design">

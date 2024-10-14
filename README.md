@@ -13,7 +13,7 @@ Unlike most resources that focus on the mathematical underpinnings of type-level
 
 Haskell is a model language, but the book will contain the Rosetta Stone part that mirrors the approaches from Haskell to other languages.
 
-**Pragmatic Type-Level Design** best works in pair with **Functional Design and Architecture** ([early edition, self-published](https://www.manning.com/books/functional-design-and-architecture), [new edition, Manning Publications](https://leanpub.com/functional-design-and-architecture)), another my fundamental book about software design in functional languages.
+**Pragmatic Type-Level Design** best works in pair with **Functional Design and Architecture** ([early self-published edition](https://www.manning.com/books/functional-design-and-architecture), and [a new one with Manning Publications](https://leanpub.com/functional-design-and-architecture)). FDaA is a fundamental book on software design in functional languages.
 
 <p float="left">
   <a href="https://www.manning.com/books/functional-design-and-architecture">

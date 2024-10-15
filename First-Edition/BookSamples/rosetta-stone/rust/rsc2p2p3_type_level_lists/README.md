@@ -1,2 +1,1 @@
-Kinds
-
+Type-level lists (construction only)

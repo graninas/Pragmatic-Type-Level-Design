@@ -37,6 +37,18 @@ fn main() {
   type Pushkin3 = Person<tl_str!("Pushkin")>;
   println!("{}", Pushkin3::describe());
   // > Person Pushkin
+
+  type Hello = C_<'H', C_<'e', C_<'l', C_<'l', C_<'o', N_>>>>>;
+  println!("{}", Hello::to_string());
+  // > Hello
+
+  type World = tl_chars!('W' 'o' 'r' 'l' 'd');
+  println!("{}", World::to_string());
+  // > World
+
+  type HelloWorld = tl_str!("Hello, world!");
+  println!("{}", HelloWorld::to_string());
+  // > Hello, world!
 }
 
 

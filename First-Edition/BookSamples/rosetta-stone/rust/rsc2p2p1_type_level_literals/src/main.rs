@@ -8,7 +8,22 @@ use automaton::IAutomaton;
 #[allow(unused_imports)]
 use assets::seeds::Seeds;
 
+// This example shows that type-level literals can be converted
+// to values directly.
+struct LiteralsTest<const CH: char, const B: bool, const I: i32>;
 
+trait Description {
+  fn describe() -> String;
+}
+
+impl<const CH: char, const B: bool, const I: i32>
+  Description for LiteralsTest<CH, B, I> {
+  fn describe() -> String {
+    format!("char: {}, bool: {}, int: {}", CH, B, I)
+  }
+}
+
+// Cellular automaton example
 fn glider () -> Board {
   let glider: Board = vec!
     [ vec![Cell::Dead, Cell::Dead, Cell::Alive]
@@ -18,7 +33,11 @@ fn glider () -> Board {
   return glider;
 }
 
+
 fn main() {
+  println!("{}", LiteralsTest::<'a', true, 10>::describe());
+
+
   let glider1 = automaton::merge_boards(2, 2, automaton::make_empty_board(10, 10), glider());
   let gol = assets::gol::make_gol(glider1);
   let gol_glider2 = automaton::iterate_world(1, gol);
@@ -57,3 +76,5 @@ fn main() {
 
   println!("{}", strs);
 }
+
+

@@ -37,7 +37,6 @@ fn glider () -> Board {
 fn main() {
   println!("{}", LiteralsTest::<'a', true, 10>::describe());
 
-
   let glider1 = automaton::merge_boards(2, 2, automaton::make_empty_board(10, 10), glider());
   let gol = assets::gol::make_gol(glider1);
   let gol_glider2 = automaton::iterate_world(1, gol);

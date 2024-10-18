@@ -1,0 +1,9 @@
+[package]
+name = "rsc2p2p6_type_level_interfaces"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+assert-type-eq = "0.1"
+tl_list_lib = { path = "./tl_list_lib" }
+tl_list_macro = { path = "./tl_list_macro" }

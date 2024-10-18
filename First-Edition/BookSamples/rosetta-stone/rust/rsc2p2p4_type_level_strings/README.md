@@ -1,3 +1,1 @@
-Associated types
-
-- Manipulation with type-level lists
+Macro for constructing simple type-level strings.

@@ -6,6 +6,14 @@ use crate::automaton::StateWrapper;
 
 use crate::cellular::language::extensions::State;
 
+use tl_list_lib::IInterface;
+use tl_list_lib::N_;
+use tl_list_lib::C_;
+use tl_list_lib::tl_list;
+use tl_list_lib::tl_list_impl;
+
+use std::marker::PhantomData;
+
 pub type A = State<0>;
 pub type D = State<1>;
 

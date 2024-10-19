@@ -1,5 +1,5 @@
 [package]
-name = "tl_list_macro"
+name = "tl_str_macro"
 version = "0.1.0"
 edition = "2021"
 
@@ -9,4 +9,4 @@ proc-macro = true
 [dependencies]
 quote = "1.0"   # For generating Rust code
 syn = "2.0"     # For parsing input tokens
-tl_list_lib = { path = "../tl_list_lib" }
+tl_str_list = { path = "../tl_str_list" }

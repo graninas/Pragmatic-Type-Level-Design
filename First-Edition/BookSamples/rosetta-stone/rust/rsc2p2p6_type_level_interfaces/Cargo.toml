@@ -6,4 +6,5 @@ edition = "2021"
 [dependencies]
 assert-type-eq = "0.1"
 tl_list_lib = { path = "./tl_list_lib" }
-tl_list_macro = { path = "./tl_list_macro" }
+tl_str_list = { path = "./tl_str_list" }
+tl_str_macro = { path = "./tl_str_macro" }

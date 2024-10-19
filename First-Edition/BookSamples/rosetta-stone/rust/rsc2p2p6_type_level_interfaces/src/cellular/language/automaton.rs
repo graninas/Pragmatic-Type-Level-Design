@@ -1,4 +1,5 @@
 use tl_list_lib::IInterface;
+use tl_list_lib::HList;
 use std::marker::PhantomData;
 
 // -- Interfaces
@@ -63,10 +64,18 @@ impl<F, T, C> IInterface<IStateTransition>
 }
 
 
-pub struct DefaultState <State: IInterface<IState>> (PhantomData::<State>);
+pub struct IStep;
 
+pub struct Step <
+    DefState: IInterface<IState>,
+    Transitions: HList<IStateTransition>>
+      (PhantomData::<(DefState, Transitions)>);
 
+impl<D, T> IInterface<IStep> for Step<D, T>
+  where
+    D: IInterface<IState>,
+    T: HList<IStateTransition>
+{
+  type Interface = IStep;
+}
 
-
-// pub struct Step<DEF_STATE, TRANSITIONS: LIST>
-//   (PhantomData::<DEF_STATE, TRANSITIONS>);

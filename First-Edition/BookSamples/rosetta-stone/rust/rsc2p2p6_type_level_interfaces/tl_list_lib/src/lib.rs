@@ -12,14 +12,14 @@ pub trait HList<I>{
   type Interface;
 }
 
-pub struct N_<I>(PhantomData::<I>);
-pub struct C_<I, Item:IInterface<I>, Tail>(PhantomData::<(I, Item, Tail)>);
+pub struct TlN_<I>(PhantomData::<I>);
+pub struct TlC_<I, Item:IInterface<I>, Tail>(PhantomData::<(I, Item, Tail)>);
 
-impl<I> HList<I> for N_<I> {
+impl<I> HList<I> for TlN_<I> {
   type Interface = I;
 }
 
-impl<I, Item, Tail> HList<I> for C_<I, Item, Tail>
+impl<I, Item, Tail> HList<I> for TlC_<I, Item, Tail>
   where
     Item: IInterface<I>,
     Tail: HList<I>
@@ -49,11 +49,11 @@ impl<const C: i32, Tail> I32List for CCI32_<C, Tail> {}
 #[macro_export]
 macro_rules! tl_list {
   ($iface:ty) => {
-    N_<$iface>
+    TlN_<$iface>
   };
 
   ($iface:ty, $head:ty $(, $tail:ty)*) => {
-    C_<$iface, $head, tl_list!($iface $(, $tail)*)>
+    TlC_<$iface, $head, tl_list!($iface $(, $tail)*)>
   };
 }
 

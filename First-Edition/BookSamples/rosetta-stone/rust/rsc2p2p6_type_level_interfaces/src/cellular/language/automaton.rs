@@ -46,13 +46,13 @@ impl<T> IInterface<IRule> for RuleWrapper<T> {
 pub struct IStateTransition;
 
 pub struct StateTransition <
-    FROM_STATE: IInterface<IState>,
-    TO_STATE: IInterface<IState>,
-    CONDITION: IInterface<ICellCondition>>
-      (PhantomData::<(FROM_STATE, TO_STATE, CONDITION)>);
+    FromState: IInterface<IState>,
+    ToState: IInterface<IState>,
+    Condition: IInterface<ICellCondition>>
+      (PhantomData::<(FromState, ToState, Condition)>);
 
 
-impl<F, T, C> IInterface<StateTransition<F, T, C>>
+impl<F, T, C> IInterface<IStateTransition>
   for StateTransition<F, T, C>
   where
     F: IInterface<IState>,
@@ -63,7 +63,7 @@ impl<F, T, C> IInterface<StateTransition<F, T, C>>
 }
 
 
-pub struct DefaultState <STATE: IInterface<IState>> (PhantomData::<STATE>);
+pub struct DefaultState <State: IInterface<IState>> (PhantomData::<State>);
 
 
 

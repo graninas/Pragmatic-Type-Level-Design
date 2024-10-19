@@ -1,9 +1,5 @@
 
-use crate::automaton::ICellCondition;
-use crate::automaton::CellConditionWrapper;
 use crate::automaton::IStateTransition;
-use crate::automaton::IState;
-use crate::automaton::StateWrapper;
 use crate::automaton::StateTransition;
 use crate::automaton::Step;
 use crate::cellular::language::extensions::State;

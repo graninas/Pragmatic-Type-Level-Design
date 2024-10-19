@@ -4,6 +4,16 @@ use std::marker::PhantomData;
 
 // -- Interfaces
 
+// -- -- State
+
+pub struct IState;
+
+pub struct StateWrapper<T> (PhantomData::<T>);
+impl<T> IInterface<IState> for StateWrapper<T> {
+  type Interface = IState;
+}
+
+
 // -- -- Cell condition
 
 pub struct ICellCondition;
@@ -14,15 +24,6 @@ impl<T> IInterface<ICellCondition> for CellConditionWrapper<T> {
 }
 
 
-// -- -- State
-
-pub struct IState;
-
-pub struct StateWrapper<T> (PhantomData::<T>);
-impl<T> IInterface<IState> for StateWrapper<T> {
-  type Interface = IState;
-}
-
 // -- -- Neighborhood
 
 pub struct INeighborhood;
@@ -30,15 +31,6 @@ pub struct INeighborhood;
 pub struct NeighborhoodWrapper<T> (PhantomData::<T>);
 impl<T> IInterface<INeighborhood> for NeighborhoodWrapper<T> {
   type Interface = INeighborhood;
-}
-
-// -- -- Rule
-
-pub struct IRule;
-
-pub struct RuleWrapper<T> (PhantomData::<T>);
-impl<T> IInterface<IRule> for RuleWrapper<T> {
-  type Interface = IRule;
 }
 
 
@@ -79,3 +71,12 @@ impl<D, T> IInterface<IStep> for Step<D, T>
   type Interface = IStep;
 }
 
+
+// -- -- Rule
+
+pub struct IRule;
+
+pub struct RuleWrapper<T> (PhantomData::<T>);
+impl<T> IInterface<IRule> for RuleWrapper<T> {
+  type Interface = IRule;
+}

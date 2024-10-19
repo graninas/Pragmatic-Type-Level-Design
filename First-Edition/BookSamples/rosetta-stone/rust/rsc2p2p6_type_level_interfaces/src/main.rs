@@ -7,15 +7,16 @@ use assert_type_eq::assert_type_eq;
 use std::marker::PhantomData;
 
 mod cellular;
+mod eval;
 
 use cellular::language::automaton;
 use cellular::language::automaton::IState;
-use cellular::language::automaton::ICellCondition;
-use cellular::assets::game_of_life;
 use cellular::assets::game_of_life::A;
 use cellular::assets::game_of_life::D;
-use cellular::assets::game_of_life::Neighbors3;
+use cellular::assets::game_of_life::GoLRule;
+use cellular::implementation;
 
+use eval::Eval;
 
 // Testing the state list
 const EVIDENCE_A: PhantomData::<A> = PhantomData;
@@ -34,4 +35,8 @@ assert_type_eq!(StateList1, StateList2);
 
 fn main () {
 
+  let rule: PhantomData::<GoLRule> = PhantomData;
+  let res = <GoLRule as Eval<GoLRule, String>>::eval(rule);
+
+  println!("{}", res);
 }

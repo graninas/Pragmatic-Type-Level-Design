@@ -31,6 +31,7 @@ name = "rsc2p2p6_type_level_interfaces"
 version = "0.1.0"
 dependencies = [
  "assert-type-eq",
+ "tl_eval",
  "tl_list_lib",
  "tl_str_list",
  "tl_str_macro",
@@ -46,6 +47,10 @@ dependencies = [
  "quote",
  "unicode-ident",
 ]
+
+[[package]]
+name = "tl_eval"
+version = "0.1.0"
 
 [[package]]
 name = "tl_list_lib"

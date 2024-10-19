@@ -39,5 +39,6 @@ pub type GoLRule = Rule<
   AdjacentsLvl<1>,
   GoLStep>;
 
+#[allow(dead_code)]
 const GOL_RULE_EVIDENCE: PhantomData::<GoLRule> = PhantomData;
 

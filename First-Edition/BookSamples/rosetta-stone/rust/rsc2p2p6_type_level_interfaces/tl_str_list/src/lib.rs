@@ -29,6 +29,9 @@ impl<const CH: char, Tail:TlStr > TlStr for C_<CH, Tail> {
 }
 
 
+// Defines list of chars:
+//
+// type Word = tl_chars('W' 'o' 'r' 'd');
 #[macro_export]
 macro_rules! tl_chars {
     () => {

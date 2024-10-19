@@ -1,20 +1,13 @@
-use crate::automaton::ICellCondition;
 use crate::automaton::CellConditionWrapper;
 use crate::automaton::INeighborhood;
 use crate::automaton::NeighborhoodWrapper;
-use crate::automaton::IState;
 use crate::automaton::StateWrapper;
 use crate::automaton::IStep;
-use crate::automaton::Step;
-use crate::automaton::IRule;
 use crate::automaton::RuleWrapper;
 
 use std::marker::PhantomData;
 use tl_list_lib::IInterface;
 use tl_list_lib::I32List;
-use tl_str_macro::tl_str;
-use tl_str_list::N_;
-use tl_str_list::C_;
 use tl_str_list::TlStr;
 
 

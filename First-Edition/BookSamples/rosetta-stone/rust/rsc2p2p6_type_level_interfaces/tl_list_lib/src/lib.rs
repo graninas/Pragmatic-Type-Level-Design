@@ -45,7 +45,6 @@ impl<const C: i32, Tail> I32List for CCI32_<C, Tail> {}
 //
 // Usage:
 // type StateList = tl_list![IState, A, D];
-
 #[macro_export]
 macro_rules! tl_list {
   ($iface:ty) => {
@@ -59,8 +58,8 @@ macro_rules! tl_list {
 
 
 // Macro for a type-level i32 constants list.
-
-
+//
+// Usage: type Numbers = tl_i32_list![0,1,2];
 #[macro_export]
 macro_rules! tl_i32_list {
   () => {

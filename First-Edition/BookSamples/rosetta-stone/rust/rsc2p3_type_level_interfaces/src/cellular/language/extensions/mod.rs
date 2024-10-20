@@ -6,7 +6,7 @@ use crate::automaton::IStep;
 use crate::automaton::RuleWrapper;
 
 use std::marker::PhantomData;
-use tl_list_lib::IInterface;
+use type_level::IInterface;
 use tl_list_lib::I32List;
 use tl_str_list::TlStr;
 

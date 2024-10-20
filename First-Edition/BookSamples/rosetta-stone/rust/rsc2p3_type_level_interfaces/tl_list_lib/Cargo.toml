@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 assert-type-eq = "0.1"
+type_level = { path = "../type_level" }

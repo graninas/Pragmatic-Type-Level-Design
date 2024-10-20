@@ -1,4 +1,4 @@
-use tl_list_lib::IInterface;
+use type_level::IInterface;
 use tl_list_lib::HList;
 use std::marker::PhantomData;
 

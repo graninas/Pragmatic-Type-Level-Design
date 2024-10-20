@@ -1,8 +1,8 @@
 
+use type_level::IInterface;
+use type_level::Eval;
 use tl_list_lib::HList;
-use tl_list_lib::IInterface;
 use tl_str_list::TlStr;
-use tl_eval::Eval;
 
 use crate::automaton::IState;
 use crate::automaton::IStep;
@@ -12,6 +12,11 @@ use crate::automaton::RuleWrapper;
 use crate::automaton::Step;
 use crate::cellular::language::extensions::RuleImpl;
 
+
+// This code proves that interpretation of the model is possible
+// as we did it in Haskell.
+//
+// TODO: fully interpret all the notions of the automaton.
 
 #[allow(dead_code)]
 pub enum Introspect{}

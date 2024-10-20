@@ -13,7 +13,7 @@ use cellular::assets::game_of_life::A;
 use cellular::assets::game_of_life::D;
 use cellular::assets::game_of_life::GoLRule;
 
-use tl_eval::Eval;
+use type_level::Eval;
 
 // Testing the state list
 #[allow(dead_code)]

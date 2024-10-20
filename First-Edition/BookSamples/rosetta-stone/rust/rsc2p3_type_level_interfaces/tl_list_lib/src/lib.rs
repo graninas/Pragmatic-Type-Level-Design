@@ -1,10 +1,5 @@
 use std::marker::PhantomData;
-
-pub trait IInterface<I> {
-  type Interface;
-  // Could be defaulted to I but the feature is not supported:
-  // type Interface = I;
-}
+use type_level::IInterface;
 
 // Type-level heterogeneous kinded list
 

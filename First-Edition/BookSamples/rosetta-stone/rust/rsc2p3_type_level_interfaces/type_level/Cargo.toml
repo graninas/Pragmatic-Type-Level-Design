@@ -1,5 +1,5 @@
 [package]
-name = "tl_eval"
+name = "type_level"
 version = "0.1.0"
 edition = "2021"
 

@@ -62,6 +62,6 @@ macro_rules! tl_i32_list {
   };
 
   ($head:literal $(, $tail:tt)*) => {
-    CCI32_<$head, tl_i32_list!($($tail)*)>
+    CCI32_<$head, tl_i32_list!($($tail),*)>
   };
 }

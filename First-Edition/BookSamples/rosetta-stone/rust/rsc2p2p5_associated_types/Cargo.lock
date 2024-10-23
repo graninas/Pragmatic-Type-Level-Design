@@ -3,6 +3,12 @@
 version = 3
 
 [[package]]
+name = "assert-type-eq"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fd49a41856ee21a0cfb2b1cfbfcca0f1d3e6c257c38939f0d6ecfaf177f2ea47"
+
+[[package]]
 name = "once_cell"
 version = "1.20.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -12,5 +18,14 @@ checksum = "1261fe7e33c73b354eab43b1273a57c8f967d0391e80353e51f764ac02cf6775"
 name = "rsc2p2p5_associated_types"
 version = "0.1.0"
 dependencies = [
+ "assert-type-eq",
  "once_cell",
+ "tl_list_lib",
+]
+
+[[package]]
+name = "tl_list_lib"
+version = "0.1.0"
+dependencies = [
+ "assert-type-eq",
 ]

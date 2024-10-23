@@ -1,123 +1,111 @@
 use std::marker::PhantomData;
 
-struct Nil;
-struct Cons<Head, Tail>(PhantomData<(Head, Tail)>);
+use tl_list_lib::Nil;
+use tl_list_lib::Cons;
+use tl_list_lib::tl_list;
+use tl_list_lib::Append;
+use tl_list_lib::Tail;
+use tl_list_lib::Eq;
+use tl_list_lib::EqImpl;
+use tl_list_lib::True;
+use tl_list_lib::False;
+use tl_list_lib::AppendImpl;
 
-// Append operation
-
-trait AppendImpl<N> {
-  type Output;
-}
-
-impl<N> AppendImpl<N> for Nil
-{
-  type Output = Cons<N, Nil>;
-}
-
-impl<N, M, List> AppendImpl<N> for Cons<M, List>
-{
-  type Output = Cons<N, Cons<M, List>>;
-}
-
-// Head operation
-
-trait HeadImpl {
-  type Output;
-}
-
-impl<N, List> HeadImpl for Cons<N, List> {
-  type Output = N;
-}
-
-// Tail operation
-
-trait TailImpl {
-  type Output;
-}
-
-impl TailImpl for Nil {
-  type Output = Nil;
-}
-
-impl<N, Rest> TailImpl for Cons<N, Rest> {
-  type Output = Rest;
-}
-
-// Interface
-type Append<N, List> = <List as AppendImpl<N>>::Output;
-type Head<List> = <List as HeadImpl>::Output;
-type Tail<List> = <List as TailImpl>::Output;
-
-
-
-// Description
-
-trait Description {
-  fn describe() -> String;
-}
-
-impl Description for Nil {
-  fn describe() -> String {
-    "[]".to_string()
-  }
-}
-
-impl<Head, Tail> Description for Cons<Head, Tail>
-  where
-    Head: Description,
-    Tail: Description,
-{
-  fn describe() -> String {
-    format!("{} : {}", Head::describe(), Tail::describe())
-  }
-}
-
+use assert_type_eq::assert_type_eq;
 
 // User-defined types
 
-struct Shakespeare;
-struct Byron;
-struct Pushkin;
+enum A {}
+enum B {}
+enum C {}
+enum D {}
+enum X {}
+enum Y {}
 
-impl Description for Shakespeare {
-  fn describe() -> String {
-    "William Shakespeare".to_string()
-  }
+macro_rules! gen_eq_impl {
+    ($T1:ty, $T2:ty, $TEq:ty) => {
+        impl EqImpl<$T1> for $T2 {
+            type A_ = $T1;
+            type B_ = $T2;
+            type Output = $TEq;
+        }
+    };
 }
 
-impl Description for Byron {
-  fn describe() -> String {
-    "Lord Byron".to_string()
-  }
-}
+gen_eq_impl!(A, A, True);
+gen_eq_impl!(B, B, True);
+gen_eq_impl!(C, C, True);
+gen_eq_impl!(D, D, True);
+gen_eq_impl!(X, X, True);
+gen_eq_impl!(Y, Y, True);
+gen_eq_impl!(A, C, False);
+gen_eq_impl!(A, D, False);
+gen_eq_impl!(A, X, False);
+gen_eq_impl!(A, Y, False);
+gen_eq_impl!(B, A, False);
+gen_eq_impl!(B, C, False);
+gen_eq_impl!(B, D, False);
+gen_eq_impl!(B, X, False);
+gen_eq_impl!(B, Y, False);
+gen_eq_impl!(C, A, False);
+gen_eq_impl!(C, B, False);
+gen_eq_impl!(C, D, False);
+gen_eq_impl!(C, X, False);
+gen_eq_impl!(C, Y, False);
+gen_eq_impl!(D, A, False);
+gen_eq_impl!(D, B, False);
+gen_eq_impl!(D, C, False);
+gen_eq_impl!(D, X, False);
+gen_eq_impl!(D, Y, False);
+gen_eq_impl!(X, A, False);
+gen_eq_impl!(X, B, False);
+gen_eq_impl!(X, C, False);
+gen_eq_impl!(X, D, False);
+gen_eq_impl!(X, Y, False);
+gen_eq_impl!(Y, A, False);
+gen_eq_impl!(Y, B, False);
+gen_eq_impl!(Y, C, False);
+gen_eq_impl!(Y, D, False);
+gen_eq_impl!(Y, X, False);
 
-impl Description for Pushkin {
-  fn describe() -> String {
-    "Alexander Pushkin".to_string()
-  }
-}
+
+#[allow(dead_code)]
+type SrcList = tl_list![A, B, C];
+
+#[allow(dead_code)]
+type Appended = Append<X, SrcList>;
+
+#[allow(dead_code)]
+type AppendedExpected = tl_list![X, A, B, C];
+
+#[allow(dead_code)]
+type AppendedEq = Eq<Appended, AppendedExpected>;
+
+#[allow(dead_code)]
+type AppendedEqCheck = Eq<AppendedEq, True>;
+
+#[allow(dead_code)]
+const APPENDED_EQ_CHECK_EVIDENCE: PhantomData::<AppendedEqCheck> = PhantomData;
+
+
+#[allow(dead_code)]
+type Appended2 = <SrcList as AppendImpl<X>>::Output;
+
+#[allow(dead_code)]
+type Appended2EqCheck = Eq<Appended, Appended2>;
+
+#[allow(dead_code)]
+const APPENDED2_EVIDENCE: PhantomData::<Appended2EqCheck> = PhantomData;
+
+
+type Tailed = Tail<SrcList>;
+type TailedExpected = tl_list![B, C];
+assert_type_eq!(Tailed, TailedExpected);
+
 
 fn main() {
-  type Poets = Cons<Byron, Cons<Pushkin, Nil>>;
 
-  println!("{}", Poets::describe());
-  // > Lord Byron : Alexander Pushkin : []
 
-  type Poets2 = Append<Shakespeare, Poets>;
-  println!("{}", Poets2::describe());
-  // > William Shakespeare : Lord Byron : Alexander Pushkin : []
-
-  type SomePoet = Head<Poets>;
-  println!("{}", SomePoet::describe());
-  // > Lord Byron
-
-  // Will not compile (no such trait)
-  // type SomePoet2 = Head<Nil>;
-  // println!("{}", SomePoet2::describe());
-
-  type Poets3 = Tail<Poets>;
-  println!("{}", Poets3::describe());
-  // > Alexander Pushkin : []
 }
 
 

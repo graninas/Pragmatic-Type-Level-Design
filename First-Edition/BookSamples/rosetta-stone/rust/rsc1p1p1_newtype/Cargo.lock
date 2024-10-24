@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "rsc2p1p1_newtype"
+name = "rsc1p1p1_newtype"
 version = "0.1.0"

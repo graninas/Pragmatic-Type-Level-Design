@@ -1,7 +1,6 @@
 [package]
-name = "rsc2p1p8_generalized_adts"
+name = "rsc1p1p3_traits_type_classes"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-once_cell = "1.10"

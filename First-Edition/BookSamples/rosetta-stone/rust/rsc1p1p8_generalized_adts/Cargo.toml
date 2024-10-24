@@ -1,5 +1,5 @@
 [package]
-name = "rsc2p2p1_type_level_literals"
+name = "rsc1p1p8_generalized_adts"
 version = "0.1.0"
 edition = "2021"
 

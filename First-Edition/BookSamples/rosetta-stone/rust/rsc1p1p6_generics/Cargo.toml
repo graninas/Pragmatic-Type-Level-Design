@@ -1,7 +1,6 @@
 [package]
-name = "rsc2p2p2_kinds"
+name = "rsc1p1p6_generics"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-once_cell = "1.10"

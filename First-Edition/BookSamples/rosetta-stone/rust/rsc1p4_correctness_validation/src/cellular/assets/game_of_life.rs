@@ -1,4 +1,5 @@
 
+use crate::automaton::IState;
 use crate::automaton::IStateTransition;
 use crate::automaton::StateTransition;
 use crate::automaton::Step;
@@ -30,9 +31,12 @@ pub type GolTransitions = tl_list![
   StateTransition<D, A, Neighbors3>,
   StateTransition<A, A, Neighbors23>];
 
+pub type GoLStates = tl_list![IState, A, D];
+
 pub type GoLStep = Step<D, GolTransitions>;
 
 pub type GoLRule = Rule<
+  GoLStates,
   tl_str!("Game of Life"),
   tl_str!("gol"),
   AdjacentsLvl<1>,

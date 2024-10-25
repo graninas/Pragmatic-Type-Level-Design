@@ -36,6 +36,7 @@ assert_type_eq!(StateList1, StateList2);
 
 #[allow(dead_code)]
 type IntList = tl_i32_list![2,3,5,6];
+#[allow(dead_code)]
 const INT_LIST_EVIDENCE: PhantomData::<IntList> = PhantomData;
 
 fn main () {

@@ -3,6 +3,7 @@ use crate::automaton::INeighborhood;
 use crate::automaton::NeighborhoodWrapper;
 use crate::automaton::StateWrapper;
 use crate::automaton::IStep;
+use crate::automaton::StatesDict;
 use crate::automaton::RuleWrapper;
 
 use std::marker::PhantomData;
@@ -29,10 +30,12 @@ pub type State<Name, const IDX: u8> = StateWrapper<StateImpl<Name, IDX>>;
 
 
 pub struct RuleImpl <
+    StDict: StatesDict,
     Name: TlStr,
     Code: TlStr,
     Neighborhood: IInterface<INeighborhood>,
-    Step: IInterface<IStep>>
-      (PhantomData::<(Name, Code, Neighborhood, Step)>);
+    Step: IInterface<IStep<StDict>>>
+      (PhantomData::<(StDict, Name, Code, Neighborhood, Step)>);
 
-pub type Rule<N, C, Nh, S> = RuleWrapper<RuleImpl<N, C, Nh, S>>;
+pub type Rule<StDict, N, C, Nh, S>
+  = RuleWrapper<RuleImpl<StDict, N, C, Nh, S>>;

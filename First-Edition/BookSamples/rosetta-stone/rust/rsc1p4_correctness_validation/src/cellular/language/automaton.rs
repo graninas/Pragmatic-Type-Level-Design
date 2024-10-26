@@ -60,22 +60,21 @@ pub trait StatesDict: HList<IState> {}
 impl<T: HList<IState>> StatesDict for T {}
 
 
-pub struct IStep<States: StatesDict>(PhantomData::<States>);
+pub struct IStep;
 
 pub struct Step <
     DefState: IInterface<IState>,
     Transitions: HList<IStateTransition>>
       (PhantomData::<(DefState, Transitions)>);
 
-impl<StDict, D, T>
-  IInterface<IStep<StDict>>
+impl<D, T>
+  IInterface<IStep>
   for Step<D, T>
   where
-    StDict: StatesDict,
     D: IInterface<IState>,
     T: HList<IStateTransition>
 {
-  type Interface = IStep<StDict>;
+  type Interface = IStep;
 }
 
 

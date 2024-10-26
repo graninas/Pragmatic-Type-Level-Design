@@ -19,6 +19,22 @@ pub trait TypeEq<Other> {
 pub enum True {}
 pub enum False {}
 
+pub trait BoolKind {
+  fn to_bool() -> bool;
+}
+
+impl BoolKind for True {
+  fn to_bool() -> bool {
+    true
+  }
+}
+
+impl BoolKind for False {
+  fn to_bool() -> bool {
+    false
+  }
+}
+
 // If combinator
 
 
@@ -54,18 +70,18 @@ impl <IfTrue, IfFalse>
 macro_rules! gen_inequalities {
 
   ($T1:ty) => {
-    impl TypeEq<$T1> for $T1 {
-      type Output = True;
+    impl type_level::TypeEq<$T1> for $T1 {
+      type Output = type_level::True;
     }
   };
 
   ($T1:ty, $T2:ty $(, $tail:tt)*) => {
-    impl TypeEq<$T2> for $T1 {
-      type Output = False;
+    impl type_level::TypeEq<$T2> for $T1 {
+      type Output = type_level::False;
     }
 
-    impl TypeEq<$T1> for $T2 {
-      type Output = False;
+    impl type_level::TypeEq<$T1> for $T2 {
+      type Output = type_level::False;
     }
 
     type_level::gen_inequalities!($T1 $(, $tail)*);
@@ -78,8 +94,8 @@ macro_rules! gen_equalities {
   };
 
   ($T1:ty) => {
-    impl TypeEq<$T1> for $T1 {
-      type Output = True;
+    impl type_level::TypeEq<$T1> for $T1 {
+      type Output = type_level::True;
     }
   };
 

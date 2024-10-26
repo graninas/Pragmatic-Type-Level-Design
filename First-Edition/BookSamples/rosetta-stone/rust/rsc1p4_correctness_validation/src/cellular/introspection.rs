@@ -2,6 +2,7 @@
 use type_level::IInterface;
 use type_level::Eval;
 use type_level::True;
+use type_level::assert_type_eq;
 use tl_list_lib::HList;
 use tl_list_lib::TlN_;
 use tl_list_lib::TlC_;
@@ -9,6 +10,7 @@ use tl_str_list::TlStr;
 use tl_list_lib::I32List;
 use tl_list_lib::CNI32_;
 use tl_list_lib::CCI32_;
+use tl_str_macro::tl_str;
 
 use crate::automaton::IState;
 use crate::automaton::IStep;
@@ -26,8 +28,12 @@ use crate::cellular::language::extensions::RuleImpl;
 use crate::cellular::language::extensions::AdjacentsLvlImpl;
 use crate::cellular::language::extensions::StateImpl;
 use crate::cellular::language::extensions::NeighborsCountImpl;
+use crate::cellular::language::extensions::State;
+use crate::cellular::language::integrity::StateInList;
+use crate::cellular::language::integrity::Verify;
 
 use std::marker::PhantomData;
+use std::fmt::Display;
 
 // This code proves that interpretation of the model is possible
 // as we did it in Haskell.
@@ -117,17 +123,26 @@ impl<FromState, ToState, Condition>
 }
 
 
-impl<DefSt, Ts>
+// IntruderSt type to check the mechanism
+pub type IntruderSt = State<tl_str!("Intruder"), 200>;
+
+
+pub struct WithIntegrity<StDict: StatesDict, T>
+  (PhantomData::<(StDict, T)>);
+
+impl<StDict, DefSt, Ts>
   Eval<Introspect, String>
-  for Step<DefSt, Ts>
+  for WithIntegrity<StDict, Step<DefSt, Ts>>
   where
     DefSt: IInterface<IState> + Eval<Introspect, String>,
-    Ts: HList<IStateTransition> + Eval<Introspect, String>
+    Ts: HList<IStateTransition> + Eval<Introspect, String>,
+    StDict: StatesDict + Verify<StateInList<DefSt>>
 {
   fn eval() -> String {
-      format!("\n  Default state: {}", DefSt::eval())
+    // assert!(StDict::verify());
+    return format!("\n    Valid: {}\n  Default state: {}", StDict::verify(), DefSt::eval())
       + &"\n  State transitions:".to_string()
-      + &Ts::eval()
+      + &Ts::eval();
   }
 }
 
@@ -140,7 +155,6 @@ impl<const LVL: u8>
   }
 }
 
-
 impl<StDict, N, C, Nh, S>
   Eval<Introspect, String>
   for RuleWrapper<RuleImpl<StDict, N, C, Nh, S>>
@@ -149,8 +163,8 @@ impl<StDict, N, C, Nh, S>
     N: TlStr,
     C: TlStr,
     Nh: IInterface<INeighborhood> + Eval<Introspect, String>,
-    S: IInterface<IStep<StDict>>,
-    S: Eval<Introspect, String>
+    S: IInterface<IStep>,
+    WithIntegrity<StDict, S> : Eval<Introspect, String>
 {
   fn eval() -> String {
     "Rule <".to_string()
@@ -159,7 +173,7 @@ impl<StDict, N, C, Nh, S>
       + &C::to_string()
       + &"]\n  Neighborhood: "
       + &Nh::eval()
-      + &S::eval()
+      + &<WithIntegrity<StDict, S>>::eval()
   }
 }
 

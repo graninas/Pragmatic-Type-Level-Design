@@ -35,10 +35,10 @@ impl<const CH: char, Tail:TlStr > TlStr for C_<CH, Tail> {
 #[macro_export]
 macro_rules! tl_chars {
     () => {
-        N_
+        tl_str_list::N_
     };
 
     ($ch:literal $($tail:tt)*) => {
-        C_<$ch, tl_chars!($($tail)*)>
+        tl_str_list::C_<$ch, tl_str_list::tl_chars!($($tail)*)>
     };
 }

@@ -34,7 +34,7 @@ pub struct RuleImpl <
     Name: TlStr,
     Code: TlStr,
     Neighborhood: IInterface<INeighborhood>,
-    Step: IInterface<IStep<StDict>>>
+    Step: IInterface<IStep>>
       (PhantomData::<(StDict, Name, Code, Neighborhood, Step)>);
 
 pub type Rule<StDict, N, C, Nh, S>

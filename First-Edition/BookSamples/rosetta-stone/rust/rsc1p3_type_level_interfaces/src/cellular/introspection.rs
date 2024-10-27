@@ -136,22 +136,22 @@ impl<const LVL: u8>
   }
 }
 
-impl<N, C, Nh, S>
-  Eval<Introspect, String> for RuleWrapper<RuleImpl<N, C, Nh, S>>
+impl<Name, Code, Nh, Step>
+  Eval<Introspect, String> for RuleWrapper<RuleImpl<Name, Code, Nh, Step>>
   where
-    N: TlStr,
-    C: TlStr,
+    Name: TlStr,
+    Code: TlStr,
     Nh: IInterface<INeighborhood> + Eval<Introspect, String>,
-    S: IInterface<IStep> + Eval<Introspect, String>,
+    Step: IInterface<IStep> + Eval<Introspect, String>,
 {
   fn eval() -> String {
     "Rule <".to_string()
-      + &N::to_string()
+      + &Name::to_string()
       + &"> [".to_string()
-      + &C::to_string()
+      + &Code::to_string()
       + &"]\n  Neighborhood: "
       + &Nh::eval()
-      + &S::eval()
+      + &Step::eval()
   }
 }
 

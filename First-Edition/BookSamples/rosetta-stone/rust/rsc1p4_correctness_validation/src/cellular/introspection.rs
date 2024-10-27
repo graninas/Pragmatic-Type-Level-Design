@@ -1,16 +1,13 @@
 
 use type_level::IInterface;
 use type_level::Eval;
-use type_level::True;
-use type_level::assert_type_eq;
 use tl_list_lib::HList;
 use tl_list_lib::TlN_;
 use tl_list_lib::TlC_;
-use tl_str_list::TlStr;
 use tl_list_lib::I32List;
 use tl_list_lib::CNI32_;
 use tl_list_lib::CCI32_;
-use tl_str_macro::tl_str;
+use tl_str_list::TlStr;
 
 use crate::automaton::IState;
 use crate::automaton::IStep;
@@ -28,12 +25,9 @@ use crate::cellular::language::extensions::RuleImpl;
 use crate::cellular::language::extensions::AdjacentsLvlImpl;
 use crate::cellular::language::extensions::StateImpl;
 use crate::cellular::language::extensions::NeighborsCountImpl;
-use crate::cellular::language::extensions::State;
-use crate::cellular::language::integrity::StateInList;
 use crate::cellular::language::integrity::Verify;
-
-use std::marker::PhantomData;
-use std::fmt::Display;
+use crate::cellular::language::integrity::StateInList;
+use crate::cellular::language::integrity::WithIntegrity;
 
 // This code proves that interpretation of the model is possible
 // as we did it in Haskell.
@@ -122,14 +116,6 @@ impl<FromState, ToState, Condition>
   }
 }
 
-
-// IntruderSt type to check the mechanism
-pub type IntruderSt = State<tl_str!("Intruder"), 200>;
-
-
-pub struct WithIntegrity<StDict: StatesDict, T>
-  (PhantomData::<(StDict, T)>);
-
 impl<StDict, DefSt, Ts>
   Eval<Introspect, String>
   for WithIntegrity<StDict, Step<DefSt, Ts>>
@@ -139,7 +125,7 @@ impl<StDict, DefSt, Ts>
     StDict: StatesDict + Verify<StateInList<DefSt>>
 {
   fn eval() -> String {
-    // assert!(StDict::verify());
+    // TODO: verify states in state transitions
     return format!("\n    Valid: {}\n  Default state: {}", StDict::verify(), DefSt::eval())
       + &"\n  State transitions:".to_string()
       + &Ts::eval();
@@ -155,25 +141,25 @@ impl<const LVL: u8>
   }
 }
 
-impl<StDict, N, C, Nh, S>
+impl<StDict, Name, Code, Nh, Step>
   Eval<Introspect, String>
-  for RuleWrapper<RuleImpl<StDict, N, C, Nh, S>>
+  for RuleWrapper<RuleImpl<StDict, Name, Code, Nh, Step>>
   where
     StDict: StatesDict,
-    N: TlStr,
-    C: TlStr,
+    Name: TlStr,
+    Code: TlStr,
     Nh: IInterface<INeighborhood> + Eval<Introspect, String>,
-    S: IInterface<IStep>,
-    WithIntegrity<StDict, S> : Eval<Introspect, String>
+    Step: IInterface<IStep>,
+    WithIntegrity<StDict, Step> : Eval<Introspect, String>
 {
   fn eval() -> String {
     "Rule <".to_string()
-      + &N::to_string()
+      + &Name::to_string()
       + &"> [".to_string()
-      + &C::to_string()
+      + &Code::to_string()
       + &"]\n  Neighborhood: "
       + &Nh::eval()
-      + &<WithIntegrity<StDict, S>>::eval()
+      + &<WithIntegrity<StDict, Step>>::eval()
   }
 }
 

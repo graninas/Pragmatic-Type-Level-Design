@@ -27,6 +27,7 @@ pub type GolTransitions = tl_list![
   StateTransition<A, A, Neighbors23>];
 
 pub type GoLStates = tl_list![IState, A, D];
+// pub type GoLStates = tl_list![IState];
 
 pub type GoLStep = Step<D, GolTransitions>;
 
@@ -41,8 +42,8 @@ pub type GoLRule = Rule<
 const GOL_RULE_EVIDENCE: PhantomData::<GoLRule> = PhantomData;
 
 
-
 // Unknown type not present in the dictionary
+#[allow(dead_code)]
 pub type Unknown = State<tl_str!("Unknown"), 100>;
 
 gen_equalities![A, D, Unknown];

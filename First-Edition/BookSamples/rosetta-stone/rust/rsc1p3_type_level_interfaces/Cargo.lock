@@ -27,7 +27,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rsc2p3_type_level_interfaces"
+name = "rsc1p3_type_level_interfaces"
 version = "0.1.0"
 dependencies = [
  "assert-type-eq",

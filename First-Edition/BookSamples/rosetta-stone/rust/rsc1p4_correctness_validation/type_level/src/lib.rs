@@ -11,10 +11,25 @@ pub trait Eval<Verb, Res>{
   fn eval() -> Res;
 }
 
-// Type equality
-pub trait TypeEq<Other> {
+// Checking if the types are identical.
+// Returns True or False.
+pub trait IsSame<Other> {
   type Output;
 }
+
+// Verifying type equality.
+// Only has instance for equal types.
+pub trait TypeEq<Other> {}
+
+impl<T> TypeEq<T> for T {}
+
+pub trait IsTrue {}
+pub trait IsFalse {}
+
+impl IsTrue for True {}
+impl IsFalse for False {}
+
+
 
 pub enum True {}
 pub enum False {}
@@ -61,8 +76,8 @@ impl <IfTrue, IfFalse>
 // Generates equality and inequality instances for every pair
 // from the list.
 //
-// If T1 == T2, generates TypeEq with Output = True.
-// Otherwise, generates TypeEq with Output = False.
+// If T1 == T2, generates IsSame with Output = True.
+// Otherwise, generates IsSame with Output = False.
 //
 // Usage:
 // gen_equalities![A, B, C];
@@ -70,17 +85,17 @@ impl <IfTrue, IfFalse>
 macro_rules! gen_inequalities {
 
   ($T1:ty) => {
-    impl type_level::TypeEq<$T1> for $T1 {
+    impl type_level::IsSame<$T1> for $T1 {
       type Output = type_level::True;
     }
   };
 
   ($T1:ty, $T2:ty $(, $tail:tt)*) => {
-    impl type_level::TypeEq<$T2> for $T1 {
+    impl type_level::IsSame<$T2> for $T1 {
       type Output = type_level::False;
     }
 
-    impl type_level::TypeEq<$T1> for $T2 {
+    impl type_level::IsSame<$T1> for $T2 {
       type Output = type_level::False;
     }
 
@@ -94,7 +109,7 @@ macro_rules! gen_equalities {
   };
 
   ($T1:ty) => {
-    impl type_level::TypeEq<$T1> for $T1 {
+    impl type_level::IsSame<$T1> for $T1 {
       type Output = type_level::True;
     }
   };

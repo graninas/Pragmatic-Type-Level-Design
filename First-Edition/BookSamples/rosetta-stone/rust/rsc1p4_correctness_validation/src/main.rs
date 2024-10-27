@@ -1,43 +1,33 @@
-use tl_list_lib::TlN_;
-use tl_list_lib::TlC_;
-use tl_list_lib::tl_list;
-use tl_list_lib::HList;
-
-use tl_str_macro::tl_str;
-
-use type_level::IInterface;
-use type_level::TypeEq;
 use type_level::True;
 use type_level::False;
-use type_level::If;
-use type_level::gen_equalities;
 use type_level::assert_type_eq;
 use type_level::Eval;
-
-
-use std::marker::PhantomData;
 
 mod cellular;
 
 use cellular::language::automaton;
-use cellular::language::automaton::IState;
-use cellular::language::extensions::State;
 use cellular::language::integrity::Verify;
 use cellular::language::integrity::StateInList;
-use cellular::assets::game_of_life::A;
-use cellular::assets::game_of_life::D;
+use cellular::language::integrity::StatesValid;
 use cellular::assets::game_of_life::Unknown;
 use cellular::assets::game_of_life::GoLRule;
+use cellular::assets::game_of_life::GoLStates;
+use cellular::assets::game_of_life::A;
 
-// Dictionary
-type StatesList = tl_list![IState, A, D];
 
-type Verified = <StatesList as Verify<StateInList<A>>>::Output;
-assert_type_eq!(True, Verified);
+type StateVerified = <GoLStates as Verify<StateInList<A>>>::Output;
+assert_type_eq!(True, StateVerified);
 
+type UnkownTypeVerified = <GoLStates as Verify<StateInList<Unknown>>>::Output;
+assert_type_eq!(False, UnkownTypeVerified);
 // won't compile
-// type UnkownTypeVerified = <StatesList as Verify<StateInList<Unknown>>>::Output;
 // assert_type_eq!(True, UnkownTypeVerified);
+
+
+// Rule standalone verification
+type RuleStatesVerified = <GoLRule as Verify<StatesValid>>::Output;
+assert_type_eq!(True, RuleStatesVerified);
+
 
 fn main () {
   let res = GoLRule::eval();

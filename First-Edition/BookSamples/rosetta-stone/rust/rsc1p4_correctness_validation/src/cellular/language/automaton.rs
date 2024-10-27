@@ -55,11 +55,6 @@ impl<F, T, C> IInterface<IStateTransition>
   type Interface = IStateTransition;
 }
 
-// Trait for static type-level values (such as dictionaries)
-pub trait StatesDict: HList<IState> {}
-impl<T: HList<IState>> StatesDict for T {}
-
-
 pub struct IStep;
 
 pub struct Step <

@@ -1,14 +1,15 @@
 use crate::automaton::CellConditionWrapper;
+use crate::automaton::IState;
+use crate::automaton::IStep;
 use crate::automaton::INeighborhood;
 use crate::automaton::NeighborhoodWrapper;
 use crate::automaton::StateWrapper;
-use crate::automaton::IStep;
-use crate::automaton::StatesDict;
 use crate::automaton::RuleWrapper;
 
 use std::marker::PhantomData;
 use type_level::IInterface;
 use tl_list_lib::I32List;
+use tl_list_lib::HList;
 use tl_str_list::TlStr;
 
 
@@ -30,7 +31,7 @@ pub type State<Name, const IDX: u8> = StateWrapper<StateImpl<Name, IDX>>;
 
 
 pub struct RuleImpl <
-    StDict: StatesDict,
+    StDict: HList<IState>,
     Name: TlStr,
     Code: TlStr,
     Neighborhood: IInterface<INeighborhood>,

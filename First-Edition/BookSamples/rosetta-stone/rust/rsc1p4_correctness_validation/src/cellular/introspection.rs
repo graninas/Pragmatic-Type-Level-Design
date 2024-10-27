@@ -14,7 +14,6 @@ use crate::automaton::IStep;
 use crate::automaton::INeighborhood;
 use crate::automaton::IStateTransition;
 use crate::automaton::ICellCondition;
-use crate::automaton::StatesDict;
 use crate::automaton::StateTransition;
 use crate::automaton::RuleWrapper;
 use crate::automaton::NeighborhoodWrapper;
@@ -122,7 +121,7 @@ impl<StDict, DefSt, Ts>
   where
     DefSt: IInterface<IState> + Eval<Introspect, String>,
     Ts: HList<IStateTransition> + Eval<Introspect, String>,
-    StDict: StatesDict + Verify<StateInList<DefSt>>
+    StDict: HList<IState> + Verify<StateInList<DefSt>>
 {
   fn eval() -> String {
     // TODO: verify states in state transitions
@@ -145,7 +144,7 @@ impl<StDict, Name, Code, Nh, Step>
   Eval<Introspect, String>
   for RuleWrapper<RuleImpl<StDict, Name, Code, Nh, Step>>
   where
-    StDict: StatesDict,
+    StDict: HList<IState>,
     Name: TlStr,
     Code: TlStr,
     Nh: IInterface<INeighborhood> + Eval<Introspect, String>,

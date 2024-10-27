@@ -16,7 +16,6 @@ use crate::automaton::IState;
 use crate::automaton::IStep;
 use crate::automaton::IStateTransition;
 use crate::automaton::INeighborhood;
-use crate::automaton::StatesDict;
 use crate::automaton::Step;
 use crate::automaton::RuleWrapper;
 use crate::cellular::language::extensions::RuleImpl;
@@ -34,7 +33,7 @@ pub trait Verify<Verb> {
 
 // Helper
 
-pub struct WithIntegrity<StDict: StatesDict, T>
+pub struct WithIntegrity<StDict: HList<IState>, T>
   (PhantomData::<(StDict, T)>);
 
 
@@ -92,7 +91,7 @@ impl<StDict, DefSt, Ts>
   where
     DefSt: IInterface<IState>,
     Ts: HList<IStateTransition>,
-    StDict: StatesDict + Verify<StateInList<DefSt>>
+    StDict: HList<IState> + Verify<StateInList<DefSt>>
 {
   type X_ = True;
   type Y_ = True;
@@ -108,7 +107,7 @@ impl<StDict, N, C, Nh, S>
   Verify<StatesValid>
   for RuleWrapper<RuleImpl<StDict, N, C, Nh, S>>
   where
-    StDict: StatesDict,
+    StDict: HList<IState>,
     N: TlStr,
     C: TlStr,
     Nh: IInterface<INeighborhood>,

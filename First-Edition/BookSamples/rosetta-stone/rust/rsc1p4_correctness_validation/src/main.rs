@@ -1,7 +1,8 @@
 use type_level::True;
 use type_level::False;
-use type_level::assert_type_eq;
 use type_level::Eval;
+use type_level::If;
+use type_level::assert_type_eq;
 
 mod cellular;
 
@@ -29,8 +30,12 @@ type RuleStatesVerified = <GoLRule as Verify<StatesValid>>::Output;
 assert_type_eq!(True, RuleStatesVerified);
 
 
+type Result = <True as If<char, u8>>::Output;
+const RESULT_VAR: Result = 'a';
+
 fn main () {
   let res = GoLRule::eval();
 
   println!("{}", res);
+  println!("{}", RESULT_VAR);
 }

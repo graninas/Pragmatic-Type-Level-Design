@@ -27,7 +27,6 @@ pub type GolTransitions = tl_list![
   StateTransition<A, A, Neighbors23>];
 
 pub type GoLStates = tl_list![IState, A, D];
-// pub type GoLStates = tl_list![IState];
 
 pub type GoLStep = Step<D, GolTransitions>;
 

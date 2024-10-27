@@ -52,7 +52,6 @@ impl BoolKind for False {
 
 // If combinator
 
-
 pub trait If<IfTrue, IfFalse> {
   type Output;
 }

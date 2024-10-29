@@ -23,7 +23,7 @@ use crate::cellular::language::extensions::RuleImpl;
 
 // Verification mechanism
 
-pub trait Verify<Verb> {
+pub trait Verify<Validator> {
   type X_;                  // helper variables
   type Y_;
   type Output;
@@ -50,7 +50,7 @@ impl<St>
   type Output = False;
 
   fn verify() -> bool {
-    <Self::Output as BoolKind>::to_bool()
+    false
   }
 }
 
@@ -103,22 +103,22 @@ impl<StDict, DefSt, Ts>
   }
 }
 
-impl<StDict, N, C, Nh, S>
+impl<StDict, N, C, Nh, Step>
   Verify<StatesValid>
-  for RuleWrapper<RuleImpl<StDict, N, C, Nh, S>>
+  for RuleWrapper<RuleImpl<StDict, N, C, Nh, Step>>
   where
     StDict: HList<IState>,
     N: TlStr,
     C: TlStr,
     Nh: IInterface<INeighborhood>,
-    S: IInterface<IStep>,
-    WithIntegrity<StDict, S> : Verify<StatesValid>
+    Step: IInterface<IStep>,
+    WithIntegrity<StDict, Step> : Verify<StatesValid>
 {
   type X_ = True;
   type Y_ = True;
-  type Output = <WithIntegrity<StDict, S> as Verify<StatesValid>>::Output;
+  type Output = <WithIntegrity<StDict, Step> as Verify<StatesValid>>::Output;
 
   fn verify() -> bool {
-    <WithIntegrity<StDict, S>>::verify()
+    <WithIntegrity<StDict, Step>>::verify()
   }
 }

@@ -33,6 +33,9 @@ cabal.project.local~
 AppendixB_FightClub_CPP_value_program
 AppendixB_FightClub_CPP_OOP_program
 
+# OCaml
+
+**/rosetta-stone/ocaml/**/_build
 
 # Rust
 

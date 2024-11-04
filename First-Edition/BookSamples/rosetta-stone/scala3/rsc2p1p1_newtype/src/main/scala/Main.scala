@@ -1,18 +1,10 @@
 
-class FirstName(protected val name: String):
-  override def toString(): String = name
-
-object FirstName:
-  def apply(name: String): FirstName = new FirstName(name)
-
-class LastName(protected val name: String):
-  override def toString(): String = name
-
-object LastName:
-  def apply(name: String): LastName = new LastName(name)
+// Opaque types will only work within a module
+import OpaqueTypes.*
 
 
 
+// Old-school non-zero-cost abstraction for type safety
 class FilePath(protected val path: String):
   override def toString(): String = path
 

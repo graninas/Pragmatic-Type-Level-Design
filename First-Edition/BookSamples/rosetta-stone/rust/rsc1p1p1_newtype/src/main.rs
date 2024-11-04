@@ -19,4 +19,8 @@ fn write_last_name(path: FilePath, name: LastName) {
 
 fn main() {
   write_last_name(LAST_FILE_NAME, PERSON_LAST_NAME);
+
+  // Won't compile:
+  // write_last_name(LAST_FILE_NAME, PERSON_FIRST_NAME);
+  // expected `LastName`, found `FirstName`
 }

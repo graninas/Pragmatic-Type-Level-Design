@@ -1,1 +1,4 @@
-Opaque types: newtype idiom in Scala 3
+# Opaque types and newtypes
+
+
+Opaque types is a newtype idiom in Scala 3

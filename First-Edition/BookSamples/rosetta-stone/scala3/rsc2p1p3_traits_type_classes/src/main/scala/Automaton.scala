@@ -15,6 +15,7 @@ object Automaton:
 
   trait Automaton:
     def step(): Automaton
+    def getBoard(): Board
 
 
   def emptyBoard(w: Int, h: Int): Board =

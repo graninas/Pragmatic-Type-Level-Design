@@ -4,20 +4,30 @@ object GoL:
 
   case class GoL(board: Board) extends Automaton {
     def step(): GoL =
-      GoL(board)
+      val newBoard = board.indices.map { x =>
+        board(x).indices.map { y =>
+          nextState(board, x, y)
+        }.toVector
+      }.toVector
+      GoL(newBoard)
+    def getBoard(): Board = board
   }
 
+  def nextState(board: Board, x: Int, y: Int): Cell = {
+    val neighbors = for {
+      i <- -1 to 1
+      j <- -1 to 1
+      if i != 0 || j != 0
+      if board.isDefinedAt(x + i) && board(x + i).isDefinedAt(y + j)
+    } yield board(x + i)(y + j)
 
+    val aliveNeighbors = neighbors.count(_ == Alive)
 
+    board(x)(y) match {
+      case Alive if aliveNeighbors < 2 || aliveNeighbors > 3 => Dead
+      case Alive => Alive
+      case Dead if aliveNeighbors == 3 => Alive
+      case Dead => Dead
+    }
+  }
 
-
-// class CellularAutomaton(val board: Board) extends Automaton {
-//   def step()(using rule: AutomatonRule): CellularAutomaton = {
-//     val newBoard = board.indices.map { x =>
-//       board(x).indices.map { y =>
-//         rule.nextState(board, x, y)
-//       }.toVector
-//     }.toVector
-//     new CellularAutomaton(newBoard)
-//   }
-// }

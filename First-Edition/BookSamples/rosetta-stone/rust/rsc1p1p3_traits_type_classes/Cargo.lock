@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "rsc2p1p3_traits_type_classes"
+name = "rsc1p1p3_traits_type_classes"
 version = "0.1.0"

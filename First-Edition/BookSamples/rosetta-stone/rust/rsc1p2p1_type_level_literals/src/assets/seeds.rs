@@ -11,6 +11,8 @@ use automaton::Survived;
 pub type Seeds = CellWorld<Born<1>, Survived<0>>;
 
 fn seeds_step(board: Board) -> Board {
+
+  // TODO: use Born / Survived!!!
   let mut new_board = board.clone();
 
   for (i, row) in board.iter().enumerate() {

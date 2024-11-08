@@ -6,14 +6,23 @@ object Automaton:
 
   type Board = Vector[Vector[Cell]]
 
-  trait Automaton:
-    def step(): Automaton
-    def getBoard(): Board
+  trait BSRule
+  class Born[T <: Int & Singleton] extends BSRule
+  class Survived[T <: Int & Singleton] extends BSRule
+  class Placeholder extends BSRule
 
+  trait World
+  case class CellWorld[B <: BSRule, S <: BSRule](board: Board) extends World
 
-  def iterateWorld(using world: Automaton, n: Int): Automaton =
+  trait IAutomaton[W <: World]:
+    extension (world: W) def step: W
+    extension (board: Board) def wrap: W
+    extension (world: W) def unwrap: Board
+
+  def iterateWorld[W <: World](world: W, automaton: IAutomaton[W], n: Int): W =
     if n <= 0 then world
-    else iterateWorld(using world.step(), n - 1)
+    else iterateWorld(automaton.step(world), automaton, n - 1)
+
 
 // Board functions
 
@@ -37,6 +46,7 @@ object Automaton:
           cell
       }
     }
+
 
   // Implicit conversion for Cell to string representation
   given Conversion[Cell, String] with

@@ -11,9 +11,9 @@ object Automaton:
     def unwrap(): Board
 
 
-  def iterateWorld(using world: IAutomaton, n: Int): IAutomaton =
+  def iterateWorld(world: IAutomaton, n: Int): IAutomaton =
     if n <= 0 then world
-    else iterateWorld(using world.step(), n - 1)
+    else iterateWorld(world.step(), n - 1)
 
 // Board functions
 

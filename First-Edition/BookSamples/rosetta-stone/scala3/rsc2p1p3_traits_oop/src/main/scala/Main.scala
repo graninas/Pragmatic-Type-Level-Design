@@ -20,7 +20,7 @@ def displayBoard(board: Board): Unit =
 
 @main def run(): Unit =
   val glider1 = GoL(mergeBoards(2, 2, emptyBoard(10, 10), glider()))
-  val glider2 = iterateWorld(using glider1, 1)
+  val glider2 = iterateWorld(glider1, 1)
   val output = glider2.unwrap()
 
   displayBoard(output)

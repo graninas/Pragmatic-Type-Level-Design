@@ -1,9 +1,9 @@
 object GameOfLife:
 
   // ADT for Cell
-  enum Cell:
-    case Alive
-    case Dead
+  sealed trait Cell
+  case object Alive extends Cell
+  case object Dead extends Cell
 
   // Type alias for Board
   type Board = Vector[Vector[Cell]]
@@ -13,16 +13,16 @@ object GameOfLife:
 
   def glider(): Board =
     Vector(
-      Vector(Cell.Dead, Cell.Dead, Cell.Alive),
-      Vector(Cell.Alive, Cell.Dead, Cell.Alive),
-      Vector(Cell.Dead, Cell.Alive, Cell.Alive)
+      Vector(Dead, Dead, Alive),
+      Vector(Alive, Dead, Alive),
+      Vector(Dead, Alive, Alive)
     )
 
   // Implicit conversion for Cell to string representation
   given Conversion[Cell, String] with
     def apply(cell: Cell): String = cell match
-      case Cell.Alive => "•"
-      case Cell.Dead => " "
+      case Alive => "•"
+      case Dead => " "
 
   def displayBoard(args: Array[String]): Unit =
     val golGlider = GoL(glider())

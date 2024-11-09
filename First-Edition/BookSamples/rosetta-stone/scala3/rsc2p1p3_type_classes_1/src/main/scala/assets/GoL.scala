@@ -2,7 +2,7 @@ import Automaton.*
 
 object GoL:
 
-  case class GoL(board: Board) extends Automaton {
+  case class GoL(board: Board) extends IAutomaton {
     def step(): GoL =
       val newBoard = board.indices.map { x =>
         board(x).indices.map { y =>

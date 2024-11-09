@@ -10,7 +10,7 @@ object GoL:
         }.toVector
       }.toVector
       GoL(newBoard)
-    def getBoard(): Board = board
+    def unwrap(): Board = board
   }
 
   def nextState(board: Board, x: Int, y: Int): Cell = {

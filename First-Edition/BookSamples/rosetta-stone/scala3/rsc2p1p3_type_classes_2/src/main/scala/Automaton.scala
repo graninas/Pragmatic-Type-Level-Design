@@ -6,14 +6,14 @@ object Automaton:
 
   type Board = Vector[Vector[Cell]]
 
-  trait Automaton:
-    def step(): Automaton
-    def getBoard(): Board
+  trait IAutomaton[A]:
+    extension (a: A) def step: A
+    extension (world: Board) def wrap: A
+    extension (a: A) def unwrap: Board
 
-
-  def iterateWorld(using world: Automaton, n: Int): Automaton =
+  def iterateWorld[A](world: A, automaton: IAutomaton[A], n: Int): A =
     if n <= 0 then world
-    else iterateWorld(using world.step(), n - 1)
+    else iterateWorld(automaton.step(world), automaton, n - 1)
 
 // Board functions
 

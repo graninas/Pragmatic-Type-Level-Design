@@ -3,7 +3,7 @@ val scala3Version = "3.5.2"
 lazy val root = project
   .in(file("."))
   .settings(
-    name := "rsc2p1p3_traits_type_classes",
+    name := "rsc2p1p3_type_classes_2",
     version := "0.1.0-SNAPSHOT",
 
     scalaVersion := scala3Version,

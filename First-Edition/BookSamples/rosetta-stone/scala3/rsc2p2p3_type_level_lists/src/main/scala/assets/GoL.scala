@@ -2,20 +2,23 @@ import Automaton.*
 
 object GoL:
 
-  type GoLRule = "Game of Life"
-  type GoLWorld = CellWorld[GoLRule]
+  class GoLRule extends BSRule
 
-  given golAutomaton: IAutomaton[GoLRule] with
-    extension (world: GoLWorld) def step: GoLWorld =
+  type GoL = CellWorld[GoLRule, Placeholder]
+  // type Seeds = CellWorld[Born[1], Survived[0]]
+
+  given golAutomaton: IAutomaton[GoL] with
+    extension (world: GoL) def step: GoL =
       val newBoard = world.board.indices.map { x =>
         world.board(x).indices.map { y =>
           nextState(world.board, x, y)
         }.toVector
       }.toVector
-      CellWorld[GoLRule](newBoard)
+      val newGoL: GoL = CellWorld[GoLRule, Placeholder](newBoard)
+      newGoL
 
-    extension (board: Board) def wrap: GoLWorld = CellWorld[GoLRule](board)
-    extension (world: GoLWorld) def unwrap: Board = world.board
+    extension (board: Board) def wrap: GoL = CellWorld[GoLRule, Placeholder](board)
+    extension (world: GoL) def unwrap: Board = world.board
 
   def nextState(board: Board, x: Int, y: Int): Cell = {
     val neighbors = for {

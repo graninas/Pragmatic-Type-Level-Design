@@ -5,23 +5,21 @@ import Seeds.*
 import scala.compiletime.*
 
 
-object Literals:
+class Literal[M]
 
-  class Literal[M]
+trait Description[T]:
+  extension (t: T) def describe: String
 
-  trait Describe[T]:
-    extension (t: T) def describe: String
-
-  given ld[CH <: Char & Singleton](using ValueOf[CH]):
-    Describe[Literal[CH]] with
-    extension (t: Literal[CH]) def describe: String =
-      s"${summon[ValueOf[CH]].value}"
+given chDescr[CH <: Char & Singleton](using ValueOf[CH]):
+  Description[Literal[CH]] with
+  extension (t: Literal[CH]) def describe: String =
+    s"${summon[ValueOf[CH]].value}"
 
 
-  given id[I <: Int & Singleton](using ValueOf[I]):
-    Describe[Literal[I]] with
-    extension (t: Literal[I]) def describe: String =
-      s"${summon[ValueOf[I]].value}"
+given intDescr[I <: Int & Singleton](using ValueOf[I]):
+  Description[Literal[I]] with
+  extension (t: Literal[I]) def describe: String =
+    s"${summon[ValueOf[I]].value}"
 
 
 object DSL:
@@ -42,15 +40,16 @@ object DSL:
     println(strBuilder.toString)
 
 @main def run(): Unit =
+
   // Literals test
 
-  val literalChar = Literals.Literal['x']
-  println(literalChar.describe)
+  val literalChar = Literal['x']
+  val literalInt = Literal[1]
 
-  val literalInt = Literals.Literal[1]
-  println(literalInt.describe)
+  println(literalChar.describe)             // prints x
+  println(literalInt.describe)              // prints 1
 
-  val literalBool = Literals.Literal[true]
+  val literalBool = Literal[true]
   // Won't compile: not such instance
   // println(literalBool.describe)
 

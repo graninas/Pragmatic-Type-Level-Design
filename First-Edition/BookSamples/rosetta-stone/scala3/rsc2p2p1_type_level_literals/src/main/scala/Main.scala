@@ -5,7 +5,7 @@ import Seeds.*
 import scala.compiletime.*
 
 
-class Literal[M]
+case class Literal[M]()
 
 trait Description[T]:
   extension (t: T) def describe: String
@@ -43,13 +43,13 @@ object DSL:
 
   // Literals test
 
-  val literalChar = Literal['x']
-  val literalInt = Literal[1]
+  val literalChar = Literal['x']()
+  val literalInt = Literal[1]()
 
   println(literalChar.describe)             // prints x
   println(literalInt.describe)              // prints 1
 
-  val literalBool = Literal[true]
+  val literalBool = Literal[true]()
   // Won't compile: not such instance
   // println(literalBool.describe)
 

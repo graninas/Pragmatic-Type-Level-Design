@@ -15,19 +15,23 @@ given eADT2Descr: Description[EmptyADT2.type] with
 
 // Parameterized ADTs
 
-class Proxy[T]
+case class Proxy[T]()
 
 case object Benoit
-class Mandelbrot[T]
+case class Mandelbrot[T]()
 // if we need a parameterized ADT, we have to use
 // case class. But we don't need a field, which is mandatory; so we have to use Proxy.
 
 type Fractal = Mandelbrot[Mandelbrot[Benoit.type]]
 
+object Fractal {
+  def apply(): Fractal = Mandelbrot[Mandelbrot[Benoit.type]]()
+}
+
 given mandelDescr [T] (using Description[Proxy[T]]):
   Description[Proxy[Mandelbrot[T]]] with
   extension (t: Proxy[Mandelbrot[T]]) def describe: String =
-    val proxy = Proxy[T]
+    val proxy = Proxy[T]()
     s"Mandelbrot(${proxy.describe})"
 
 given benoitDescr [T]:
@@ -42,5 +46,6 @@ given benoitDescr [T]:
   println(eADT.describe)
   println(eADT2.describe)
 
-  val fractal = Proxy[Fractal]
+  val fractal = Proxy[Fractal]()
   println(fractal.describe)
+

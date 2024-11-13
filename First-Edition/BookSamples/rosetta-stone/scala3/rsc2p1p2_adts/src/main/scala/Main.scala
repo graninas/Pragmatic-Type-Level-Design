@@ -1,14 +1,15 @@
 object GameOfLife:
 
-  // ADT for Cell
   sealed trait Cell
   case object Alive extends Cell
   case object Dead extends Cell
 
-  // Type alias for Board
+  // enum Cell:
+  //   case Alive
+  //   case Dead
+
   type Board = Vector[Vector[Cell]]
 
-  // Wrapper class for GoL
   case class GoL(board: Board)
 
   def glider(): Board =
@@ -34,6 +35,11 @@ object GameOfLife:
       strBuilder.append("\n").append(rowStr)
 
     println(strBuilder.toString)
+
+  def patternMatchDemo =
+    Dead match
+      case Alive => println("•")
+      case Dead => println(" ")
 
 @main def run(): Unit =
   GameOfLife.displayBoard(Array())

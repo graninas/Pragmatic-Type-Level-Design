@@ -3,11 +3,11 @@ trait Description[T]:
 
 // Empty ADTs
 
-case object EmptyADT1
+case object EmptyADT
 case object EmptyADT2
 
-given eADT1Descr: Description[EmptyADT1.type] with
-  extension (t: EmptyADT1.type) def describe: String = "EmptyADT1"
+given eADTDescr: Description[EmptyADT.type] with
+  extension (t: EmptyADT.type) def describe: String = "EmptyADT"
 
 given eADT2Descr: Description[EmptyADT2.type] with
   extension (t: EmptyADT2.type) def describe: String = "EmptyADT2"
@@ -18,10 +18,11 @@ given eADT2Descr: Description[EmptyADT2.type] with
 class Proxy[T]
 
 case object Benoit
-case class Mandelbrot[T] (p: Proxy[T])    // if we need a parameterized ADT, we have to use
+class Mandelbrot[T]
+// if we need a parameterized ADT, we have to use
 // case class. But we don't need a field, which is mandatory; so we have to use Proxy.
 
-type Fractal = Mandelbrot[Mandelbrot[Mandelbrot[Benoit.type]]]
+type Fractal = Mandelbrot[Mandelbrot[Benoit.type]]
 
 given mandelDescr [T] (using Description[Proxy[T]]):
   Description[Proxy[Mandelbrot[T]]] with
@@ -36,9 +37,9 @@ given benoitDescr [T]:
 
 
 @main def run(): Unit =
-  val eADT1 = EmptyADT1
+  val eADT = EmptyADT
   val eADT2 = EmptyADT2
-  println(eADT1.describe)
+  println(eADT.describe)
   println(eADT2.describe)
 
   val fractal = Proxy[Fractal]

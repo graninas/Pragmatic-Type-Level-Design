@@ -1,2 +1,0 @@
-# Empty and parameterized ADTs
-

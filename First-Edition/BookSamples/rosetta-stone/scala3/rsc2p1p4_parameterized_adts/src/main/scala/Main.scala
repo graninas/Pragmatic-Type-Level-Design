@@ -24,7 +24,8 @@ case class Mandelbrot[T]()
 
 type Fractal = Mandelbrot[Mandelbrot[Benoit.type]]
 
-given mandelDescr [T] (using Description[Proxy[T]]):
+given mandelDescr [T]
+  (using Description[Proxy[T]]):
   Description[Proxy[Mandelbrot[T]]] with
   extension (t: Proxy[Mandelbrot[T]]) def describe: String =
     val proxy = Proxy[T]()

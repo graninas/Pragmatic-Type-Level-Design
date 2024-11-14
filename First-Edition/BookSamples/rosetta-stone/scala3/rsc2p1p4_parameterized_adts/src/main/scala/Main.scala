@@ -13,16 +13,16 @@ given eADT2Descr: Description[EmptyADT2.type] with
   extension (t: EmptyADT2.type) def describe: String = "EmptyADT2"
 
 
-// Parameterized ADTs
+// Parameterized ADTs (case classes instead of case objects)
 
 case class Proxy[T]()
 
-case object Benoit
+case class Benoit()
 case class Mandelbrot[T]()
 // if we need a parameterized ADT, we have to use
 // case class. But we don't need a field, which is mandatory; so we have to use Proxy.
 
-type Fractal = Mandelbrot[Mandelbrot[Benoit.type]]
+type Fractal = Mandelbrot[Mandelbrot[Benoit]]
 
 given mandelDescr [T]
   (using Description[Proxy[T]]):
@@ -32,8 +32,8 @@ given mandelDescr [T]
     s"Mandelbrot(${proxy.describe})"
 
 given benoitDescr [T]:
-  Description[Proxy[Benoit.type]] with
-  extension (t: Proxy[Benoit.type]) def describe: String =
+  Description[Proxy[Benoit]] with
+  extension (t: Proxy[Benoit]) def describe: String =
     s"Benoit"
 
 

@@ -12,7 +12,6 @@ case object Teacher extends PersonKind
 case object Student extends PersonKind
 
 sealed trait UserKind[P <: PersonKind, V <: BoolKind]
-
 case class PowerUser[P <: PersonKind, V <: BoolKind]() extends UserKind[P, V]
 case class RegularUser[P <: PersonKind, V <: BoolKind]() extends UserKind[P, V]
 
@@ -60,6 +59,8 @@ given ruDescr [P <: PersonKind, V <: BoolKind]
 type TeacherPowerUser = PowerUser[Teacher.type, True.type]
 type StudentUser = RegularUser[Student.type, False.type]
 
+// Won't compile: types mismatch
+// type InvalidUser = PowerUser[Teacher.type, Teacher.type]
 
 @main def hello(): Unit =
   val teacher = Proxy[TeacherPowerUser]()

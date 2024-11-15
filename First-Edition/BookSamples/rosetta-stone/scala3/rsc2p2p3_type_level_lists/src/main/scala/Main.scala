@@ -8,7 +8,9 @@ case class Proxy[T]()
 
 sealed trait HList
 case class Nil() extends HList
-case class Cons[T, Tail]() extends HList
+case class Cons[T, Tail <: HList]() extends HList
+type ::[T, Tail <: HList] = Cons[T, Tail]
+
 
 given nilDescr:
   Description[Proxy[Nil]] with
@@ -45,8 +47,6 @@ given puDescr: Description[Proxy[Pushkin]] with
   extension (t: Proxy[Pushkin]) def describe: String =
     s"Pushkin"
 
-
-type ::[H, T <: HList] = Cons[H, T]
 
 type Poets2 = Shakespeare :: Byron :: Pushkin :: Nil
 

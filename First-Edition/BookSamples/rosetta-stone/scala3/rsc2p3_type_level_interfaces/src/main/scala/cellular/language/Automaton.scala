@@ -1,107 +1,46 @@
-package cellular.language
+package cellular
+package language
 
-object Automaton {
-
-  case class IInterface()
-
+import cellular.typelevel._
 
 
-  case class IState()
+// -- Interfaces
 
-  case class StateWrapper[T]()
+// -- -- State
 
-}
+sealed trait IState
 
-
-
-// data IState where
-//   StateWrapper :: a -> IState
-
-// type family MkState a :: IState where
-//   MkState a = 'StateWrapper a
+object IStateObj:                // option 1: opaque types
+  type MkState[A] <: IState      // TODO: replace with type families
 
 
+sealed trait ICellCondition
 
-// use type_level::IInterface;
-// use tl_list_lib::HList;
-// use std::marker::PhantomData;
-
-// // -- Interfaces
-
-// // -- -- State
-
-// pub struct IState;
-
-// pub struct StateWrapper<T> (PhantomData::<T>);
-// impl<T> IInterface<IState> for StateWrapper<T> {
-//   type Interface = IState;
-// }
+object ICellConditionObj:
+  type MkCellCondition[A] <: ICellCondition
 
 
-// // -- -- Cell condition
+sealed trait INeighborhood
 
-// pub struct ICellCondition;
-
-// pub struct CellConditionWrapper<T> (PhantomData::<T>);
-// impl<T> IInterface<ICellCondition> for CellConditionWrapper<T> {
-//   type Interface = ICellCondition;
-// }
-
-
-// // -- -- Neighborhood
-
-// pub struct INeighborhood;
-
-// pub struct NeighborhoodWrapper<T> (PhantomData::<T>);
-// impl<T> IInterface<INeighborhood> for NeighborhoodWrapper<T> {
-//   type Interface = INeighborhood;
-// }
+object INeighborhoodObj:
+  type MkNeighborhood[A] <: INeighborhood
 
 
 // // -- Customizable domain model
 
-// pub struct IStateTransition;
+sealed trait IStateTransition
 
-// pub struct StateTransition <
-//     FromState: IInterface<IState>,
-//     ToState: IInterface<IState>,
-//     Condition: IInterface<ICellCondition>>
-//       (PhantomData::<(FromState, ToState, Condition)>);
+object IStateTransitionObj:
+  type MkStateTransition[A] <: IStateTransition
 
 
-// impl<F, T, C> IInterface<IStateTransition>
-//   for StateTransition<F, T, C>
-//   where
-//     F: IInterface<IState>,
-//     T: IInterface<IState>,
-//     C: IInterface<ICellCondition>
-// {
-//   type Interface = IStateTransition;
-// }
+sealed trait IStep
+
+object IStepObj:
+  type MkStep[A] <: IStep
 
 
-// pub struct IStep;
+sealed trait IRule
 
-// pub struct Step <
-//     DefState: IInterface<IState>,
-//     Transitions: HList<IStateTransition>>
-//       (PhantomData::<(DefState, Transitions)>);
-
-// impl<D, T> IInterface<IStep> for Step<D, T>
-//   where
-//     D: IInterface<IState>,
-//     T: HList<IStateTransition>
-// {
-//   type Interface = IStep;
-// }
-
-
-// // -- -- Rule
-
-// pub struct IRule;
-
-// pub struct RuleWrapper<T> (PhantomData::<T>);
-// impl<T> IInterface<IRule> for RuleWrapper<T> {
-//   type Interface = IRule;
-// }
-
+object IRuleObj:
+  type MkRule[A] <: IRule

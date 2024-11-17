@@ -40,15 +40,15 @@ type ::[T <: Int & Singleton, Tail <: IntList] = IC[T, Tail]
 
 type Append[T, Tail <: HList] = Cons[T, Tail]
 
-type Head[T] = T match
+type Head[L <: HList] = L match
   case Nil => Nothing
   case Cons[v, _] => v
 
-type Tail[L] = L match
+type Tail[L <: HList] = L match
   case Nil => Nil
   case Cons[_, t] => t
 
-type Lookup[Key, L] = L match
+type Lookup[Key, L <: HList] = L match
   case Nil => Nothing
   case Cons[i, t] => i match
     case (Key, v) => v

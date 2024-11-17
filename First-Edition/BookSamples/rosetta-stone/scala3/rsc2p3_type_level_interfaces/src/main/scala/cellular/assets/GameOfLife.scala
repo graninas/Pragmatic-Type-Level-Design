@@ -1,7 +1,7 @@
 package cellular
 package assets
 
-import cellular.typelevel._
+import graninas.typelevel._
 import cellular.language._
 import cellular.extensions._
 

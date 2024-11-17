@@ -1,7 +1,7 @@
 package cellular
 package extensions
 
-import cellular.typelevel._
+import graninas.typelevel._
 import cellular.language._
 
 

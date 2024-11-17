@@ -1,7 +1,7 @@
 package cellular
 package language
 
-import cellular.typelevel._
+import graninas.typelevel._
 
 
 // -- Interfaces

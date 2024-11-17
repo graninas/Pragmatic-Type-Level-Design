@@ -1,6 +1,6 @@
 import scala.compiletime._
 
-import cellular.typelevel._
+import graninas.typelevel._
 import cellular.language._
 import cellular.extensions._
 import cellular.assets._

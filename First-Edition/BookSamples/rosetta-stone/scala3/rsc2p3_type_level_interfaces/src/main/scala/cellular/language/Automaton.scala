@@ -1,46 +1,23 @@
 package cellular
 package language
 
-import graninas.typelevel._
 
-
-// -- Interfaces
-
-// -- -- State
+// Interfaces
 
 sealed trait IState
-
-object IStateObj:                // option 1: opaque types
-  type MkState[A] <: IState      // TODO: replace with type families
-
+type MkState[A] <: IState
 
 sealed trait ICellCondition
-
-object ICellConditionObj:
-  type MkCellCondition[A] <: ICellCondition
-
+type MkCellCondition[A] <: ICellCondition
 
 sealed trait INeighborhood
-
-object INeighborhoodObj:
-  type MkNeighborhood[A] <: INeighborhood
-
-
-// // -- Customizable domain model
+type MkNeighborhood[A] <: INeighborhood
 
 sealed trait IStateTransition
-
-object IStateTransitionObj:
-  type MkStateTransition[A] <: IStateTransition
-
+type MkStateTransition[A] <: IStateTransition
 
 sealed trait IStep
-
-object IStepObj:
-  type MkStep[A] <: IStep
-
+type MkStep[A] <: IStep
 
 sealed trait IRule
-
-object IRuleObj:
-  type MkRule[A] <: IRule
+type MkRule[A] <: IRule

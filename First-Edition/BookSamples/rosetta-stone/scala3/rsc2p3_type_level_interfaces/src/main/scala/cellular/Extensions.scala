@@ -5,24 +5,27 @@ import graninas.typelevel._
 import cellular.language._
 
 
-// Parameterized implementation type, option 1: associated types
-sealed trait StateImpl:
-  type Name <: String
-  type Index <: Int
+// Parameterized implementation type, option 1: type parameters
 
-type State[N <: String, I <: Int] =
-  IStateObj.MkState[StateImpl { type Name = N; type Index = I }]
+case class StateImpl[
+  Name <: String & Singleton,
+  I <: Int & Singleton]()
+
+type State[Name <: String & Singleton, I <: Int & Singleton] =
+  MkState[StateImpl[Name, I]]
 
 
-// Parameterized implementation type, option 2: type parameters
-case class NeighborsCountImpl[
-  S <: IState,
-  Cnts <: IntList]()
+// Parameterized implementation type, option 2: associated types
+// TODO: double-check how to interpret it
+sealed trait NeighborsCountImpl:
+  type State <: IState
+  type Counts <: IntList
 
 type NeighborsCount[S <: IState, Cnts <: IntList] =
-  ICellConditionObj.MkCellCondition[
-    NeighborsCountImpl[S, Cnts]]
-
+  MkCellCondition[NeighborsCountImpl {
+    type State = S;
+    type Counts = Cnts
+  }]
 
 case class StateTransitionImpl[
   From <: IState,
@@ -33,16 +36,14 @@ type StateTransition[
   From <: IState,
   To <: IState,
   Conds <: ICellCondition] =
-  IStateTransitionObj.MkStateTransition[
-    StateTransitionImpl[From, To, Conds]]
+  MkStateTransition[StateTransitionImpl[From, To, Conds]]
 
 
 case class AdjacentsLvlImpl[
   Lvl <: Int & Singleton]()
 
 type AdjacentsLvl[Lvl <: Int & Singleton] =
-  INeighborhoodObj.MkNeighborhood[
-    AdjacentsLvlImpl[Lvl]]
+  MkNeighborhood[AdjacentsLvlImpl[Lvl]]
 
 
 case class StepImpl[
@@ -52,9 +53,7 @@ case class StepImpl[
 type Step[
   DefState <: IState,
   Transitions <: HList[IStateTransition]] =
-  IStepObj.MkStep[
-    StepImpl[DefState, Transitions]]
-
+  MkStep[StepImpl[DefState, Transitions]]
 
 
 case class RuleImpl[
@@ -68,5 +67,4 @@ type Rule[
   Code <: String & Singleton,
   Neighborhood <: INeighborhood,
   Step <: IStep] =
-  IRuleObj.MkRule[
-    RuleImpl[Name, Code, Neighborhood, Step]]
+  MkRule[RuleImpl[Name, Code, Neighborhood, Step]]

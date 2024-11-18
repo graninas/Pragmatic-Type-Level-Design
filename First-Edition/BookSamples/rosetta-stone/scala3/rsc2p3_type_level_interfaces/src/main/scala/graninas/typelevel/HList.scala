@@ -5,7 +5,25 @@ sealed trait HList[Kind]
 case class Nil[Kind]() extends HList[Kind]
 case class Cons[Kind, T <: Kind, Tail <: HList[Kind]]() extends HList[Kind]
 
-// TODO: a better UX for lists
+type HL[Kind] = Nil[Kind]
+
+type IsSubtype[A, B] = A match
+  case B => true
+  case _ => false
+
+// Weird!! Operators ending with colon are right-associative,
+// and others are left-associative!!!
+type :+[L, V] = CheckAppend[V, L]
+type +:[V, L] = CheckAppend[V, L]
+
+type CheckAppend[V, L] = L match
+  case Nil[k] => IsSubtype[V, k] match
+    case true  => Cons[k, V, Nil[k]]
+    case false => "Kind mismatch"
+  case Cons[k, v, t] => IsSubtype[V, k] match
+    case true  => Cons[k, V, Cons[k, v, t]]
+    case false => "Kind mismatch"
+
 
 
 sealed trait IntList
@@ -31,36 +49,6 @@ type ::[T <: Int & Singleton, Tail <: IntList] = IC[T, Tail]
 // this yields this syntax:
 
 // type Shorter = TLList[IState, (A, D)]
-
-
-
-
-
-type Append[K, T <: K, Tail <: HList[K]] = Cons[K, T, Tail]
-
-type Head[T] = T match
-  case Nil[_] => Nothing
-  case Cons[_, v, _] => v
-
-type Tail[L] = L match
-  case Nil[s] => Nil[s]
-  case Cons[_, _, t] => t
-
-type Lookup[Key, L] = L match
-  case Nil[_] => Nothing
-  case Cons[_, Key *: v, t] => v
-  case Cons[_, _, t] => Lookup[Key, t]
-
-
-// TODO: rest of the funtions
-
-
-
-
-sealed trait HList
-case class Nil() extends HList
-case class Cons[T :< Tuple, Tail <: HList]() extends HList
-
 
 
 // Function for asserting on type equality

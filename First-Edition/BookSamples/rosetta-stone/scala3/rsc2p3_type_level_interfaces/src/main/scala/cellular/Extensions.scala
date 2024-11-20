@@ -5,6 +5,9 @@ import graninas.typelevel._
 import cellular.language._
 
 
+case class Literal[M]()
+
+
 // Parameterized implementation type, option 1: type parameters
 
 case class StateImpl[

@@ -137,7 +137,8 @@ impl<const LVL: u8>
 }
 
 impl<Name, Code, Nh, Step>
-  Eval<Introspect, String> for RuleWrapper<RuleImpl<Name, Code, Nh, Step>>
+  Eval<Introspect, String>
+  for RuleWrapper<RuleImpl<Name, Code, Nh, Step>>
   where
     Name: TlStr,
     Code: TlStr,

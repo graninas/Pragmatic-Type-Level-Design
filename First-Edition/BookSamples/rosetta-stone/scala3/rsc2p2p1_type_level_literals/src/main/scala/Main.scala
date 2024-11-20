@@ -22,6 +22,12 @@ given intDescr[I <: Int & Singleton](using ValueOf[I]):
     s"${summon[ValueOf[I]].value}"
 
 
+given strDescr[S <: String & Singleton](using ValueOf[S]):
+  Description[Literal[S]] with
+  extension (t: Literal[S]) def describe: String =
+    s"${summon[ValueOf[S]].value}"
+
+
 object DSL:
   def glider(): Board =
     Vector(
@@ -45,9 +51,11 @@ object DSL:
 
   val literalChar = Literal['x']()
   val literalInt = Literal[1]()
+  val literalStr = Literal["abc"]()
 
   println(literalChar.describe)             // prints x
   println(literalInt.describe)              // prints 1
+  println(literalStr.describe)              // prints abc
 
   val literalBool = Literal[true]()
   // Won't compile: not such instance

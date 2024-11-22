@@ -10,6 +10,10 @@ import cellular.introspection.Introspection.{*, given}
 
 
 @main def hello(): Unit =
+
+  val statePair = (Introspect(), Proxy[GoL.A]())
+  println(statePair.eval)
+
   val pair = (Introspect(), Proxy[GoL.GoLRule]())
   println(pair.eval)
 

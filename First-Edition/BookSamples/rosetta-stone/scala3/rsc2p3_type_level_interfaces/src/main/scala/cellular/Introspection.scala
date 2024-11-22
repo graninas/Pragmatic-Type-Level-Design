@@ -25,15 +25,12 @@ object Introspection {
     [Name <: String & Singleton, I <: Int & Singleton]
     (using ValueOf[Name], ValueOf[I]):
     Eval[(Introspect,
-         Proxy[State[Name, I]]), String] with
+          Proxy[State[Name, I]]), String] with
     extension (t:
       (Introspect, Proxy[State[Name, I]])) def eval: String =
       val name = summon[ValueOf[Name]].value
       val idx = summon[ValueOf[I]].value
       s"" + name + "[" + idx + "]"
-
-
-
 
   given intNilListIntrospect:
     Eval[(Introspect, Proxy[IN]), String] with
@@ -54,21 +51,18 @@ object Introspection {
       val restPair = (Introspect(), Proxy[Rest]())
       s"" + i + " " + restPair.eval
 
-
-
   given condIntrospect
     [S <: IState, Cnts <: IntList]
     (using
       Eval[(Introspect, Proxy[S]), String],
       Eval[(Introspect, Proxy[Cnts]), String]):
     Eval[(Introspect,
-         Proxy[NeighborsCount[S, Cnts]]), String] with
+          Proxy[NeighborsCount[S, Cnts]]), String] with
     extension (t:
       (Introspect, Proxy[NeighborsCount[S, Cnts]])) def eval: String =
       val sPair = (Introspect(), Proxy[S]())
       val cntsPair = (Introspect(), Proxy[Cnts]())
       sPair.eval + ", " + cntsPair.eval
-
 
   given stateTransIntrospect
     [From <: IState,
@@ -89,7 +83,6 @@ object Introspection {
       fromPair.eval + " -> "
         + toPair.eval + ": "
         + condsPair.eval
-
 
   given tsNilListIntrospect:
     Eval[(Introspect, Proxy[Nil[IStateTransition]]), String] with
@@ -154,8 +147,6 @@ object Introspection {
         + "]\n  Neighborhood: "
         + nhPair.eval
         + stepPair.eval
-
-
 }
 
 

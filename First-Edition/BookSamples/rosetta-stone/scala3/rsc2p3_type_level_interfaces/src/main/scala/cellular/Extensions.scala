@@ -19,7 +19,6 @@ type State[Name <: String & Singleton, I <: Int & Singleton] =
 
 
 // Parameterized implementation type, option 2: associated types
-// TODO: double-check how to interpret it
 sealed trait NeighborsCountImpl:
   type State <: IState
   type Counts <: IntList

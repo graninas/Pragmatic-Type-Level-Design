@@ -26,6 +26,7 @@ import Cellular.Language.Algorithm
 
 -- | Integrity verification interface
 class Verify tag where
+    -- Nothing here; empty type class
 
 ------- Empty states list verification
 data StatesNotEmpty (states :: [CustomState])

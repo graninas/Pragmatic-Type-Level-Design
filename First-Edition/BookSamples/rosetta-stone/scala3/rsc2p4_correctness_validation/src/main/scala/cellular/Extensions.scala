@@ -26,7 +26,7 @@ sealed trait NeighborsCountImpl:
 
 type NeighborsCount[S <: IState, Cnts <: IntList] =
   MkCellCondition[NeighborsCountImpl {
-    type State = S;
+    type State = S
     type Counts = Cnts
   }]
 

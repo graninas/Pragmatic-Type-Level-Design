@@ -26,9 +26,11 @@ import Cellular.Language.Algorithm
 
 -- | Integrity verification interface
 class Verify tag where
+    -- Nothing here; empty type class
 
 -- | Helper verification machinery
 class Check tag where
+    -- Nothing here; empty type class
 
 ------- States uniqueness verification
 --  (no name check)

@@ -7,9 +7,6 @@ case class Cons[Kind, T <: Kind, Tail <: HList[Kind]]() extends HList[Kind]
 
 type HL[Kind] = Nil[Kind]
 
-type IsSubtype[A, B] = A match
-  case B => true
-  case _ => false
 
 // Weird!! Operators ending with colon are right-associative,
 // and others are left-associative!!!
@@ -51,6 +48,3 @@ type ::[T <: Int & Singleton, Tail <: IntList] = IC[T, Tail]
 
 // type Shorter = TLList[IState, (A, D)]
 
-
-// Function for asserting on type equality
-def ensureEqualTypes[A, B](using ev: A =:= B): Unit = ()

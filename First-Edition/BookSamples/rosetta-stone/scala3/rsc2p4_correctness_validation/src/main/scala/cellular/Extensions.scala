@@ -30,6 +30,7 @@ type NeighborsCount[S <: IState, Cnts <: IntList] =
     type Counts = Cnts
   }]
 
+
 case class StateTransitionImpl[
   From <: IState,
   To <: IState,

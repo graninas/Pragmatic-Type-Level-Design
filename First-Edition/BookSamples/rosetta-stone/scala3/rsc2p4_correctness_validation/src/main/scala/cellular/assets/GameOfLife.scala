@@ -10,6 +10,9 @@ object GoL {
   type A = State["Alive", 1]
   type D = State["Dead", 0]
 
+  type Unknown = State["Unknown", 2]
+  type Balrog = State["Balrog", 3]
+
   type Neighbors3  = NeighborsCount[A, 3 :: IN]
   type Neighbors23 = NeighborsCount[A, 2 :: 3 :: IN]
 

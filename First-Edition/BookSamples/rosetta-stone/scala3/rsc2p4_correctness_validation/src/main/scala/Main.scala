@@ -10,35 +10,49 @@ import cellular.introspection.Introspection.{*, given}
 import cellular.integrity.Integrity.{*, given}
 
 
-type States = Cons[IState, GoL.D, Cons[IState, GoL.A, Nil[IState]]]
-type Verified = VerifyStateInList[GoL.A, Cons[IState, GoL.D, Nil[IState]]]
+val stateIsValid: CheckStateInList[GoL.A, GoL.States] = true
 
-val eqSts = ensureEqualTypes[GoL.States, States]
-// val verified = ensureEqualTypes[false, IsSubtype[GoL.A, GoL.D]]
-// val result: Nothing = Proxy[VerifyStateInList[GoL.A, States]]()
+type Test1 = CheckStateInList[GoL.A, GoL.States]
+val test1 = ensureEqualTypes[Test1, true]
+
+type Test2 = CheckStateInList[GoL.D, GoL.States]
+val test2 = ensureEqualTypes[Test2, true]
+
+type Test2V = StateInList[GoL.D, GoL.States]
+val test2V = Proxy[Test2V]().verify
+
+type Test3 = CheckStateInList[GoL.Unknown, GoL.States]
+val test3 = ensureEqualTypes[Test3, false]
+
+// Won't compile. Error massage is okay
+// type Test3Verify = StateInList[GoL.Unknown, GoL.States]
+// val test3Verify = Proxy[Test3Verify]().verify
+
+// Won't compile. Error message is okay:
+// Type argument (4 : Int) does not conform to upper bound IState
+// type Test4 = CheckStateInList[4, GoL.States]
+
+type Test5 = CheckStateInList[GoL.A, Nil[IState]]
+val test5 = ensureEqualTypes[Test5, false]
+
+// Won't compile. Error massage is okay
+// type Test5Verify = StateInList[GoL.A, Nil[IState]]
+// val test5Verify = Proxy[Test5Verify]().verify
 
 
-type IsEq[A <: IState, B <: IState] = (A, B) match
-  case (MkState[aImpl], MkState[bImpl]) => IsSubtype[aImpl, bImpl]
-  case _ => false
+type Test6 = ValidateDefaultState[GoL.GoLStep]
+val test6 = ensureEqualTypes[Test6, true]
 
-type A = State["A", 0]
-type D = State["D", 1]
 
-type A_Eq_A = IsEq[A, A]
-type A_NotEq_D = IsEq[A, D]
-val a_eq_a_evidence: A_Eq_A = true
-val a_noteq_b_evidence: A_NotEq_D = false
+val test: ValidateDefaultState[GoL.GoLStep] = true
 
 
 @main def hello(): Unit =
 
-
-  // val sts: Proxy[HList[IState]] = Proxy[GoL.States]()
-
   val statePair = (Introspect(), Proxy[GoL.A]())
   println(statePair.eval)
 
-  val pair = (Introspect(), Proxy[GoL.GoLRule]())
+  val withIntegrity = WithIntegrity[Introspect, GoL.States]()
+  val pair = (withIntegrity, Proxy[GoL.GoLRule]())
   println(pair.eval)
 

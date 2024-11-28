@@ -10,6 +10,8 @@ import scala.compiletime.*
 
 object Introspection {
 
+  type Unknown = State["Unknown", 100]
+
   case class Introspect()
 
   given nhIntrospect
@@ -105,10 +107,9 @@ object Introspection {
       s"\n      " + sPair.eval + restPair.eval
 
 
-  type MyEmptyList = Nil[IState]
-
-  given stepIntrospect
-    [DefState <: IState,
+  given stepIntrospectWithIntegrity
+    [ StatesDict <: HList[IState],
+    DefState <: IState,
     Transitions <: HList[IStateTransition]]
     (using
       Eval[(Introspect, Proxy[DefState]), String],
@@ -116,12 +117,13 @@ object Introspection {
 
       // This works, but the compilation error is completely
       // unreadable and irrelevant.
-      // Verify[StateInList[DefState, MyEmptyList]]
+      Verify[Proxy[StateInList[DefState, StatesDict]]],
     ):
-    Eval[(Introspect,
+    Eval[(WithIntegrity[Introspect, StatesDict],
          Proxy[Step[DefState, Transitions]]), String] with
     extension (t:
-      (Introspect, Proxy[Step[DefState, Transitions]])) def eval: String =
+      (WithIntegrity[Introspect, StatesDict],
+       Proxy[Step[DefState, Transitions]])) def eval: String =
         val statePair = (Introspect(), Proxy[DefState]())
         val tsPair    = (Introspect(), Proxy[Transitions]())
         s"\n  Default state: "
@@ -129,25 +131,28 @@ object Introspection {
           + "\n  State transitions:"
           + tsPair.eval
 
-  given ruleIntrospect
-    [Name <: String & Singleton,
+  given ruleIntrospectWithIntegrity
+    [ StatesDict <: HList[IState],
+    Name <: String & Singleton,
     Code <: String & Singleton,
     Neighborhood <: INeighborhood,
     Step <: IStep]
     (using ValueOf[Name],
            ValueOf[Code],
            Eval[(Introspect, Proxy[Neighborhood]), String],
-           Eval[(Introspect, Proxy[Step]), String]
+           Eval[(WithIntegrity[Introspect, StatesDict], Proxy[Step]), String]
     ):
-    Eval[(Introspect,
+    Eval[(WithIntegrity[Introspect, StatesDict],
          Proxy[Rule[Name, Code, Neighborhood, Step]]),
          String] with
     extension (t:
-      (Introspect,
+      (WithIntegrity[Introspect, StatesDict],
       Proxy[Rule[Name, Code, Neighborhood, Step]])) def eval: String =
 
       val nhPair   = (Introspect(), Proxy[Neighborhood]())
-      val stepPair = (Introspect(), Proxy[Step]())
+
+      val withIntegrity = WithIntegrity[Introspect, StatesDict]()
+      val stepPair = (withIntegrity, Proxy[Step]())
 
       val name = summon[ValueOf[Name]].value
       val code = summon[ValueOf[Code]].value
@@ -155,7 +160,9 @@ object Introspection {
         + "]\n  Neighborhood: "
         + nhPair.eval
         + stepPair.eval
+
 }
+
 
 
 

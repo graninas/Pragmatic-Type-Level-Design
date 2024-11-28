@@ -52,7 +52,21 @@ type Test5 = CheckAppend[V1, O1]
 val test5 = summon[Test5 =:= "arguments type mismatch"]
 
 
+// Extension - some extra state type
 
+case class RgbImpl[
+  R <: Int & Singleton,
+  G <: Int & Singleton,
+  B <: Int & Singleton]()
+
+type RGB[
+  R <: Int & Singleton,
+  G <: Int & Singleton,
+  B <: Int & Singleton] = MkState[RgbImpl[R, G, B]]
+
+type Red   = RGB[255, 0, 0]
+type Green = RGB[0, 255, 0]
+type Blue  = RGB[0, 0, 255]
 
 
 @main def hello(): Unit =

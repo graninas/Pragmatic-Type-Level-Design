@@ -16,12 +16,19 @@ Haskell is a model language, but the book contains the Rosetta Stone part with t
 Topics:
 
 🟤 type-level domain modeling
+
 🔵 type-level domain-specific languages (eDSLs)
+
 🟣 type-level correctness verification
+
 🟡 extensibility and genericity approaches
+
 🟠 type-level interfaces (my own concept)
+
 🔴 application architectures and type-level design patterns
+
 🟢 design principles such as SOLID, make invalid states unrepresentable, dumb but uniform
+
 ⚪️ a whole methodology called Pragmatic Type-Level Design
 
 **Pragmatic Type-Level Design** best works in pair with **Functional Design and Architecture** ([early self-published edition](https://www.manning.com/books/functional-design-and-architecture), and [a new one with Manning Publications](https://leanpub.com/functional-design-and-architecture)). FDaA is a fundamental book on software design in functional languages.

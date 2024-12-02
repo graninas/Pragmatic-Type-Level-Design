@@ -11,7 +11,18 @@ Code and materials for my advanced book [Pragmatic Type Level Design](https://le
 
 Unlike most resources that focus on the mathematical underpinnings of type-level programming, this book's primary emphasis lies in pragmatism: it explores the practical application of these concepts in actual programming scenarios. It formulates best practices, examines how types influence application design and architecture, and outlines principles for managing the inherent complexity in type-level code.
 
-Haskell is a model language, but the book will contain the Rosetta Stone part that mirrors the approaches from Haskell to other languages.
+Haskell is a model language, but the book contains the Rosetta Stone part with the ideas translated into Scala 3 and Rust.
+
+Topics:
+
+🟤 type-level domain modeling
+🔵 type-level domain-specific languages (eDSLs)
+🟣 type-level correctness verification
+🟡 extensibility and genericity approaches
+🟠 type-level interfaces (my own concept)
+🔴 application architectures and type-level design patterns
+🟢 design principles such as SOLID, make invalid states unrepresentable, dumb but uniform
+⚪️ a whole methodology called Pragmatic Type-Level Design
 
 **Pragmatic Type-Level Design** best works in pair with **Functional Design and Architecture** ([early self-published edition](https://www.manning.com/books/functional-design-and-architecture), and [a new one with Manning Publications](https://leanpub.com/functional-design-and-architecture)). FDaA is a fundamental book on software design in functional languages.
 

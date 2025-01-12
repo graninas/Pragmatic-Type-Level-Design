@@ -31,7 +31,7 @@ Topics:
 
 ⚪️ a whole methodology called Pragmatic Type-Level Design
 
-**Pragmatic Type-Level Design** best works in pair with **Functional Design and Architecture** ([early self-published edition](https://www.manning.com/books/functional-design-and-architecture), and [a new one with Manning Publications](https://leanpub.com/functional-design-and-architecture)). FDaA is a fundamental book on software design in functional languages.
+**Pragmatic Type-Level Design** best works in pair with **Functional Design and Architecture** ([early self-published edition](https://leanpub.com/functional-design-and-architecture), and [a new one with Manning Publications](https://www.manning.com/books/functional-design-and-architecture)). FDaA is a fundamental book on software design in functional languages.
 
 <p float="left">
   <a href="https://www.manning.com/books/functional-design-and-architecture">

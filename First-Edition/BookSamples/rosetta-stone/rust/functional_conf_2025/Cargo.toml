@@ -1,0 +1,11 @@
+[package]
+name = "functional_conf_2025"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+assert-type-eq = "0.1"
+type_level = { path = "./type_level" }
+tl_list_lib = { path = "./tl_list_lib" }
+tl_str_list = { path = "./tl_str_list" }
+tl_str_macro = { path = "./tl_str_macro" }

@@ -2,8 +2,6 @@ use tl_list_lib::TlN_;
 use tl_list_lib::TlC_;
 use tl_list_lib::tl_list;
 use tl_list_lib::tl_i32_list;
-use tl_list_lib::CCI32_;
-use tl_list_lib::CNI32_;
 
 use assert_type_eq::assert_type_eq;
 use std::marker::PhantomData;

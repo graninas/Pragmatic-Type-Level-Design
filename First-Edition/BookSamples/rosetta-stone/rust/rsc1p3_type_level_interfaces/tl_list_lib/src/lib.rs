@@ -43,11 +43,11 @@ impl<const C: i32, Tail> I32List for CCI32_<C, Tail> {}
 #[macro_export]
 macro_rules! tl_list {
   ($iface:ty) => {
-    TlN_<$iface>
+    tl_list_lib::TlN_<$iface>
   };
 
   ($iface:ty, $head:ty $(, $tail:ty)*) => {
-    TlC_<$iface, $head, tl_list!($iface $(, $tail)*)>
+    tl_list_lib::TlC_<$iface, $head, tl_list_lib::tl_list!($iface $(, $tail)*)>
   };
 }
 
@@ -58,10 +58,10 @@ macro_rules! tl_list {
 #[macro_export]
 macro_rules! tl_i32_list {
   () => {
-    CNI32_
+    tl_list_lib::CNI32_
   };
 
   ($head:literal $(, $tail:tt)*) => {
-    CCI32_<$head, tl_i32_list!($($tail),*)>
+    tl_list_lib::CCI32_<$head, tl_list_lib::tl_i32_list!($($tail),*)>
   };
 }

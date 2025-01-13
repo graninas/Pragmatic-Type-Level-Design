@@ -19,7 +19,7 @@ pub fn tl_str(input: TokenStream) -> TokenStream {
 
     let mut chs: Chars<'_> = input_string.chars();
 
-    let mut constr = quote!{N_};
+    let mut constr = quote!{tl_str_list::N_};
 
     let front_opt_ch = chs.next();
     let back_opt_ch = chs.next_back();
@@ -30,7 +30,7 @@ pub fn tl_str(input: TokenStream) -> TokenStream {
       let mut next_ch = chs.next_back();
       while next_ch.is_some() {
         let ch = next_ch.expect("Invalid char");
-        constr = quote!{C_<#ch, #constr>};
+        constr = quote!{tl_str_list::C_<#ch, #constr>};
         next_ch = chs.next_back();
       }
     }

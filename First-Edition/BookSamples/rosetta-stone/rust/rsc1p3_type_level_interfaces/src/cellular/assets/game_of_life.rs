@@ -8,14 +8,8 @@ use crate::cellular::language::extensions::AdjacentsLvl;
 use crate::cellular::language::extensions::Rule;
 
 use tl_str_macro::tl_str;
-use tl_str_list::N_;
-use tl_str_list::C_;
 use tl_list_lib::tl_list;
 use tl_list_lib::tl_i32_list;
-use tl_list_lib::CNI32_;        // TODO: can we improve the macro to avoid importing these?
-use tl_list_lib::CCI32_;
-use tl_list_lib::TlN_;
-use tl_list_lib::TlC_;
 
 use std::marker::PhantomData;
 

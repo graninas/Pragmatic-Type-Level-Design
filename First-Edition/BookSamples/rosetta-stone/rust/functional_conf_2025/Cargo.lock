@@ -9,6 +9,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fd49a41856ee21a0cfb2b1cfbfcca0f1d3e6c257c38939f0d6ecfaf177f2ea47"
 
 [[package]]
+name = "functional_conf_2025"
+version = "0.1.0"
+dependencies = [
+ "assert-type-eq",
+ "tl_list_lib",
+ "tl_str_list",
+ "tl_str_macro",
+ "type_level",
+]
+
+[[package]]
 name = "proc-macro2"
 version = "1.0.87"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -35,17 +46,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
-]
-
-[[package]]
-name = "talk"
-version = "0.1.0"
-dependencies = [
- "assert-type-eq",
- "tl_list_lib",
- "tl_str_list",
- "tl_str_macro",
- "type_level",
 ]
 
 [[package]]

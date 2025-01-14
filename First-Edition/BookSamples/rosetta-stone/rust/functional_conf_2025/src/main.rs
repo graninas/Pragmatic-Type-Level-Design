@@ -1,48 +1,20 @@
 use tl_list_lib::tl_list;
 use tl_list_lib::tl_i32_list;
 use tl_list_lib::HList;
-
 use type_level::IInterface;
 use tl_list_lib::I32List;
 use tl_str_list::TlStr;
 use tl_str_macro::tl_str;
+use type_level::Eval;
 
 use assert_type_eq::assert_type_eq;
 use std::marker::PhantomData;
 
-mod cellular;
+mod master;
 
-use cellular::language::automaton;
-use cellular::language::automaton::IState;
-use cellular::assets::game_of_life::A;
-use cellular::assets::game_of_life::D;
-use cellular::assets::game_of_life::GoLRule;
-
-use type_level::Eval;
-
-
-pub struct IRoute;
-
-pub struct RouteWrapper<T> (PhantomData::<T>);
-impl<T> IInterface<IRoute> for RouteWrapper<T> {
-  type Interface = IRoute;
-}
-
-pub struct IQueryParam;
-
-pub struct QueryParamWrapper<T> (PhantomData::<T>);
-impl<T> IInterface<IQueryParam> for QueryParamWrapper<T> {
-  type Interface = IQueryParam;
-}
-
-
-pub struct RouteImpl<
-  R: TlStr,
-  QueryParams: HList<IQueryParam>>
-  (PhantomData::<(R, QueryParams)>);
-
-pub type Route<R, QueryParams> = RouteWrapper<RouteImpl<R, QueryParams>>;
-
+use crate::master::language::model::{*};
+use crate::master::language::web::{*};
+use crate::master::language::extensions::{*};
 
 
 
@@ -51,12 +23,17 @@ pub type Route<R, QueryParams> = RouteWrapper<RouteImpl<R, QueryParams>>;
 pub type Start =
   Route<
     tl_str!("start"),
-    tl_list![IQueryParam]>;
+    tl_list![IClause]>;
 
 pub type Move =
   Route<
     tl_str!("move"),
-    tl_list![IQueryParam]>;
+    tl_list![IClause]>;
+
+pub type Board =
+  Route<
+    tl_str!("board"),
+    tl_list![IClause]>;
 
 
 pub type TicTacToeAPI = tl_list!
@@ -113,7 +90,6 @@ const TEST: PhantomData<TicTacToeAPI> = PhantomData;
 
 
 fn main () {
-  let res = GoLRule::eval();
 
-  println!("{}", res);
+  println!("Hello world!");
 }

@@ -17,75 +17,62 @@ use crate::master::language::web::{*};
 use crate::master::language::extensions::{*};
 
 
+pub struct Game;
+pub struct Board;
 
 
-
-pub type Start =
+// "start" :> Post '[JSON] Game
+pub type StartRoute =
   Route<
     tl_str!("start"),
-    tl_list![IClause]>;
+    tl_list![IClause,
+      POST<
+        tl_list![ISupportedFormat, JSON],
+        DataType<Game>>
+      ]>;
 
-pub type Move =
+// "move"
+//        :> Capture "id" String
+//        :> Capture "sign" String
+//        :> QueryParam "h" Int
+//        :> QueryParam "v" Int
+//        :> Post '[JSON] String
+pub type MoveRoute =
   Route<
     tl_str!("move"),
-    tl_list![IClause]>;
+    tl_list![IClause,
+      Capture<tl_str!("id"), StringType>,
+      Capture<tl_str!("sign"), StringType>,
+      QueryParam<tl_str!("h"), IntType>,
+      QueryParam<tl_str!("v"), IntType>,
+      POST<
+        tl_list![ISupportedFormat, JSON],
+        StringType>
+      ]>;
 
-pub type Board =
+//   :<|> "board"
+//        :> Capture "id" String
+//        :> Get '[JSON] Board
+pub type BoardRoute =
   Route<
     tl_str!("board"),
-    tl_list![IClause]>;
+    tl_list![IClause,
+      Capture<tl_str!("id"), StringType>,
+      GET<
+        tl_list![ISupportedFormat, JSON],
+        DataType<Board>
+      >
+    ]>;
 
 
 pub type TicTacToeAPI = tl_list!
   [ IRoute
-  , Start
-  , Move
+  , StartRoute
+  , MoveRoute
+  , BoardRoute
   ];
 
 const TEST: PhantomData<TicTacToeAPI> = PhantomData;
-
-// type AstroAPI =
-//   (  "meteors"
-//     :> QueryParam "mass" Int32
-//     :> QueryParam "size" Int32
-//     :> Get '[JSON] Meteors
-//     )
-//   :<|>
-//     (  "meteor"
-//     :> ReqBody '[JSON] API.MeteorTemplate
-//     :> Post '[JSON] MeteorId
-//     )
-//   :<|>
-//     (  "asteroid"
-//     :> ReqBody '[JSON] API.AsteroidTemplate
-//     :> Post '[JSON] AsteroidId
-//     )
-//   :<|>
-//     (  "object_template"                                  -- route POST "/object_template"
-//     :> ReqBody '[JSON] API.AstroObjectTemplate
-//     :> Post '[JSON] AstroObjectId
-//     )
-//   :<|>
-//     "object" :>
-//     (
-//        ( Capture "object_id" AstroObjectId                -- route GET "/object"
-//        :> Get '[JSON] (Maybe AstroObject)
-//        )
-//      :<|>
-//        ( "orbital"                                        -- route POST "/object/orbital"
-//        :> Capture "object_id" AstroObjectId
-//        :> ReqBody '[JSON] Orbital
-//        :> Post '[JSON] AstroObjectId
-//        )
-//      :<|>
-//        ( "physical"                                       -- route POST "/object/physical
-//        :> Capture "object_id" AstroObjectId
-//        :> ReqBody '[JSON] Physical
-//        :> Post '[JSON] AstroObjectId
-//        )
-//     )
-
-
 
 
 

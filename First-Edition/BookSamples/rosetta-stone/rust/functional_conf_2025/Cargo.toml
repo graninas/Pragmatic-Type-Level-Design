@@ -9,3 +9,8 @@ type_level = { path = "./type_level" }
 tl_list_lib = { path = "./tl_list_lib" }
 tl_str_list = { path = "./tl_str_list" }
 tl_str_macro = { path = "./tl_str_macro" }
+
+axum = "0.6"
+serde = { version = "1.0", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }
+uuid = "1.3"

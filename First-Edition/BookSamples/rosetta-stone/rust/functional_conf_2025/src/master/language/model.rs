@@ -22,12 +22,52 @@ pub struct QueryParamImpl<
   (PhantomData::<(Name, Type)>);
 
 pub type QueryParam<Name, Type> =
-  QueryParamWrapper<QueryParamImpl<Name, Type>>;
+  ClauseWrapper<QueryParamImpl<Name, Type>>;
+
+
+pub struct CaptureImpl<
+  Name: TlStr,
+  Type: IInterface<IType>>
+  (PhantomData::<(Name, Type)>);
+
+pub type Capture<Name, Type> =
+  ClauseWrapper<CaptureImpl<Name, Type>>;
+
+
+pub struct PostMethodImpl<
+  SupportedFormats: HList<ISupportedFormat>,
+  ReturnType: IInterface<IType>>
+  (PhantomData::<(SupportedFormats, ReturnType)>);
+
+pub type PostMethod<Formats, ReturnType> =
+  ClauseWrapper<PostMethodImpl<Formats, ReturnType>>;
+
+pub struct GetMethodImpl<
+  SupportedFormats: HList<ISupportedFormat>,
+  ReturnType: IInterface<IType>>
+  (PhantomData::<(SupportedFormats, ReturnType)>);
+
+pub type GetMethod<Formats, ReturnType> =
+  ClauseWrapper<GetMethodImpl<Formats, ReturnType>>;
 
 
 
 pub struct TypeImpl<
   Name: TlStr>
   (PhantomData::<Name>);
-
 pub type Type<Name> = TypeWrapper<TypeImpl<Name>>;
+
+
+pub struct CustomTypeImpl<T>
+  (PhantomData::<T>);
+pub type CustomType<T> = TypeWrapper<CustomTypeImpl<T>>;
+
+
+pub struct SupportedFormatImpl<
+  Name: TlStr>
+  (PhantomData::<Name>);
+
+pub type SupportedFormat<Name> =
+  SupportedFormatWrapper<SupportedFormatImpl<Name>>;
+
+

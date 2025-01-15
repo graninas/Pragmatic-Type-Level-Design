@@ -27,15 +27,23 @@ impl<T> IInterface<IType> for TypeWrapper<T> {
 }
 
 
+pub struct ISupportedFormat;
+
+pub struct SupportedFormatWrapper<T> (PhantomData::<T>);
+impl<T> IInterface<ISupportedFormat> for SupportedFormatWrapper<T> {
+  type Interface = ISupportedFormat;
+}
+
+
 
 
 
 // TODO: maybe add hierarchy (IQueryParam is IClause)?
 
-pub struct IQueryParam;
 
-pub struct QueryParamWrapper<T> (PhantomData::<T>);
-impl<T> IInterface<IQueryParam> for QueryParamWrapper<T> {
-  type Interface = IQueryParam;
-}
+// pub struct IQueryParam;
+// pub struct QueryParamWrapper<T> (PhantomData::<T>);
+// impl<T> IInterface<IQueryParam> for QueryParamWrapper<T> {
+//   type Interface = IQueryParam;
+// }
 

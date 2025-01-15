@@ -11,5 +11,17 @@ use tl_list_lib::tl_list;
 use tl_list_lib::tl_i32_list;
 
 
-type IntType = Type<tl_str!("int")>;
-type StringType = Type<tl_str!("string")>;
+pub type IntType = Type<tl_str!("int")>;
+pub type StringType = Type<tl_str!("string")>;
+pub type DataType<T> = CustomType<T>;
+
+pub type JSON = SupportedFormat<tl_str!("JSON")>;
+pub type PlainText = SupportedFormat<tl_str!("PlainText")>;
+pub type XML = SupportedFormat<tl_str!("XML")>;
+
+
+pub type POST<Formats, ReturnType> =
+  PostMethod<Formats, ReturnType>;
+
+pub type GET<Formats, ReturnType> =
+  GetMethod<Formats, ReturnType>;

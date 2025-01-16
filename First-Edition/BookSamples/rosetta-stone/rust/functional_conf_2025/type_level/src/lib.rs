@@ -9,3 +9,7 @@ pub trait IInterface<I> {
 pub trait Eval<Verb, Res>{
   fn eval() -> Res;
 }
+
+pub trait EvalCtx<Ctx, Verb, Res>{
+  fn eval_ctx(ctx: Ctx) -> Res;
+}

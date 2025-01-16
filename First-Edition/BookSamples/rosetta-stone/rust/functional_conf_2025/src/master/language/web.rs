@@ -11,6 +11,13 @@ impl<T> IInterface<IRoute> for RouteWrapper<T> {
   type Interface = IRoute;
 }
 
+pub struct IMethod;
+
+pub struct MethodWrapper<T> (PhantomData::<T>);
+impl<T> IInterface<IMethod> for MethodWrapper<T> {
+  type Interface = IMethod;
+}
+
 pub struct IClause;
 
 pub struct ClauseWrapper<T> (PhantomData::<T>);

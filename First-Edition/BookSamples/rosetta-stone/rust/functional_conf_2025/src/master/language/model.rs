@@ -8,11 +8,13 @@ use tl_str_list::TlStr;
 
 
 pub struct RouteImpl<
-  R: TlStr,
+  Path: TlStr,
+  Method: IInterface<IMethod>,
   Clauses: HList<IClause>>
-  (PhantomData::<(R, Clauses)>);
+  (PhantomData::<(Path, Method, Clauses)>);
 
-pub type Route<R, Clauses> = RouteWrapper<RouteImpl<R, Clauses>>;
+pub type Route<Path, Method, Clauses> =
+  RouteWrapper<RouteImpl<Path, Method, Clauses>>;
 
 
 
@@ -40,7 +42,7 @@ pub struct PostMethodImpl<
   (PhantomData::<(SupportedFormats, ReturnType)>);
 
 pub type PostMethod<Formats, ReturnType> =
-  ClauseWrapper<PostMethodImpl<Formats, ReturnType>>;
+  MethodWrapper<PostMethodImpl<Formats, ReturnType>>;
 
 pub struct GetMethodImpl<
   SupportedFormats: HList<ISupportedFormat>,
@@ -48,7 +50,7 @@ pub struct GetMethodImpl<
   (PhantomData::<(SupportedFormats, ReturnType)>);
 
 pub type GetMethod<Formats, ReturnType> =
-  ClauseWrapper<GetMethodImpl<Formats, ReturnType>>;
+  MethodWrapper<GetMethodImpl<Formats, ReturnType>>;
 
 
 
@@ -71,3 +73,6 @@ pub type SupportedFormat<Name> =
   SupportedFormatWrapper<SupportedFormatImpl<Name>>;
 
 
+pub struct Api<
+  Routes: HList<IRoute>>
+  (PhantomData::<Routes>);

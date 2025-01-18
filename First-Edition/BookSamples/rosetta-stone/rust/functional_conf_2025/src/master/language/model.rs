@@ -7,55 +7,12 @@ use tl_list_lib::HList;
 use tl_str_list::TlStr;
 
 
-pub struct RouteImpl<
-  Path: TlStr,
-  Method: IInterface<IMethod>,
-  Clauses: HList<IClause>>
-  (PhantomData::<(Path, Method, Clauses)>);
-
-pub type Route<Path, Method, Clauses> =
-  RouteWrapper<RouteImpl<Path, Method, Clauses>>;
-
-
-
-pub struct QueryParamImpl<
-  Name: TlStr,
-  Type: IInterface<IType>>
-  (PhantomData::<(Name, Type)>);
-
-pub type QueryParam<Name, Type> =
-  ClauseWrapper<QueryParamImpl<Name, Type>>;
-
-
-pub struct CaptureImpl<
-  Name: TlStr,
-  Type: IInterface<IType>>
-  (PhantomData::<(Name, Type)>);
-
-pub type Capture<Name, Type> =
-  ClauseWrapper<CaptureImpl<Name, Type>>;
-
-
-pub struct PostMethodImpl<
-  SupportedFormats: HList<ISupportedFormat>,
-  ReturnType: IInterface<IType>>
-  (PhantomData::<(SupportedFormats, ReturnType)>);
-
-pub type PostMethod<Formats, ReturnType> =
-  MethodWrapper<PostMethodImpl<Formats, ReturnType>>;
-
-pub struct GetMethodImpl<
-  SupportedFormats: HList<ISupportedFormat>,
-  ReturnType: IInterface<IType>>
-  (PhantomData::<(SupportedFormats, ReturnType)>);
-
-pub type GetMethod<Formats, ReturnType> =
-  MethodWrapper<GetMethodImpl<Formats, ReturnType>>;
 
 
 
 pub struct TypeImpl<
-  Name: TlStr>
+    Name: TlStr
+  >
   (PhantomData::<Name>);
 pub type Type<Name> = TypeWrapper<TypeImpl<Name>>;
 
@@ -66,13 +23,54 @@ pub type CustomType<T> = TypeWrapper<CustomTypeImpl<T>>;
 
 
 pub struct SupportedFormatImpl<
-  Name: TlStr>
+    Name: TlStr
+  >
   (PhantomData::<Name>);
 
 pub type SupportedFormat<Name> =
   SupportedFormatWrapper<SupportedFormatImpl<Name>>;
 
 
+
+pub struct QueryParamImpl<
+    Name: TlStr,
+    Type: IInterface<IType>
+  >
+  (PhantomData::<(Name, Type)>);
+
+pub type QueryParam<Name, Type> =
+  ClauseWrapper<QueryParamImpl<Name, Type>>;
+
+
+pub struct CaptureImpl<
+    Name: TlStr,
+    Type: IInterface<IType>
+  >
+  (PhantomData::<(Name, Type)>);
+
+pub type Capture<Name, Type> =
+  ClauseWrapper<CaptureImpl<Name, Type>>;
+
+pub struct PostMethodImpl;
+pub struct GetMethodImpl;
+
+pub type POST = MethodWrapper<PostMethodImpl>;
+pub type GET = MethodWrapper<GetMethodImpl>;
+
+pub struct RouteImpl<
+    Method: IInterface<IMethod>,
+    Path: TlStr,
+    Clauses: HList<IClause>,
+    SupportedFormats: HList<ISupportedFormat>,
+    ReturnType: IInterface<IType>
+  >
+  (PhantomData::<(Method, Path, Clauses, SupportedFormats, ReturnType)>);
+
+pub type Route<Method, Path, Clauses, Formats, ReturnType> =
+  RouteWrapper<RouteImpl<Method, Path, Clauses, Formats, ReturnType>>;
+
+
 pub struct Api<
-  Routes: HList<IRoute>>
+    Routes: HList<IRoute>
+  >
   (PhantomData::<Routes>);

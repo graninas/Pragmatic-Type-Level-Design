@@ -54,3 +54,6 @@ impl<T> IInterface<ISupportedFormat> for SupportedFormatWrapper<T> {
 //   type Interface = IQueryParam;
 // }
 
+
+
+pub type PathString = String;

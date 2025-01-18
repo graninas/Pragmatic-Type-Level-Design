@@ -6,6 +6,7 @@ use tl_list_lib::I32List;
 use tl_str_list::TlStr;
 use tl_str_macro::tl_str;
 use type_level::EvalCtx;
+use type_level::Eval;
 use tl_list_lib::TlN_;
 use tl_list_lib::TlC_;
 
@@ -22,9 +23,13 @@ use axum::{
     extract::{Path, Query},
     response::Json,
     routing::{get, post, MethodRouter},
+    handler::Handler,
     Router,
 };
-use axum::handler::Handler;
+
+use tiny_http::{Server, Request, Response};
+use std::io::Read;
+use std::io::Cursor;
 
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -54,115 +59,6 @@ impl Board {
 
 type SharedState = Arc<Mutex<HashMap<String, Board>>>;
 
-pub type Ctx = (SharedState, Router);
-
-
-
-
-
-pub enum BuildRouter{}
-pub enum BuildRoute{}
-pub struct BuildMethod<Path: TlStr>
-  (PhantomData::<Path>);
-
-
-
-
-impl
-  EvalCtx<SharedState,
-          BuildMethod<tl_str!("/start")>,
-          (SharedState, MethodRouter)>
-  for MethodWrapper<PostMethodImpl>
-{
-  fn eval_ctx(state: SharedState) -> (SharedState, MethodRouter) {
-    let new_state = state.clone();
-
-    (new_state.clone(),
-      post(
-        || async move {
-            let game_id = Uuid::new_v4().to_string();
-            let mut games = new_state.lock().unwrap();
-            games.insert(game_id.clone(), Board::new());
-
-            // todo: formats, return type
-            Json(Game { game_id })
-        })
-    )
-  }
-}
-
-
-/////////// service evaluators
-
-// Building a particular route
-impl<Method, Path, Clauses, Formats, ReturnType>
-  EvalCtx<Ctx, BuildRoute, Ctx>
-  for RouteWrapper<RouteImpl<Method, Path, Clauses, Formats, ReturnType>>
-  where
-    Method: IInterface<IMethod>,
-    Path: TlStr,
-    Clauses: HList<IClause>,
-    Formats: HList<ISupportedFormat>,
-    ReturnType: IInterface<IType>,
-    Method: EvalCtx<SharedState, BuildMethod<Path>, (SharedState, MethodRouter)>
-{
-    fn eval_ctx((state, router): Ctx) -> Ctx {
-
-    let (new_state, handler) = <Method as
-          EvalCtx<
-            SharedState,
-            BuildMethod<Path>,
-            (SharedState, MethodRouter)
-            >>::eval_ctx(state);
-
-    let path = Path::to_string();
-    let new_router = router.route(&path, handler);
-
-    (new_state, new_router)
-    }
-}
-
-// End of routes - return the final result
-impl<IRoute>
-  EvalCtx<Ctx, BuildRouter, Ctx>
-  for TlN_<IRoute>
-{
-  fn eval_ctx(ctx: Ctx) -> Ctx {
-    ctx
-  }
-}
-
-// Getting the next route
-impl<Route, Routes>
-  EvalCtx<Ctx, BuildRouter, Ctx>
-  for TlC_<IRoute, Route, Routes>
-  where
-    Route: IInterface<IRoute>
-      + EvalCtx<Ctx, BuildRoute, Ctx>,
-
-    Routes: HList<IRoute>
-      + EvalCtx<Ctx, BuildRouter, Ctx>,
-{
-  fn eval_ctx(ctx: Ctx) -> Ctx {
-    let new_ctx = Route::eval_ctx(ctx);   // building this route
-    Routes::eval_ctx(new_ctx)             // building other routes
-  }
-}
-
-// Building the router for API
-impl<Routes>
-  EvalCtx<SharedState, BuildRouter, Router>
-  for Api<Routes>
-  where
-    Routes: HList<IRoute>
-      + EvalCtx<Ctx, BuildRouter, Ctx>,
-{
-  fn eval_ctx(state: SharedState) -> Router {
-    let router = Router::new();
-    let (_, new_router) = Routes::eval_ctx((state, router));
-    new_router
-  }
-}
 
 // "start" :> Post '[JSON] Game
 pub type StartRoute =
@@ -215,12 +111,121 @@ pub type TicTacToeAPI =
 
 const TEST: PhantomData<TicTacToeAPI> = PhantomData;
 
-#[tokio::main]
-async fn main() {
+
+
+
+///////////// axum /////////////////
+
+pub type Ctx = (SharedState, Router);
+
+
+pub enum AxumBuildRouter{}
+pub enum AxumBuildRoute{}
+pub struct AxumBuildMethod<Path: TlStr>
+  (PhantomData::<Path>);
+
+
+impl
+  EvalCtx<SharedState,
+          AxumBuildMethod<tl_str!("/start")>,
+          (SharedState, MethodRouter)>
+  for MethodWrapper<PostMethodImpl>
+{
+  fn eval_ctx(state: SharedState) -> (SharedState, MethodRouter) {
+    let new_state = state.clone();
+
+    (new_state.clone(),
+      post(
+        || async move {
+            let game_id = Uuid::new_v4().to_string();
+            let mut games = new_state.lock().unwrap();
+            games.insert(game_id.clone(), Board::new());
+
+            // todo: formats, return type
+            Json(Game { game_id })
+        })
+    )
+  }
+}
+
+// Building a particular route
+impl<Method, Path, Clauses, Formats, ReturnType>
+  EvalCtx<Ctx, AxumBuildRoute, Ctx>
+  for RouteWrapper<RouteImpl<Method, Path, Clauses, Formats, ReturnType>>
+  where
+    Method: IInterface<IMethod>,
+    Path: TlStr,
+    Clauses: HList<IClause>,
+    Formats: HList<ISupportedFormat>,
+    ReturnType: IInterface<IType>,
+    Method: EvalCtx<SharedState, AxumBuildMethod<Path>, (SharedState, MethodRouter)>
+{
+    fn eval_ctx((state, router): Ctx) -> Ctx {
+
+    let (new_state, handler) = <Method as
+          EvalCtx<
+            SharedState,
+            AxumBuildMethod<Path>,
+            (SharedState, MethodRouter)
+            >>::eval_ctx(state);
+
+    let path = Path::to_string();
+    let new_router = router.route(&path, handler);
+
+    (new_state, new_router)
+    }
+}
+
+// List of routes / end of list - return the final result
+impl<IRoute>
+  EvalCtx<Ctx, AxumBuildRouter, Ctx>
+  for TlN_<IRoute>
+{
+  fn eval_ctx(ctx: Ctx) -> Ctx {
+    ctx
+  }
+}
+
+// List of routes / next route item
+impl<Route, Routes>
+  EvalCtx<Ctx, AxumBuildRouter, Ctx>
+  for TlC_<IRoute, Route, Routes>
+  where
+    Route: IInterface<IRoute>
+      + EvalCtx<Ctx, AxumBuildRoute, Ctx>,
+
+    Routes: HList<IRoute>
+      + EvalCtx<Ctx, AxumBuildRouter, Ctx>,
+{
+  fn eval_ctx(ctx: Ctx) -> Ctx {
+    let new_ctx = Route::eval_ctx(ctx);   // building this route
+    Routes::eval_ctx(new_ctx)             // building other routes
+  }
+}
+
+// Building the router for API
+impl<Routes>
+  EvalCtx<SharedState, AxumBuildRouter, Router>
+  for Api<Routes>
+  where
+    Routes: HList<IRoute>
+      + EvalCtx<Ctx, AxumBuildRouter, Ctx>,
+{
+  fn eval_ctx(state: SharedState) -> Router {
+    let router = Router::new();
+    let (_, new_router) = Routes::eval_ctx((state, router));
+    new_router
+  }
+}
+
+// #[tokio::main]
+async fn main_axum() {
     let state: SharedState = Arc::new(Mutex::new(HashMap::new()));
 
-    let app = TicTacToeAPI::eval_ctx(state);
-      // .with_state(state);
+    let app =
+      <TicTacToeAPI as
+        EvalCtx<SharedState, AxumBuildRouter, Router>
+      >::eval_ctx(state);
 
     println!("Server running at http://localhost:8080");
     axum::Server::bind(&"0.0.0.0:8080".parse().unwrap())
@@ -229,3 +234,161 @@ async fn main() {
         .unwrap();
 }
 
+
+
+/////////////// tiny http //////////////////////
+
+
+pub enum TinyBuildRouter{}
+pub enum TinyBuildRoute{}
+pub enum TinyBuildMethod{}
+
+type MethodResponse = Response<Cursor<Vec<u8>>>;
+type TinyRouter = Arc<Mutex<HashMap<(String, String),
+                                    Box<dyn Fn() -> MethodResponse >>>>;
+pub type TinyCtx = (SharedState, TinyRouter);
+
+
+
+
+// Handler for starting a game
+fn start_game(state: SharedState) -> MethodResponse {
+    let game_id = Uuid::new_v4().to_string();
+    let mut games = state.lock().unwrap();
+    games.insert(game_id.clone(), Board::new());
+    let response_body = serde_json::to_string(&Game { game_id }).unwrap();
+    Response::from_string(response_body)
+      .with_header(
+          "Content-type: application/json"
+              .parse::<tiny_http::Header>()
+              .unwrap(),
+      )
+}
+
+
+
+impl Eval<TinyBuildMethod, String>
+  for MethodWrapper<PostMethodImpl> {
+    fn eval() -> String {
+      "POST".to_string()
+    }
+}
+
+impl Eval<TinyBuildMethod, String>
+  for MethodWrapper<GetMethodImpl> {
+    fn eval() -> String {
+      "GET".to_string()
+    }
+}
+
+
+
+// Building a particular route
+impl<Method, Path, Clauses, Formats, ReturnType>
+  EvalCtx<TinyCtx, TinyBuildRoute, ()>
+  for RouteWrapper<RouteImpl<Method, Path, Clauses, Formats, ReturnType>>
+  where
+    Method: IInterface<IMethod>,
+    Path: TlStr,
+    Clauses: HList<IClause>,
+    Formats: HList<ISupportedFormat>,
+    ReturnType: IInterface<IType>,
+    Method: Eval<TinyBuildMethod, String>
+{
+    fn eval_ctx((state, router): TinyCtx) -> () {
+
+    let path = Path::to_string();
+    let method = Method::eval();
+    let path_ = path.clone();
+    let method_ = method.clone();
+    {
+      let mut routes = router.lock().unwrap();
+
+      let handler = move ||
+        { match (method.as_str(), path.as_str()) {
+          ("POST", "/start") => start_game(state.clone()) ,
+          _ => Response::from_string("Not Found").with_status_code(404),
+        }
+      };
+
+      routes.insert((path_, method_), Box::new(handler));
+    }
+    }
+}
+
+
+
+
+// List of routes / end of list - return the final result
+impl<IRoute>
+  EvalCtx<TinyCtx, TinyBuildRouter, ()>
+  for TlN_<IRoute>
+{
+  fn eval_ctx(_ctx: TinyCtx) -> () {
+  }
+}
+
+// List of routes / next route item
+impl<Route, Routes>
+  EvalCtx<TinyCtx, TinyBuildRouter, ()>
+  for TlC_<IRoute, Route, Routes>
+  where
+    Route: IInterface<IRoute>
+      + EvalCtx<TinyCtx, TinyBuildRoute, ()>,
+
+    Routes: HList<IRoute>
+      + EvalCtx<TinyCtx, TinyBuildRouter, ()>,
+{
+  fn eval_ctx(ctx: TinyCtx) -> () {
+    Route::eval_ctx(ctx.clone());   // building this route
+    Routes::eval_ctx(ctx)           // building other routes
+  }
+}
+
+// Building the router for API
+impl<Routes>
+  EvalCtx<TinyCtx, TinyBuildRouter, ()>
+  for Api<Routes>
+  where
+    Routes: HList<IRoute>
+      + EvalCtx<TinyCtx, TinyBuildRouter, ()>,
+{
+  fn eval_ctx(ctx: TinyCtx) -> () {
+    <Routes as
+        EvalCtx<TinyCtx, TinyBuildRouter, ()>
+    >::eval_ctx(ctx)
+  }
+}
+
+fn main_tiny_http() {
+  let state: SharedState = Arc::new(Mutex::new(HashMap::new()));
+  let router = Arc::new(Mutex::new(HashMap::new()));
+
+  <TicTacToeAPI as
+      EvalCtx<TinyCtx, TinyBuildRouter, ()>
+  >::eval_ctx((state.clone(), router.clone()));
+
+
+  let server = Server::http("0.0.0.0:8080").unwrap();
+  println!("Server running on http://localhost:8080");
+
+  loop {
+    for request in server.incoming_requests() {
+        let method = request.method().as_str();
+        let url = request.url();
+
+        let response = match (method, url) {
+            ("POST", "/start") => start_game(state.clone()),
+            // ("POST", url) if url.starts_with("/move/") => make_move(state.clone(), request),
+            // ("GET", url) if url.starts_with("/board/") => get_board(state.clone(), request),
+            _ => Response::from_string("Not Found").with_status_code(404),
+        };
+
+        request.respond(response).unwrap();
+    }
+  }
+}
+
+fn main() {
+  main_tiny_http();
+}

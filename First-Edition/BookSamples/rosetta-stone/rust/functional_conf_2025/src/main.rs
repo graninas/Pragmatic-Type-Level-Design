@@ -21,13 +21,16 @@ use crate::master::language::extensions::{*};
 use axum::{
     extract::{Path, Query},
     response::Json,
-    routing::{get, post},
+    routing::{get, post, MethodRouter},
     Router,
 };
+use axum::handler::Handler;
+
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+
 
 // Game data
 #[derive(Serialize)]
@@ -49,21 +52,127 @@ impl Board {
     }
 }
 
-// Shared state
 type SharedState = Arc<Mutex<HashMap<String, Board>>>;
 
+pub type Ctx = (SharedState, Router);
 
 
 
 
+
+pub enum BuildRouter{}
+pub enum BuildRoute{}
+pub struct BuildMethod<Path: TlStr>
+  (PhantomData::<Path>);
+
+
+
+
+impl
+  EvalCtx<SharedState,
+          BuildMethod<tl_str!("/start")>,
+          (SharedState, MethodRouter)>
+  for MethodWrapper<PostMethodImpl>
+{
+  fn eval_ctx(state: SharedState) -> (SharedState, MethodRouter) {
+    let new_state = state.clone();
+
+    (new_state.clone(),
+      post(
+        || async move {
+            let game_id = Uuid::new_v4().to_string();
+            let mut games = new_state.lock().unwrap();
+            games.insert(game_id.clone(), Board::new());
+
+            // todo: formats, return type
+            Json(Game { game_id })
+        })
+    )
+  }
+}
+
+
+/////////// service evaluators
+
+// Building a particular route
+impl<Method, Path, Clauses, Formats, ReturnType>
+  EvalCtx<Ctx, BuildRoute, Ctx>
+  for RouteWrapper<RouteImpl<Method, Path, Clauses, Formats, ReturnType>>
+  where
+    Method: IInterface<IMethod>,
+    Path: TlStr,
+    Clauses: HList<IClause>,
+    Formats: HList<ISupportedFormat>,
+    ReturnType: IInterface<IType>,
+    Method: EvalCtx<SharedState, BuildMethod<Path>, (SharedState, MethodRouter)>
+{
+    fn eval_ctx((state, router): Ctx) -> Ctx {
+
+    let (new_state, handler) = <Method as
+          EvalCtx<
+            SharedState,
+            BuildMethod<Path>,
+            (SharedState, MethodRouter)
+            >>::eval_ctx(state);
+
+    let path = Path::to_string();
+    let new_router = router.route(&path, handler);
+
+    (new_state, new_router)
+    }
+}
+
+// End of routes - return the final result
+impl<IRoute>
+  EvalCtx<Ctx, BuildRouter, Ctx>
+  for TlN_<IRoute>
+{
+  fn eval_ctx(ctx: Ctx) -> Ctx {
+    ctx
+  }
+}
+
+// Getting the next route
+impl<Route, Routes>
+  EvalCtx<Ctx, BuildRouter, Ctx>
+  for TlC_<IRoute, Route, Routes>
+  where
+    Route: IInterface<IRoute>
+      + EvalCtx<Ctx, BuildRoute, Ctx>,
+
+    Routes: HList<IRoute>
+      + EvalCtx<Ctx, BuildRouter, Ctx>,
+{
+  fn eval_ctx(ctx: Ctx) -> Ctx {
+    let new_ctx = Route::eval_ctx(ctx);   // building this route
+    Routes::eval_ctx(new_ctx)             // building other routes
+  }
+}
+
+// Building the router for API
+impl<Routes>
+  EvalCtx<SharedState, BuildRouter, Router>
+  for Api<Routes>
+  where
+    Routes: HList<IRoute>
+      + EvalCtx<Ctx, BuildRouter, Ctx>,
+{
+  fn eval_ctx(state: SharedState) -> Router {
+    let router = Router::new();
+    let (_, new_router) = Routes::eval_ctx((state, router));
+    new_router
+  }
+}
 
 // "start" :> Post '[JSON] Game
 pub type StartRoute =
   Route<
-    tl_str!("start"),
-    POST<tl_list![ISupportedFormat, JSON],
-         DataType<Game>>,
-    tl_list![IClause]>;
+    POST,
+    tl_str!("/start"),
+    tl_list![IClause],
+    tl_list![ISupportedFormat, JSON],
+    DataType<Game>
+  >;
 
 // "move"
 //        :> Capture "id" String
@@ -73,163 +182,38 @@ pub type StartRoute =
 //        :> Post '[JSON] String
 pub type MoveRoute =
   Route<
-    tl_str!("move"),
-
-    POST<tl_list![ISupportedFormat, JSON],
-         StringType>,
-
+    POST,
+    tl_str!("/move"),
     tl_list![IClause,
       Capture<tl_str!("id"), StringType>,
       Capture<tl_str!("sign"), StringType>,
       QueryParam<tl_str!("h"), IntType>,
-      QueryParam<tl_str!("v"), IntType>
-    ]>;
+      QueryParam<tl_str!("v"), IntType>],
+    tl_list![ISupportedFormat, JSON],
+    StringType
+  >;
 
 //   :<|> "board"
 //        :> Capture "id" String
 //        :> Get '[JSON] Board
 pub type BoardRoute =
   Route<
-    tl_str!("board"),
-
-    GET<tl_list![ISupportedFormat, JSON],
-        DataType<Board>>,
-
-    tl_list![IClause,
-      Capture<tl_str!("id"), StringType>
-    ]>;
+    GET,
+    tl_str!("/board"),
+    tl_list![IClause, Capture<tl_str!("id"), StringType>],
+    tl_list![ISupportedFormat, JSON],
+    DataType<Board>
+  >;
 
 
 pub type TicTacToeAPI =
-  Api<tl_list!
-      [ IRoute
-      , StartRoute
-      , MoveRoute
-      , BoardRoute
-      ]>;
+  Api<tl_list![IRoute,
+    StartRoute
+    // MoveRoute,
+    // BoardRoute
+  ]>;
 
 const TEST: PhantomData<TicTacToeAPI> = PhantomData;
-
-
-
-pub enum BuildRouter{}
-pub enum MethodBody{}
-
-
-// End of routes - return the final route
-impl<IRoute>
-  EvalCtx<(SharedState, Router), BuildRouter, Router>
-  for TlN_<IRoute>
-{
-  fn eval_ctx(ctx: (SharedState, Router)) -> Router {
-    let (_state, router) = ctx;
-    router
-  }
-}
-
-// Getting the next route
-impl<IRoute, Route, Tail>
-  EvalCtx<(SharedState, Router), BuildRouter, Router>
-  for TlC_<IRoute, Route, Tail>
-  where
-    Route: IInterface<IRoute>
-      + EvalCtx<(SharedState, Router), BuildRouter, Router>,
-
-      Tail: HList<IRoute>
-      + EvalCtx<(SharedState, Router), BuildRouter, Router>,
-{
-  fn eval_ctx(ctx: (SharedState, Router)) -> Router {
-    let (_state, router) = ctx;
-    router
-  }
-}
-
-// Building a particular route
-impl<Path_, Method_, Clauses_>
-  EvalCtx<(SharedState, Router), BuildRouter, Router>
-  for RouteWrapper<RouteImpl<Path_, Method_, Clauses_>>
-  where
-      Path_: TlStr,
-      Method_: IInterface<IMethod>
-        + EvalCtx<(SharedState, Router, String), BuildRouter, Router>,
-      Clauses_: HList<IClause>,
-{
-    fn eval_ctx(ctx: (SharedState, Router)) -> Router {
-        let (state, router) = ctx;
-        let path = Path_::to_string();
-        Method_::eval_ctx((state, router, path))
-    }
-}
-
-// Building the POST method for the route
-impl<Formats, ReturnType>
-  EvalCtx<(SharedState, Router, String), BuildRouter, Router>
-  for MethodWrapper<PostMethodImpl<Formats, ReturnType>>
-  where
-      Formats: HList<ISupportedFormat>,
-      ReturnType: IInterface<IType>,
-{
-    fn eval_ctx(ctx: (SharedState, Router, String)) -> Router {
-        let (_state, router, _path) = ctx;
-        router
-    }
-}
-
-// Building the GET method for the route
-impl<Formats, ReturnType>
-  EvalCtx<(SharedState, Router, String), BuildRouter, Router>
-  for MethodWrapper<GetMethodImpl<Formats, ReturnType>>
-  where
-      Formats: HList<ISupportedFormat>,
-      ReturnType: IInterface<IType>,
-{
-    fn eval_ctx(ctx: (SharedState, Router, String)) -> Router {
-        let (_state, router, _path) = ctx;
-        router
-    }
-}
-
-
-// Building the router for API
-impl<Routes>
-  EvalCtx<SharedState, BuildRouter, Router>
-  for Api<Routes>
-  where
-    Routes: HList<IRoute>
-      + EvalCtx<(SharedState, Router), BuildRouter, Router>,
-{
-  fn eval_ctx(state: SharedState) -> Router {
-
-    let router = Router::new();
-
-    Routes::eval_ctx((state, router))
-
-
-    // router.route("/start",
-    //       post({
-    //           let new_state = Arc::clone(&state);
-    //           let game_id = Uuid::new_v4().to_string();
-    //           || async move {
-    //               let mut games = new_state.lock().unwrap();
-    //               games.insert(game_id.clone(), Board::new());
-    //               Json(Game { game_id })
-    //           }
-    //       }
-    //     )
-    // )
-  }
-}
-
-
-// // POST /start
-// async fn start_game(state: SharedState) -> Json<Game> {
-//     let game_id = Uuid::new_v4().to_string();
-//     let mut games = state.lock().unwrap();
-//     games.insert(game_id.clone(), Board::new());
-//     Json(Game { game_id })
-// }
-
-
 
 #[tokio::main]
 async fn main() {

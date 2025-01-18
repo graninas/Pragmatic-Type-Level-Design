@@ -20,8 +20,3 @@ pub type PlainText = SupportedFormat<tl_str!("PlainText")>;
 pub type XML = SupportedFormat<tl_str!("XML")>;
 
 
-pub type POST<Formats, ReturnType> =
-  PostMethod<Formats, ReturnType>;
-
-pub type GET<Formats, ReturnType> =
-  GetMethod<Formats, ReturnType>;

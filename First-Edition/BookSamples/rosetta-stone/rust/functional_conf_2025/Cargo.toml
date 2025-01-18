@@ -10,10 +10,12 @@ tl_list_lib = { path = "./tl_list_lib" }
 tl_str_list = { path = "./tl_str_list" }
 tl_str_macro = { path = "./tl_str_macro" }
 
-axum = "0.6"
 serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
+serde_json = "1.0"
 
+axum = "0.6"
+tiny_http = "0.8"
 
 [dependencies.uuid]
 version = "1.12.0"

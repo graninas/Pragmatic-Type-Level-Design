@@ -104,9 +104,9 @@ pub type BoardRoute =
 
 pub type TicTacToeAPI =
   Api<tl_list![IRoute,
-    StartRoute
-    // MoveRoute,
-    // BoardRoute
+    StartRoute,
+    MoveRoute,
+    BoardRoute
   ]>;
 
 const TEST: PhantomData<TicTacToeAPI> = PhantomData;
@@ -147,6 +147,29 @@ impl
     )
   }
 }
+
+impl
+  EvalCtx<SharedState,
+          AxumBuildMethod<tl_str!("/move")>,
+          (SharedState, MethodRouter)>
+  for MethodWrapper<PostMethodImpl>
+{
+  fn eval_ctx(state: SharedState) -> (SharedState, MethodRouter) {
+    todo!()
+  }
+}
+
+impl
+  EvalCtx<SharedState,
+          AxumBuildMethod<tl_str!("/board")>,
+          (SharedState, MethodRouter)>
+  for MethodWrapper<GetMethodImpl>
+{
+  fn eval_ctx(state: SharedState) -> (SharedState, MethodRouter) {
+    todo!()
+  }
+}
+
 
 // Building a particular route
 impl<Method, Path, Clauses, Formats, ReturnType>
@@ -245,7 +268,7 @@ pub enum TinyBuildMethod{}
 
 type MethodResponse = Response<Cursor<Vec<u8>>>;
 type TinyRouter = Arc<Mutex<HashMap<(String, String),
-                                    Arc<Box<dyn Fn() -> MethodResponse >>>>>;
+                                    Arc<Box<dyn Fn(&Request) -> MethodResponse >>>>>;
 pub type TinyCtx = (SharedState, TinyRouter);
 
 
@@ -265,7 +288,70 @@ fn start_game(state: SharedState) -> MethodResponse {
       )
 }
 
+// Handler for making a move
+fn make_move(state: SharedState, request: &Request) -> MethodResponse {
+  // TODO: build url_parts and query according to the type-level representation
+    let url_parts: Vec<&str> = request.url().split('/').collect();
+    if url_parts.len() < 4 {
+        return Response::from_string("Invalid URL").with_status_code(400);
+    }
 
+    let game_id = url_parts[2].to_string();
+    let mut sign = url_parts[3].to_string();
+    sign = if sign.contains("cross") { "cross".to_owned() }
+           else { "circle".to_owned() };
+
+    let query: HashMap<String, String> = request
+        .url()
+        .split('?')
+        .nth(1)
+        .unwrap_or("")
+        .split('&')
+        .filter_map(|pair| {
+            let mut parts = pair.split('=');
+            Some((parts.next()?.to_string(), parts.next()?.to_string()))
+        })
+        .collect();
+
+    let h: usize = query.get("h").and_then(|v| v.parse().ok()).unwrap_or(usize::MAX);
+    let v: usize = query.get("v").and_then(|v| v.parse().ok()).unwrap_or(usize::MAX);
+
+    if h >= 3 || v >= 3 {
+        return Response::from_string("Invalid move").with_status_code(400);
+    }
+
+    let mut games = state.lock().unwrap();
+    if let Some(board) = games.get_mut(&game_id) {
+        if board.cells[h][v].is_empty() {
+            board.cells[h][v] = sign;
+            return Response::from_string("Move made").with_status_code(200);
+        }
+        return Response::from_string("Cell already occupied").with_status_code(400);
+    }
+
+    Response::from_string("Game not found").with_status_code(404)
+}
+
+// Handler for getting the board
+fn get_board(state: SharedState, request: &Request) -> MethodResponse {
+    let url_parts: Vec<&str> = request.url().split('/').collect();
+    if url_parts.len() < 3 {
+        return Response::from_string("Invalid URL").with_status_code(400);
+    }
+
+    let game_id = url_parts[2].to_string();
+    let games = state.lock().unwrap();
+    if let Some(board) = games.get(&game_id) {
+        let response_body = serde_json::to_string(board).unwrap();
+        Response::from_string(response_body).with_header(
+            "Content-Type: application/json"
+              .parse::<tiny_http::Header>()
+              .unwrap(),
+        )
+    } else {
+        Response::from_string("Game not found").with_status_code(404)
+    }
+}
 
 impl Eval<TinyBuildMethod, String>
   for MethodWrapper<PostMethodImpl> {
@@ -305,9 +391,11 @@ impl<Method, Path, Clauses, Formats, ReturnType>
     {
       let mut routes = router.lock().unwrap();
 
-      let handler = move ||
+      let handler = move |request: &Request|
         { match (method.as_str(), path.as_str()) {
-          ("POST", "/start") => start_game(state.clone()) ,
+          ("POST", "/start") => start_game(state.clone()),
+          ("POST", "/move") => make_move(state.clone(), request),
+          ("GET", "/board") => get_board(state.clone(), request),
           _ => Response::from_string("Not Found").with_status_code(404),
         }
       };
@@ -376,7 +464,9 @@ fn main_tiny_http() {
   loop {
     for request in server.incoming_requests() {
         let method = request.method().as_str();
-        let url = request.url();
+        let url_parts: Vec<&str> = request.url().split('/').collect();
+        let mut url = url_parts[1].to_string();
+        url = "/".to_owned() + &url;
 
         let mut method_call;
         {
@@ -387,7 +477,7 @@ fn main_tiny_http() {
         match method_call
         {
           Some(call) => {
-            let response = call();
+            let response = call(&request);
             request.respond(response).unwrap();
           }
           _ => {
@@ -407,15 +497,6 @@ fn main_tiny_http() {
             request.respond(Response::from_string("Not Found").with_status_code(404)).unwrap();
           }
         }
-
-        // let response = match (method, url) {
-        //     ("POST", "/start") => start_game(state.clone()),
-        //     // ("POST", url) if url.starts_with("/move/") => make_move(state.clone(), request),
-        //     // ("GET", url) if url.starts_with("/board/") => get_board(state.clone(), request),
-        //     _ => Response::from_string("Not Found").with_status_code(404),
-        // };
-
-        // request.respond(response).unwrap();
     }
   }
 }

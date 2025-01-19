@@ -245,7 +245,7 @@ pub enum TinyBuildMethod{}
 
 type MethodResponse = Response<Cursor<Vec<u8>>>;
 type TinyRouter = Arc<Mutex<HashMap<(String, String),
-                                    Box<dyn Fn() -> MethodResponse >>>>;
+                                    Arc<Box<dyn Fn() -> MethodResponse >>>>>;
 pub type TinyCtx = (SharedState, TinyRouter);
 
 
@@ -295,12 +295,13 @@ impl<Method, Path, Clauses, Formats, ReturnType>
     ReturnType: IInterface<IType>,
     Method: Eval<TinyBuildMethod, String>
 {
-    fn eval_ctx((state, router): TinyCtx) -> () {
+  fn eval_ctx((state, router): TinyCtx) -> () {
 
     let path = Path::to_string();
     let method = Method::eval();
     let path_ = path.clone();
     let method_ = method.clone();
+    println!("To add: {} {}", method, path);
     {
       let mut routes = router.lock().unwrap();
 
@@ -311,9 +312,9 @@ impl<Method, Path, Clauses, Formats, ReturnType>
         }
       };
 
-      routes.insert((path_, method_), Box::new(handler));
+      routes.insert((method_, path_), Arc::new(Box::new(handler)));
     }
-    }
+  }
 }
 
 
@@ -377,14 +378,44 @@ fn main_tiny_http() {
         let method = request.method().as_str();
         let url = request.url();
 
-        let response = match (method, url) {
-            ("POST", "/start") => start_game(state.clone()),
-            // ("POST", url) if url.starts_with("/move/") => make_move(state.clone(), request),
-            // ("GET", url) if url.starts_with("/board/") => get_board(state.clone(), request),
-            _ => Response::from_string("Not Found").with_status_code(404),
-        };
+        let mut method_call;
+        {
+          let d = router.lock().unwrap();
+          method_call = d.get(&(method.to_string(), url.to_string())).cloned();
+        }
 
-        request.respond(response).unwrap();
+        match method_call
+        {
+          Some(call) => {
+            let response = call();
+            request.respond(response).unwrap();
+          }
+          _ => {
+            println!("Method and path not found: {} {}", method, url);
+
+            let keys: Vec<_>;
+            {
+                let d = router.lock().unwrap();
+                keys = d.keys().cloned().collect();
+            }
+
+            // Process the keys without holding the lock
+            for (k, v) in keys {
+                println!("{k} {v}");
+            }
+
+            request.respond(Response::from_string("Not Found").with_status_code(404)).unwrap();
+          }
+        }
+
+        // let response = match (method, url) {
+        //     ("POST", "/start") => start_game(state.clone()),
+        //     // ("POST", url) if url.starts_with("/move/") => make_move(state.clone(), request),
+        //     // ("GET", url) if url.starts_with("/board/") => get_board(state.clone(), request),
+        //     _ => Response::from_string("Not Found").with_status_code(404),
+        // };
+
+        // request.respond(response).unwrap();
     }
   }
 }

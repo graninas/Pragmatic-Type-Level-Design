@@ -215,23 +215,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "functional_conf_2025"
-version = "0.1.0"
-dependencies = [
- "assert-type-eq",
- "axum",
- "serde",
- "serde_json",
- "tiny_http",
- "tl_list_lib",
- "tl_str_list",
- "tl_str_macro",
- "tokio",
- "type_level",
- "uuid",
-]
-
-[[package]]
 name = "futures-channel"
 version = "0.3.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1077,6 +1060,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1a05d73b933a847d6cccdda8f838a22ff101ad9bf93e33684f39c1f5f0eece3d"
 dependencies = [
  "unicode-ident",
+]
+
+[[package]]
+name = "web_master"
+version = "0.1.0"
+dependencies = [
+ "assert-type-eq",
+ "axum",
+ "serde",
+ "serde_json",
+ "tiny_http",
+ "tl_list_lib",
+ "tl_str_list",
+ "tl_str_macro",
+ "tokio",
+ "type_level",
+ "uuid",
 ]
 
 [[package]]

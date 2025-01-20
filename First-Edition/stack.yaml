@@ -39,6 +39,8 @@ packages:
 - BookSamples/appendices/AppendixB_FightClub/haskell_value
 - BookSamples/appendices/AppendixC_MythologizedCorrectness
 
+- ../First-Edition/functional_conf_2025/haskell/tic-tac-toe-web
+
 allow-newer: true
 
 extra-deps:

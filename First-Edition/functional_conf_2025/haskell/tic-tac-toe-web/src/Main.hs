@@ -1,61 +1,110 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE TypeFamilies #-}
+
 module Main where
 
-import qualified Cellular.App.App as EApp
-import Cellular.App.Storage.Worlds
-import Cellular.App.Action (AppAction (..), continue, finish, continueWithMsg)
-import Cellular.Assets.Automata.GameOfLife
-import Cellular.Assets.Automata.Seeds
-import Cellular.Assets.Automata.Replicator
-
 import qualified Data.Map as Map
-import Data.IORef ( IORef, newIORef )
-import Data.Proxy
+import GHC.TypeLits
+
+data HttpMethod
+  = POST
+  | PUT
+  | GET
+  | DELETE
+  -- other methods...
+
+data IDataType where
+  DataTypeWrapper :: a -> IDataType
+
+type family MkDataType a :: IDataType where
+  MkDataType a = 'DataTypeWrapper a
+
+data DataTypeImpl d
+type DataType d = MkDataType (DataTypeImpl d)
 
 
-printHelp :: IO AppAction
-printHelp = do
-  putStrLn "\nCommands:"
-  putStrLn "help   - this help message"
-  putStrLn "quit   - exit"
-  putStrLn "rules  - list supported rules"
-  putStrLn "load   - load a world"
-  putStrLn "predef - load predefined worlds"
-  putStrLn "worlds - list loaded worlds"
-  putStrLn "step   - step a world once"
-  putStrLn "print  - print a world"
-  continue
+data IFormat where
+  FormatWrapper :: a -> IFormat
+
+type family MkFormat a :: IFormat where
+  MkFormat a = 'FormatWrapper a
+
+data JsonImpl
+type JSON = MkFormat JsonImpl
+
+data IParam where
+  ParamWrapper :: a -> IParam
+
+type family MkParam a :: IParam where
+  MkParam a = 'ParamWrapper a
+
+
+data QueryParamImpl
+  (name :: Symbol)
+  (t :: IDataType)
+
+type QueryParam name t =
+  MkParam (QueryParamImpl name t)
+
+data CaptureImpl
+  (name :: Symbol)
+  (t :: IDataType)
+
+type Capture name t =
+  MkParam (CaptureImpl name t)
+
+data CustomRoute = Route
+  { rMethod :: HttpMethod
+  , rPath :: Symbol
+  , rParams :: [IParam]
+  , rSupportedFormats :: [IFormat]
+  , rReturnType :: IDataType
+  }
+
+data CustomAPI = API [CustomRoute]
+
+
+data Game = Game
+  { gGameId :: String
+  }
+
+data Board = Board (Map.Map (Int, Int) String)
+
+type StartRoute = Route
+  POST
+  "/start"
+  '[]
+  '[JSON]
+  (DataType Game)
+
+type MoveRoute = Route
+  POST
+  "/move"
+  '[ Capture "id" (DataType String)
+   , Capture "sign" (DataType String)
+   , QueryParam "h" (DataType Int)
+   , QueryParam "v" (DataType Int)
+   ]
+  '[JSON]
+  (DataType String)
+
+type BoardRoute = Route
+  GET
+  "/board"
+  '[ Capture "id" (DataType String) ]
+  '[JSON]
+  (DataType Board)
+
+type TicTacToeAPI = API
+  '[ StartRoute
+   , MoveRoute
+   , BoardRoute
+   ]
 
 
 main :: IO ()
 main = do
-  putStrLn "Welcome to the world of cellular automata!"
-  _ <- printHelp
-
-  worldsRef <- newIORef Map.empty
-  go worldsRef
-
-go :: IORef Worlds -> IO ()
-go worldsRef = do
-  putStrLn "\nType a command:"
-  cmd <- getLine
-
-  appAction <- case filter (/=' ') cmd of
-    "quit"   -> finish
-    "help"   -> printHelp
-    "rules"  -> EApp.processListRuleCodes
-    "worlds" -> EApp.processListWorlds worldsRef
-    "load"   -> EApp.processLoad worldsRef
-    "predef" -> EApp.processLoadPredef worldsRef
-    "step"   -> EApp.processStep worldsRef
-    "print"  -> EApp.processPrint worldsRef
-    _ -> continueWithMsg "Unknown command. Type `help` to see the list of commands."
-
-  case appAction of
-    AppFinish (Just msg) -> putStrLn msg
-    AppFinish _ -> pure ()
-    AppContinue (Just msg) -> do
-      putStrLn msg
-      go worldsRef
-    AppContinue _ -> go worldsRef
+  putStrLn "Hello"

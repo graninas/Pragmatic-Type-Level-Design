@@ -15,6 +15,7 @@ build-type:     Simple
 library
   exposed-modules:
       Main
+      ServantLike
   other-modules:
       Paths_tic_tac_toe_web
   hs-source-dirs:
@@ -56,6 +57,7 @@ library
 executable tic-tac-toe-web
   main-is: Main.hs
   other-modules:
+      ServantLike
       Paths_tic_tac_toe_web
   hs-source-dirs:
       ./src

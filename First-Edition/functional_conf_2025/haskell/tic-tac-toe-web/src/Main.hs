@@ -9,6 +9,8 @@ module Main where
 import qualified Data.Map as Map
 import GHC.TypeLits
 
+import qualified ServantLike
+
 data HttpMethod
   = POST
   | PUT
@@ -103,6 +105,8 @@ type TicTacToeAPI = API
    , MoveRoute
    , BoardRoute
    ]
+
+
 
 
 main :: IO ()

@@ -11,13 +11,6 @@ import GHC.TypeLits
 
 import qualified ServantLike
 
-data HttpMethod
-  = POST
-  | PUT
-  | GET
-  | DELETE
-  -- other methods...
-
 data IDataType where
   DataTypeWrapper :: a -> IDataType
 
@@ -58,12 +51,33 @@ data CaptureImpl
 type Capture name t =
   MkParam (CaptureImpl name t)
 
+
+
+
+data IMethod where
+  MethodWrapper :: a -> IMethod
+
+type family MkMethod a :: IMethod where
+  MkMethod a = 'MethodWrapper a
+
+data PostMethodImpl
+  (supportedFormats :: [IFormat])
+  (returnType :: IDataType)
+
+type Post format ret =
+  MkMethod (PostMethodImpl format ret)
+
+data GetMethodImpl
+  (supportedFormats :: [IFormat])
+  (returnType :: IDataType)
+
+type Get format ret =
+  MkMethod (GetMethodImpl format ret)
+
 data CustomRoute = Route
-  { rMethod :: HttpMethod
-  , rPath :: Symbol
+  { rPath :: Symbol
   , rParams :: [IParam]
-  , rSupportedFormats :: [IFormat]
-  , rReturnType :: IDataType
+  , rMethod :: IMethod
   }
 
 data CustomAPI = API [CustomRoute]
@@ -76,29 +90,23 @@ data Game = Game
 data Board = Board (Map.Map (Int, Int) String)
 
 type StartRoute = Route
-  POST
   "/start"
   '[]
-  '[JSON]
-  (DataType Game)
+  (Post '[JSON] (DataType Game))
 
 type MoveRoute = Route
-  POST
   "/move"
   '[ Capture "id" (DataType String)
    , Capture "sign" (DataType String)
    , QueryParam "h" (DataType Int)
    , QueryParam "v" (DataType Int)
    ]
-  '[JSON]
-  (DataType String)
+  (Post '[JSON] (DataType String))
 
 type BoardRoute = Route
-  GET
   "/board"
   '[ Capture "id" (DataType String) ]
-  '[JSON]
-  (DataType Board)
+  (Get '[JSON] (DataType Board))
 
 type TicTacToeAPI = API
   '[ StartRoute

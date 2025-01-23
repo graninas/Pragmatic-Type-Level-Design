@@ -34,11 +34,11 @@ impl<T> IInterface<IType> for TypeWrapper<T> {
 }
 
 
-pub struct ISupportedFormat;
+pub struct IFormat;
 
-pub struct SupportedFormatWrapper<T> (PhantomData::<T>);
-impl<T> IInterface<ISupportedFormat> for SupportedFormatWrapper<T> {
-  type Interface = ISupportedFormat;
+pub struct FormatWrapper<T> (PhantomData::<T>);
+impl<T> IInterface<IFormat> for FormatWrapper<T> {
+  type Interface = IFormat;
 }
 
 

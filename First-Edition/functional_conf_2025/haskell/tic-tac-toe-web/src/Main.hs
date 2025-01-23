@@ -11,6 +11,7 @@ import GHC.TypeLits
 
 import qualified ServantLike
 
+
 data IDataType where
   DataTypeWrapper :: a -> IDataType
 
@@ -39,14 +40,14 @@ type family MkParam a :: IParam where
 
 data QueryParamImpl
   (name :: Symbol)
-  (t :: IDataType)
+  (t :: *)
 
 type QueryParam name t =
   MkParam (QueryParamImpl name t)
 
 data CaptureImpl
   (name :: Symbol)
-  (t :: IDataType)
+  (t :: *)
 
 type Capture name t =
   MkParam (CaptureImpl name t)
@@ -62,14 +63,14 @@ type family MkMethod a :: IMethod where
 
 data PostMethodImpl
   (supportedFormats :: [IFormat])
-  (returnType :: IDataType)
+  (returnType :: *)
 
 type Post format ret =
   MkMethod (PostMethodImpl format ret)
 
 data GetMethodImpl
   (supportedFormats :: [IFormat])
-  (returnType :: IDataType)
+  (returnType :: *)
 
 type Get format ret =
   MkMethod (GetMethodImpl format ret)
@@ -89,31 +90,69 @@ data Game = Game
 
 data Board = Board (Map.Map (Int, Int) String)
 
-type StartRoute = Route
-  "/start"
-  '[]
-  (Post '[JSON] (DataType Game))
+-- type StartRoute = Route
+--   "/start"
+--   '[]
+--   (Post '[JSON] Game)
 
-type MoveRoute = Route
-  "/move"
-  '[ Capture "id" (DataType String)
-   , Capture "sign" (DataType String)
-   , QueryParam "h" (DataType Int)
-   , QueryParam "v" (DataType Int)
+-- type MoveRoute = Route
+--   "/move"
+--   '[ Capture "id" String
+--    , Capture "sign" String
+--    , QueryParam "h" Int
+--    , QueryParam "v" Int
+--    ]
+--   (Post '[JSON] String)
+
+-- type BoardRoute = Route
+--   "/board"
+--   '[ Capture "id" String ]
+--   (Get '[JSON] Board)
+
+-- type TicTacToeAPI = API
+--   '[ StartRoute
+--    , MoveRoute
+--    , BoardRoute
+--    ]
+
+
+
+
+
+
+
+type TicTacToeAPI =
+  '[ Route "/start"
+       '[]
+        (Post '[JSON] Game)
+   , Route "/move"
+       '[ Capture "id" String
+        , Capture "sign" String
+        , QueryParam "h" Int
+        , QueryParam "v" Int
+        ]
+        (Post '[JSON] String)
+   , Route "/board"
+       '[ Capture "id" String
+        ]
+        (Get '[JSON] Board)
    ]
-  (Post '[JSON] (DataType String))
 
-type BoardRoute = Route
-  "/board"
-  '[ Capture "id" (DataType String) ]
-  (Get '[JSON] (DataType Board))
 
-type TicTacToeAPI = API
-  '[ StartRoute
-   , MoveRoute
-   , BoardRoute
-   ]
 
+
+-- type TicTacToeAPI =
+--        "start"
+--        :> Post '[JSON] Game
+--   :<|> "move"
+--        :> Capture "id" String
+--        :> Capture "sign" String
+--        :> QueryParam "h" Int
+--        :> QueryParam "v" Int
+--        :> Post '[JSON] String
+--   :<|> "board"
+--        :> Capture "id" String
+--        :> Get '[JSON] Board
 
 
 

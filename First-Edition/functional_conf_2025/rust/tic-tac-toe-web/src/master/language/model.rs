@@ -22,13 +22,13 @@ pub struct CustomTypeImpl<T>
 pub type CustomType<T> = TypeWrapper<CustomTypeImpl<T>>;
 
 
-pub struct SupportedFormatImpl<
+pub struct FormatImpl<
     Name: TlStr
   >
   (PhantomData::<Name>);
 
-pub type SupportedFormat<Name> =
-  SupportedFormatWrapper<SupportedFormatImpl<Name>>;
+pub type Format<Name> =
+  FormatWrapper<FormatImpl<Name>>;
 
 
 
@@ -61,7 +61,7 @@ pub struct RouteImpl<
     Method: IInterface<IMethod>,
     Path: TlStr,
     Clauses: HList<IClause>,
-    SupportedFormats: HList<ISupportedFormat>,
+    SupportedFormats: HList<IFormat>,
     ReturnType: IInterface<IType>
   >
   (PhantomData::<(Method, Path, Clauses, SupportedFormats, ReturnType)>);

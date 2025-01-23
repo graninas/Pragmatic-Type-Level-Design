@@ -60,44 +60,32 @@ impl Board {
 type SharedState = Arc<Mutex<HashMap<String, Board>>>;
 
 
-// "start" :> Post '[JSON] Game
 pub type StartRoute =
   Route<
     POST,
     tl_str!("/start"),
     tl_list![IClause],
-    tl_list![ISupportedFormat, JSON],
+    tl_list![IFormat, JSON],
     DataType<Game>
   >;
 
-// "move"
-//        :> Capture "id" String
-//        :> Capture "sign" String
-//        :> QueryParam "h" Int
-//        :> QueryParam "v" Int
-//        :> Post '[JSON] String
-pub type MoveRoute =
-  Route<
-    POST,
-    tl_str!("/move"),
-    tl_list![IClause,
-      Capture<tl_str!("id"), StringType>,
-      Capture<tl_str!("sign"), StringType>,
-      QueryParam<tl_str!("h"), IntType>,
-      QueryParam<tl_str!("v"), IntType>],
-    tl_list![ISupportedFormat, JSON],
-    StringType
-  >;
+pub type MoveRoute = Route<
+  POST,
+  tl_str!("/move"),
+  tl_list![IClause,
+    Capture<tl_str!("id"), StringType>,
+    Capture<tl_str!("sign"), StringType>,
+    QueryParam<tl_str!("h"), IntType>,
+    QueryParam<tl_str!("v"), IntType>],
+  tl_list![IFormat, JSON],
+  StringType>;
 
-//   :<|> "board"
-//        :> Capture "id" String
-//        :> Get '[JSON] Board
 pub type BoardRoute =
   Route<
     GET,
     tl_str!("/board"),
     tl_list![IClause, Capture<tl_str!("id"), StringType>],
-    tl_list![ISupportedFormat, JSON],
+    tl_list![IFormat, JSON],
     DataType<Board>
   >;
 
@@ -179,7 +167,7 @@ impl<Method, Path, Clauses, Formats, ReturnType>
     Method: IInterface<IMethod>,
     Path: TlStr,
     Clauses: HList<IClause>,
-    Formats: HList<ISupportedFormat>,
+    Formats: HList<IFormat>,
     ReturnType: IInterface<IType>,
     Method: EvalCtx<SharedState, AxumBuildMethod<Path>, (SharedState, MethodRouter)>
 {
@@ -377,7 +365,7 @@ impl<Method, Path, Clauses, Formats, ReturnType>
     Method: IInterface<IMethod>,
     Path: TlStr,
     Clauses: HList<IClause>,
-    Formats: HList<ISupportedFormat>,
+    Formats: HList<IFormat>,
     ReturnType: IInterface<IType>,
     Method: Eval<TinyBuildMethod, String>
 {

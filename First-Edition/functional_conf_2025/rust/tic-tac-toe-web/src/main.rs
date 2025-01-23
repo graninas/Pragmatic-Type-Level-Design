@@ -2,6 +2,7 @@ use tl_list_lib::tl_list;
 use tl_list_lib::tl_i32_list;
 use tl_list_lib::HList;
 use type_level::IInterface;
+use type_level::Wrapper;
 use tl_list_lib::I32List;
 use tl_str_list::TlStr;
 use tl_str_macro::tl_str;
@@ -16,7 +17,6 @@ use std::marker::PhantomData;
 mod master;
 
 use crate::master::language::model::{*};
-use crate::master::language::web::{*};
 use crate::master::language::extensions::{*};
 
 use axum::{
@@ -117,7 +117,7 @@ impl
   EvalCtx<SharedState,
           AxumBuildMethod<tl_str!("/start")>,
           (SharedState, MethodRouter)>
-  for MethodWrapper<PostMethodImpl>
+  for Wrapper<IMethod, PostMethodImpl>
 {
   fn eval_ctx(state: SharedState) -> (SharedState, MethodRouter) {
     let new_state = state.clone();
@@ -140,7 +140,7 @@ impl
   EvalCtx<SharedState,
           AxumBuildMethod<tl_str!("/move")>,
           (SharedState, MethodRouter)>
-  for MethodWrapper<PostMethodImpl>
+  for Wrapper<IMethod, PostMethodImpl>
 {
   fn eval_ctx(state: SharedState) -> (SharedState, MethodRouter) {
     todo!()
@@ -151,7 +151,7 @@ impl
   EvalCtx<SharedState,
           AxumBuildMethod<tl_str!("/board")>,
           (SharedState, MethodRouter)>
-  for MethodWrapper<GetMethodImpl>
+  for Wrapper<IMethod, GetMethodImpl>
 {
   fn eval_ctx(state: SharedState) -> (SharedState, MethodRouter) {
     todo!()
@@ -162,7 +162,7 @@ impl
 // Building a particular route
 impl<Method, Path, Clauses, Formats, ReturnType>
   EvalCtx<Ctx, AxumBuildRoute, Ctx>
-  for RouteWrapper<RouteImpl<Method, Path, Clauses, Formats, ReturnType>>
+  for Wrapper<IRoute, RouteImpl<Method, Path, Clauses, Formats, ReturnType>>
   where
     Method: IInterface<IMethod>,
     Path: TlStr,
@@ -342,14 +342,14 @@ fn get_board(state: SharedState, request: &Request) -> MethodResponse {
 }
 
 impl Eval<TinyBuildMethod, String>
-  for MethodWrapper<PostMethodImpl> {
+  for Wrapper<IMethod, PostMethodImpl> {
     fn eval() -> String {
       "POST".to_string()
     }
 }
 
 impl Eval<TinyBuildMethod, String>
-  for MethodWrapper<GetMethodImpl> {
+  for Wrapper<IMethod, GetMethodImpl> {
     fn eval() -> String {
       "GET".to_string()
     }
@@ -360,7 +360,7 @@ impl Eval<TinyBuildMethod, String>
 // Building a particular route
 impl<Method, Path, Clauses, Formats, ReturnType>
   EvalCtx<TinyCtx, TinyBuildRoute, ()>
-  for RouteWrapper<RouteImpl<Method, Path, Clauses, Formats, ReturnType>>
+  for Wrapper<IRoute, RouteImpl<Method, Path, Clauses, Formats, ReturnType>>
   where
     Method: IInterface<IMethod>,
     Path: TlStr,

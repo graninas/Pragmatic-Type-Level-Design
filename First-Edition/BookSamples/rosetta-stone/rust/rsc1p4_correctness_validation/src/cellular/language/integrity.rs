@@ -4,6 +4,7 @@ use tl_list_lib::HList;
 use tl_str_list::TlStr;
 
 use type_level::IInterface;
+use type_level::Wrapper;
 use type_level::IsSame;
 use type_level::BoolKind;
 use type_level::True;
@@ -16,8 +17,8 @@ use crate::automaton::IState;
 use crate::automaton::IStep;
 use crate::automaton::IStateTransition;
 use crate::automaton::INeighborhood;
+use crate::automaton::IRule;
 use crate::automaton::Step;
-use crate::automaton::RuleWrapper;
 use crate::cellular::language::extensions::RuleImpl;
 
 
@@ -105,7 +106,7 @@ impl<StDict, DefSt, Ts>
 
 impl<StDict, N, C, Nh, Step>
   Verify<StatesValid>
-  for RuleWrapper<RuleImpl<StDict, N, C, Nh, Step>>
+  for Wrapper<IRule, RuleImpl<StDict, N, C, Nh, Step>>
   where
     StDict: HList<IState>,
     N: TlStr,

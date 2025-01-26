@@ -14,6 +14,11 @@ impl<I, T> IInterface<I> for Wrapper<I, T> {
   type Interface = I;
 }
 
+// Universal evaluation mechanism
 pub trait Eval<Verb, Res>{
   fn eval() -> Res;
+}
+
+pub trait EvalCtx<Ctx, Verb, Res>{
+  fn eval_ctx(ctx: Ctx) -> Res;
 }

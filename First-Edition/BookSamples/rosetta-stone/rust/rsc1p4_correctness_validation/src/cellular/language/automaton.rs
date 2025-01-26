@@ -4,39 +4,23 @@ use std::marker::PhantomData;
 
 // -- Interfaces
 
-// -- -- State
-
 pub struct IState;
+pub struct ICellCondition;
+pub struct INeighborhood;
+pub struct IStateTransition;
+pub struct IStep;
+pub struct IRule;
 
+// For some reason, abstract Wrapper is incompatible with the
+// type equality mechanism. Only types with custom wrappers
+// can be used with gen_equalities! macro.
 pub struct StateWrapper<T> (PhantomData::<T>);
 impl<T> IInterface<IState> for StateWrapper<T> {
   type Interface = IState;
 }
 
 
-// -- -- Cell condition
-
-pub struct ICellCondition;
-
-pub struct CellConditionWrapper<T> (PhantomData::<T>);
-impl<T> IInterface<ICellCondition> for CellConditionWrapper<T> {
-  type Interface = ICellCondition;
-}
-
-
-// -- -- Neighborhood
-
-pub struct INeighborhood;
-
-pub struct NeighborhoodWrapper<T> (PhantomData::<T>);
-impl<T> IInterface<INeighborhood> for NeighborhoodWrapper<T> {
-  type Interface = INeighborhood;
-}
-
-
 // -- Customizable domain model
-
-pub struct IStateTransition;
 
 pub struct StateTransition <
     FromState: IInterface<IState>,
@@ -55,7 +39,6 @@ impl<F, T, C> IInterface<IStateTransition>
   type Interface = IStateTransition;
 }
 
-pub struct IStep;
 
 pub struct Step <
     DefState: IInterface<IState>,
@@ -73,11 +56,3 @@ impl<D, T>
 }
 
 
-// -- -- Rule
-
-pub struct IRule;
-
-pub struct RuleWrapper<T> (PhantomData::<T>);
-impl<T> IInterface<IRule> for RuleWrapper<T> {
-  type Interface = IRule;
-}

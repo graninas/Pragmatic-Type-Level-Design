@@ -1,3 +1,4 @@
+use std::marker::PhantomData;
 
 // Advanced custom kind system
 pub trait IInterface<I> {
@@ -6,10 +7,22 @@ pub trait IInterface<I> {
   // type Interface = I;
 }
 
-// Evaluation of an arbitrary verb
+// Type-level existential wrapper
+pub struct Wrapper<I, T> (PhantomData::<(I, T)>);
+
+impl<I, T> IInterface<I> for Wrapper<I, T> {
+  type Interface = I;
+}
+
+// Universal evaluation mechanism
 pub trait Eval<Verb, Res>{
   fn eval() -> Res;
 }
+
+pub trait EvalCtx<Ctx, Verb, Res>{
+  fn eval_ctx(ctx: Ctx) -> Res;
+}
+
 
 // Checking if the types are identical.
 // Returns True or False.
@@ -80,6 +93,8 @@ impl <IfTrue, IfFalse>
 //
 // Usage:
 // gen_equalities![A, B, C];
+//
+// gen_inequalities is a helper macro
 #[macro_export]
 macro_rules! gen_inequalities {
 

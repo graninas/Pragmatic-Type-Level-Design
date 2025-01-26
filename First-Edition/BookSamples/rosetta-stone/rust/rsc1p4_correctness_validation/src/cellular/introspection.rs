@@ -1,5 +1,6 @@
 
 use type_level::IInterface;
+use type_level::Wrapper;
 use type_level::Eval;
 use tl_list_lib::HList;
 use tl_list_lib::TlN_;
@@ -15,10 +16,8 @@ use crate::automaton::INeighborhood;
 use crate::automaton::IStateTransition;
 use crate::automaton::ICellCondition;
 use crate::automaton::StateTransition;
-use crate::automaton::RuleWrapper;
-use crate::automaton::NeighborhoodWrapper;
 use crate::automaton::StateWrapper;
-use crate::automaton::CellConditionWrapper;
+use crate::automaton::IRule;
 use crate::automaton::Step;
 use crate::cellular::language::extensions::RuleImpl;
 use crate::cellular::language::extensions::AdjacentsLvlImpl;
@@ -88,7 +87,7 @@ impl<Name, const IDX: u8>
 
 impl<S, Cnts>
   Eval<Introspect, String>
-  for CellConditionWrapper<NeighborsCountImpl<S, Cnts>>
+  for Wrapper<ICellCondition, NeighborsCountImpl<S, Cnts>>
   where
     S: IInterface<IState> + Eval<Introspect, String>,
     Cnts: I32List + Eval<Introspect, String>
@@ -133,7 +132,7 @@ impl<StDict, DefSt, Ts>
 
 impl<const LVL: u8>
   Eval<Introspect, String>
-  for NeighborhoodWrapper<AdjacentsLvlImpl<LVL>>
+  for Wrapper<INeighborhood, AdjacentsLvlImpl<LVL>>
 {
   fn eval() -> String {
     "Lvl ".to_string() + &format!("{}", LVL)
@@ -142,7 +141,7 @@ impl<const LVL: u8>
 
 impl<StDict, Name, Code, Nh, Step>
   Eval<Introspect, String>
-  for RuleWrapper<RuleImpl<StDict, Name, Code, Nh, Step>>
+  for Wrapper<IRule, RuleImpl<StDict, Name, Code, Nh, Step>>
   where
     StDict: HList<IState>,
     Name: TlStr,

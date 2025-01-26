@@ -8,7 +8,10 @@ pub trait HList<I> {
 }
 
 pub struct TlN_<I>(PhantomData::<I>);
-pub struct TlC_<I, Item: IInterface<I>, Tail>(PhantomData::<(I, Item, Tail)>);
+pub struct TlC_<I,
+                Item: IInterface<I>,
+                Tail: HList<I>>
+  (PhantomData::<(I, Item, Tail)>);
 
 impl<I> HList<I> for TlN_<I> {
   type Interface = I;

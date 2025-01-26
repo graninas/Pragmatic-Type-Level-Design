@@ -1,17 +1,14 @@
 use tl_list_lib::tl_list;
-use tl_list_lib::tl_i32_list;
 use tl_list_lib::HList;
+use tl_list_lib::TlN_;
+use tl_list_lib::TlC_;
 use type_level::IInterface;
 use type_level::Wrapper;
-use tl_list_lib::I32List;
 use tl_str_list::TlStr;
 use tl_str_macro::tl_str;
 use type_level::EvalCtx;
 use type_level::Eval;
-use tl_list_lib::TlN_;
-use tl_list_lib::TlC_;
 
-use assert_type_eq::assert_type_eq;
 use std::marker::PhantomData;
 
 mod master;
@@ -20,9 +17,8 @@ use crate::master::language::model::{*};
 use crate::master::language::extensions::{*};
 
 use axum::{
-    extract::{Path, Query},
     response::Json,
-    routing::{get, post, MethodRouter},
+    routing::{post, MethodRouter},
     handler::Handler,
     Router,
 };
@@ -69,14 +65,19 @@ pub type StartRoute =
     DataType<Game>
   >;
 
+type MoveRouteClauses =
+  tl_list![IClause,
+      Capture<tl_str!("id"), StringType>,
+      Capture<tl_str!("sign"), StringType>,
+      QueryParam<tl_str!("h"), IntType>,
+      QueryParam<tl_str!("v"), IntType>
+  ];
+
+
 pub type MoveRoute = Route<
   POST,
   tl_str!("/move"),
-  tl_list![IClause,
-    Capture<tl_str!("id"), StringType>,
-    Capture<tl_str!("sign"), StringType>,
-    QueryParam<tl_str!("h"), IntType>,
-    QueryParam<tl_str!("v"), IntType>],
+  MoveRouteClauses,
   tl_list![IFormat, JSON],
   StringType>;
 
@@ -99,6 +100,44 @@ pub type TicTacToeAPI =
 
 const TEST: PhantomData<TicTacToeAPI> = PhantomData;
 
+////// many type classes interpretation /////////////
+
+pub trait InterpretQueryClause {
+  fn interpret() -> ();
+}
+
+impl<Name, Type>
+  InterpretQueryClause
+  for Wrapper<IClause,
+              QueryParamImpl<Name, Type>>
+  where
+    Name: TlStr,
+    Type: IInterface<IType>
+{
+  fn interpret() -> () {
+  }
+}
+
+
+pub trait InterpretRoute {
+  fn interpret() -> ();
+}
+
+impl<Method, Path, Clauses, Formats, ReturnType>
+  InterpretRoute
+  for Wrapper<IRoute,
+              RouteImpl<Method, Path, Clauses, Formats, ReturnType>>
+  where
+    Method: IInterface<IMethod>,
+    Path: TlStr,
+    Clauses: HList<IClause>,
+    Formats: HList<IFormat>,
+    ReturnType: IInterface<IType>,
+    Method: Eval<TinyBuildMethod, String>
+{
+  fn interpret() -> () {
+  }
+}
 
 
 
@@ -107,8 +146,8 @@ const TEST: PhantomData<TicTacToeAPI> = PhantomData;
 pub type Ctx = (SharedState, Router);
 
 
-pub enum AxumBuildRouter{}
-pub enum AxumBuildRoute{}
+pub struct AxumBuildRouter;
+pub struct AxumBuildRoute;
 pub struct AxumBuildMethod<Path: TlStr>
   (PhantomData::<Path>);
 
@@ -250,9 +289,9 @@ async fn main_axum() {
 /////////////// tiny http //////////////////////
 
 
-pub enum TinyBuildRouter{}
-pub enum TinyBuildRoute{}
-pub enum TinyBuildMethod{}
+struct TinyBuildRouter;
+struct TinyBuildRoute;
+struct TinyBuildMethod;
 
 type MethodResponse = Response<Cursor<Vec<u8>>>;
 type TinyRouter = Arc<Mutex<HashMap<(String, String),

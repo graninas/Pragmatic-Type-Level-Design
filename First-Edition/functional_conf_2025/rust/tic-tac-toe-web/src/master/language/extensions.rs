@@ -1,8 +1,6 @@
 use crate::master::language::model::{*};
 
 use tl_str_macro::tl_str;
-use tl_list_lib::tl_list;
-use tl_list_lib::tl_i32_list;
 
 
 pub type IntType = Type<tl_str!("int")>;

@@ -33,7 +33,7 @@ impl Wrapper {
 
 
 enum EmptyADT1 {}
-struct EmptyADT2 {}
+struct EmptyADT2;
 
 impl Description for Proxy<EmptyADT1> {
   fn describe(&self) -> String {

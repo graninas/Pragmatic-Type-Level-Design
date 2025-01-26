@@ -4,8 +4,8 @@ use crate::adts::bool_kind::BoolKind;
 
 pub trait PersonKind {}
 
-pub enum Teacher {}
-pub enum Student {}
+pub struct Teacher;
+pub struct Student;
 
 impl PersonKind for Teacher {}
 impl PersonKind for Student {}

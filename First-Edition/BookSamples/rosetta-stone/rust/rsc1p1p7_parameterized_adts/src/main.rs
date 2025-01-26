@@ -4,7 +4,7 @@ trait Description {
   fn describe() -> String;
 }
 
-enum Benoit {}
+struct Benoit;
 struct Mandelbrot<T> (PhantomData<T>);
 
 type Fractal = Mandelbrot<Mandelbrot<Mandelbrot<Benoit>>>;

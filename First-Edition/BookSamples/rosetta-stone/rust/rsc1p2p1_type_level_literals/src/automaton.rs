@@ -12,9 +12,9 @@ pub type Board = Vec<Vec<Cell>>;
 // This can be strengthened more to prevent confusing Born and Survided,
 // eg CellWorld<Born<1>, Born<0>>;
 
-pub enum Born<const N:u8> {}
-pub enum Survived<const N:u8>{}
-pub enum Placeholder{}
+pub struct Born<const N:u8>;
+pub struct Survived<const N:u8>;
+pub struct Placeholder;
 
 pub enum CellWorld<T, U> {
   CW {

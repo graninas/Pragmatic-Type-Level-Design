@@ -1,6 +1,6 @@
 
 enum EmptyADT1 {}
-struct EmptyADT2 {}
+struct EmptyADT2;
 
 trait StaticDescription {
   fn static_describe() -> &'static str;

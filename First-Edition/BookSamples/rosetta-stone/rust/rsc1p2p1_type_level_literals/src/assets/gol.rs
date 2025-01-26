@@ -7,7 +7,7 @@ use automaton::Cell;
 use automaton::IAutomaton;
 use automaton::Placeholder;
 
-pub enum GoLRule {}
+pub struct GoLRule;
 
 pub type GoL = CellWorld<GoLRule, Placeholder>;
 

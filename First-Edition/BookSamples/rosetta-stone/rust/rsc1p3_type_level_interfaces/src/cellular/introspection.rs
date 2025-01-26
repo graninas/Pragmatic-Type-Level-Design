@@ -28,7 +28,7 @@ use crate::cellular::language::extensions::NeighborsCountImpl;
 // as we did it in Haskell.
 
 #[allow(dead_code)]
-pub enum Introspect{}
+pub struct Introspect;
 
 
 impl<I>

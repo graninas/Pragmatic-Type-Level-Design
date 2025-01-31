@@ -29,6 +29,10 @@ pub struct StateImpl<Name: TlStr, const IDX: u8> (PhantomData::<Name>);
 pub type State<Name, const IDX: u8> =
   Wrapper<IState, StateImpl<Name, IDX>>;
 
+pub struct UnknownStateImpl;
+
+pub type UnknownState = Wrapper<IState, UnknownStateImpl>;
+
 
 pub struct RuleImpl <
     Name: TlStr,

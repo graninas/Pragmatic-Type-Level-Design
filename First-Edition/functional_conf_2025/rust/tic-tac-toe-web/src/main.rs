@@ -15,6 +15,8 @@ mod master;
 
 use crate::master::language::model::{*};
 use crate::master::language::extensions::{*};
+use crate::master::assets::big_type_level_model::BigTypeLevelModel;
+
 
 use axum::{
     response::Json,
@@ -135,8 +137,9 @@ impl<Method, Path, Clauses, Formats, ReturnType>
     ReturnType: IInterface<IType>,
     Method: Eval<TinyBuildMethod, String>
 {
-  fn interpret() -> () {
-  }
+    fn interpret() -> () {
+        todo!()   // do something real
+    }
 }
 
 
@@ -531,3 +534,107 @@ fn main_tiny_http() {
 fn main() {
   main_tiny_http();
 }
+
+
+// Code for the post "Type-level interfaces in Rust"
+
+type MoveClauses = tl_list![IClause,
+       Capture<tl_str!("id"), StringType>,
+       Capture<tl_str!("sign"), StringType>,
+       QueryParam<tl_str!("h"), IntType>,
+       QueryParam<tl_str!("v"), IntType>];
+
+type SupportedFormats = tl_list![IFormat, JSON];
+
+struct DeleteMethodImpl;
+
+type DELETE = Wrapper<IMethod, DeleteMethodImpl>;
+
+type MoveRoute2 = Wrapper<IRoute, RouteImpl<
+   DELETE,
+   tl_str!("/move"),
+   MoveClauses,
+   SupportedFormats,
+   StringType>>;
+
+const MOVE_ROUTE_2_TEST: PhantomData<MoveRoute2> = PhantomData;
+
+pub type StartRoute2 =
+  Route<POST, tl_str!("/start"),
+    tl_list![IClause],
+    tl_list![IFormat, JSON],
+    DataType<Game>
+  >;
+
+const START_ROUTE_2_TEST: PhantomData<StartRoute2> = PhantomData;
+
+type TicTacToeAPI2 = tl_list![IRoute,
+      Route<POST, tl_str!("/start"),
+            tl_list![IClause],
+            tl_list![IFormat, JSON],
+            DataType<Game>>,
+      Route<POST, tl_str!("/move"),
+            tl_list![IClause,
+                     Capture<tl_str!("id"), StringType>,
+                     Capture<tl_str!("sign"), StringType>,
+                     QueryParam<tl_str!("h"), IntType>,
+                     QueryParam<tl_str!("v"), IntType>],
+            tl_list![IFormat, JSON],
+            StringType>,
+      Route<GET, tl_str!("/board"),
+            tl_list![IClause,
+                     Capture<tl_str!("id"), StringType>],
+            tl_list![IFormat, JSON],
+            DataType<Board>>];
+
+const TIC_TAC_TOE_API_2_TEST: PhantomData<TicTacToeAPI2> = PhantomData;
+
+
+const BIG_TYPE_LEVEL_MODEL_TEST: PhantomData<BigTypeLevelModel> = PhantomData;
+
+
+trait BoolKind {}
+
+struct True;
+struct False;
+
+impl BoolKind for True {}
+impl BoolKind for False {}
+
+struct RWPermissions<
+    Read: BoolKind,
+    Write: BoolKind>
+  (PhantomData::<(Read, Write)>);
+
+type MyPermissions = RWPermissions<True, False>;
+
+
+
+trait FormatKind {}
+
+struct FormatJSON;
+struct FormatXML;
+struct FormatPlainText;
+
+impl FormatKind for FormatJSON {}
+impl FormatKind for FormatXML {}
+impl FormatKind for FormatPlainText {}
+
+// struct NotPossibleWithTraits<
+//     Formats: HList<FormatKind>,     // Won't compile
+//     Flags: HList<BoolKind>>         // Won't compile
+//   (PhantomData::<(Formats)>);
+
+
+
+// trait InterpretRouteToTinyHttp ...
+// trait InterpretMethodToTinyHttp ...
+// trait InterpretFormatToTinyHttp ...
+// trait InterpretTypeToTinyHttp ...
+// trait InterpretClauseToTinyHttp ...
+
+// trait InterpretRouteToAxum ...
+// trait InterpretMethodToAxum ...
+// trait InterpretFormatToAxum ...
+// trait InterpretTypeToAxum ...
+// trait InterpretClauseToAxum ...

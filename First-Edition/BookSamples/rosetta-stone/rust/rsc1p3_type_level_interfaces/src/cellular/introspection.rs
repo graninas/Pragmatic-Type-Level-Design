@@ -21,6 +21,7 @@ use crate::automaton::Step;
 use crate::cellular::language::extensions::RuleImpl;
 use crate::cellular::language::extensions::AdjacentsLvlImpl;
 use crate::cellular::language::extensions::StateImpl;
+use crate::cellular::language::extensions::UnknownStateImpl;
 use crate::cellular::language::extensions::NeighborsCountImpl;
 
 
@@ -79,6 +80,15 @@ impl<Name, const IDX: u8>
 {
   fn eval() -> String {
     format!("{} [{}]", Name::to_string(), IDX)
+  }
+}
+
+impl
+  Eval<Introspect, String>
+  for Wrapper<IState, UnknownStateImpl>
+{
+  fn eval() -> String {
+    "Unk".to_string()
   }
 }
 

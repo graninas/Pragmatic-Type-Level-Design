@@ -3,6 +3,7 @@ use crate::automaton::IStateTransition;
 use crate::automaton::StateTransition;
 use crate::automaton::Step;
 use crate::cellular::language::extensions::State;
+use crate::cellular::language::extensions::UnknownState;
 use crate::cellular::language::extensions::NeighborsCount;
 use crate::cellular::language::extensions::AdjacentsLvl;
 use crate::cellular::language::extensions::Rule;
@@ -22,7 +23,9 @@ pub type Neighbors23 = NeighborsCount<A, tl_i32_list![2, 3]>;
 pub type GolTransitions = tl_list![
   IStateTransition,
   StateTransition<D, A, Neighbors3>,
-  StateTransition<A, A, Neighbors23>];
+  StateTransition<A, A, Neighbors23>,
+  StateTransition<UnknownState, UnknownState, Neighbors3>
+  ];
 
 pub type GoLStep = Step<D, GolTransitions>;
 

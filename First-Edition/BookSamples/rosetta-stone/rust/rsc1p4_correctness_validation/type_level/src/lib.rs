@@ -44,8 +44,8 @@ impl IsFalse for False {}
 
 
 
-pub enum True {}
-pub enum False {}
+pub struct True;
+pub struct False;
 
 pub trait BoolKind {
   fn to_bool() -> bool;

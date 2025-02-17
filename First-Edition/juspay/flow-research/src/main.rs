@@ -284,12 +284,64 @@ pub type PaymentsStory = Story<
         IScenario,
         NormalPaymentScenario]>;
 
-
 pub struct IsInstantPaymentMethodCond <P: IInterface<IVar<PaymentMethodType>>>
   (PhantomData<P>);
+
 pub type IsInstantPaymentMethod<P>
   = Wrapper<ICondition, IsInstantPaymentMethodCond<P>>;
 
+pub struct PaymentIntentRequiredImpl<
+  Gateway: IInterface<IVar<PaymentGatewayType>>
+  >(PhantomData<Gateway>);
+
+pub type PaymentIntentRequired<Gateway> =
+  Wrapper<ICondition, PaymentIntentRequiredImpl<Gateway>>;
+
+// Actions
+pub struct LoadMerchantProfileImpl<
+  ApiKey: IInterface<IVar<MerchantApiKeyType>>
+  >(PhantomData<ApiKey>);
+pub type LoadMerchantProfile<ApiKey> =
+  Wrapper<IAction, LoadMerchantProfileImpl<ApiKey>>;
+
+pub struct ChoosePaymentGatewayImpl<
+  Profile: IInterface<IVar<MerchantProfileType>>
+  >(PhantomData<Profile>);
+pub type ChoosePaymentGateway<Profile> =
+  Wrapper<IAction, ChoosePaymentGatewayImpl<Profile>>;
+
+pub struct CreatePaymentIntentImpl<
+  Gateway: IInterface<IVar<PaymentGatewayType>>
+  >(PhantomData<Gateway>);
+
+pub type CreatePaymentIntent<Gateway> =
+  Wrapper<IAction, CreatePaymentIntentImpl<Gateway>>;
+
+pub struct AttachPaymentMethodImpl<
+  Gateway: IInterface<IVar<PaymentGatewayType>>,
+  Payment: IInterface<IVar<PaymentIntentType>>
+  >(PhantomData<(Gateway, Payment)>);
+
+pub type AttachPaymentMethod<Gateway, Payment> =
+  Wrapper<IAction, AttachPaymentMethodImpl<Gateway, Payment>>;
+
+pub struct AuthorizePaymentImpl<
+  Gateway: IInterface<IVar<PaymentGatewayType>>,
+  Payment: IInterface<IVar<PaymentType>>
+  >(PhantomData<(Gateway, Payment)>);
+
+pub type AuthorizePayment<Gateway, Payment> =
+  Wrapper<IAction, AuthorizePaymentImpl<Gateway, Payment>>;
+
+pub struct CreatePaymentImpl<
+  Gateway: IInterface<IVar<PaymentGatewayType>>
+  >(PhantomData<Gateway>);
+
+pub type CreatePayment<Gateway> =
+  Wrapper<IAction, CreatePaymentImpl<Gateway>>;
+
+
+// Scenarios
 
 pub type NormalPaymentScenario = Scenario<
     names::NormalPayment,
@@ -326,54 +378,6 @@ pub type NormalPaymentScenario = Scenario<
 
   >;
 
-pub struct LoadMerchantProfileImpl<
-  ApiKey: IInterface<IVar<MerchantApiKeyType>>
-  >(PhantomData<ApiKey>);
-pub type LoadMerchantProfile<ApiKey> =
-  Wrapper<IAction, LoadMerchantProfileImpl<ApiKey>>;
-
-pub struct ChoosePaymentGatewayImpl<
-  Profile: IInterface<IVar<MerchantProfileType>>
-  >(PhantomData<Profile>);
-pub type ChoosePaymentGateway<Profile> =
-  Wrapper<IAction, ChoosePaymentGatewayImpl<Profile>>;
-
-pub struct PaymentIntentRequiredImpl<
-  Gateway: IInterface<IVar<PaymentGatewayType>>
-  >(PhantomData<Gateway>);
-
-pub type PaymentIntentRequired<Gateway> =
-  Wrapper<ICondition, PaymentIntentRequiredImpl<Gateway>>;
-
-pub struct CreatePaymentIntentImpl<
-  Gateway: IInterface<IVar<PaymentGatewayType>>
-  >(PhantomData<Gateway>);
-
-pub type CreatePaymentIntent<Gateway> =
-  Wrapper<IAction, CreatePaymentIntentImpl<Gateway>>;
-
-pub struct AttachPaymentMethodImpl<
-  Gateway: IInterface<IVar<PaymentGatewayType>>,
-  Payment: IInterface<IVar<PaymentIntentType>>
-  >(PhantomData<(Gateway, Payment)>);
-
-pub type AttachPaymentMethod<Gateway, Payment> =
-  Wrapper<IAction, AttachPaymentMethodImpl<Gateway, Payment>>;
-
-pub struct AuthorizePaymentImpl<
-  Gateway: IInterface<IVar<PaymentGatewayType>>,
-  Payment: IInterface<IVar<PaymentType>>
-  >(PhantomData<(Gateway, Payment)>);
-
-pub type AuthorizePayment<Gateway, Payment> =
-  Wrapper<IAction, AuthorizePaymentImpl<Gateway, Payment>>;
-
-pub struct CreatePaymentImpl<
-  Gateway: IInterface<IVar<PaymentGatewayType>>
-  >(PhantomData<Gateway>);
-
-pub type CreatePayment<Gateway> =
-  Wrapper<IAction, CreatePaymentImpl<Gateway>>;
 
     // Pre-conditions:
 //   a. Client → Merchant: "I want to buy this item. Here’s my <payment method>."
@@ -437,36 +441,5 @@ pub type CreatePayment<Gateway> =
 
 
 fn main() {
-    // let amount           = Param::new("amount",           || {json_payload.amount.clone()});
-    // let currency         = Param::new("currency",         || {json_payload.currency.clone()});
-    // let description      = Param::new("description",      || {json_payload.description.clone()});
-    // let payment_method   = Param::new("payment_method",   || {json_payload.payment_method.clone()});
-    // let confirmation     = Param::new("confirmation",     || {json_payload.confirmation.clone()});
-    // let capture_method   = Param::new("capture_method",   || {json_payload.capture_method.clone()});
-    // // let merchant_api_key = Param::new("merchant_api_key", || {req.headers().get("X-API-KEY")});
-    // // let merchant_profile = Param::new("merchant_profile", |api_key| { load_merchant_profile(api_key) });
-
-    // let payments_story = Story::new("Payments");
-    // let mut normal_payment_scenario = payments_story.build_scenario("Normal Payment");
-    // // let mut buy_now_pay_later_scenario = payments_story.build_scenario("Buy Now, Pay Later");
-
-    // // let rt = Runtime::new();
-
-    // normal_payment_scenario
-    //   .param(Requirement::Mandatory(amount), amount_validator);
-    // //   .param(Mandatory(payment_method), payment_method_validator)
-    // //   .param(Optional(description.default("")), description_validator)
-    // //   .param(Mandatory(merchant_api_key), api_key_validator)
-    // //   // AG: todo: other validators
-
-    // //   .condition(payment_method, |pm| { pm.is_instant() })
-    // //   .step("Load merchant profile",
-    // //         out(merchant_profile),
-    // //         ||{
-    // //             let profile = load_merchant_profile(rt.get(merchant_api_key));
-    // //             rt.put(merchant_profile, profile);
-    // //           }); //////// how to load and pass actual data?
-
-
   println!("Hello, world!");
 }

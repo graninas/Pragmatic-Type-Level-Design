@@ -18,7 +18,8 @@ actix-http = "3.6.0"
 actix-multipart = "0.6.1"
 actix-rt = "2.9.0"
 actix-web = "4.5.1"
-
+either = "1.9"
+validator = "0.20.0"
 
 [dependencies.uuid]
 version = "1.12.0"

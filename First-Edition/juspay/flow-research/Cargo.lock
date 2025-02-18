@@ -570,7 +570,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "flow-research"
+name = "flow_research"
 version = "0.1.0"
 dependencies = [
  "actix-cors",

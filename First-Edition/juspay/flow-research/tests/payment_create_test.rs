@@ -193,6 +193,10 @@ mod tests {
   #[test]
   fn test_validation() {
     let payment_request = dummy_payment_request();
+
+    let currency: Result<Currency, _> = "USD".parse();
+    assert!(currency.is_ok());
+
   }
 
 }

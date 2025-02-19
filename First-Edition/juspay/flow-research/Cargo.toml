@@ -21,6 +21,8 @@ actix-web = "4.5.1"
 either = "1.9"
 validator = "0.20.0"
 dyn-clone = "1.0.18"
+strum = "0.27.1"
+strum_macros = "0.27"
 
 [dependencies.uuid]
 version = "1.12.0"

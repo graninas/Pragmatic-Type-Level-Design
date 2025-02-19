@@ -4,7 +4,7 @@ mod tests {
 
   use std::collections::HashMap;
   use serde_json::Value;
-  use either::Left;
+  use either::*;
   use flow_research::value_level::*;
 
 
@@ -42,7 +42,7 @@ mod tests {
       }
 
       fn get_customer(
-          &mut self,
+          &self,
           customer_id: CustomerId,
       ) -> Result<Option<CustomerProfile>, String> {
           match self.customers.get(&customer_id) {
@@ -68,7 +68,7 @@ mod tests {
 
   impl IMerchantManager for DummyMerchantManager {
       fn create_merchant(
-          &self,
+          &mut self,
           merchant_details: MerchantDetails,
       ) -> Result<MerchantProfile, String> {
           let merchant_id = self.merchant_id_counter.to_string();
@@ -105,7 +105,7 @@ mod tests {
     let merchant_manager = Box::new(DummyMerchantManager::new(1));
 
     let flow = Box::new(SimplePaymentCreationFlow::new(customer_manager, merchant_manager));
-    let logging_flow = Box::new(LoggingPaymentCreationFlow::new(flow, logger));
+    let mut logging_flow = Box::new(LoggingPaymentCreationFlow::new(flow, logger));
 
     let customer_data = CustomerDetails {
       name: Some("Alice".to_string()),
@@ -135,8 +135,8 @@ mod tests {
     };
 
     let result = logging_flow.execute(
-      Left(customer_data),
-      Left(merchant_data),
+      Right(customer_data),
+      Right(merchant_data),
       order_metadata,
       payment_data);
 

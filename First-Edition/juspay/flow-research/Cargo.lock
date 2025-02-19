@@ -523,6 +523,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "dyn-clone"
+version = "1.0.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "feeef44e73baff3a26d371801df019877a9866a8c493d315ab00177843314f35"
+
+[[package]]
 name = "either"
 version = "1.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -579,6 +585,7 @@ dependencies = [
  "actix-rt",
  "actix-web",
  "assert-type-eq",
+ "dyn-clone",
  "either",
  "serde",
  "serde_json",

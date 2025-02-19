@@ -113,21 +113,24 @@ pub mod api {
 
 // Domain-level services
 
-pub trait ICustomerManager {
+pub trait ICustomerManager
+{
     fn create_customer(&mut self, customer_details: CustomerDetails)
       -> Result<CustomerProfile, String>;
     fn get_customer(&self, customer_id: String)
       -> Result<Option<CustomerProfile>, String>;
 }
 
-pub trait IMerchantManager {
+pub trait IMerchantManager
+{
     fn create_merchant(&mut self, merchant_details: MerchantDetails)
       -> Result<MerchantProfile, String>;
     fn get_merchant(&self, merchant_id: MerchantId)
       -> Result<Option<MerchantProfile>, String>;
 }
 
-pub trait IPaymentProcessor {
+pub trait IPaymentProcessor
+{
   fn name(&self) -> &str;
   fn code(&self) -> &str;
 
@@ -145,8 +148,36 @@ pub trait IPaymentProcessor {
 
 pub trait PaymentCreationFlow {
 
-  fn customer_manager(&self) -> Box<dyn ICustomerManager>;
-  fn merchant_manager(&self) -> Box<dyn IMerchantManager>;
+  fn customer_manager(&mut self) -> &mut dyn ICustomerManager;
+  fn merchant_manager(&mut self) -> &mut dyn IMerchantManager;
+
+  // Helper methods
+
+  fn get_customer(&mut self, customer_id: CustomerId
+  ) -> Result<Option<CustomerProfile>, String> {
+    let manager: &dyn ICustomerManager = self.customer_manager();
+    manager.get_customer(customer_id)
+  }
+
+  fn create_customer(&mut self, customer_details: CustomerDetails
+  ) -> Result<CustomerProfile, String> {
+    let manager: &mut dyn ICustomerManager = self.customer_manager();
+    manager.create_customer(customer_details)
+  }
+
+  fn get_merchant(&mut self, merchant_id: MerchantId
+  ) -> Result<Option<MerchantProfile>, String> {
+    let manager: &dyn IMerchantManager = self.merchant_manager();
+    manager.get_merchant(merchant_id)
+  }
+
+  fn create_merchant(&mut self, merchant_details: MerchantDetails
+  ) -> Result<MerchantProfile, String> {
+    let manager: &mut dyn IMerchantManager = self.merchant_manager();
+    manager.create_merchant(merchant_details)
+  }
+
+  // Actual flow methods
 
   fn get_or_create_customer(
     &mut self,
@@ -154,7 +185,7 @@ pub trait PaymentCreationFlow {
   ) -> Result<CustomerProfile, String> {
     match customer_data {
       Either::Left(customer_id) => {
-        let mb_customer = self.customer_manager().get_customer(customer_id);
+        let mb_customer = self.get_customer(customer_id);
         match mb_customer {
           Ok(Some(customer_profile)) => Ok(customer_profile),
           Ok(None) => Err("Customer not found".to_string()),
@@ -162,7 +193,7 @@ pub trait PaymentCreationFlow {
         }
       },
       Either::Right(customer_details) => {
-        self.customer_manager().create_customer(customer_details)
+        self.create_customer(customer_details)
       }
     }
   }
@@ -173,7 +204,7 @@ pub trait PaymentCreationFlow {
   ) -> Result<MerchantProfile, String> {
     match merchant_data {
       Either::Left(merchant_id) => {
-        let mb_merchant = self.merchant_manager().get_merchant(merchant_id);
+        let mb_merchant = self.get_merchant(merchant_id);
         match mb_merchant {
           Ok(Some(merchant_profile)) => Ok(merchant_profile),
           Ok(None) => Err("Merchant not found".to_string()),
@@ -181,20 +212,20 @@ pub trait PaymentCreationFlow {
         }
       },
       Either::Right(merchant_details) => {
-        self.merchant_manager().create_merchant(merchant_details)
+        self.create_merchant(merchant_details)
       }
     }
   }
 
   fn get_or_create_payment_id(
-    &self,
+    &mut self,
     customer_id: &CustomerId,
     merchant_id: &MerchantId,
     order_metadata: &OrderMetaData,
   ) -> Result<PaymentId, String>;
 
   fn register_order_metadata(
-    &self,
+    &mut self,
     payment_id: &PaymentId,
     customer_id: &CustomerId,
     merchant_id: &MerchantId,
@@ -202,14 +233,14 @@ pub trait PaymentCreationFlow {
   ) -> Result<(), String>;
 
   fn decide_payment_processor(
-    &self,
+    &mut self,
     merchant_profile: &MerchantProfile,
     payment_data: &PaymentData,
     order_metadata: &OrderMetaData,
   ) -> Result<Box<dyn IPaymentProcessor>, String>;
 
   fn make_payment_with_payment_processor(
-    &self,
+    &mut self,
     payment_processor: &Box<dyn IPaymentProcessor>,
     customer_profile: &CustomerProfile,
     merchant_profile: &MerchantProfile,
@@ -218,7 +249,7 @@ pub trait PaymentCreationFlow {
     order_metadata: &OrderMetaData,
   ) -> Result<Payment, String>;
 
-  fn register_payment(&self, payment: &Payment) -> Result<(), String>;
+  fn register_payment(&mut self, payment: &Payment) -> Result<(), String>;
 
   fn execute(&mut self,
     customer_data: Either<CustomerId, CustomerDetails>,
@@ -261,6 +292,7 @@ pub trait PaymentCreationFlow {
 
 // Dummy payment processor
 
+#[derive(Clone)]
 pub struct DummyPaymentProcessor;
 
 impl IPaymentProcessor for DummyPaymentProcessor {
@@ -321,12 +353,12 @@ impl SimplePaymentCreationFlow {
 
 impl PaymentCreationFlow for SimplePaymentCreationFlow {
 
-  fn customer_manager(&self) -> Box<dyn ICustomerManager> {
-    self.customer_manager.clone()
+  fn customer_manager(&mut self) -> &mut dyn ICustomerManager {
+    &mut *self.customer_manager
   }
 
-  fn merchant_manager(&self) -> Box<dyn IMerchantManager> {
-    self.merchant_manager.clone()
+  fn merchant_manager(&mut self) -> &mut dyn IMerchantManager {
+    &mut *self.merchant_manager
   }
 
   fn get_or_create_customer(
@@ -368,7 +400,7 @@ impl PaymentCreationFlow for SimplePaymentCreationFlow {
   }
 
   fn get_or_create_payment_id(
-    &self,
+    &mut self,
     customer_id: &CustomerId,
     merchant_id: &MerchantId,
     order_metadata: &OrderMetaData,
@@ -380,7 +412,7 @@ impl PaymentCreationFlow for SimplePaymentCreationFlow {
   }
 
   fn register_order_metadata(
-    &self,
+    &mut self,
     payment_id: &PaymentId,
     customer_id: &CustomerId,
     merchant_id: &MerchantId,
@@ -390,7 +422,7 @@ impl PaymentCreationFlow for SimplePaymentCreationFlow {
   }
 
   fn decide_payment_processor(
-    &self,
+    &mut self,
     merchant_profile: &MerchantProfile,
     payment_data: &PaymentData,
     order_metadata: &OrderMetaData,
@@ -399,7 +431,7 @@ impl PaymentCreationFlow for SimplePaymentCreationFlow {
   }
 
   fn make_payment_with_payment_processor(
-    &self,
+    &mut self,
     payment_processor: &Box<dyn IPaymentProcessor>,
     customer_profile: &CustomerProfile,
     merchant_profile: &MerchantProfile,
@@ -421,7 +453,7 @@ impl PaymentCreationFlow for SimplePaymentCreationFlow {
     })
   }
 
-  fn register_payment(&self, payment: &Payment) -> Result<(), String> {
+  fn register_payment(&mut self, payment: &Payment) -> Result<(), String> {
     Ok(())
   }
 }
@@ -441,11 +473,11 @@ impl LoggingPaymentCreationFlow {
 
 impl PaymentCreationFlow for LoggingPaymentCreationFlow {
 
-  fn customer_manager(&self) -> Box<dyn ICustomerManager> {
+  fn customer_manager(&mut self) -> &mut dyn ICustomerManager {
     self.inner.customer_manager()
   }
 
-  fn merchant_manager(&self) -> Box<dyn IMerchantManager> {
+  fn merchant_manager(&mut self) -> &mut dyn IMerchantManager {
     self.inner.merchant_manager()
   }
 
@@ -468,7 +500,7 @@ impl PaymentCreationFlow for LoggingPaymentCreationFlow {
   }
 
   fn get_or_create_payment_id(
-    &self,
+    &mut self,
     customer_id: &CustomerId,
     merchant_id: &MerchantId,
     order_metadata: &OrderMetaData,
@@ -480,7 +512,7 @@ impl PaymentCreationFlow for LoggingPaymentCreationFlow {
   }
 
   fn register_order_metadata(
-    &self,
+    &mut self,
     payment_id: &PaymentId,
     customer_id: &CustomerId,
     merchant_id: &MerchantId,
@@ -493,7 +525,8 @@ impl PaymentCreationFlow for LoggingPaymentCreationFlow {
       order_metadata)
   }
 
-  fn decide_payment_processor(&self,
+  fn decide_payment_processor(
+    &mut self,
     merchant_profile: &MerchantProfile,
     payment_data: &PaymentData,
     order_metadata: &OrderMetaData,
@@ -507,7 +540,7 @@ impl PaymentCreationFlow for LoggingPaymentCreationFlow {
   }
 
   fn make_payment_with_payment_processor(
-    &self,
+    &mut self,
     payment_processor: &Box<dyn IPaymentProcessor>,
     customer_profile: &CustomerProfile,
     merchant_profile: &MerchantProfile,
@@ -526,11 +559,12 @@ impl PaymentCreationFlow for LoggingPaymentCreationFlow {
     Ok(payment)
   }
 
-  fn register_payment(&self, payment: &Payment) -> Result<(), String> {
+  fn register_payment(&mut self, payment: &Payment) -> Result<(), String> {
     self.inner.register_payment(payment)
   }
 
-  fn execute(&mut self,
+  fn execute(
+    &mut self,
     customer_data: Either<CustomerId, CustomerDetails>,
     merchant_data: Either<MerchantId, MerchantDetails>,
     order_metadata: OrderMetaData,

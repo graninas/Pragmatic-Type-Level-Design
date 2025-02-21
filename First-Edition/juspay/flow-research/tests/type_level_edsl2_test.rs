@@ -226,45 +226,305 @@ mod tests {
 
   pub type DemoPaymentProcessor = PaymentProcessor<
     DemoPaymentProcessorTag,
-    tl_list![
+    tl_list![IPaymentFeature,
       PaymentFeature<UK, Card, USD, ThreeDSecure>,
       PaymentFeature<UK, Card, EUR, ThreeDSecure>,
       PaymentFeature<US, BNPL, USD, Biometric>
     ],
-    tl_list![US],
-    tl_list![USD, EUR, GBP],
-    tl_list![Card, BNPL],
+    tl_list![ICountry, US],
+    tl_list![ICurrency, USD, EUR, GBP],
+    tl_list![IPaymentMethod, Card, BNPL],
     >;
 
+  //  Implementation
+
+  pub struct Introspect;
+
+  // list introspection
+  impl<I>
+    Eval<Introspect, String>
+    for TlN_<I>
+  {
+    fn eval() -> String {
+      "".to_string()
+    }
+  }
+
+  impl<I, Item, Tail>
+    Eval<Introspect, String>
+    for TlC_<I, Item, Tail>
+    where
+      Item: IInterface<I> + Eval<Introspect, String>,
+      Tail: HList<I> + Eval<Introspect, String>
+  {
+    fn eval() -> String {
+      "\n    - ".to_string()
+        + &Item::eval()
+        + &Tail::eval()
+    }
+  }
+
+  // Domain notions introspection
+
+  impl Eval<Introspect, String> for Wrapper<ICountry, USImpl> {
+    fn eval() -> String {
+      "US".to_string()
+    }
+  }
+
+  impl Eval<Introspect, String> for Wrapper<ICountry, UKImpl> {
+    fn eval() -> String {
+      "UK".to_string()
+    }
+  }
+
+  impl Eval<Introspect, String> for Wrapper<ICountry, FRImpl> {
+    fn eval() -> String {
+      "FR".to_string()
+    }
+  }
+
+  impl Eval<Introspect, String> for Wrapper<ICurrency, USDImpl> {
+    fn eval() -> String {
+      "USD".to_string()
+    }
+  }
+
+  impl Eval<Introspect, String> for Wrapper<ICurrency, EURImpl> {
+    fn eval() -> String {
+      "EUR".to_string()
+    }
+  }
+
+  impl Eval<Introspect, String> for Wrapper<ICurrency, GBPImpl> {
+    fn eval() -> String {
+      "GBP".to_string()
+    }
+  }
+
+  impl Eval<Introspect, String>
+  for Wrapper<IPaymentProcessorTag, DemoPaymentProcessorTagImpl> {
+    fn eval() -> String {
+      "DemoPaymentProcessor".to_string()
+    }
+  }
+
+  impl Eval<Introspect, String> for Wrapper<IPaymentMethodTag, CardTagImpl> {
+    fn eval() -> String {
+      "Card".to_string()
+    }
+  }
+
+  impl Eval<Introspect, String> for Wrapper<IPaymentMethodTag, BnplTagImpl> {
+    fn eval() -> String {
+      "BNPL".to_string()
+    }
+  }
+
+  impl Eval<Introspect, String> for Wrapper<IAuthMethod, OTPImpl> {
+    fn eval() -> String {
+      "OTP".to_string()
+    }
+  }
+
+  impl Eval<Introspect, String> for Wrapper<IAuthMethod, BiometricImpl> {
+    fn eval() -> String {
+      "Biometric".to_string()
+    }
+  }
+
+  impl Eval<Introspect, String> for Wrapper<IAuthMethod, ThreeDSecureImpl> {
+    fn eval() -> String {
+      "3D Secure".to_string()
+    }
+  }
+
+
+
+  type PaymentMethodIntrospection = HashMap<String, String>;
+
+  // Payment method list introspection
+
+  impl
+    Eval<Introspect, PaymentMethodIntrospection>
+    for TlN_<IPaymentMethod>
+  {
+    fn eval() -> PaymentMethodIntrospection {
+      HashMap::new()
+    }
+  }
+
+  impl<Item, Tail>
+    Eval<Introspect, PaymentMethodIntrospection>
+    for TlC_<IPaymentMethod, Item, Tail>
+    where
+      Item: IInterface<IPaymentMethod> + Eval<Introspect, (String, String)>,
+      Tail: HList<IPaymentMethod> + Eval<Introspect, PaymentMethodIntrospection>
+  {
+    fn eval() -> PaymentMethodIntrospection {
+      let mut introspection = Tail::eval();
+      let (key, value) = Item::eval();
+      introspection.insert(key, value);
+      introspection
+    }
+  }
+
+  pub struct ListTags;
+
+  impl
+    Eval<ListTags, String>
+    for TlN_<IPaymentMethodTag>
+  {
+    fn eval() -> String {
+      "".to_string()
+    }
+  }
+
+  impl<Item, Tail>
+    Eval<ListTags, String>
+    for TlC_<IPaymentMethodTag, Item, Tail>
+    where
+      Item: IInterface<IPaymentMethodTag> + Eval<Introspect, String>,
+      Tail: HList<IPaymentMethodTag> + Eval<ListTags, String>
+  {
+    fn eval() -> String {
+      let tail_is_not_empty = Tail::eval().len() > 0;
+      let tail = Tail::eval();
+      Item::eval() + if tail_is_not_empty { ", " } else { "" } + &tail
+    }
+  }
+
+  pub struct CountFields;
+
+  impl
+    Eval<CountFields, u32>
+    for TlN_<IField>
+  {
+    fn eval() -> u32 {
+      0
+    }
+  }
+
+  impl<Item, Tail>
+    Eval<CountFields, u32>
+    for TlC_<IField, Item, Tail>
+    where
+      Item: IInterface<IField>,
+      Tail: HList<IField> + Eval<CountFields, u32>
+  {
+    fn eval() -> u32 {
+      1 + Tail::eval()
+    }
+  }
+
+  impl <Fields>
+    Eval<CountFields, u32>
+    for Wrapper<ISchema, SchemaImpl<Fields>>
+    where
+      Fields: HList<IField> + Eval<CountFields, u32>
+  {
+    fn eval() -> u32 {
+      Fields::eval()
+    }
+  }
 
 
 
 
+  // Payment method introspection
 
+  impl<Tag, DataSchema, FundSource, const REQUIRES_AUTH: bool>
+    Eval<Introspect, (String, String)>
+    for Wrapper<IPaymentMethod,
+      PaymentMethodImpl<Tag, DataSchema, FundSource, REQUIRES_AUTH>>
+    where
+      Tag: IInterface<IPaymentMethodTag> + Eval<Introspect, String>,
+      DataSchema: IInterface<ISchema> + Eval<CountFields, u32>,
+      FundSource: HList<IPaymentMethodTag> + Eval<ListTags, String>,
+  {
+    fn eval() -> (String, String) {
+      let mut funded_by = FundSource::eval();
+      let funded_by_is_not_empty = funded_by.len() > 0;
+      let funded_by = if funded_by_is_not_empty { format!("[Funded by: {}] ", funded_by) } else { "".to_string() };
+      let fields_count = DataSchema::eval();
+      (Tag::eval(), format!("{}[DataSchema # of fields: {}]", funded_by, fields_count))
+    }
+  }
 
-    //   pub struct CardDataImpl<
-    //   Name: TlStr,
-    //   Number: TlStr,
-    //   Currency: IInterface<ICurrency>,
-    //   const u16: EXPIRY_DATE,
-    //   const u8: CVV,
-    // >;
+  impl <Country, Method, Currency, AuthMethod>
+    Eval<Introspect, String>
+    for Wrapper<IPaymentFeature,
+      PaymentFeatureImpl<Country, Method, Currency, AuthMethod>>
+    where
+      Country: IInterface<ICountry> + Eval<Introspect, String>,
+      Method: IInterface<IPaymentMethod> + Eval<Introspect, (String, String)>,
+      Currency: IInterface<ICurrency> + Eval<Introspect, String>,
+      AuthMethod: IInterface<IAuthMethod> + Eval<Introspect, String>
+  {
+    fn eval() -> String {
+      let (name, intro) = Method::eval();
 
-    // pub type CardData<
-    //   Name,
-    //   Number,
-    //   Currency,
-    //   const u16: EXPIRY_DATE,
-    //   const u8: CVV,
-    //   > = Wrapper<IPaymentMethodData,
-    //   CardDataImpl<Name, Number, Currency, EXPIRY_DATE, CVV>>;
+      "PaymentFeature: [".to_string()
+        + &Country::eval()
+        + &"] ".to_string()
+        + &name
+        + &" [".to_string()
+        + &Currency::eval()
+        + &"] [".to_string()
+        + &AuthMethod::eval()
+        + &"]"
+    }
+  }
+
+  impl <
+    Tag: IInterface<IPaymentProcessorTag>,
+    Features: HList<IPaymentFeature>,
+    SupportedCountries: HList<ICountry>,
+    SupportedCurrencies: HList<ICurrency>,
+    SupportedMethods: HList<IPaymentMethod>,
+  >
+    Eval<Introspect, String>
+  for Wrapper<IPaymentProcessor,
+    PaymentProcessorImpl<Tag,
+      Features, SupportedCountries, SupportedCurrencies, SupportedMethods>>
+    where
+      Tag: Eval<Introspect, String>,
+      Features: Eval<Introspect, String>,
+      SupportedCountries: Eval<Introspect, String>,
+      SupportedCurrencies: Eval<Introspect, String>,
+      SupportedMethods: Eval<Introspect, PaymentMethodIntrospection>,
+  {
+    fn eval() -> String {
+      let mut methods = String::new();
+      let mut introspected_methods = String::new();
+      let introspection = SupportedMethods::eval();
+      for (key, val) in introspection.iter() {
+        methods.push_str(&format!("\n    - {}", key));
+        introspected_methods.push_str(&format!("\n  - {}: {}", key, val));
+      }
+
+      "PaymentProcessor: ".to_string()
+        + &Tag::eval()
+        + &"\n  Features: ".to_string()
+        + &Features::eval()
+        + &"\n  SupportedCountries: ".to_string()
+        + &SupportedCountries::eval()
+        + &"\n  SupportedCurrencies: ".to_string()
+        + &SupportedCurrencies::eval()
+        + &"\n  SupportedMethods: ".to_string()
+        + &methods
+        + &"\n  Payment methods: ".to_string()
+        + &introspected_methods
+    }
+  }
 
 
 
   #[test]
   fn test_type_level_edsl2() {
 
-
+    println!("{}", DemoPaymentProcessor::eval());
+    assert_eq!(true, false);
 
   }
 

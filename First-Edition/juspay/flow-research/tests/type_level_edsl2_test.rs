@@ -219,6 +219,7 @@ mod tests {
     PaymentProcessorImpl<Tag, Features, SupportedCountries, SupportedCurrencies, SupportedMethods>>;
 
 
+  // Demo payment processor
 
   pub struct DemoPaymentProcessorTagImpl;
   pub type DemoPaymentProcessorTag
@@ -235,6 +236,39 @@ mod tests {
     tl_list![ICurrency, USD, EUR, GBP],
     tl_list![IPaymentMethod, Card, BNPL],
     >;
+
+    // Paypal demo payment processor
+
+    pub struct PayPalTagImpl;
+    pub type PayPalTag = Wrapper<IPaymentMethodTag, PayPalTagImpl>;
+
+    pub type PayPalDataSchema = Schema<tl_list![IField,
+      Field<tl_str!("email"), StringType>,
+      Field<tl_str!("account_id"), StringType>,
+      OptionalField<tl_str!("phone_number"), StringType>
+    ]>;
+
+    pub type PayPal = PaymentMethod<
+        PayPalTag,
+        PayPalDataSchema,
+        tl_list![IPaymentMethodTag],
+        true
+        >;
+
+    pub struct PayPalProcessorTagImpl;
+    pub type PayPalProcessorTag = Wrapper<IPaymentProcessorTag, PayPalProcessorTagImpl>;
+
+    pub type PayPalProcessor = PaymentProcessor<
+      PayPalProcessorTag,
+      tl_list![IPaymentFeature,
+        PaymentFeature<US, PayPal, USD, OTP>,
+        PaymentFeature<UK, PayPal, GBP, ThreeDSecure>,
+        PaymentFeature<FR, PayPal, EUR, Biometric>
+      ],
+      tl_list![ICountry, US, UK, FR],
+      tl_list![ICurrency, USD, EUR, GBP],
+      tl_list![IPaymentMethod, PayPal],
+      >;
 
   //  Implementation
 
@@ -309,6 +343,13 @@ mod tests {
     }
   }
 
+  impl Eval<Introspect, String>
+  for Wrapper<IPaymentProcessorTag, PayPalProcessorTagImpl> {
+    fn eval() -> String {
+      "PayPalProcessor".to_string()
+    }
+  }
+
   impl Eval<Introspect, String> for Wrapper<IPaymentMethodTag, CardTagImpl> {
     fn eval() -> String {
       "Card".to_string()
@@ -318,6 +359,12 @@ mod tests {
   impl Eval<Introspect, String> for Wrapper<IPaymentMethodTag, BnplTagImpl> {
     fn eval() -> String {
       "BNPL".to_string()
+    }
+  }
+
+  impl Eval<Introspect, String> for Wrapper<IPaymentMethodTag, PayPalTagImpl> {
+    fn eval() -> String {
+      "PayPal".to_string()
     }
   }
 
@@ -524,6 +571,7 @@ mod tests {
   fn test_type_level_edsl2() {
 
     println!("{}", DemoPaymentProcessor::eval());
+    println!("{}", PayPalProcessor::eval());
     assert_eq!(true, false);
 
   }
@@ -537,19 +585,3 @@ mod tests {
 
 
 
-
-// 3. Rules for Combining Authentication Methods
-// When multiple authentication requirements are present, follow these rules:
-
-// ✅ Rule 1: Enforce the Strongest Regulatory Authentication
-// If a country mandates an authentication method, apply it first.
-// Example: EU (PSD2) → Always apply 3D Secure 2 for cards.
-// ✅ Rule 2: If No Country Regulations, Prioritize Cross-Border Auth
-// If the transaction is cross-border, apply a strong authentication method unless the payment method already has built-in security.
-// Example: USD → INR → Apply OTP.
-// ✅ Rule 3: If No Other Rules Apply, Use the Payment Method’s Own Auth
-// If the payment method itself has authentication (e.g., Apple Pay uses Face ID, Credit Cards use 3D Secure), rely on that.
-// Example: Apple Pay in USA → Use biometric authentication.
-// ✅ Rule 4: Avoid Combining Multiple Auth Methods Unless Necessary
-// Never enforce multiple redundant authentication methods (e.g., 3D Secure + OTP) unless legally required.
-// Example: If Germany requires 3D Secure but the currency suggests OTP, only apply 3D Secure.

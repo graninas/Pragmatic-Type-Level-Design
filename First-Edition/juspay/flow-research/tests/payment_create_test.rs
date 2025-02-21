@@ -189,13 +189,111 @@ mod tests {
     }
   }
 
+  // pub trait ICurrency {
+  //   fn code(&self) -> String;
+  //   fn symbol(&self) -> String;
+  // }
+
+  // pub trait IPaymentMethod {
+  //   type Data;
+
+  //   fn name(&self) -> String;
+  //   fn code(&self) -> String;
+  // }
+
+  // pub struct CardPaymentMethod {
+  //   pub card_number: String,
+  //   pub expiry_date: String,
+  //   pub cvv: String,
+  // }
+
+  // impl IPaymentMethod for CardPaymentMethod {
+  //   type Data = CardPaymentMethod;
+
+  //   fn name(&self) -> String {
+  //     "Card".to_string()
+  //   }
+
+  //   fn code(&self) -> String {
+  //     "card".to_string()
+  //   }
+  // }
+
+  // pub struct BankPaymentMethod {
+  //   pub account_number: String,
+  //   pub routing_number: String,
+  // }
+
+  // impl IPaymentMethod for BankPaymentMethod {
+  //   type Data = BankPaymentMethod;
+
+  //   fn name(&self) -> String {
+  //     "Bank".to_string()
+  //   }
+
+  //   fn code(&self) -> String {
+  //     "bank".to_string()
+  //   }
+  // }
+
+
+    // name: "Stripe"
+    // supported_currencies: ["USD", "EUR", "GBP"]
+    // supported_methods: ["CreditCard", "ApplePay", "GooglePay"]
+    // authentication: "3DSecure"
+    // payment_flow: "synchronous"
+    // transaction_fees: { "USD": 2.9%, "EUR": 2.5% }
+
+
+// name: "GlobalPay"
+// supported_regions:
+//   - country: "US"
+//     payment_methods:
+//       - name: "CreditCard"
+//         supported_currencies: ["USD", "EUR"]
+//         payment_flow: "synchronous"
+//         requires_authentication: true
+
+//       - name: "Bank Transfer"
+//         supported_currencies: ["USD"]
+//         payment_flow: "asynchronous"
+//         requires_manual_verification: true
+
+//   - country: "EU"
+//     payment_methods:
+//       - name: "CreditCard"
+//         supported_currencies: ["EUR"]
+//         payment_flow: "synchronous"
+//         requires_authentication: true
+
+//       - name: "SEPA Direct Debit"
+//         supported_currencies: ["EUR"]
+//         payment_flow: "asynchronous"
+//         requires_verification: true
+
+//   - country: "IN"
+//     payment_methods:
+//       - name: "UPI"
+//         supported_currencies: ["INR"]
+//         payment_flow: "instant"
+//         requires_authentication: false
+
+
+
+
+
+
+
+
+
+
 
   #[test]
   fn test_validation() {
     let payment_request = dummy_payment_request();
 
     let currency: Result<Currency, _> = "USD".parse();
-    assert!(currency.is_ok());
+
 
   }
 

@@ -1,3 +1,9 @@
+//! This module defines a type-level flow construction eDSL
+//! for creating and managing payment processing scenarios.
+//!
+//! See `NormalPaymentScenario` for more info.
+
+
 use tl_list_lib::tl_list;
 use tl_list_lib::HList;
 use tl_list_lib::TlN_;

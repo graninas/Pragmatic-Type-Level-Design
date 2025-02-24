@@ -5,7 +5,7 @@ use serde::{Serialize, Deserialize};
 use crate::common_types::*;
 
 
-// Demo type
+// Details about an order
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct OrderMetaDataExtended {
   pub order_id: String,
@@ -14,7 +14,7 @@ pub struct OrderMetaDataExtended {
   pub quantity: u32,
 }
 
-// Demo type
+// Details about a customer
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CustomerDetailsExtended {
   pub name: Option<String>,
@@ -39,6 +39,6 @@ pub struct PaymentRequest {
   pub capture_method: Option<String>,             // Optional type: decides the flow or its part
   pub customer_id: Option<String>,                // Two inconherent fields:
   pub customer_details: Option<Value>,            // - both can be None (what to do in this case?)
-                                              // - both can be Some (what to do in this case?)
+                                                  // - both can be Some (what to do in this case?)
   pub order_metadata: Option<Value>,              // Optional type: what to do if None?
 }

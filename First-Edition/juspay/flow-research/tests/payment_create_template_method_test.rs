@@ -1,3 +1,5 @@
+// Demo tests for Template Method pattern used for flows.
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -17,7 +19,6 @@ mod tests {
   use flow_research::application::services::ILogger;
   use flow_research::application::dummy_logger::DummyLogger;
   use flow_research::domain::services::*;
-  use flow_research::api::types as api;
 
 
   // Domain-level infrastructure dummy implementation
@@ -156,145 +157,5 @@ mod tests {
   }
 
 
-
-  pub fn dummy_payment_request() -> api::PaymentRequest {
-    let order_metadata = api::OrderMetaDataExtended {
-      order_id: "123".to_string(),
-      description: "Order 123".to_string(),
-      item: "item".to_string(),
-      quantity: 1,
-    };
-
-    let customer_details = api::CustomerDetailsExtended {
-      name: Some("Alice".to_string()),
-      email: Some("abc@cde@fgh".to_string()),
-      phone: Some("123 456".to_string()),
-      address: Some("123 Main St".to_string()),
-      city: Some("Anytown".to_string()),
-      state: Some("AS".to_string()),
-      country: Some("US".to_string()),
-      postal_code: Some("12345".to_string()),
-    };
-
-    api::PaymentRequest {
-      amount: 100,
-      currency: "USD".to_string(),
-      payment_method: Some("card".to_string()),
-      description: Some("Payment for order 123".to_string()),
-      confirmation: Some("automatic".to_string()),
-      capture_method: Some("automatic".to_string()),
-      customer_id: None,
-      customer_details: Some(serde_json::to_value(customer_details).unwrap()),
-      order_metadata: Some(serde_json::to_value(order_metadata).unwrap()),
-    }
-  }
-
-  // pub trait ICurrency {
-  //   fn code(&self) -> String;
-  //   fn symbol(&self) -> String;
-  // }
-
-  // pub trait IPaymentMethod {
-  //   type Data;
-
-  //   fn name(&self) -> String;
-  //   fn code(&self) -> String;
-  // }
-
-  // pub struct CardPaymentMethod {
-  //   pub card_number: String,
-  //   pub expiry_date: String,
-  //   pub cvv: String,
-  // }
-
-  // impl IPaymentMethod for CardPaymentMethod {
-  //   type Data = CardPaymentMethod;
-
-  //   fn name(&self) -> String {
-  //     "Card".to_string()
-  //   }
-
-  //   fn code(&self) -> String {
-  //     "card".to_string()
-  //   }
-  // }
-
-  // pub struct BankPaymentMethod {
-  //   pub account_number: String,
-  //   pub routing_number: String,
-  // }
-
-  // impl IPaymentMethod for BankPaymentMethod {
-  //   type Data = BankPaymentMethod;
-
-  //   fn name(&self) -> String {
-  //     "Bank".to_string()
-  //   }
-
-  //   fn code(&self) -> String {
-  //     "bank".to_string()
-  //   }
-  // }
-
-
-    // name: "Stripe"
-    // supported_currencies: ["USD", "EUR", "GBP"]
-    // supported_methods: ["CreditCard", "ApplePay", "GooglePay"]
-    // authentication: "3DSecure"
-    // payment_flow: "synchronous"
-    // transaction_fees: { "USD": 2.9%, "EUR": 2.5% }
-
-
-// name: "GlobalPay"
-// supported_regions:
-//   - country: "US"
-//     payment_methods:
-//       - name: "CreditCard"
-//         supported_currencies: ["USD", "EUR"]
-//         payment_flow: "synchronous"
-//         requires_authentication: true
-
-//       - name: "Bank Transfer"
-//         supported_currencies: ["USD"]
-//         payment_flow: "asynchronous"
-//         requires_manual_verification: true
-
-//   - country: "EU"
-//     payment_methods:
-//       - name: "CreditCard"
-//         supported_currencies: ["EUR"]
-//         payment_flow: "synchronous"
-//         requires_authentication: true
-
-//       - name: "SEPA Direct Debit"
-//         supported_currencies: ["EUR"]
-//         payment_flow: "asynchronous"
-//         requires_verification: true
-
-//   - country: "IN"
-//     payment_methods:
-//       - name: "UPI"
-//         supported_currencies: ["INR"]
-//         payment_flow: "instant"
-//         requires_authentication: false
-
-
-
-
-
-
-
-
-
-
-
-  #[test]
-  fn test_validation() {
-    let payment_request = dummy_payment_request();
-
-    let currency: Result<Currency, _> = "USD".parse();
-
-
-  }
 
 }

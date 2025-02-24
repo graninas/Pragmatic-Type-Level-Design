@@ -566,13 +566,53 @@ mod tests {
   }
 
 
+  // Test outputs:
+  //
+  // PaymentProcessor: DemoPaymentProcessor
+  //   Features:
+  //     - PaymentFeature: [UK] Card [USD] [3D Secure]
+  //     - PaymentFeature: [UK] Card [EUR] [3D Secure]
+  //     - PaymentFeature: [US] BNPL [USD] [Biometric]
+  //   SupportedCountries:
+  //     - US
+  //   SupportedCurrencies:
+  //     - USD
+  //     - EUR
+  //     - GBP
+  //   SupportedMethods:
+  //     - BNPL
+  //     - Card
+  //   Payment methods:
+  //   - BNPL: [Funded by: Card] [DataSchema # of fields: 4]
+  //   - Card: [DataSchema # of fields: 5]
+  // PaymentProcessor: PayPalProcessor
+  //   Features:
+  //     - PaymentFeature: [US] PayPal [USD] [OTP]
+  //     - PaymentFeature: [UK] PayPal [GBP] [3D Secure]
+  //     - PaymentFeature: [FR] PayPal [EUR] [Biometric]
+  //   SupportedCountries:
+  //     - US
+  //     - UK
+  //     - FR
+  //   SupportedCurrencies:
+  //     - USD
+  //     - EUR
+  //     - GBP
+  //   SupportedMethods:
+  //     - PayPal
+  //   Payment methods:
+  //   - PayPal: [DataSchema # of fields: 3]
+
 
   #[test]
   fn test_type_level_edsl2() {
 
     println!("{}", DemoPaymentProcessor::eval());
     println!("{}", PayPalProcessor::eval());
-    assert_eq!(true, false);
+
+
+    // Uncomment to see the output
+    // assert_eq!(true, false);
 
   }
 

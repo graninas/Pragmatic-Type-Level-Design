@@ -1,3 +1,5 @@
+// This module contains experiments on a value-level eDSL for defining API flows.
+
 use tl_list_lib::tl_list;
 use tl_list_lib::HList;
 use tl_list_lib::TlN_;
@@ -266,6 +268,6 @@ fn run() {
     //         ||{
     //             let profile = load_merchant_profile(rt.get(merchant_api_key));
     //             rt.put(merchant_profile, profile);
-    //           }); //////// how to load and pass actual data?
+    //           });
 
 }

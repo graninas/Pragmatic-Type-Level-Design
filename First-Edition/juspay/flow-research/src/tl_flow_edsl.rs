@@ -22,49 +22,26 @@ use std::collections::HashMap;
 use actix_http::Request;
 
 
+// Generic infrastructure
 
-
-pub struct ITypeTag;
+/// Denotes substitution for string names.
 pub struct IName;
-pub struct IStory;
-pub struct IScenario;
-pub struct ICondition;
+
+// Denotes a type.
+pub struct ITypeTag;
+
+// Scenario input parameter.
 pub struct IParam;
+
+// Variable.
 pub struct IVar<TypeTag: IInterface<ITypeTag>>
   (PhantomData<TypeTag>);
+
+// Variable value.
 pub struct IVal<TypeTag: IInterface<ITypeTag>>
   (PhantomData<TypeTag>);
-pub struct IStep;
-pub struct IAction;
 
 pub struct VarImpl<const IDX: u8>;
-
-
-pub struct NoCondImpl;
-pub type NoCond = Wrapper<ICondition, NoCondImpl>;
-
-pub struct GreaterImpl<const N: i32>;
-pub type Greater<const N: i32> = Wrapper<ICondition, GreaterImpl<N>>;
-
-
-pub struct StoryImpl<
-    Name: IInterface<IName>,
-    Scenarios: HList<IScenario>>
-    (PhantomData<(Name, Scenarios)>);
-
-pub type Story<Name, Scenarios> =
-    Wrapper<IStory, StoryImpl<Name, Scenarios>>;
-
-
-pub struct ScenarioImpl<
-    Name: IInterface<IName>,
-    Params: HList<IParam>,
-    Steps: HList<IStep>>
-    (PhantomData<(Name, Params, Steps)>);
-
-pub type Scenario<Name, Params, Steps> =
-    Wrapper<IScenario, ScenarioImpl<Name, Params, Steps>>;
-
 
 pub struct MandatoryParamImpl<
     PName: IInterface<IName>,
@@ -95,6 +72,49 @@ pub struct MandatoryAuthImpl<
 pub type MandatoryAuth<PName, PType, Var> =
     Wrapper<IParam, MandatoryAuthImpl<PName, PType, Var>>;
 
+pub struct NoCondImpl;
+pub type NoCond = Wrapper<ICondition, NoCondImpl>;
+
+pub struct GreaterImpl<const N: i32>;
+pub type Greater<const N: i32> = Wrapper<ICondition, GreaterImpl<N>>;
+
+
+// Common types
+
+pub struct StringImpl;
+pub type StringType = Wrapper<ITypeTag, StringImpl>;
+
+pub struct IntImpl;
+pub type IntType = Wrapper<ITypeTag, IntImpl>;
+
+
+// Domain-specific language
+
+// Type-level interfaces for the flow construction eDSL
+pub struct IStory;
+pub struct IScenario;
+pub struct ICondition;
+pub struct IStep;
+pub struct IAction;
+
+// Implementations of the flow construction eDSL interfaces
+pub struct StoryImpl<
+    Name: IInterface<IName>,
+    Scenarios: HList<IScenario>>
+    (PhantomData<(Name, Scenarios)>);
+
+pub type Story<Name, Scenarios> =
+    Wrapper<IStory, StoryImpl<Name, Scenarios>>;
+
+pub struct ScenarioImpl<
+    Name: IInterface<IName>,
+    Params: HList<IParam>,
+    Steps: HList<IStep>>
+    (PhantomData<(Name, Params, Steps)>);
+
+pub type Scenario<Name, Params, Steps> =
+    Wrapper<IScenario, ScenarioImpl<Name, Params, Steps>>;
+
 pub struct StepImpl<
     Action: IInterface<IAction>,
     Out: IInterface<IName>>
@@ -121,13 +141,6 @@ pub struct GuardStepImpl<
 pub type GuardStep<Condition, Steps> =
     Wrapper<IStep, GuardStepImpl<Condition, Steps>>;
 
-// Common types
-
-pub struct StringImpl;
-pub type StringType = Wrapper<ITypeTag, StringImpl>;
-
-pub struct IntImpl;
-pub type IntType = Wrapper<ITypeTag, IntImpl>;
 
 // Payment-specific types
 
@@ -257,30 +270,29 @@ mod capture_method {
 
 
 
-// Extensible payment method
+// Extensible payment methods
 mod payment_methods {
-    use tl_interface::Wrapper;
-    use crate::{*};
+  use tl_interface::Wrapper;
+  use crate::{*};
 
-    pub struct IPaymentMethod;
+  pub struct IPaymentMethod;
 
-    pub struct CardImpl<
-        Number: IInterface<IVal<StringType>>,
-        ExpMonth: IInterface<IVal<IntType>>,
-        ExpYear: IInterface<IVal<IntType>>,
-        Cvv: IInterface<IVal<StringType>>
-        >
-    (PhantomData<(Number, ExpMonth, ExpYear, Cvv)>);
-    pub type Card<Number, ExpMonth, ExpYear, Cvv> =
-        Wrapper<IPaymentMethod, CardImpl<Number, ExpMonth, ExpYear, Cvv>>;
+  pub struct CardImpl<
+      Number: IInterface<IVal<StringType>>,
+      ExpMonth: IInterface<IVal<IntType>>,
+      ExpYear: IInterface<IVal<IntType>>,
+      Cvv: IInterface<IVal<StringType>>
+      >
+  (PhantomData<(Number, ExpMonth, ExpYear, Cvv)>);
+  pub type Card<Number, ExpMonth, ExpYear, Cvv> =
+      Wrapper<IPaymentMethod, CardImpl<Number, ExpMonth, ExpYear, Cvv>>;
 
-    pub struct NetBankingImpl;
-    pub type NetBanking = Wrapper<IPaymentMethod, NetBankingImpl>;
+  pub struct NetBankingImpl;
+  pub type NetBanking = Wrapper<IPaymentMethod, NetBankingImpl>;
 
-    pub struct WalletImpl;
-    pub type Wallet = Wrapper<IPaymentMethod, WalletImpl>;
+  pub struct WalletImpl;
+  pub type Wallet = Wrapper<IPaymentMethod, WalletImpl>;
 }
-
 
 // Stories and scenarios schema
 
@@ -304,6 +316,7 @@ pub type PaymentIntentRequired<Gateway> =
   Wrapper<ICondition, PaymentIntentRequiredImpl<Gateway>>;
 
 // Actions
+
 pub struct LoadMerchantProfileImpl<
   ApiKey: IInterface<IVar<MerchantApiKeyType>>
   >(PhantomData<ApiKey>);
@@ -347,7 +360,7 @@ pub type CreatePayment<Gateway> =
   Wrapper<IAction, CreatePaymentImpl<Gateway>>;
 
 
-// Scenarios
+// Actual scenarios
 
 pub type NormalPaymentScenario = Scenario<
     names::NormalPayment,

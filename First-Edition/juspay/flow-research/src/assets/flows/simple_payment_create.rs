@@ -15,12 +15,12 @@ use crate::application::services::ILogger;
 // Flows implementation
 
 // Simple payment flow implementation
-pub struct SimplePaymentCreationFlow {
+pub struct SimplePaymentCreateFlow {
   customer_manager: Box<dyn ICustomerManager>,
   merchant_manager: Box<dyn IMerchantManager>,
 }
 
-impl SimplePaymentCreationFlow {
+impl SimplePaymentCreateFlow {
   pub fn new(
     customer_manager: Box<dyn ICustomerManager>,
     merchant_manager: Box<dyn IMerchantManager>,
@@ -29,7 +29,7 @@ impl SimplePaymentCreationFlow {
   }
 }
 
-impl PaymentCreationFlow for SimplePaymentCreationFlow {
+impl PaymentCreateFlow for SimplePaymentCreateFlow {
 
   fn customer_manager(&mut self) -> &mut dyn ICustomerManager {
     &mut *self.customer_manager
@@ -138,18 +138,18 @@ impl PaymentCreationFlow for SimplePaymentCreationFlow {
 
 
 // Flow implementation with logging
-pub struct LoggingPaymentCreationFlow {
-  inner: Box<dyn PaymentCreationFlow>,
+pub struct LoggingPaymentCreateFlow {
+  inner: Box<dyn PaymentCreateFlow>,
   logger: Box<dyn ILogger>,
 }
 
-impl LoggingPaymentCreationFlow {
-  pub fn new(inner: Box<dyn PaymentCreationFlow>, logger: Box<dyn ILogger>) -> Self {
+impl LoggingPaymentCreateFlow {
+  pub fn new(inner: Box<dyn PaymentCreateFlow>, logger: Box<dyn ILogger>) -> Self {
     Self { inner, logger }
   }
 }
 
-impl PaymentCreationFlow for LoggingPaymentCreationFlow {
+impl PaymentCreateFlow for LoggingPaymentCreateFlow {
 
   fn customer_manager(&mut self) -> &mut dyn ICustomerManager {
     self.inner.customer_manager()

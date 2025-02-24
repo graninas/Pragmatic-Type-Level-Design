@@ -27,18 +27,31 @@ pub struct CustomerDetailsExtended {
   pub postal_code: Option<String>,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct GenericPaymentMethod {
+  pub payment_method: String,
+  pub payment_method_details: Value,
+}
+
 // God-like type as it is now in HyperSwitch.
 // Some fields decide a flow or its part, some are mutually incoherent.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PaymentRequest {
   pub amount: Amount,
   pub currency: String,
-  pub payment_method: Option<String>,             // Optional type: decides the flow or its part
+  // Payment method. Optional type: decides the flow or its part.
+  // Contains payment method and its details
+  pub payment_method: Option<GenericPaymentMethod>,
   pub description: Option<String>,
-  pub confirmation: Option<String>,               // Optional type: decides the flow or its part
-  pub capture_method: Option<String>,             // Optional type: decides the flow or its part
-  pub customer_id: Option<String>,                // Two inconherent fields:
-  pub customer_details: Option<Value>,            // - both can be None (what to do in this case?)
-                                                  // - both can be Some (what to do in this case?)
-  pub order_metadata: Option<Value>,              // Optional type: what to do if None?
+  // Confirmation. Optional type: decides the flow or its part
+  pub confirmation: Option<String>,
+  // Capture method. Optional type: decides the flow or its part
+  pub capture_method: Option<String>,
+  // Two possibly inconherent fields:
+  // - both can be None (what to do in this case?)
+  // - both can be Some (what to do in this case?)
+  pub customer_id: Option<String>,
+  pub customer_details: Option<Value>,
+  // Optional type: what to do if None?
+  pub order_metadata: Option<Value>,
 }

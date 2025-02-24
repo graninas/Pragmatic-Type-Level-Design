@@ -117,8 +117,8 @@ mod tests {
     let customer_manager = Box::new(DummyCustomerManager::new(1));
     let merchant_manager = Box::new(DummyMerchantManager::new(1));
 
-    let flow = Box::new(SimplePaymentCreationFlow::new(customer_manager, merchant_manager));
-    let mut logging_flow = Box::new(LoggingPaymentCreationFlow::new(flow, logger));
+    let flow = Box::new(SimplePaymentCreateFlow::new(customer_manager, merchant_manager));
+    let mut logging_flow = Box::new(LoggingPaymentCreateFlow::new(flow, logger));
 
     let customer_data = CustomerDetails {
       name: Some("Alice".to_string()),

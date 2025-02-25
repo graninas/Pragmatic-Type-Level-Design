@@ -6,6 +6,8 @@ mod tests {
   use flow_research::common_types::*;
   use flow_research::api::types as api;
   use std::collections::HashMap;
+  use either::Either;
+  use either::Either::{Left, Right};
 
 
   #[derive(Debug, Clone)]
@@ -24,7 +26,7 @@ mod tests {
 
   pub trait IPaymentMethodFactory {
     fn validate_payment_method(&self, payment_method: &api::GenericPaymentMethod)
-      -> Result<Box<dyn IPaymentMethod>, ValidationResult>;
+      -> Either<ValidationResult, Box<dyn IPaymentMethod>>;
   }
 
   // Specific payment methods
@@ -68,10 +70,10 @@ mod tests {
 
     impl IPaymentMethodFactory for CardPaymentMethodFactory {
       fn validate_payment_method(&self, method: &api::GenericPaymentMethod)
-        -> Result<Box<dyn IPaymentMethod>, ValidationResult> {
+        -> Either<ValidationResult, Box<dyn IPaymentMethod>> {
 
           if method.code != code() {
-            return Err(ValidationResult::Invalid("Invalid payment method".to_string()));
+            return Left(ValidationResult::Invalid("Invalid payment method".to_string()));
           }
 
           let e_card_details =
@@ -104,13 +106,13 @@ mod tests {
               }
 
               if errors.len() > 0 {
-                return Err(ValidationResult::ValidationError(errors));
+                return Left(ValidationResult::ValidationError(errors));
               }
 
-              Ok(Box::new(CardPaymentMethod::new(card_details)))
+              Right(Box::new(CardPaymentMethod::new(card_details)))
             },
             Err(e) => {
-              Err(ValidationResult::ParseError(e.to_string()))
+              Left(ValidationResult::ParseError(e.to_string()))
             }
         }
       }
@@ -165,10 +167,10 @@ mod tests {
 
     impl IPaymentMethodFactory for PayPalPaymentMethodFactory {
       fn validate_payment_method(&self, method: &api::GenericPaymentMethod)
-        -> Result<Box<dyn IPaymentMethod>, ValidationResult> {
+        -> Either<ValidationResult, Box<dyn IPaymentMethod>> {
 
           if method.code != code() {
-            return Err(ValidationResult::Invalid("Invalid payment method".to_string()));
+            return Left(ValidationResult::Invalid("Invalid payment method".to_string()));
           }
 
           let e_payer_details =
@@ -189,13 +191,13 @@ mod tests {
               }
 
               if errors.len() > 0 {
-                return Err(ValidationResult::ValidationError(errors));
+                return Left(ValidationResult::ValidationError(errors));
               }
 
-              Ok(Box::new(PayPalPaymentMethod::new(payer_details)))
+              Right(Box::new(PayPalPaymentMethod::new(payer_details)))
             },
             Err(e) => {
-              Err(ValidationResult::ParseError(e.to_string()))
+              Left(ValidationResult::ParseError(e.to_string()))
             }
         }
       }
@@ -210,7 +212,7 @@ mod tests {
 
   pub trait IPaymentProcessorFactory {
     fn validate_payment_processor(&self, payment_processor: &api::GenericPaymentProcessor)
-      -> Result<Box<dyn IPaymentProcessor>, ValidationResult>;
+      -> Either<ValidationResult, Box<dyn IPaymentProcessor>>;
   }
 
   // Specific payment processors
@@ -251,10 +253,10 @@ mod tests {
 
     impl IPaymentProcessorFactory for PayPalProcessorFactory {
       fn validate_payment_processor(&self, processor: &api::GenericPaymentProcessor)
-        -> Result<Box<dyn IPaymentProcessor>, ValidationResult> {
+        -> Either<ValidationResult, Box<dyn IPaymentProcessor>> {
 
           if processor.code != code() {
-            return Err(ValidationResult::Invalid("Invalid payment processor".to_string()));
+            return Left(ValidationResult::Invalid("Invalid payment processor".to_string()));
           }
 
           let e_processor_details =
@@ -275,13 +277,13 @@ mod tests {
               }
 
               if errors.len() > 0 {
-                return Err(ValidationResult::ValidationError(errors));
+                return Left(ValidationResult::ValidationError(errors));
               }
 
-              Ok(Box::new(PayPalProcessor::new(processor_details)))
+              Right(Box::new(PayPalProcessor::new(processor_details)))
             },
             Err(e) => {
-              Err(ValidationResult::ParseError(e.to_string()))
+              Left(ValidationResult::ParseError(e.to_string()))
             }
         }
       }
@@ -345,7 +347,7 @@ mod tests {
   pub fn validate_payment_method(
     factories: &HashMap<String, Box<dyn IPaymentMethodFactory>>,
     payment_method: &Option<api::GenericPaymentMethod>)
-    -> Result<Box<dyn IPaymentMethod>, ValidationResult> {
+    -> Either<ValidationResult, Box<dyn IPaymentMethod>> {
 
       match payment_method {
         Some(pm) => {
@@ -356,20 +358,20 @@ mod tests {
               f.validate_payment_method(pm)
             },
             None => {
-              Err(ValidationResult::Invalid("Invalid payment method".to_string()))
+              Left(ValidationResult::Invalid("Invalid payment method".to_string()))
             }
           }
         },
         None => {
-          Err(ValidationResult::Missing("Payment method is missing".to_string()))
+          Left(ValidationResult::Missing("Payment method is missing".to_string()))
         }
       }
   }
 
-  pub fn validate_payment_processors(
+  pub fn validate_desired_payment_processors(
     factories: &HashMap<String, Box<dyn IPaymentProcessorFactory>>,
     processors: &Option<Vec<api::GenericPaymentProcessor>>)
-    -> Result<Vec<Box<dyn IPaymentProcessor>>, ValidationResult> {
+    -> Either<ValidationResult, Vec<Box<dyn IPaymentProcessor>>> {
 
       if let Some(pps) = processors {
           let mut result = Vec::new();
@@ -381,25 +383,25 @@ mod tests {
               let p = f.validate_payment_processor(pp);
 
               match p {
-                Ok(p) => {
+                Right(p) => {
                   result.push(p);
                 },
-                Err(e) => {
-                  return Err(e);
+                Left(e) => {
+                  return Left(e);
                 }
               }
             }
           }
 
-          return Ok(result)
+          return Right(result)
       }
 
-      todo!();
+      Right(Vec::new())
   }
 
 
   #[test]
-  fn test_payment_methods_creation() {
+  fn test_validation() {
 
     // Supported payment methods
     let mut pm_factories: HashMap<String, Box<dyn IPaymentMethodFactory>> = HashMap::new();
@@ -418,12 +420,14 @@ mod tests {
       &pm_factories,
       &payment_request.payment_method);
 
-    let pp_result = validate_payment_processors(
+    let pp_result = validate_desired_payment_processors(
       &p_processor_factories,
       &payment_request.connectors);
 
-    assert!(pm_result.is_ok());
-    assert!(pp_result.is_ok());
+    assert!(pm_result.is_right());
+    assert!(pp_result.is_right());
+
+    // Use pm_result and pp_result for choosing and configuring a flow
 
   }
 

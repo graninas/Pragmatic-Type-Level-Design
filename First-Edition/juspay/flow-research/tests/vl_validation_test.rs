@@ -9,7 +9,6 @@ mod tests {
   use either::Either;
   use either::Either::{Left, Right};
 
-
   #[derive(Debug, Clone)]
   pub enum ValidationResult {
     Invalid(String),

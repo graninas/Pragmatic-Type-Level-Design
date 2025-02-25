@@ -1,5 +1,6 @@
-//! This module defines an extensible type-level
-//! payment methods and payment processors definition eDSL.
+// This module defines an extensible type-level
+// payment methods and payment processors definition eDSL.
+// (It is not used in the main demo codebase.)
 
 use tl_list_lib::tl_list;
 use tl_list_lib::HList;
@@ -479,7 +480,7 @@ impl<Tag, DataSchema, FundSource, const REQUIRES_AUTH: bool>
     FundSource: HList<IPaymentMethodTag> + Eval<ListTags, String>,
 {
   fn eval() -> (String, String) {
-    let mut funded_by = FundSource::eval();
+    let funded_by = FundSource::eval();
     let funded_by_is_not_empty = funded_by.len() > 0;
     let funded_by = if funded_by_is_not_empty { format!("[Funded by: {}] ", funded_by) } else { "".to_string() };
     let fields_count = DataSchema::eval();

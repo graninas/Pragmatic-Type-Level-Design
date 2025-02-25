@@ -6,11 +6,13 @@ use strum_macros::EnumString;
 use crate::common_types::*;
 
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone, EnumString)]
-pub enum Currency {            // AG: just a demo type
-    USD,
-    EUR,
-    GBP,
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum Currency {
+  Crypto(String),
+  USD,
+  EUR,
+  GBP,
+  // Add more currencies here
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, EnumString)]
@@ -62,7 +64,6 @@ pub struct OrderMetaData {
 pub struct PaymentData {
     pub amount: Amount,
     pub currency: Currency,
-    pub payment_method: RawPaymentMethod,
     pub description: Option<String>,
     pub confirmation: Option<Confirmation>,
     pub capture_method: Option<CaptureMethod>,

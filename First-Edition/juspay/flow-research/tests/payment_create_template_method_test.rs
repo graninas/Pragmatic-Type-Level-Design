@@ -13,7 +13,7 @@ mod tests {
   use flow_research::domain::types::*;
   use flow_research::domain::services::*;
   use flow_research::domain::extensibility::payment_processor::*;
-  use flow_research::assets::flow_templates::payment_create::*;
+  use flow_research::assets::flow_templates::simple_payment_create::*;
   use flow_research::assets::flows::simple_payment_create::*;
   use flow_research::assets::dummy_payment_processor::*;
   use flow_research::application::services::ILogger;
@@ -111,7 +111,7 @@ mod tests {
 
 
   #[test]
-  fn test_payment_creation_flow() {
+  fn test_payment_create_flow() {
     let logger = Box::new(DummyLogger::new());
 
     let customer_manager = Box::new(DummyCustomerManager::new(1));

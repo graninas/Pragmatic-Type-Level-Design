@@ -1,4 +1,5 @@
 use either::Either;
+use either::Either::{Left, Right};
 use serde_json::Value;
 use serde::{Serialize, Deserialize};
 
@@ -6,10 +7,9 @@ use crate::common_types::*;
 use crate::domain::types::*;
 use crate::domain::extensibility::payment_processor::*;
 use crate::domain::services::*;
-use crate::assets::flow_templates::payment_create::*;
-use crate::assets::dummy_payment_processor::*;
+use crate::assets::flow_templates::simple_payment_create::*;
+use crate::assets::payment_processors::dummy as ext_pp_dummy;
 use crate::application::services::ILogger;
-
 
 
 // Flows implementation
@@ -29,7 +29,7 @@ impl SimplePaymentCreateFlow {
   }
 }
 
-impl PaymentCreateFlow for SimplePaymentCreateFlow {
+impl SimplePaymentCreateFlowTemplate for SimplePaymentCreateFlow {
 
   fn customer_manager(&mut self) -> &mut dyn ICustomerManager {
     &mut *self.customer_manager
@@ -149,7 +149,7 @@ impl LoggingPaymentCreateFlow {
   }
 }
 
-impl PaymentCreateFlow for LoggingPaymentCreateFlow {
+impl SimplePaymentCreateFlowTemplate for LoggingPaymentCreateFlow {
 
   fn customer_manager(&mut self) -> &mut dyn ICustomerManager {
     self.inner.customer_manager()

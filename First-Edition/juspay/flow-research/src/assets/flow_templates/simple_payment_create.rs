@@ -8,7 +8,7 @@ use crate::domain::extensibility::payment_processor::*;
 use crate::domain::services::*;
 
 
-pub trait PaymentCreateFlow {
+pub trait SimplePaymentCreateFlowTemplate {
 
   fn customer_manager(&mut self) -> &mut dyn ICustomerManager;
   fn merchant_manager(&mut self) -> &mut dyn IMerchantManager;

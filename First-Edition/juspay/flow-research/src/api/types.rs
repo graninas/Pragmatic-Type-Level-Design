@@ -27,18 +27,6 @@ pub struct CustomerDetailsExtended {
   pub postal_code: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct GenericPaymentMethod {
-  pub code: String,
-  pub details: Value,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct GenericPaymentProcessor {
-  pub code: String,
-  pub details: Value,
-}
-
 // God-like type as it is now in HyperSwitch.
 // Some fields decide a flow or its part, some are mutually incoherent.
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -67,3 +55,4 @@ pub struct PaymentRequest {
   // just empty vectors.
   pub connectors: Option<Vec<GenericPaymentProcessor>>,
 }
+

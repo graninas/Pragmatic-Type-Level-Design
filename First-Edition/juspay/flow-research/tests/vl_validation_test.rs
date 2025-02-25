@@ -3,291 +3,24 @@
 #[cfg(test)]
 mod tests {
 
-  use flow_research::common_types::*;
-  use flow_research::api::types as api;
   use std::collections::HashMap;
   use either::Either;
   use either::Either::{Left, Right};
 
-  #[derive(Debug, Clone)]
-  pub enum ValidationResult {
-    Invalid(String),
-    Missing(String),
-    ParseError(String),
-    ValidationError(Vec<String>),
-  }
+  use flow_research::common_types::*;
+  use flow_research::api::types as api;
+  use flow_research::domain::types::*;
+  use flow_research::domain::extensibility::payment_processor::*;
+  use flow_research::domain::extensibility::payment_method::*;
+  use flow_research::assets::payment_processors::dummy as ext_pp_dummy;
+  use flow_research::assets::payment_processors::paypal as ext_pp_paypal;
+  use flow_research::assets::payment_methods::card as ext_pm_card;
+  use flow_research::assets::payment_methods::paypal as ext_pm_paypal;
+  use flow_research::assets::flows::generic_payment_create::* as gen_flow;
+  use flow_research::assets::flows::normal_payment_create::* as flow1;
 
-  // Extensible payment methods infrastructure
-
-  pub trait IPaymentMethod {
-    fn code(&self) -> String;
-  }
-
-  pub trait IPaymentMethodFactory {
-    fn validate_payment_method(&self, payment_method: &api::GenericPaymentMethod)
-      -> Either<ValidationResult, Box<dyn IPaymentMethod>>;
-  }
-
-  // Specific payment methods
-
-  pub mod ext_pm_card {
-    use super::*;
-    use serde::{Serialize, Deserialize};
-
-    #[derive(Debug, Serialize, Deserialize, Clone)]
-    pub struct CardDetails {
-      pub card_number: String,
-      pub card_holder_name: String,
-      pub expiry_month: u32,
-      pub expiry_year: u32,
-      pub cvv: String,
-    }
-
-    pub fn code() -> String {
-      "card".to_string()
-    }
-
-    pub struct CardPaymentMethod {
-      card_details: CardDetails,
-    }
-
-    impl CardPaymentMethod {
-      pub fn new(card_details: CardDetails) -> Self {
-        CardPaymentMethod {
-          card_details,
-        }
-      }
-    }
-
-    impl IPaymentMethod for CardPaymentMethod {
-      fn code(&self) -> String {
-        code()
-      }
-    }
-
-    pub struct CardPaymentMethodFactory;
-
-    impl IPaymentMethodFactory for CardPaymentMethodFactory {
-      fn validate_payment_method(&self, method: &api::GenericPaymentMethod)
-        -> Either<ValidationResult, Box<dyn IPaymentMethod>> {
-
-          if method.code != code() {
-            return Left(ValidationResult::Invalid("Invalid payment method".to_string()));
-          }
-
-          let e_card_details =
-            serde_json::from_value::<CardDetails>(method.details.clone());
-
-          match e_card_details {
-            Ok(card_details) => {
-              let mut errors = Vec::new();
-
-              // Dummy validation logic
-
-              if card_details.card_number.is_empty() {
-                errors.push("Invalid card number".to_string());
-              }
-
-              if card_details.card_holder_name.len() == 0 {
-                errors.push("Invalid card holder name".to_string());
-              }
-
-              if card_details.expiry_month < 1 || card_details.expiry_month > 12 {
-                errors.push("Invalid expiry month".to_string());
-              }
-
-              if card_details.expiry_year < 2025 {
-                errors.push("Invalid expiry year".to_string());
-              }
-
-              if card_details.cvv.len() != 3 {
-                errors.push("Invalid CVV".to_string());
-              }
-
-              if errors.len() > 0 {
-                return Left(ValidationResult::ValidationError(errors));
-              }
-
-              Right(Box::new(CardPaymentMethod::new(card_details)))
-            },
-            Err(e) => {
-              Left(ValidationResult::ParseError(e.to_string()))
-            }
-        }
-      }
-    }
-  }
-
-  pub mod ext_paypal_common {
-    use serde::{Serialize, Deserialize};
-
-    #[derive(Debug, Serialize, Deserialize, Clone)]
-    pub enum PayPalProvider {
-      PayPal,
-      BrainTree,
-    }
-  }
-
-
-  pub mod ext_pm_paypal {
-    use super::*;
-    use serde::{Serialize, Deserialize};
-
-    #[derive(Debug, Serialize, Deserialize, Clone)]
-    pub struct PayPalPayerDetails {
-      pub payer_id: String,
-      pub payer_email: String,
-      pub provider: ext_paypal_common::PayPalProvider,
-    }
-
-    pub fn code() -> String {
-      "paypal".to_string()
-    }
-
-    pub struct PayPalPaymentMethod {
-      payer_details: PayPalPayerDetails,
-    }
-
-    impl PayPalPaymentMethod {
-      pub fn new(payer_details: PayPalPayerDetails) -> Self {
-        PayPalPaymentMethod {
-          payer_details,
-        }
-      }
-    }
-
-    impl IPaymentMethod for PayPalPaymentMethod {
-      fn code(&self) -> String {
-        code()
-      }
-    }
-
-    pub struct PayPalPaymentMethodFactory;
-
-    impl IPaymentMethodFactory for PayPalPaymentMethodFactory {
-      fn validate_payment_method(&self, method: &api::GenericPaymentMethod)
-        -> Either<ValidationResult, Box<dyn IPaymentMethod>> {
-
-          if method.code != code() {
-            return Left(ValidationResult::Invalid("Invalid payment method".to_string()));
-          }
-
-          let e_payer_details =
-            serde_json::from_value::<PayPalPayerDetails>(method.details.clone());
-
-          match e_payer_details {
-            Ok(payer_details) => {
-              let mut errors = Vec::new();
-
-              // Dummy validation logic
-
-              if payer_details.payer_id.is_empty() {
-                errors.push("Invalid payer ID".to_string());
-              }
-
-              if payer_details.payer_email.len() == 0 {
-                errors.push("Invalid payer email".to_string());
-              }
-
-              if errors.len() > 0 {
-                return Left(ValidationResult::ValidationError(errors));
-              }
-
-              Right(Box::new(PayPalPaymentMethod::new(payer_details)))
-            },
-            Err(e) => {
-              Left(ValidationResult::ParseError(e.to_string()))
-            }
-        }
-      }
-    }
-  }
-
-  // Extensible payment processors infrastructure
-
-  pub trait IPaymentProcessor {
-    fn code(&self) -> String;
-  }
-
-  pub trait IPaymentProcessorFactory {
-    fn validate_payment_processor(&self, payment_processor: &api::GenericPaymentProcessor)
-      -> Either<ValidationResult, Box<dyn IPaymentProcessor>>;
-  }
 
   // Specific payment processors
-
-  pub mod ext_pp_paypal {
-    use super::*;
-    use serde::{Serialize, Deserialize};
-
-    #[derive(Debug, Serialize, Deserialize, Clone)]
-    pub struct PayPalProcessorDetails {
-      pub client_id: String,
-      pub client_secret: String,
-    }
-
-    pub fn code() -> String {
-      "paypal".to_string()
-    }
-
-    pub struct PayPalProcessor {
-      processor_details: PayPalProcessorDetails,
-    }
-
-    impl PayPalProcessor {
-      pub fn new(processor_details: PayPalProcessorDetails) -> Self {
-        PayPalProcessor {
-          processor_details,
-        }
-      }
-    }
-
-    impl IPaymentProcessor for PayPalProcessor {
-      fn code(&self) -> String {
-        code()
-      }
-    }
-
-    pub struct PayPalProcessorFactory;
-
-    impl IPaymentProcessorFactory for PayPalProcessorFactory {
-      fn validate_payment_processor(&self, processor: &api::GenericPaymentProcessor)
-        -> Either<ValidationResult, Box<dyn IPaymentProcessor>> {
-
-          if processor.code != code() {
-            return Left(ValidationResult::Invalid("Invalid payment processor".to_string()));
-          }
-
-          let e_processor_details =
-            serde_json::from_value::<PayPalProcessorDetails>(processor.details.clone());
-
-          match e_processor_details {
-            Ok(processor_details) => {
-              let mut errors = Vec::new();
-
-              // Dummy validation logic
-
-              if processor_details.client_id.is_empty() {
-                errors.push("Invalid client ID".to_string());
-              }
-
-              if processor_details.client_secret.len() == 0 {
-                errors.push("Invalid client secret".to_string());
-              }
-
-              if errors.len() > 0 {
-                return Left(ValidationResult::ValidationError(errors));
-              }
-
-              Right(Box::new(PayPalProcessor::new(processor_details)))
-            },
-            Err(e) => {
-              Left(ValidationResult::ParseError(e.to_string()))
-            }
-        }
-      }
-    }
-  }
 
   pub fn dummy_payment_request() -> api::PaymentRequest {
     let order_metadata = api::OrderMetaDataExtended {
@@ -316,12 +49,12 @@ mod tests {
       cvv: "123".to_string(),
     };
 
-    let card_payment_method = api::GenericPaymentMethod {
+    let card_payment_method = GenericPaymentMethod {
       code: "card".to_string(),
       details: serde_json::to_value(card_details).unwrap(),
     };
 
-    let paypal_payment_processor = api::GenericPaymentProcessor {
+    let paypal_payment_processor = GenericPaymentProcessor {
       code: "paypal".to_string(),
       details: serde_json::to_value(ext_pp_paypal::PayPalProcessorDetails {
         client_id: "123".to_string(),
@@ -340,6 +73,13 @@ mod tests {
       customer_details: Some(serde_json::to_value(customer_details).unwrap()),
       order_metadata: Some(serde_json::to_value(order_metadata).unwrap()),
       connectors: Some(vec![paypal_payment_processor]),
+    }
+  }
+
+  pub fn dummy_merchant_auth() -> Auth {
+    Auth {
+      party_id: "123".to_string(),
+      api_key: "456".to_string(),
     }
   }
 
@@ -369,7 +109,7 @@ mod tests {
 
   pub fn validate_desired_payment_processors(
     factories: &HashMap<String, Box<dyn IPaymentProcessorFactory>>,
-    processors: &Option<Vec<api::GenericPaymentProcessor>>)
+    processors: &Option<Vec<GenericPaymentProcessor>>)
     -> Either<ValidationResult, Vec<Box<dyn IPaymentProcessor>>> {
 
       if let Some(pps) = processors {
@@ -397,6 +137,86 @@ mod tests {
 
       Right(Vec::new())
   }
+
+  pub fn validate_amount(amount: &Amount) -> Either<ValidationResult, Amount> {
+    if amount.greater(0) {
+      Right(amount)
+    } else {
+      Left(ValidationResult::Invalid("Invalid amount".to_string()))
+    }
+  }
+
+  pub fn validate_currency(
+    currencies: &Vec<Currency>,
+    currency: String) -> Either<ValidationResult, Currency> {
+      for c in currencies.iter() {
+        match c {
+          Currency::Crypto(code) => {
+            if code == &currency {
+              return Right(c.clone());
+            }
+          },
+          _ => {
+            if c.to_string() == currency {
+              return Right(c.clone());
+            }
+          }
+        }
+      }
+
+      Left(ValidationResult::Invalid("Invalid currency".to_string()))
+    }
+
+
+  pub fn validate_confirmation(confirmation: &Option<String>) ->
+  Either<ValidationResult, Confirmation> {
+    if let Some(c) = confirmation {
+      if c == "automatic" {
+        Right(Confirmation::Automatic)
+      } else if c == "manual" {
+        Right(Confirmation::Manual)
+      } else {
+        Left(ValidationResult::Invalid("Invalid confirmation".to_string()))
+      }
+    } else {
+      Right(Confirmation::Manuals)
+    }
+  }
+
+  pub fn validate_capture_method(capture_method: &Option<String>) ->
+  Either<ValidationResult, CaptureMethod> {
+    if let Some(c) = capture_method {
+      if c == "automatic" {
+        Right(CaptureMethod::Automatic)
+      } else if c == "manual" {
+        Right(CaptureMethod::Manual)
+      } else {
+        Left(ValidationResult::Invalid("Invalid capture method".to_string()))
+      }
+    } else {
+      Right(CaptureMethod::Manual)
+    }
+  }
+
+  pub fn validate_description(description: &Option<String>) ->
+  Either<ValidationResult, String> {
+    if let Some(d) = description {
+      Right(d.clone())
+    } else {
+      Right("".to_string())
+    }
+  }
+
+  pub fn validate_merchant_auth(auth: &Auth) ->
+  Either<ValidationResult, Auth> {
+    if auth.party_id.len() > 0 && auth.api_key.len() > 0 {
+      Right(auth.clone())
+    } else {
+      Left(ValidationResult::Invalid("Invalid merchant auth".to_string()))
+    }
+  }
+
+
 
 
   #[test]
@@ -427,6 +247,114 @@ mod tests {
     assert!(pp_result.is_right());
 
     // Use pm_result and pp_result for choosing and configuring a flow
+
+  }
+
+  #[test]
+  fn test_payment_create_handler() {
+
+    // Supported payment methods
+    let mut pm_factories: HashMap<String, Box<dyn IPaymentMethodFactory>> = HashMap::new();
+    pm_factories.insert(ext_pm_card::code(), Box::new(ext_pm_card::CardPaymentMethodFactory));
+    pm_factories.insert(ext_pm_paypal::code(), Box::new(ext_pm_paypal::PayPalPaymentMethodFactory));
+
+    // Supported payment processors
+    let mut p_processor_factories: HashMap<String, Box<dyn IPaymentProcessorFactory>> = HashMap::new();
+    p_processor_factories.insert(ext_pp_paypal::code(), Box::new(ext_pp_paypal::PayPalProcessorFactory));
+
+    // Supported currencies
+    let currencies = vec![
+      Currency::Crypto("BTC".to_string()),
+      Currency::USD,
+      Currency::EUR,
+      Currency::GBP,
+    ];
+
+
+    // Parsing and validating a payment request
+
+    let payment_request = dummy_payment_request();
+    let raw_merchant_auth = dummy_merchant_auth();
+
+    // TODO: introduce validation eDSL or reuse the type-level eDSL for flows construction
+
+    let payment_method = validate_payment_method(
+      &pm_factories,
+      &payment_request.payment_method);
+
+    let payment_processor = validate_desired_payment_processors(
+      &p_processor_factories,
+      &payment_request.connectors);
+
+    let amount = validate_amount(&payment_request.amount);
+    let currency = validate_currency(
+      &currencies,
+      &payment_request.currency);
+    let description = validate_description(&payment_request.description);
+    let confirmation = validate_confirmation(&payment_request.confirmation);
+    let capture_method = validate_capture_method(&payment_request.capture_method);
+    let merchant_auth = validate_merchant_auth(&raw_merchant_auth);
+
+    // Flow selection, construction, and configuring.
+    // TODO: introduce a value-level eDSL
+    // or reuse the type-level eDSL for flows construction
+
+    let flow_constructor = |
+      logger,
+      customer_manager,
+      merchant_manager| {
+
+      let mut flow_constructors = Vec::new();
+
+      let mut flow1_data = flow1::dummy_normal_flow_payment_data();
+      let mut flow1_merchant_auth;
+
+      let flow1_conditions = vec![
+        mandatory!(amount, flow1_data.amount),
+        mandatory!(currency, flow1_data.currency),
+        // mandatory!(payment_method, flow1_data.payment_method),
+        optional!(description, "", flow1_data.description),
+        optional!(confirmation, Confirmation::Manual, flow1_data.confirmation),
+        optional!(capture_method, CaptureMethod::Manual, flow1_data.capture_method),
+        mandatory!(merchant_auth, flow1_merchant_auth),
+        // todo: payment method should be instant
+      ];
+
+      flow_constructors.push(
+        (flow1_conditions, || {
+          let flow = Box::new(NormalPaymentCreateFlow::new(customer_manager, merchant_manager))
+
+
+
+        })
+      );
+
+
+
+
+
+      Box::new(SimplePaymentCreateFlow::new(customer_manager, merchant_manager))
+    };
+
+
+
+
+    let customer_manager = Box::new(DummyCustomerManager::new(1));
+    let merchant_manager = Box::new(DummyMerchantManager::new(1));
+    let logger = Box::new(DummyLogger::new());
+
+    let flow = flow_constructor(logger, customer_manager, merchant_manager);
+    // let mut logging_flow = Box::new(LoggingPaymentCreateFlow::new(flow, logger));
+
+    // let result = logging_flow.execute(
+    //   Right(customer_data),
+    //   Right(merchant_data),
+    //   order_metadata,
+    //   payment_data);
+
+    assert!(result.is_ok());
+
+
 
   }
 

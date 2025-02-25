@@ -1,7 +1,8 @@
-//! This module defines a type-level flow construction eDSL
-//! for creating and managing payment processing scenarios.
-//!
-//! See `NormalPaymentScenario` for more info.
+// This module defines a type-level flow construction eDSL
+// for creating and managing payment processing scenarios.
+// (It is not used in the main demo codebase.)
+//
+// See `NormalPaymentScenario` for more info.
 
 
 use tl_list_lib::tl_list;
@@ -165,8 +166,8 @@ pub type MerchantApiKeyType = Wrapper<ITypeTag, MerchantApiKeyTypeImpl>;
 pub struct MerchantProfileTypeImpl;
 pub type MerchantProfileType = Wrapper<ITypeTag, MerchantProfileTypeImpl>;
 
-pub struct PaymentGatewayTypeImpl;
-pub type PaymentGatewayType = Wrapper<ITypeTag, PaymentGatewayTypeImpl>;
+pub struct PaymentProcessorTypeImpl;
+pub type PaymentProcessorType = Wrapper<ITypeTag, PaymentProcessorTypeImpl>;
 
 pub struct PaymentIntentTypeImpl;
 pub type PaymentIntentType = Wrapper<ITypeTag, PaymentIntentTypeImpl>;
@@ -232,7 +233,7 @@ mod vars {
     pub type MerchantApiKey<const IDX: u8> = Wrapper<IVar<MerchantApiKeyType>, VarImpl<IDX>>;
 
     pub type MerchantProfile<const IDX: u8> = Wrapper<IVar<MerchantProfileType>, VarImpl<IDX>>;
-    pub type PaymentGateway<const IDX: u8>  = Wrapper<IVar<PaymentGatewayType>, VarImpl<IDX>>;
+    pub type PaymentProcessor<const IDX: u8>  = Wrapper<IVar<PaymentProcessorType>, VarImpl<IDX>>;
     pub type PaymentIntent<const IDX: u8>   = Wrapper<IVar<PaymentIntentType>, VarImpl<IDX>>;
     pub type Payment<const IDX: u8>         = Wrapper<IVar<PaymentType>, VarImpl<IDX>>;
     pub type PaymentStatus<const IDX: u8>   = Wrapper<IVar<PaymentStatusType>, VarImpl<IDX>>;
@@ -309,11 +310,11 @@ pub type IsInstantPaymentMethod<P>
   = Wrapper<ICondition, IsInstantPaymentMethodCond<P>>;
 
 pub struct PaymentIntentRequiredImpl<
-  Gateway: IInterface<IVar<PaymentGatewayType>>
-  >(PhantomData<Gateway>);
+  Processor: IInterface<IVar<PaymentProcessorType>>
+  >(PhantomData<Processor>);
 
-pub type PaymentIntentRequired<Gateway> =
-  Wrapper<ICondition, PaymentIntentRequiredImpl<Gateway>>;
+pub type PaymentIntentRequired<Processor> =
+  Wrapper<ICondition, PaymentIntentRequiredImpl<Processor>>;
 
 // Actions
 
@@ -323,41 +324,41 @@ pub struct LoadMerchantProfileImpl<
 pub type LoadMerchantProfile<ApiKey> =
   Wrapper<IAction, LoadMerchantProfileImpl<ApiKey>>;
 
-pub struct ChoosePaymentGatewayImpl<
+pub struct DecidePaymentProcessorImpl<
   Profile: IInterface<IVar<MerchantProfileType>>
   >(PhantomData<Profile>);
-pub type ChoosePaymentGateway<Profile> =
-  Wrapper<IAction, ChoosePaymentGatewayImpl<Profile>>;
+pub type DecidePaymentProcessor<Profile> =
+  Wrapper<IAction, DecidePaymentProcessorImpl<Profile>>;
 
 pub struct CreatePaymentIntentImpl<
-  Gateway: IInterface<IVar<PaymentGatewayType>>
-  >(PhantomData<Gateway>);
+  Processor: IInterface<IVar<PaymentProcessorType>>
+  >(PhantomData<Processor>);
 
-pub type CreatePaymentIntent<Gateway> =
-  Wrapper<IAction, CreatePaymentIntentImpl<Gateway>>;
+pub type CreatePaymentIntent<Processor> =
+  Wrapper<IAction, CreatePaymentIntentImpl<Processor>>;
 
 pub struct AttachPaymentMethodImpl<
-  Gateway: IInterface<IVar<PaymentGatewayType>>,
+  Processor: IInterface<IVar<PaymentProcessorType>>,
   Payment: IInterface<IVar<PaymentIntentType>>
-  >(PhantomData<(Gateway, Payment)>);
+  >(PhantomData<(Processor, Payment)>);
 
-pub type AttachPaymentMethod<Gateway, Payment> =
-  Wrapper<IAction, AttachPaymentMethodImpl<Gateway, Payment>>;
+pub type AttachPaymentMethod<Processor, Payment> =
+  Wrapper<IAction, AttachPaymentMethodImpl<Processor, Payment>>;
 
 pub struct AuthorizePaymentImpl<
-  Gateway: IInterface<IVar<PaymentGatewayType>>,
+  Processor: IInterface<IVar<PaymentProcessorType>>,
   Payment: IInterface<IVar<PaymentType>>
-  >(PhantomData<(Gateway, Payment)>);
+  >(PhantomData<(Processor, Payment)>);
 
-pub type AuthorizePayment<Gateway, Payment> =
-  Wrapper<IAction, AuthorizePaymentImpl<Gateway, Payment>>;
+pub type AuthorizePayment<Processor, Payment> =
+  Wrapper<IAction, AuthorizePaymentImpl<Processor, Payment>>;
 
 pub struct CreatePaymentImpl<
-  Gateway: IInterface<IVar<PaymentGatewayType>>
-  >(PhantomData<Gateway>);
+  Processor: IInterface<IVar<PaymentProcessorType>>
+  >(PhantomData<Processor>);
 
-pub type CreatePayment<Gateway> =
-  Wrapper<IAction, CreatePaymentImpl<Gateway>>;
+pub type CreatePayment<Processor> =
+  Wrapper<IAction, CreatePaymentImpl<Processor>>;
 
 
 // Actual scenarios
@@ -379,17 +380,17 @@ pub type NormalPaymentScenario = Scenario<
       IsInstantPaymentMethod<vars::PaymentMethod<1>>,
       tl_list![IStep,
         Step<LoadMerchantProfile<vars::MerchantApiKey<1>>, vars::MerchantProfile<1>>,
-        Step<ChoosePaymentGateway<vars::MerchantProfile<1>>, vars::PaymentGateway<1>>,
+        Step<DecidePaymentProcessor<vars::MerchantProfile<1>>, vars::PaymentProcessor<1>>,
         ConditionalStep<
-          PaymentIntentRequired<vars::PaymentGateway<1>>,
+          PaymentIntentRequired<vars::PaymentProcessor<1>>,
           tl_list![IStep,
-            Step<CreatePaymentIntent<vars::PaymentGateway<1>>, vars::PaymentIntent<1>>,
-            Step<AttachPaymentMethod<vars::PaymentGateway<1>, vars::PaymentIntent<1>>, vars::Payment<1>>,
-            Step<AuthorizePayment<vars::PaymentGateway<1>, vars::Payment<1>>, vars::PaymentStatus<1>>
+            Step<CreatePaymentIntent<vars::PaymentProcessor<1>>, vars::PaymentIntent<1>>,
+            Step<AttachPaymentMethod<vars::PaymentProcessor<1>, vars::PaymentIntent<1>>, vars::Payment<1>>,
+            Step<AuthorizePayment<vars::PaymentProcessor<1>, vars::Payment<1>>, vars::PaymentStatus<1>>
           ],
           tl_list![IStep,
-            Step<CreatePayment<vars::PaymentGateway<1>>, vars::Payment<1>>,
-            Step<AuthorizePayment<vars::PaymentGateway<1>, vars::Payment<1>>, vars::PaymentStatus<1>>
+            Step<CreatePayment<vars::PaymentProcessor<1>>, vars::Payment<1>>,
+            Step<AuthorizePayment<vars::PaymentProcessor<1>, vars::Payment<1>>, vars::PaymentStatus<1>>
           ]
         >
       ]

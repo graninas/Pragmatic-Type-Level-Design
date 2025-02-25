@@ -9,22 +9,25 @@ mod tests {
 
 
   #[derive(Debug, Clone)]
-  pub enum ValidationError {
+  pub enum ValidationResult {
     Invalid(String),
     Missing(String),
     ParseError(String),
     ValidationError(Vec<String>),
   }
 
-  pub trait IPaymentMethodFactory {
-    fn validate_payment_method(&self, payment_method: &api::GenericPaymentMethod)
-      -> Result<Box<dyn IPaymentMethod>, ValidationError>;
-  }
+  // Extensible payment methods infrastructure
 
   pub trait IPaymentMethod {
     fn code(&self) -> String;
   }
 
+  pub trait IPaymentMethodFactory {
+    fn validate_payment_method(&self, payment_method: &api::GenericPaymentMethod)
+      -> Result<Box<dyn IPaymentMethod>, ValidationResult>;
+  }
+
+  // Specific payment methods
 
   pub mod ext_pm_card {
     use super::*;
@@ -65,14 +68,14 @@ mod tests {
 
     impl IPaymentMethodFactory for CardPaymentMethodFactory {
       fn validate_payment_method(&self, method: &api::GenericPaymentMethod)
-        -> Result<Box<dyn IPaymentMethod>, ValidationError> {
+        -> Result<Box<dyn IPaymentMethod>, ValidationResult> {
 
-          if method.payment_method != code() {
-            return Err(ValidationError::Invalid("Invalid payment method".to_string()));
+          if method.code != code() {
+            return Err(ValidationResult::Invalid("Invalid payment method".to_string()));
           }
 
           let e_card_details =
-            serde_json::from_value::<CardDetails>(method.payment_method_details.clone());
+            serde_json::from_value::<CardDetails>(method.details.clone());
 
           match e_card_details {
             Ok(card_details) => {
@@ -101,13 +104,13 @@ mod tests {
               }
 
               if errors.len() > 0 {
-                return Err(ValidationError::ValidationError(errors));
+                return Err(ValidationResult::ValidationError(errors));
               }
 
               Ok(Box::new(CardPaymentMethod::new(card_details)))
             },
             Err(e) => {
-              Err(ValidationError::ParseError(e.to_string()))
+              Err(ValidationResult::ParseError(e.to_string()))
             }
         }
       }
@@ -162,14 +165,14 @@ mod tests {
 
     impl IPaymentMethodFactory for PayPalPaymentMethodFactory {
       fn validate_payment_method(&self, method: &api::GenericPaymentMethod)
-        -> Result<Box<dyn IPaymentMethod>, ValidationError> {
+        -> Result<Box<dyn IPaymentMethod>, ValidationResult> {
 
-          if method.payment_method != code() {
-            return Err(ValidationError::Invalid("Invalid payment method".to_string()));
+          if method.code != code() {
+            return Err(ValidationResult::Invalid("Invalid payment method".to_string()));
           }
 
           let e_payer_details =
-            serde_json::from_value::<PayPalPayerDetails>(method.payment_method_details.clone());
+            serde_json::from_value::<PayPalPayerDetails>(method.details.clone());
 
           match e_payer_details {
             Ok(payer_details) => {
@@ -186,19 +189,104 @@ mod tests {
               }
 
               if errors.len() > 0 {
-                return Err(ValidationError::ValidationError(errors));
+                return Err(ValidationResult::ValidationError(errors));
               }
 
               Ok(Box::new(PayPalPaymentMethod::new(payer_details)))
             },
             Err(e) => {
-              Err(ValidationError::ParseError(e.to_string()))
+              Err(ValidationResult::ParseError(e.to_string()))
             }
         }
       }
     }
   }
 
+  // Extensible payment processors infrastructure
+
+  pub trait IPaymentProcessor {
+    fn code(&self) -> String;
+  }
+
+  pub trait IPaymentProcessorFactory {
+    fn validate_payment_processor(&self, payment_processor: &api::GenericPaymentProcessor)
+      -> Result<Box<dyn IPaymentProcessor>, ValidationResult>;
+  }
+
+  // Specific payment processors
+
+  pub mod ext_pp_paypal {
+    use super::*;
+    use serde::{Serialize, Deserialize};
+
+    #[derive(Debug, Serialize, Deserialize, Clone)]
+    pub struct PayPalProcessorDetails {
+      pub client_id: String,
+      pub client_secret: String,
+    }
+
+    pub fn code() -> String {
+      "paypal".to_string()
+    }
+
+    pub struct PayPalProcessor {
+      processor_details: PayPalProcessorDetails,
+    }
+
+    impl PayPalProcessor {
+      pub fn new(processor_details: PayPalProcessorDetails) -> Self {
+        PayPalProcessor {
+          processor_details,
+        }
+      }
+    }
+
+    impl IPaymentProcessor for PayPalProcessor {
+      fn code(&self) -> String {
+        code()
+      }
+    }
+
+    pub struct PayPalProcessorFactory;
+
+    impl IPaymentProcessorFactory for PayPalProcessorFactory {
+      fn validate_payment_processor(&self, processor: &api::GenericPaymentProcessor)
+        -> Result<Box<dyn IPaymentProcessor>, ValidationResult> {
+
+          if processor.code != code() {
+            return Err(ValidationResult::Invalid("Invalid payment processor".to_string()));
+          }
+
+          let e_processor_details =
+            serde_json::from_value::<PayPalProcessorDetails>(processor.details.clone());
+
+          match e_processor_details {
+            Ok(processor_details) => {
+              let mut errors = Vec::new();
+
+              // Dummy validation logic
+
+              if processor_details.client_id.is_empty() {
+                errors.push("Invalid client ID".to_string());
+              }
+
+              if processor_details.client_secret.len() == 0 {
+                errors.push("Invalid client secret".to_string());
+              }
+
+              if errors.len() > 0 {
+                return Err(ValidationResult::ValidationError(errors));
+              }
+
+              Ok(Box::new(PayPalProcessor::new(processor_details)))
+            },
+            Err(e) => {
+              Err(ValidationResult::ParseError(e.to_string()))
+            }
+        }
+      }
+    }
+  }
 
   pub fn dummy_payment_request() -> api::PaymentRequest {
     let order_metadata = api::OrderMetaDataExtended {
@@ -228,8 +316,16 @@ mod tests {
     };
 
     let card_payment_method = api::GenericPaymentMethod {
-      payment_method: "card".to_string(),
-      payment_method_details: serde_json::to_value(card_details).unwrap(),
+      code: "card".to_string(),
+      details: serde_json::to_value(card_details).unwrap(),
+    };
+
+    let paypal_payment_processor = api::GenericPaymentProcessor {
+      code: "paypal".to_string(),
+      details: serde_json::to_value(ext_pp_paypal::PayPalProcessorDetails {
+        client_id: "123".to_string(),
+        client_secret: "456".to_string(),
+      }).unwrap(),
     };
 
     api::PaymentRequest {
@@ -242,31 +338,63 @@ mod tests {
       customer_id: None,
       customer_details: Some(serde_json::to_value(customer_details).unwrap()),
       order_metadata: Some(serde_json::to_value(order_metadata).unwrap()),
+      connectors: Some(vec![paypal_payment_processor]),
     }
   }
 
   pub fn validate_payment_method(
     factories: &HashMap<String, Box<dyn IPaymentMethodFactory>>,
     payment_method: &Option<api::GenericPaymentMethod>)
-    -> Result<Box<dyn IPaymentMethod>, ValidationError> {
+    -> Result<Box<dyn IPaymentMethod>, ValidationResult> {
 
       match payment_method {
         Some(pm) => {
-          let factory = factories.get(&pm.payment_method);
+          let factory = factories.get(&pm.code);
 
           match factory {
             Some(f) => {
               f.validate_payment_method(pm)
             },
             None => {
-              Err(ValidationError::Invalid("Invalid payment method".to_string()))
+              Err(ValidationResult::Invalid("Invalid payment method".to_string()))
             }
           }
         },
         None => {
-          Err(ValidationError::Missing("Payment method is missing".to_string()))
+          Err(ValidationResult::Missing("Payment method is missing".to_string()))
         }
       }
+  }
+
+  pub fn validate_payment_processors(
+    factories: &HashMap<String, Box<dyn IPaymentProcessorFactory>>,
+    processors: &Option<Vec<api::GenericPaymentProcessor>>)
+    -> Result<Vec<Box<dyn IPaymentProcessor>>, ValidationResult> {
+
+      if let Some(pps) = processors {
+          let mut result = Vec::new();
+
+          for pp in pps.iter() {
+            let factory = factories.get(&pp.code);
+
+            if let Some(f) = factory {
+              let p = f.validate_payment_processor(pp);
+
+              match p {
+                Ok(p) => {
+                  result.push(p);
+                },
+                Err(e) => {
+                  return Err(e);
+                }
+              }
+            }
+          }
+
+          return Ok(result)
+      }
+
+      todo!();
   }
 
 
@@ -274,12 +402,15 @@ mod tests {
   fn test_payment_methods_creation() {
 
     // Supported payment methods
-    let card_factory = ext_pm_card::CardPaymentMethodFactory;
-    let paypal_factory = ext_pm_paypal::PayPalPaymentMethodFactory;
-
     let mut pm_factories: HashMap<String, Box<dyn IPaymentMethodFactory>> = HashMap::new();
-    pm_factories.insert(ext_pm_card::code(), Box::new(card_factory));
-    pm_factories.insert(ext_pm_paypal::code(), Box::new(paypal_factory));
+    pm_factories.insert(ext_pm_card::code(), Box::new(ext_pm_card::CardPaymentMethodFactory));
+    pm_factories.insert(ext_pm_paypal::code(), Box::new(ext_pm_paypal::PayPalPaymentMethodFactory));
+
+    // Supported payment processors
+    let mut p_processor_factories: HashMap<String, Box<dyn IPaymentProcessorFactory>> = HashMap::new();
+    p_processor_factories.insert(ext_pp_paypal::code(), Box::new(ext_pp_paypal::PayPalProcessorFactory));
+
+    // Parsing and validating a payment request
 
     let payment_request = dummy_payment_request();
 
@@ -287,14 +418,13 @@ mod tests {
       &pm_factories,
       &payment_request.payment_method);
 
-    match pm_result {
-      Ok(pm) => {
-        assert_eq!(pm.code(), ext_pm_card::code());
-      },
-      Err(e) => {
-        panic!("Error: {:?}", e);
-      }
-    }
+    let pp_result = validate_payment_processors(
+      &p_processor_factories,
+      &payment_request.connectors);
+
+    assert!(pm_result.is_ok());
+    assert!(pp_result.is_ok());
+
   }
 
 }

@@ -29,8 +29,14 @@ pub struct CustomerDetailsExtended {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct GenericPaymentMethod {
-  pub payment_method: String,
-  pub payment_method_details: Value,
+  pub code: String,
+  pub details: Value,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct GenericPaymentProcessor {
+  pub code: String,
+  pub details: Value,
 }
 
 // God-like type as it is now in HyperSwitch.
@@ -54,4 +60,10 @@ pub struct PaymentRequest {
   pub customer_details: Option<Value>,
   // Optional type: what to do if None?
   pub order_metadata: Option<Value>,
+  // List of desired payment processors (connectors)
+  // with which the payment can go through.
+  // "Option" means the value can be absent in JSON,
+  // but actually, absent values of vectors can be
+  // just empty vectors.
+  pub connectors: Option<Vec<GenericPaymentProcessor>>,
 }

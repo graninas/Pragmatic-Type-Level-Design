@@ -10,7 +10,8 @@ mod tests {
 
   #[derive(Debug, Clone)]
   pub enum ValidationError {
-    InvalidPaymentMethod,
+    Invalid(String),
+    Missing(String),
     ParseError(String),
     ValidationError(Vec<String>),
   }
@@ -25,9 +26,8 @@ mod tests {
   }
 
 
-  pub mod ext {
+  pub mod ext_pm_card {
     use super::*;
-
     use serde::{Serialize, Deserialize};
 
     #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -39,7 +39,7 @@ mod tests {
       pub cvv: String,
     }
 
-    pub fn card_payment_method_code() -> String {
+    pub fn code() -> String {
       "card".to_string()
     }
 
@@ -57,7 +57,7 @@ mod tests {
 
     impl IPaymentMethod for CardPaymentMethod {
       fn code(&self) -> String {
-        card_payment_method_code()
+        code()
       }
     }
 
@@ -67,8 +67,8 @@ mod tests {
       fn validate_payment_method(&self, method: &api::GenericPaymentMethod)
         -> Result<Box<dyn IPaymentMethod>, ValidationError> {
 
-          if method.payment_method != card_payment_method_code() {
-            return Err(ValidationError::InvalidPaymentMethod);
+          if method.payment_method != code() {
+            return Err(ValidationError::Invalid("Invalid payment method".to_string()));
           }
 
           let e_card_details =
@@ -114,6 +114,91 @@ mod tests {
     }
   }
 
+  pub mod ext_paypal_common {
+    use serde::{Serialize, Deserialize};
+
+    #[derive(Debug, Serialize, Deserialize, Clone)]
+    pub enum PayPalProvider {
+      PayPal,
+      BrainTree,
+    }
+  }
+
+
+  pub mod ext_pm_paypal {
+    use super::*;
+    use serde::{Serialize, Deserialize};
+
+    #[derive(Debug, Serialize, Deserialize, Clone)]
+    pub struct PayPalPayerDetails {
+      pub payer_id: String,
+      pub payer_email: String,
+      pub provider: ext_paypal_common::PayPalProvider,
+    }
+
+    pub fn code() -> String {
+      "paypal".to_string()
+    }
+
+    pub struct PayPalPaymentMethod {
+      payer_details: PayPalPayerDetails,
+    }
+
+    impl PayPalPaymentMethod {
+      pub fn new(payer_details: PayPalPayerDetails) -> Self {
+        PayPalPaymentMethod {
+          payer_details,
+        }
+      }
+    }
+
+    impl IPaymentMethod for PayPalPaymentMethod {
+      fn code(&self) -> String {
+        code()
+      }
+    }
+
+    pub struct PayPalPaymentMethodFactory;
+
+    impl IPaymentMethodFactory for PayPalPaymentMethodFactory {
+      fn validate_payment_method(&self, method: &api::GenericPaymentMethod)
+        -> Result<Box<dyn IPaymentMethod>, ValidationError> {
+
+          if method.payment_method != code() {
+            return Err(ValidationError::Invalid("Invalid payment method".to_string()));
+          }
+
+          let e_payer_details =
+            serde_json::from_value::<PayPalPayerDetails>(method.payment_method_details.clone());
+
+          match e_payer_details {
+            Ok(payer_details) => {
+              let mut errors = Vec::new();
+
+              // Dummy validation logic
+
+              if payer_details.payer_id.is_empty() {
+                errors.push("Invalid payer ID".to_string());
+              }
+
+              if payer_details.payer_email.len() == 0 {
+                errors.push("Invalid payer email".to_string());
+              }
+
+              if errors.len() > 0 {
+                return Err(ValidationError::ValidationError(errors));
+              }
+
+              Ok(Box::new(PayPalPaymentMethod::new(payer_details)))
+            },
+            Err(e) => {
+              Err(ValidationError::ParseError(e.to_string()))
+            }
+        }
+      }
+    }
+  }
+
 
   pub fn dummy_payment_request() -> api::PaymentRequest {
     let order_metadata = api::OrderMetaDataExtended {
@@ -134,7 +219,7 @@ mod tests {
       postal_code: Some("12345".to_string()),
     };
 
-    let card_details = ext::CardDetails {
+    let card_details = ext_pm_card::CardDetails {
       card_number: "1234 5678 9012 3456".to_string(),
       card_holder_name: "Alice".to_string(),
       expiry_month: 12,
@@ -160,21 +245,51 @@ mod tests {
     }
   }
 
+  pub fn validate_payment_method(
+    factories: &HashMap<String, Box<dyn IPaymentMethodFactory>>,
+    payment_method: &Option<api::GenericPaymentMethod>)
+    -> Result<Box<dyn IPaymentMethod>, ValidationError> {
+
+      match payment_method {
+        Some(pm) => {
+          let factory = factories.get(&pm.payment_method);
+
+          match factory {
+            Some(f) => {
+              f.validate_payment_method(pm)
+            },
+            None => {
+              Err(ValidationError::Invalid("Invalid payment method".to_string()))
+            }
+          }
+        },
+        None => {
+          Err(ValidationError::Missing("Payment method is missing".to_string()))
+        }
+      }
+  }
+
 
   #[test]
   fn test_payment_methods_creation() {
+
+    // Supported payment methods
+    let card_factory = ext_pm_card::CardPaymentMethodFactory;
+    let paypal_factory = ext_pm_paypal::PayPalPaymentMethodFactory;
+
+    let mut pm_factories: HashMap<String, Box<dyn IPaymentMethodFactory>> = HashMap::new();
+    pm_factories.insert(ext_pm_card::code(), Box::new(card_factory));
+    pm_factories.insert(ext_pm_paypal::code(), Box::new(paypal_factory));
+
     let payment_request = dummy_payment_request();
 
-    let card_pm_factory = ext::CardPaymentMethodFactory;
-    // let mut payment_methods = HashMap::new();
-    // payment_methods.insert(ext::card_payment_method_code(), card_pm_factory);
+    let pm_result = validate_payment_method(
+      &pm_factories,
+      &payment_request.payment_method);
 
-    let result = card_pm_factory.validate_payment_method(payment_request.payment_method.as_ref().unwrap());
-
-
-    match result {
+    match pm_result {
       Ok(pm) => {
-        assert_eq!(pm.code(), ext::card_payment_method_code());
+        assert_eq!(pm.code(), ext_pm_card::code());
       },
       Err(e) => {
         panic!("Error: {:?}", e);

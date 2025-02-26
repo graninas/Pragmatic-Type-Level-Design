@@ -28,30 +28,20 @@ pub struct SimplePaymentResult {
     pub payment_data: SimplePaymentData,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
-pub struct SimpleConfig {
-  pub confirmation: Option<Confirmation>,
-  pub capture_method: Option<CaptureMethod>,
-}
-
 pub struct SimplePaymentCreateFlow {
-  payment_processors: PaymentProcessors,
+  processor_factories: PaymentProcessorFactories,
   customer_manager: Box<dyn ICustomerManager>,
   merchant_manager: Box<dyn IMerchantManager>,
 }
 
 impl SimplePaymentCreateFlow {
   pub fn new(
-    payment_processors: PaymentProcessors,
+    processor_factories: PaymentProcessorFactories,
     customer_manager: Box<dyn ICustomerManager>,
     merchant_manager: Box<dyn IMerchantManager>,
   ) -> Self {
-    if payment_processors.is_empty() {
-      panic!("No payment processors provided");
-    }
-
     Self {
-      payment_processors,
+      processor_factories,
       customer_manager,
       merchant_manager }
   }
@@ -62,7 +52,6 @@ impl SimplePaymentCreateFlowTemplate for SimplePaymentCreateFlow {
 
   type PaymentData = SimplePaymentData;
   type PaymentResult = SimplePaymentResult;
-  type FlowConfig = SimpleConfig;
 
   fn customer_manager(&mut self) -> &mut dyn ICustomerManager {
     &mut *self.customer_manager
@@ -138,13 +127,19 @@ impl SimplePaymentCreateFlowTemplate for SimplePaymentCreateFlow {
     _payment_data: &Self::PaymentData,
     _order_metadata: &OrderMetaData,
   ) -> Result<Box<dyn IPaymentProcessor>, String> {
-    let payment_processors = &self.payment_processors;
+    let processor_factories = &self.processor_factories;
 
-    if let Some((_, processor)) = payment_processors.iter().next() {
-      Ok(processor.clone_boxed())
-    } else {
-      Err("No payment processors available".to_string())
+    // Return the first available processor that can be built
+    // without configs and validation.
+    for (_, factory) in processor_factories.iter() {
+      let processor = factory.create();
+      match processor {
+        Ok(p) => return Ok(p),
+        Err(_) => continue,
+      }
     }
+
+    Err("No payment processor available".to_string())
   }
 
   fn make_payment_with_payment_processor(
@@ -184,16 +179,14 @@ impl SimplePaymentCreateFlowTemplate for SimplePaymentCreateFlow {
 pub struct LoggingPaymentCreateFlow {
   inner: Box<dyn SimplePaymentCreateFlowTemplate
     <PaymentData=SimplePaymentData,
-    PaymentResult=SimplePaymentResult,
-    FlowConfig=SimpleConfig>>,
+    PaymentResult=SimplePaymentResult>>,
   logger: Box<dyn ILogger>,
 }
 
 impl LoggingPaymentCreateFlow {
   pub fn new(inner: Box<dyn SimplePaymentCreateFlowTemplate
                         <PaymentData=SimplePaymentData,
-                        PaymentResult=SimplePaymentResult,
-                        FlowConfig=SimpleConfig>,
+                        PaymentResult=SimplePaymentResult>,
               >,
             logger: Box<dyn ILogger>) -> Self {
     Self { inner, logger }
@@ -204,7 +197,6 @@ impl SimplePaymentCreateFlowTemplate for LoggingPaymentCreateFlow {
 
   type PaymentData = SimplePaymentData;
   type PaymentResult = SimplePaymentResult;
-  type FlowConfig = SimpleConfig;
 
   fn customer_manager(&mut self) -> &mut dyn ICustomerManager {
     self.inner.customer_manager()

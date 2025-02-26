@@ -28,12 +28,6 @@ pub struct NormalFlowPaymentResult {
   pub payment_data: NormalFlowPaymentData,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct NormalFlowConfig {
-  pub confirmation: Confirmation,
-  pub capture_method: CaptureMethod,
-}
-
 pub fn dummy_normal_flow_payment_data() -> NormalFlowPaymentData {
   NormalFlowPaymentData {
     amount: 0,
@@ -44,37 +38,26 @@ pub fn dummy_normal_flow_payment_data() -> NormalFlowPaymentData {
   }
 }
 
-pub fn dummy_normal_flow_config() -> NormalFlowConfig {
-  NormalFlowConfig {
-    confirmation: Confirmation::Manual,
-    capture_method: CaptureMethod::Manual,
-  }
-}
 
 // Flow configuration & dependencies
 pub struct NormalPaymentCreateFlow {
-  payment_processors: PaymentProcessors,
+  processor_factories: PaymentProcessorFactories,
   merchant_manager: Box<dyn IMerchantManager>,
 }
 
 
 pub type NormalPaymentCreateFlowBoxed =
   Box<dyn GenericPaymentCreateFlowTemplate<PaymentData=NormalFlowPaymentData,
-                                           PaymentResult=NormalFlowPaymentResult,
-                                           FlowConfig=NormalFlowConfig>>;
+                                           PaymentResult=NormalFlowPaymentResult>>;
 
 pub type NormalPaymentCreateFlowResult = Result<NormalFlowPaymentResult, String>;
 
 impl NormalPaymentCreateFlow {
   pub fn new(
-    payment_processors: PaymentProcessors,
+    processor_factories: PaymentProcessorFactories,
     merchant_manager: Box<dyn IMerchantManager>,
   ) -> NormalPaymentCreateFlowBoxed {
-    if payment_processors.is_empty() {
-      panic!("No payment processors provided");
-    }
-
-    Box::new(Self { payment_processors, merchant_manager })
+    Box::new(Self { processor_factories, merchant_manager })
   }
 }
 
@@ -82,7 +65,6 @@ impl GenericPaymentCreateFlowTemplate for NormalPaymentCreateFlow {
 
   type PaymentData = NormalFlowPaymentData;
   type PaymentResult = NormalFlowPaymentResult;
-  type FlowConfig = NormalFlowConfig;
 
   fn merchant_manager(&mut self) -> &mut dyn IMerchantManager {
     &mut *self.merchant_manager
@@ -114,12 +96,18 @@ impl GenericPaymentCreateFlowTemplate for NormalPaymentCreateFlow {
   ) -> Result<Box<dyn IPaymentProcessor>, String> {
 
     let desired_payment_processor = payment_data.desired_payment_processor.clone();
-    let processors = &self.payment_processors;
+    let factories = &self.processor_factories;
 
     if let Some(desired_payment_processor) = desired_payment_processor {
       for code in desired_payment_processor {
-        if let Some(payment_processor) = processors.get(&code) {
-          return Ok(payment_processor.clone_boxed());
+        if let Some(factory) = factories.get(&code) {
+          // Using processors that don't require any configuration.
+          // Just a demo.
+          let processor = factory.create();
+          match processor {
+            Ok(p) => return Ok(p),
+            Err(_) => continue,
+          }
         }
       }
     }
@@ -127,8 +115,15 @@ impl GenericPaymentCreateFlowTemplate for NormalPaymentCreateFlow {
     // If no desired payment processor is specified,
     // or if the desired payment processor is not available,
     // return the first one.
-    let (_, payment_processor) = processors.iter().next().unwrap();
-    Ok(payment_processor.clone_boxed())
+    for (_, factory) in factories.iter() {
+      let processor = factory.create();
+      match processor {
+        Ok(p) => return Ok(p),
+        Err(_) => continue,
+      }
+    }
+
+    Err("No payment processor available".to_string())
   }
 
   fn make_payment_with_payment_processor(

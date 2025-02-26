@@ -17,7 +17,8 @@ mod tests {
   use flow_research::domain::implementation::dummy_merchant_manager::*;
   use flow_research::assets::flow_templates::simple_payment_create::*;
   use flow_research::assets::flows::simple_payment_create::*;
-  use flow_research::assets::payment_processors::dummy::*;
+  use flow_research::assets::payment_processors::dummy as ext_pp_dummy;
+  use flow_research::assets::payment_processors::paypal as ext_pp_paypal;
   use flow_research::application::services::ILogger;
   use flow_research::application::dummy_logger::DummyLogger;
 
@@ -29,7 +30,15 @@ mod tests {
     let customer_manager = Box::new(DummyCustomerManager::new(1));
     let merchant_manager = Box::new(DummyMerchantManager::new(1));
 
-    let flow = Box::new(SimplePaymentCreateFlow::new(customer_manager, merchant_manager));
+    // Supported payment processors
+    let mut pp_factories: HashMap<String, Box<dyn IPaymentProcessorFactory>> = HashMap::new();
+    pp_factories.insert(ext_pp_dummy::code(), Box::new(ext_pp_dummy::DummyPaymentProcessorFactory));
+    pp_factories.insert(ext_pp_paypal::code(), Box::new(ext_pp_paypal::PayPalProcessorFactory));
+
+    let flow = Box::new(SimplePaymentCreateFlow::new(
+      pp_factories,
+      customer_manager,
+      merchant_manager));
     let mut logging_flow = Box::new(LoggingPaymentCreateFlow::new(flow, logger));
 
     let customer_data = CustomerDetails {
@@ -55,8 +64,6 @@ mod tests {
       currency: Currency::USD,
       payment_method: "card".to_string(),
       description: Some("Payment for order 123".to_string()),
-      confirmation: Some(Confirmation::Automatic),
-      capture_method: Some(CaptureMethod::Automatic),
     };
 
     let result = logging_flow.execute(

@@ -18,7 +18,6 @@ pub enum ValueTag {
 
 pub trait IRequestBuilder {
   fn set_value(self: Box<Self>, tag: ValueTag, value: Value) -> Box<dyn IRequestBuilder>;
-  fn get_map(&self) -> &HashMap<ValueTag, Value>;
   fn build_json(&self) -> Value;
   // possibly add build_xml, build_form_data, etc.
 }
@@ -39,10 +38,6 @@ impl IRequestBuilder for GenericRequestBuilder {
   fn set_value(mut self: Box<Self>, tag: ValueTag, value: Value) -> Box<dyn IRequestBuilder> {
     self.values.insert(tag, value);
     self
-  }
-
-  fn get_map(&self) -> &HashMap<ValueTag, Value> {
-    &self.values
   }
 
   fn build_json(&self) -> Value {

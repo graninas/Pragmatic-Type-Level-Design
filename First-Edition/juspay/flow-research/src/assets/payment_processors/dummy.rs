@@ -4,28 +4,53 @@ use crate::domain::extensibility::payment_processor::*;
 use crate::domain::extensibility::request_builder::*;
 
 use serde::{Serialize, Deserialize};
+use serde_json::Value;
 use either::Either;
 use either::Either::{Left, Right};
 
 
 // Dummy payment processor
 
+#[derive(Default)]
+pub struct DummyPaymentProcessorConfigBuilder;
+
+impl DummyPaymentProcessorConfigBuilder {
+  pub fn new() -> Self {
+    Self::default()
+  }
+}
+
+impl IConfigBuilder for DummyPaymentProcessorConfigBuilder {
+  fn set_config(self: Box<Self>,
+    _tag: ConfigTag,
+    _value: Value) -> Box<dyn IConfigBuilder> {
+    self
+  }
+
+  fn build_generic_def(&self) -> GenericPaymentProcessorDef {
+    GenericPaymentProcessorDef {
+      code: code(),
+      details: serde_json::to_value(DummyPaymentProcessorConfig).unwrap(),
+    }
+  }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct DummyPaymentProcessorDetails;
+pub struct DummyPaymentProcessorConfig;
 
 #[derive(Clone)]
 pub struct DummyPaymentProcessor {
   generic_def: GenericPaymentProcessorDef,
-  details: DummyPaymentProcessorDetails,
+  config: DummyPaymentProcessorConfig,
 }
 
 impl DummyPaymentProcessor {
   pub fn new(
     generic_def: GenericPaymentProcessorDef,
-    details: DummyPaymentProcessorDetails) -> Self {
+    config: DummyPaymentProcessorConfig) -> Self {
     DummyPaymentProcessor {
       generic_def,
-      details,
+      config,
     }
   }
 }
@@ -51,6 +76,10 @@ impl IPaymentProcessor for DummyPaymentProcessor {
     self.generic_def.clone()
   }
 
+  fn config_json(&self) -> serde_json::Value {
+    serde_json::to_value(&self.config).unwrap()
+  }
+
   fn get_request_builder(&self) -> Box<dyn IRequestBuilder> {
     Box::new(GenericRequestBuilder::new())
   }
@@ -72,9 +101,25 @@ impl IPaymentProcessor for DummyPaymentProcessor {
   }
 }
 
+#[derive(Clone)]
 pub struct DummyPaymentProcessorFactory;
 
 impl IPaymentProcessorFactory for DummyPaymentProcessorFactory {
+
+  fn create(&self) -> Result<Box<dyn IPaymentProcessor>, String> {
+    Ok(Box::new(DummyPaymentProcessor::new(
+      GenericPaymentProcessorDef {
+        code: code(),
+        details: serde_json::to_value(DummyPaymentProcessorConfig).unwrap(),
+      },
+      DummyPaymentProcessorConfig
+    )))
+  }
+
+  fn get_config_builder(&self) -> Box<dyn IConfigBuilder> {
+    Box::new(DummyPaymentProcessorConfigBuilder::new())
+  }
+
   fn validate_payment_processor(&self, processor: &GenericPaymentProcessorDef)
     -> Either<ValidationResult, Box<dyn IPaymentProcessor>> {
     if processor.code == code() {
@@ -85,6 +130,11 @@ impl IPaymentProcessorFactory for DummyPaymentProcessorFactory {
     } else {
       Left(ValidationResult::Invalid("Invalid payment processor".to_string()))
     }
+  }
+
+  fn clone_boxed(&self) -> Box<dyn IPaymentProcessorFactory> {
+    let cloned: Self = self.clone();
+    Box::new(cloned)
   }
 }
 

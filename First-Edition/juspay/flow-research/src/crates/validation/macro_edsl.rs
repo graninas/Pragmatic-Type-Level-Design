@@ -1,5 +1,5 @@
 
-
+#[macro_export]
 macro_rules! mandatory {
   ($validated:expr, $field:expr) => {
       Box::new(|| {
@@ -14,6 +14,7 @@ macro_rules! mandatory {
   };
 }
 
+#[macro_export]
 macro_rules! optional {
   ($validated:expr, $default:expr, $field:expr) => {
     Box::new(|| {

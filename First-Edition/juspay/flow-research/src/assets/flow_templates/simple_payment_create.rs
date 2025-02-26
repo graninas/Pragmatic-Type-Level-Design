@@ -11,7 +11,6 @@ pub trait SimplePaymentCreateFlowTemplate {
 
   type PaymentData;
   type PaymentResult;
-  type FlowConfig;
 
   // These are actually dependencies,
   // but we can move them to the implementations

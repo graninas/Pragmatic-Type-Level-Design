@@ -24,9 +24,11 @@ mod tests {
   use flow_research::assets::payment_methods::paypal as ext_pm_paypal;
   use flow_research::assets::flow_templates::generic_payment_create as gen_flow;
   use flow_research::assets::flows::normal_payment_create as flow1;
-  use flow_research::assets::validators;
+  use flow_research::assets::validators::*;
   use flow_research::crates::validation::macro_edsl::*;
 
+  use flow_research::mandatory;
+  use flow_research::optional;
 
   // Specific payment processors
 
@@ -64,7 +66,7 @@ mod tests {
 
     let paypal_payment_processor = GenericPaymentProcessorDef {
       code: "paypal".to_string(),
-      details: serde_json::to_value(ext_pp_paypal::PayPalProcessorDetails {
+      details: serde_json::to_value(ext_pp_paypal::PayPalProcessorConfig {
         client_id: "123".to_string(),
         client_secret: "456".to_string(),
       }).unwrap(),
@@ -103,8 +105,8 @@ mod tests {
     pm_factories.insert(ext_pm_paypal::code(), Box::new(ext_pm_paypal::PayPalPaymentMethodFactory));
 
     // Supported payment processors
-    let mut p_processor_factories: HashMap<String, Box<dyn IPaymentProcessorFactory>> = HashMap::new();
-    p_processor_factories.insert(ext_pp_paypal::code(), Box::new(ext_pp_paypal::PayPalProcessorFactory));
+    let mut pp_factories: HashMap<String, Box<dyn IPaymentProcessorFactory>> = HashMap::new();
+    pp_factories.insert(ext_pp_paypal::code(), Box::new(ext_pp_paypal::PayPalProcessorFactory));
 
     // Parsing and validating a payment request
 
@@ -115,7 +117,7 @@ mod tests {
       &payment_request.payment_method);
 
     let pp_result = validate_desired_payment_processors(
-      &p_processor_factories,
+      &pp_factories,
       &payment_request.connectors);
 
     assert!(pm_result.is_right());
@@ -134,8 +136,8 @@ mod tests {
     pm_factories.insert(ext_pm_paypal::code(), Box::new(ext_pm_paypal::PayPalPaymentMethodFactory));
 
     // Supported payment processors
-    let mut p_processor_factories: HashMap<String, Box<dyn IPaymentProcessorFactory>> = HashMap::new();
-    p_processor_factories.insert(ext_pp_paypal::code(), Box::new(ext_pp_paypal::PayPalProcessorFactory));
+    let mut pp_factories: HashMap<String, Box<dyn IPaymentProcessorFactory>> = HashMap::new();
+    pp_factories.insert(ext_pp_paypal::code(), Box::new(ext_pp_paypal::PayPalProcessorFactory));
 
     // Supported currencies
     let currencies = vec![
@@ -158,7 +160,7 @@ mod tests {
       &payment_request.payment_method);
 
     let payment_processor = validate_desired_payment_processors(
-      &p_processor_factories,
+      &pp_factories,
       &payment_request.connectors);
 
     let amount = validate_amount(payment_request.amount);
@@ -180,12 +182,14 @@ mod tests {
       let flow1_parameters: Vec<Box<dyn FnMut() -> Result<(), String>>> = vec![
         mandatory!(amount, flow1_data.amount),
         mandatory!(currency, flow1_data.currency),
-        // todo
-        // mandatory!(payment_method, flow1_data.payment_method),
         optional!(description, "".to_string(), flow1_data.description),
-        optional!(confirmation, Confirmation::Manual, flow1_data.confirmation),
-        optional!(capture_method, CaptureMethod::Manual, flow1_data.capture_method),
         mandatory!(merchant_auth, flow1_merchant_auth),
+
+        // todo: introduce payment method
+        // mandatory!(payment_method, flow1_data.payment_method),
+        // todo: introduce flow configuration approach
+        // optional!(confirmation, Confirmation::Manual, flow1_data.confirmation),
+        // optional!(capture_method, CaptureMethod::Manual, flow1_data.capture_method),
       ];
 
       // todo: payment method should be instant
@@ -203,6 +207,7 @@ mod tests {
       if flow1_decided {
           Box::new(move |customer_manager, merchant_manager| {
               let mut flow1 = flow1::NormalPaymentCreateFlow::new(
+                  pp_factories.clone(),
                   merchant_manager
               );
               flow1.execute(&flow1_data.clone(), &flow1_merchant_auth.clone())

@@ -8,7 +8,6 @@ pub trait GenericPaymentCreateFlowTemplate {
 
   type PaymentData;
   type PaymentResult;
-  type FlowConfig;
 
   fn merchant_manager(&mut self) -> &mut dyn IMerchantManager;
 

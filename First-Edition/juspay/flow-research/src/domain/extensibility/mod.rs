@@ -1,3 +1,3 @@
 pub mod payment_method;
 pub mod payment_processor;
-pub mod currencies;
+pub mod request_builder;

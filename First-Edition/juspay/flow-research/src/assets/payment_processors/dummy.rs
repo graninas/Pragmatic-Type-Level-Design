@@ -1,6 +1,7 @@
 use crate::common_types::*;
 use crate::domain::types::*;
 use crate::domain::extensibility::payment_processor::*;
+use crate::domain::extensibility::request_builder::*;
 
 use serde_json::Value;
 use serde::{Serialize, Deserialize};
@@ -33,7 +34,6 @@ pub fn name() -> String {
   "Dummy Payment Processor".to_string()
 }
 
-
 impl IPaymentProcessor for DummyPaymentProcessor {
   fn name(&self) -> String {
     name()
@@ -43,21 +43,25 @@ impl IPaymentProcessor for DummyPaymentProcessor {
     code()
   }
 
-  fn process_payment(
-    &self,
-    _customer_profile: &CustomerProfile,
-    _merchant_profile: &MerchantProfile,
-    payment_id: &PaymentId,
-    _payment_data: &PaymentData,
-    _order_metadata: &OrderMetaData,
-  ) -> Result<ThirdPartyPayment, String> {
+  fn get_request_builder(&self) -> Box<dyn IRequestBuilder> {
+    Box::new(GenericRequestBuilder::new())
+  }
 
+  fn process_payment(
+      &self,
+      customer_profile: &CustomerProfile,
+      merchant_profile: &MerchantProfile,
+      payment_id: &PaymentId,
+      request_builder: &dyn IRequestBuilder,
+      order_metadata: &OrderMetaData,
+      // TODO: replace ThirdPartyPayment with an associated type
+  ) -> Result<ThirdPartyPayment, String> {
     // Dummy implementation
     Ok(ThirdPartyPayment {
-        third_party_payment_id: Some(payment_id.clone()),
+      third_party_payment_id: Some(payment_id.clone())
     })
-
   }
+
 }
 
 pub struct DummyPaymentProcessorFactory;

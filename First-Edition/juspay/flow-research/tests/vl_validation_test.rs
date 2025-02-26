@@ -12,12 +12,47 @@ mod tests {
   use flow_research::domain::types::*;
   use flow_research::domain::extensibility::payment_processor::*;
   use flow_research::domain::extensibility::payment_method::*;
+  use flow_research::application::dummy_logger::DummyLogger;
   use flow_research::assets::payment_processors::dummy as ext_pp_dummy;
   use flow_research::assets::payment_processors::paypal as ext_pp_paypal;
   use flow_research::assets::payment_methods::card as ext_pm_card;
   use flow_research::assets::payment_methods::paypal as ext_pm_paypal;
-  use flow_research::assets::flows::generic_payment_create::* as gen_flow;
-  use flow_research::assets::flows::normal_payment_create::* as flow1;
+  use flow_research::assets::flow_templates::generic_payment_create as gen_flow;
+  use flow_research::assets::flows::normal_payment_create as flow1;
+
+
+
+  macro_rules! mandatory {
+    ($validated:expr, $field:expr) => {
+      || -> Result<(), String> {
+        match $validated {
+          Right(value) => {
+            $field = value;
+            Ok(())
+          },
+          Left(e) => Err(format!("Mandatory field validation failed: {:?}", e)),
+        }
+      }
+    };
+  }
+
+  macro_rules! optional {
+    ($validated:expr, $default:expr, $field:expr) => {
+      || -> Result<(), String> {
+        match $validated {
+          Right(value) => {
+            $field = value;
+            Ok(())
+          },
+          Left(ValidationResult::Missing(_)) => {
+            $field = $default;
+            Ok(())
+          },
+          Left(e) => Err(format!("Optional field validation failed: {:?}", e)),
+        }
+      }
+    };
+  }
 
 
   // Specific payment processors
@@ -85,7 +120,7 @@ mod tests {
 
   pub fn validate_payment_method(
     factories: &HashMap<String, Box<dyn IPaymentMethodFactory>>,
-    payment_method: &Option<api::GenericPaymentMethod>)
+    payment_method: &Option<GenericPaymentMethod>)
     -> Either<ValidationResult, Box<dyn IPaymentMethod>> {
 
       match payment_method {
@@ -304,12 +339,10 @@ mod tests {
       customer_manager,
       merchant_manager| {
 
-      let mut flow_constructors = Vec::new();
-
       let mut flow1_data = flow1::dummy_normal_flow_payment_data();
       let mut flow1_merchant_auth;
 
-      let flow1_conditions = vec![
+      let flow1_parameters = vec![
         mandatory!(amount, flow1_data.amount),
         mandatory!(currency, flow1_data.currency),
         // mandatory!(payment_method, flow1_data.payment_method),
@@ -320,20 +353,27 @@ mod tests {
         // todo: payment method should be instant
       ];
 
-      flow_constructors.push(
-        (flow1_conditions, || {
-          let flow = Box::new(NormalPaymentCreateFlow::new(customer_manager, merchant_manager))
+      let flow1_decided = true;
+      for param in flow1_parameters {
+        if let Err(e) = param() {
+          flow1_decided = false;
+          break;
+        }
+      }
 
-
-
-        })
-      );
-
-
-
-
-
-      Box::new(SimplePaymentCreateFlow::new(customer_manager, merchant_manager))
+      if flow1_decided {
+        || {
+          let flow1 = flow1::NormalPaymentCreateFlow::new(
+            customer_manager,
+            merchant_manager);
+          flow1.execute(flow1_data, flow1_merchant_auth);
+        }
+      }
+      else {
+        || {
+          Err("Flow 1 parameters are not valid".to_string())
+        }
+      }
     };
 
 
@@ -352,10 +392,11 @@ mod tests {
     //   order_metadata,
     //   payment_data);
 
-    assert!(result.is_ok());
+    // assert!(result.is_ok());
 
 
 
   }
 
 }
+

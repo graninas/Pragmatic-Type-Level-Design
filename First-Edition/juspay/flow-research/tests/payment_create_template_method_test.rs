@@ -15,7 +15,7 @@ mod tests {
   use flow_research::domain::extensibility::payment_processor::*;
   use flow_research::assets::flow_templates::simple_payment_create::*;
   use flow_research::assets::flows::simple_payment_create::*;
-  use flow_research::assets::dummy_payment_processor::*;
+  use flow_research::assets::payment_processors::dummy::*;
   use flow_research::application::services::ILogger;
   use flow_research::application::dummy_logger::DummyLogger;
   use flow_research::domain::services::*;
@@ -140,8 +140,8 @@ mod tests {
 
     let payment_data = PaymentData {
       amount: 100,
-      payment_method: "card".to_string(),
       currency: Currency::USD,
+      payment_method: "card".to_string(),
       description: Some("Payment for order 123".to_string()),
       confirmation: Some(Confirmation::Automatic),
       capture_method: Some(CaptureMethod::Automatic),

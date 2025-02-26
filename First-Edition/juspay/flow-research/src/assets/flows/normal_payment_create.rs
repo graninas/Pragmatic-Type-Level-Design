@@ -23,10 +23,16 @@ pub struct NormalFlowPaymentData {
   pub capture_method: CaptureMethod,
 }
 
+pub struct NormalFlowPaymentResult {
+  pub payment_id: PaymentId,
+  pub third_party_payment: ThirdPartyPayment,
+  pub payment_data: NormalFlowPaymentData,
+}
+
 pub fn dummy_normal_flow_payment_data() -> NormalFlowPaymentData {
   NormalFlowPaymentData {
-    amount: 0.0,
-    currency: "".to_string(),
+    amount: 0,
+    currency: Currency::USD,
     description: "".to_string(),
     confirmation: Confirmation::Manual,
     capture_method: CaptureMethod::Manual,
@@ -50,6 +56,7 @@ impl NormalPaymentCreateFlow {
 impl GenericPaymentCreateFlowTemplate for NormalPaymentCreateFlow {
 
   type PaymentData = NormalFlowPaymentData;
+  type PaymentResult = NormalFlowPaymentResult;
 
   fn customer_manager(&mut self) -> &mut dyn ICustomerManager {
     &mut *self.customer_manager
@@ -122,7 +129,7 @@ impl GenericPaymentCreateFlowTemplate for NormalPaymentCreateFlow {
   // fn decide_payment_processor(
   //   &mut self,
   //   merchant_profile: &MerchantProfile,
-  //   payment_data: &PaymentData,
+  //   payment_data: &Self::PaymentData,
   //   order_metadata: &OrderMetaData,
   // ) -> Result<Box<dyn IPaymentProcessor>, String> {
   //   Ok(Box::new(DummyPaymentProcessor))
@@ -134,9 +141,9 @@ impl GenericPaymentCreateFlowTemplate for NormalPaymentCreateFlow {
   //   customer_profile: &CustomerProfile,
   //   merchant_profile: &MerchantProfile,
   //   payment_id: &PaymentId,
-  //   payment_data: &PaymentData,
+  //   payment_data: &Self::PaymentData,
   //   order_metadata: &OrderMetaData,
-  // ) -> Result<Payment, String> {
+  // ) -> Result<Self::PaymentResult, String> {
   //   let third_party_payment = payment_processor.process_payment(
   //     customer_profile,
   //     merchant_profile,
@@ -144,14 +151,14 @@ impl GenericPaymentCreateFlowTemplate for NormalPaymentCreateFlow {
   //     payment_data,
   //     order_metadata)?;
 
-  //   Ok(Payment {
+  //   Ok(NormalFlowPaymentResult {
   //     payment_id: payment_id.clone(),
   //     third_party_payment,
   //     payment_data: payment_data.clone(),
   //   })
   // }
 
-  // fn register_payment(&mut self, payment: &Payment) -> Result<(), String> {
+  // fn register_payment(&mut self, payment: &Self::PaymentResult) -> Result<(), String> {
   //   Ok(())
   // }
 }

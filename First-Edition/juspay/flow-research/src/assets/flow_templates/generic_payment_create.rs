@@ -9,7 +9,9 @@ use crate::domain::services::*;
 
 
 pub trait GenericPaymentCreateFlowTemplate {
+
   type PaymentData;
+  type PaymentResult;
 
   fn customer_manager(&mut self) -> &mut dyn ICustomerManager;
   fn merchant_manager(&mut self) -> &mut dyn IMerchantManager;
@@ -40,52 +42,52 @@ pub trait GenericPaymentCreateFlowTemplate {
     manager.create_merchant(merchant_details)
   }
 
-  // // Actual flow methods
+  // Actual flow methods
 
-  // fn get_or_create_customer(
-  //   &mut self,
-  //   customer_data: Either<CustomerId, CustomerDetails>,
-  // ) -> Result<CustomerProfile, String> {
-  //   match customer_data {
-  //     Either::Left(customer_id) => {
-  //       let mb_customer = self.get_customer(customer_id);
-  //       match mb_customer {
-  //         Ok(Some(customer_profile)) => Ok(customer_profile),
-  //         Ok(None) => Err("Customer not found".to_string()),
-  //         Err(e) => Err(e),
-  //       }
-  //     },
-  //     Either::Right(customer_details) => {
-  //       self.create_customer(customer_details)
-  //     }
-  //   }
-  // }
+  fn get_or_create_customer(
+    &mut self,
+    customer_data: Either<CustomerId, CustomerDetails>,
+  ) -> Result<CustomerProfile, String> {
+    match customer_data {
+      Either::Left(customer_id) => {
+        let mb_customer = self.get_customer(customer_id);
+        match mb_customer {
+          Ok(Some(customer_profile)) => Ok(customer_profile),
+          Ok(None) => Err("Customer not found".to_string()),
+          Err(e) => Err(e),
+        }
+      },
+      Either::Right(customer_details) => {
+        self.create_customer(customer_details)
+      }
+    }
+  }
 
-  // fn get_or_create_merchant(
-  //   &mut self,
-  //   merchant_data: Either<MerchantId, MerchantDetails>,
-  // ) -> Result<MerchantProfile, String> {
-  //   match merchant_data {
-  //     Either::Left(merchant_id) => {
-  //       let mb_merchant = self.get_merchant(merchant_id);
-  //       match mb_merchant {
-  //         Ok(Some(merchant_profile)) => Ok(merchant_profile),
-  //         Ok(None) => Err("Merchant not found".to_string()),
-  //         Err(e) => Err(e),
-  //       }
-  //     },
-  //     Either::Right(merchant_details) => {
-  //       self.create_merchant(merchant_details)
-  //     }
-  //   }
-  // }
+  fn get_or_create_merchant(
+    &mut self,
+    merchant_data: Either<MerchantId, MerchantDetails>,
+  ) -> Result<MerchantProfile, String> {
+    match merchant_data {
+      Either::Left(merchant_id) => {
+        let mb_merchant = self.get_merchant(merchant_id);
+        match mb_merchant {
+          Ok(Some(merchant_profile)) => Ok(merchant_profile),
+          Ok(None) => Err("Merchant not found".to_string()),
+          Err(e) => Err(e),
+        }
+      },
+      Either::Right(merchant_details) => {
+        self.create_merchant(merchant_details)
+      }
+    }
+  }
 
-  // fn get_or_create_payment_id(
-  //   &mut self,
-  //   customer_id: &CustomerId,
-  //   merchant_id: &MerchantId,
-  //   order_metadata: &OrderMetaData,
-  // ) -> Result<PaymentId, String>;
+  fn get_or_create_payment_id(
+    &mut self,
+    customer_id: &CustomerId,
+    merchant_id: &MerchantId,
+    order_metadata: &OrderMetaData,
+  ) -> Result<PaymentId, String>;
 
   // // fn register_order_metadata(
   // //   &mut self,
@@ -108,7 +110,7 @@ pub trait GenericPaymentCreateFlowTemplate {
   //   customer_profile: &CustomerProfile,
   //   merchant_profile: &MerchantProfile,
   //   payment_id: &PaymentId,
-  //   payment_data: &PaymentData,
+  //   payment_data: &Self::PaymentData,
   //   order_metadata: &OrderMetaData,
   // ) -> Result<Payment, String>;
 
@@ -120,7 +122,7 @@ pub trait GenericPaymentCreateFlowTemplate {
   //   customer_data: Either<CustomerId, CustomerDetails>,
   //   merchant_data: Either<MerchantId, MerchantDetails>,
   //   order_metadata: OrderMetaData,
-  //   payment_data: PaymentData,
+  //   payment_data: Self::PaymentData,
   // ) -> Result<Payment, String> {
   //   let customer_profile = self.get_or_create_customer(customer_data)?;
   //   let merchant_profile = self.get_or_create_merchant(merchant_data)?;
@@ -157,7 +159,7 @@ pub trait GenericPaymentCreateFlowTemplate {
   fn execute(&mut self,
     payment_data: &Self::PaymentData,
     merchant_auth: &Auth
-  ) -> Result<Payment, String> {
+  ) -> Result<Self::PaymentResult, String> {
     todo!()
 
     // let merchant_id = merchant_auth.merchant_id.clone();

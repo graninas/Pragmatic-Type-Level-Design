@@ -8,13 +8,30 @@ use crate::domain::types::*;
 use crate::domain::extensibility::payment_processor::*;
 use crate::domain::services::*;
 use crate::assets::flow_templates::simple_payment_create::*;
-use crate::assets::payment_processors::dummy as ext_pp_dummy;
+use crate::assets::payment_processors::dummy::*;
 use crate::application::services::ILogger;
 
 
-// Flows implementation
-
 // Simple payment flow implementation
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+pub struct SimplePaymentData {
+    pub amount: Amount,
+    pub currency: Currency,
+    pub payment_method: String,
+    pub description: Option<String>,
+    pub confirmation: Option<Confirmation>,
+    pub capture_method: Option<CaptureMethod>,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+pub struct SimplePaymentResult {
+    pub payment_id: PaymentId,
+    pub third_party_payment: ThirdPartyPayment,
+    pub payment_data: SimplePaymentData,
+}
+
+
 pub struct SimplePaymentCreateFlow {
   customer_manager: Box<dyn ICustomerManager>,
   merchant_manager: Box<dyn IMerchantManager>,
@@ -30,6 +47,9 @@ impl SimplePaymentCreateFlow {
 }
 
 impl SimplePaymentCreateFlowTemplate for SimplePaymentCreateFlow {
+
+  type PaymentData = SimplePaymentData;
+  type PaymentResult = SimplePaymentResult;
 
   fn customer_manager(&mut self) -> &mut dyn ICustomerManager {
     &mut *self.customer_manager
@@ -102,10 +122,10 @@ impl SimplePaymentCreateFlowTemplate for SimplePaymentCreateFlow {
   fn decide_payment_processor(
     &mut self,
     merchant_profile: &MerchantProfile,
-    payment_data: &PaymentData,
+    payment_data: &Self::PaymentData,
     order_metadata: &OrderMetaData,
   ) -> Result<Box<dyn IPaymentProcessor>, String> {
-    Ok(Box::new(DummyPaymentProcessor))
+    Ok(Box::new(DummyPaymentProcessor::new(DummyPaymentProcessorDetails)))
   }
 
   fn make_payment_with_payment_processor(
@@ -114,9 +134,9 @@ impl SimplePaymentCreateFlowTemplate for SimplePaymentCreateFlow {
     customer_profile: &CustomerProfile,
     merchant_profile: &MerchantProfile,
     payment_id: &PaymentId,
-    payment_data: &PaymentData,
+    payment_data: &Self::PaymentData,
     order_metadata: &OrderMetaData,
-  ) -> Result<Payment, String> {
+  ) -> Result<Self::PaymentResult, String> {
     let third_party_payment = payment_processor.process_payment(
       customer_profile,
       merchant_profile,
@@ -124,14 +144,14 @@ impl SimplePaymentCreateFlowTemplate for SimplePaymentCreateFlow {
       payment_data,
       order_metadata)?;
 
-    Ok(Payment {
+    Ok(SimplePaymentResult {
       payment_id: payment_id.clone(),
       third_party_payment,
       payment_data: payment_data.clone(),
     })
   }
 
-  fn register_payment(&mut self, payment: &Payment) -> Result<(), String> {
+  fn register_payment(&mut self, payment: &Self::PaymentResult) -> Result<(), String> {
     Ok(())
   }
 }
@@ -139,17 +159,23 @@ impl SimplePaymentCreateFlowTemplate for SimplePaymentCreateFlow {
 
 // Flow implementation with logging
 pub struct LoggingPaymentCreateFlow {
-  inner: Box<dyn PaymentCreateFlow>,
+  inner: Box<dyn SimplePaymentCreateFlowTemplate
+    <PaymentData=SimplePaymentData, PaymentResult=SimplePaymentResult>>,
   logger: Box<dyn ILogger>,
 }
 
 impl LoggingPaymentCreateFlow {
-  pub fn new(inner: Box<dyn PaymentCreateFlow>, logger: Box<dyn ILogger>) -> Self {
+  pub fn new(inner: Box<dyn SimplePaymentCreateFlowTemplate
+                        <PaymentData=SimplePaymentData, PaymentResult=SimplePaymentResult>>,
+            logger: Box<dyn ILogger>) -> Self {
     Self { inner, logger }
   }
 }
 
 impl SimplePaymentCreateFlowTemplate for LoggingPaymentCreateFlow {
+
+  type PaymentData = SimplePaymentData;
+  type PaymentResult = SimplePaymentResult;
 
   fn customer_manager(&mut self) -> &mut dyn ICustomerManager {
     self.inner.customer_manager()
@@ -206,7 +232,7 @@ impl SimplePaymentCreateFlowTemplate for LoggingPaymentCreateFlow {
   fn decide_payment_processor(
     &mut self,
     merchant_profile: &MerchantProfile,
-    payment_data: &PaymentData,
+    payment_data: &Self::PaymentData,
     order_metadata: &OrderMetaData,
   ) -> Result<Box<dyn IPaymentProcessor>, String> {
     let processor = self.inner.decide_payment_processor(
@@ -223,9 +249,9 @@ impl SimplePaymentCreateFlowTemplate for LoggingPaymentCreateFlow {
     customer_profile: &CustomerProfile,
     merchant_profile: &MerchantProfile,
     payment_id: &PaymentId,
-    payment_data: &PaymentData,
+    payment_data: &Self::PaymentData,
     order_metadata: &OrderMetaData,
-  ) -> Result<Payment, String> {
+  ) -> Result<Self::PaymentResult, String> {
     let payment = self.inner.make_payment_with_payment_processor(
       payment_processor,
       customer_profile,
@@ -237,7 +263,7 @@ impl SimplePaymentCreateFlowTemplate for LoggingPaymentCreateFlow {
     Ok(payment)
   }
 
-  fn register_payment(&mut self, payment: &Payment) -> Result<(), String> {
+  fn register_payment(&mut self, payment: &Self::PaymentResult) -> Result<(), String> {
     self.inner.register_payment(payment)
   }
 
@@ -246,8 +272,8 @@ impl SimplePaymentCreateFlowTemplate for LoggingPaymentCreateFlow {
     customer_data: Either<CustomerId, CustomerDetails>,
     merchant_data: Either<MerchantId, MerchantDetails>,
     order_metadata: OrderMetaData,
-    payment_data: PaymentData,
-  ) -> Result<Payment, String> {
+    payment_data: Self::PaymentData,
+  ) -> Result<Self::PaymentResult, String> {
     let result = self.inner.execute(
       customer_data,
       merchant_data,

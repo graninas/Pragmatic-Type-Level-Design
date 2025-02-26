@@ -8,7 +8,11 @@ use crate::domain::extensibility::payment_processor::*;
 use crate::domain::services::*;
 
 
+
 pub trait SimplePaymentCreateFlowTemplate {
+
+  type PaymentData;
+  type PaymentResult;
 
   fn customer_manager(&mut self) -> &mut dyn ICustomerManager;
   fn merchant_manager(&mut self) -> &mut dyn IMerchantManager;
@@ -97,7 +101,7 @@ pub trait SimplePaymentCreateFlowTemplate {
   fn decide_payment_processor(
     &mut self,
     merchant_profile: &MerchantProfile,
-    payment_data: &PaymentData,
+    payment_data: &Self::PaymentData,
     order_metadata: &OrderMetaData,
   ) -> Result<Box<dyn IPaymentProcessor>, String>;
 
@@ -107,11 +111,11 @@ pub trait SimplePaymentCreateFlowTemplate {
     customer_profile: &CustomerProfile,
     merchant_profile: &MerchantProfile,
     payment_id: &PaymentId,
-    payment_data: &PaymentData,
+    payment_data: &Self::PaymentData,
     order_metadata: &OrderMetaData,
-  ) -> Result<Payment, String>;
+  ) -> Result<Self::PaymentResult, String>;
 
-  fn register_payment(&mut self, payment: &Payment) -> Result<(), String>;
+  fn register_payment(&mut self, payment: &Self::PaymentResult) -> Result<(), String>;
 
   // Template method itself
 
@@ -119,8 +123,8 @@ pub trait SimplePaymentCreateFlowTemplate {
     customer_data: Either<CustomerId, CustomerDetails>,
     merchant_data: Either<MerchantId, MerchantDetails>,
     order_metadata: OrderMetaData,
-    payment_data: PaymentData,
-  ) -> Result<Payment, String> {
+    payment_data: Self::PaymentData,
+  ) -> Result<Self::PaymentResult, String> {
     let customer_profile = self.get_or_create_customer(customer_data)?;
     let merchant_profile = self.get_or_create_merchant(merchant_data)?;
 

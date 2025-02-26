@@ -1,6 +1,7 @@
 use crate::common_types::*;
 use crate::domain::types::*;
 use crate::domain::extensibility::payment_processor::*;
+use crate::domain::extensibility::request_builder::*;
 
 use serde_json::Value;
 use serde::{Serialize, Deserialize};
@@ -35,6 +36,9 @@ impl PayPalProcessor {
 }
 
 impl IPaymentProcessor for PayPalProcessor {
+  // TODO: replace with actual PayPal payment request type
+  // type PaymentRequest = Value;
+
   fn code(&self) -> String {
     code()
   }
@@ -43,13 +47,17 @@ impl IPaymentProcessor for PayPalProcessor {
     name()
   }
 
+  fn get_request_builder(&self) -> Box<dyn IRequestBuilder<Request = Self::PaymentRequest>> {
+    Box::new(GenericRequestBuilder::new())
+  }
+
   fn process_payment(
       &self,
-      customer_profile: &CustomerProfile,
-      merchant_profile: &MerchantProfile,
+      _customer_profile: &CustomerProfile,
+      _merchant_profile: &MerchantProfile,
       payment_id: &PaymentId,
-      payment_data: &PaymentData,
-      order_metadata: &OrderMetaData,
+      _payment_request: &Self::PaymentRequest,
+      _order_metadata: &OrderMetaData,
   ) -> Result<ThirdPartyPayment, String> {
 
     // Dummy implementation

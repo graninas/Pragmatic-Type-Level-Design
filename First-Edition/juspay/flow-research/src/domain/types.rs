@@ -6,7 +6,7 @@ use strum_macros::EnumString;
 use crate::common_types::*;
 
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub enum Currency {
   Crypto(String),
   USD,
@@ -61,22 +61,7 @@ pub struct OrderMetaData {
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
-pub struct PaymentData {
-    pub amount: Amount,
-    pub currency: Currency,
-    pub description: Option<String>,
-    pub confirmation: Option<Confirmation>,
-    pub capture_method: Option<CaptureMethod>,
-}
-
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct ThirdPartyPayment {
     pub third_party_payment_id: Option<ThirdPartyPaymentId>,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
-pub struct Payment {
-    pub payment_id: PaymentId,
-    pub third_party_payment: ThirdPartyPayment,
-    pub payment_data: PaymentData,
-}

@@ -32,7 +32,7 @@ pub trait IPaymentProcessorFactory {
 }
 
 pub type PaymentProcessors = HashMap<PaymentProcessorCode, Box<dyn IPaymentProcessor>>;
-
+pub type PaymentProcessorFactories = HashMap<PaymentProcessorCode, Box<dyn IPaymentProcessorFactory>>;
 
 
 impl Clone for Box<dyn IPaymentProcessor> {

@@ -180,6 +180,7 @@ mod tests {
       let flow1_parameters: Vec<Box<dyn FnMut() -> Result<(), String>>> = vec![
         mandatory!(amount, flow1_data.amount),
         mandatory!(currency, flow1_data.currency),
+        // todo
         // mandatory!(payment_method, flow1_data.payment_method),
         optional!(description, "".to_string(), flow1_data.description),
         optional!(confirmation, Confirmation::Manual, flow1_data.confirmation),

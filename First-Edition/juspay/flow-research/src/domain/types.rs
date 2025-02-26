@@ -7,6 +7,7 @@ use crate::common_types::*;
 
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(untagged)]
 pub enum Currency {
   Crypto(String),
   USD,

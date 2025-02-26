@@ -4,7 +4,7 @@ use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
 
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[derive(Debug, Serialize, Deserialize, Eq, Hash, PartialEq, Clone)]
 pub enum ValueTag {
   // Add more tags here
   Amount,
@@ -17,11 +17,8 @@ pub enum ValueTag {
 }
 
 pub trait IRequestBuilder {
-  type Request;
-
-  fn set_value(&mut self, tag: ValueTag, value: Value) -> Self;
+  fn set_value(self: Box<Self>, tag: ValueTag, value: Value) -> Box<dyn IRequestBuilder>;
   fn get_map(&self) -> &HashMap<ValueTag, Value>;
-  fn build(&self) -> Self::Request;
   fn build_json(&self) -> Value;
   // possibly add build_xml, build_form_data, etc.
 }
@@ -39,9 +36,7 @@ impl GenericRequestBuilder {
 }
 
 impl IRequestBuilder for GenericRequestBuilder {
-  type Request = Value;
-
-  fn set_value(&mut self, tag: ValueTag, value: Value) -> Self {
+  fn set_value(mut self: Box<Self>, tag: ValueTag, value: Value) -> Box<dyn IRequestBuilder> {
     self.values.insert(tag, value);
     self
   }
@@ -50,13 +45,9 @@ impl IRequestBuilder for GenericRequestBuilder {
     &self.values
   }
 
-  fn build(&self) -> Self::Request {
-    self.build_json()
-  }
-
   fn build_json(&self) -> Value {
     let mut json = json!({});
-    for (tag, value) in self.values {
+    for (tag, value) in self.values.clone() {
       match tag {
         ValueTag::Amount => json["amount"] = value,
         ValueTag::Currency => json["currency"] = value,
@@ -70,3 +61,4 @@ impl IRequestBuilder for GenericRequestBuilder {
     json
   }
 }
+

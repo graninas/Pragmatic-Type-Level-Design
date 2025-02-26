@@ -15,6 +15,7 @@ use crate::application::services::ILogger;
 // "Normal payment flow".
 // It accepts a bare minimum of parameters and returns a Payment.
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct NormalFlowPaymentData {
   pub amount: Amount,
   pub currency: Currency,
@@ -23,6 +24,7 @@ pub struct NormalFlowPaymentData {
   pub capture_method: CaptureMethod,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct NormalFlowPaymentResult {
   pub payment_id: PaymentId,
   pub third_party_payment: ThirdPartyPayment,
@@ -44,12 +46,19 @@ pub struct NormalPaymentCreateFlow {
   merchant_manager: Box<dyn IMerchantManager>,
 }
 
+
+pub type NormalPaymentCreateFlowBoxed =
+  Box<dyn GenericPaymentCreateFlowTemplate<PaymentData=NormalFlowPaymentData,
+                                           PaymentResult=NormalFlowPaymentResult>>;
+
+pub type NormalPaymentCreateFlowResult = Result<NormalFlowPaymentResult, String>;
+
 impl NormalPaymentCreateFlow {
   pub fn new(
     customer_manager: Box<dyn ICustomerManager>,
     merchant_manager: Box<dyn IMerchantManager>,
-  ) -> Self {
-    Self { customer_manager, merchant_manager }
+  ) -> NormalPaymentCreateFlowBoxed {
+    Box::new(Self { customer_manager, merchant_manager })
   }
 }
 

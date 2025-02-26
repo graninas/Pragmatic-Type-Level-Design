@@ -1,11 +1,13 @@
 use either::Either;
 use either::Either::{Left, Right};
 use serde_json::Value;
+use serde_json::json;
 use serde::{Serialize, Deserialize};
 
 use crate::common_types::*;
 use crate::domain::types::*;
 use crate::domain::extensibility::payment_processor::*;
+use crate::domain::extensibility::request_builder::*;
 use crate::domain::services::*;
 use crate::assets::flow_templates::simple_payment_create::*;
 use crate::assets::payment_processors::dummy::*;
@@ -45,6 +47,7 @@ impl SimplePaymentCreateFlow {
     Self { customer_manager, merchant_manager }
   }
 }
+
 
 impl SimplePaymentCreateFlowTemplate for SimplePaymentCreateFlow {
 
@@ -137,11 +140,17 @@ impl SimplePaymentCreateFlowTemplate for SimplePaymentCreateFlow {
     payment_data: &Self::PaymentData,
     order_metadata: &OrderMetaData,
   ) -> Result<Self::PaymentResult, String> {
+
+    let mut request_builder = payment_processor.get_request_builder();
+    request_builder = request_builder.set_value(ValueTag::Amount, json!(payment_data.amount));
+    request_builder = request_builder.set_value(ValueTag::Currency, json!(payment_data.currency));
+    // todo: add more values
+
     let third_party_payment = payment_processor.process_payment(
       customer_profile,
       merchant_profile,
       payment_id,
-      payment_data,
+      &request_builder,
       order_metadata)?;
 
     Ok(SimplePaymentResult {

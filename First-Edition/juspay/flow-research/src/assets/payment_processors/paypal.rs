@@ -47,7 +47,7 @@ impl IPaymentProcessor for PayPalProcessor {
     name()
   }
 
-  fn get_request_builder(&self) -> Box<dyn IRequestBuilder<Request = Self::PaymentRequest>> {
+  fn get_request_builder(&self) -> Box<dyn IRequestBuilder> {
     Box::new(GenericRequestBuilder::new())
   }
 
@@ -56,7 +56,7 @@ impl IPaymentProcessor for PayPalProcessor {
       _customer_profile: &CustomerProfile,
       _merchant_profile: &MerchantProfile,
       payment_id: &PaymentId,
-      _payment_request: &Self::PaymentRequest,
+      _request_builder: &Box<dyn IRequestBuilder>,
       _order_metadata: &OrderMetaData,
   ) -> Result<ThirdPartyPayment, String> {
 
@@ -71,7 +71,7 @@ impl IPaymentProcessor for PayPalProcessor {
 pub struct PayPalProcessorFactory;
 
 impl IPaymentProcessorFactory for PayPalProcessorFactory {
-  fn validate_payment_processor(&self, processor: &GenericPaymentProcessor)
+  fn validate_payment_processor(&self, processor: &GenericPaymentProcessorDef)
     -> Either<ValidationResult, Box<dyn IPaymentProcessor>> {
 
       if processor.code != code() {

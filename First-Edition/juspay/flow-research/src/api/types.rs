@@ -53,6 +53,6 @@ pub struct PaymentRequest {
   // "Option" means the value can be absent in JSON,
   // but actually, absent values of vectors can be
   // just empty vectors.
-  pub connectors: Option<Vec<GenericPaymentProcessor>>,
+  pub connectors: Option<Vec<GenericPaymentProcessorDef>>,
 }
 

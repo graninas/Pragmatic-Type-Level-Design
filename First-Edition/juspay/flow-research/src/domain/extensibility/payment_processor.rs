@@ -22,14 +22,14 @@ pub trait IPaymentProcessor {
       customer_profile: &CustomerProfile,
       merchant_profile: &MerchantProfile,
       payment_id: &PaymentId,
-      request: &Value,
+      request_builder: &Box<dyn IRequestBuilder>,
       order_metadata: &OrderMetaData,
       // TODO: replace ThirdPartyPayment with an associated type
   ) -> Result<ThirdPartyPayment, String>;
 }
 
 pub trait IPaymentProcessorFactory {
-  fn validate_payment_processor(&self, payment_processor: &GenericPaymentProcessor)
+  fn validate_payment_processor(&self, payment_processor_def: &GenericPaymentProcessorDef)
     -> Either<ValidationResult, Box<dyn IPaymentProcessor>>;
 }
 

@@ -19,7 +19,6 @@ pub struct Auth {
   pub api_key: ApiKey,
 }
 
-
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct GenericPaymentMethod {
   pub code: String,
@@ -27,7 +26,7 @@ pub struct GenericPaymentMethod {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct GenericPaymentProcessor {
+pub struct GenericPaymentProcessorDef {
   pub code: String,
   pub details: Value,
 }
@@ -40,3 +39,9 @@ pub enum ValidationResult {
   ValidationError(Vec<String>),
 }
 
+pub fn dummy_auth() -> Auth {
+  Auth {
+    party_id: "dummy_party_id".to_string(),
+    api_key: "dummy_api".to_string(),
+  }
+}

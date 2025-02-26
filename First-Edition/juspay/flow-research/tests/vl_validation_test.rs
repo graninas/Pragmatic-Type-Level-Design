@@ -12,6 +12,11 @@ mod tests {
   use flow_research::domain::types::*;
   use flow_research::domain::extensibility::payment_processor::*;
   use flow_research::domain::extensibility::payment_method::*;
+  use flow_research::domain::services::ICustomerManager;
+  use flow_research::domain::services::IMerchantManager;
+  use flow_research::domain::implementation::dummy_customer_manager::*;
+  use flow_research::domain::implementation::dummy_merchant_manager::*;
+  use flow_research::application::services::ILogger;
   use flow_research::application::dummy_logger::DummyLogger;
   use flow_research::assets::payment_processors::dummy as ext_pp_dummy;
   use flow_research::assets::payment_processors::paypal as ext_pp_paypal;
@@ -21,36 +26,35 @@ mod tests {
   use flow_research::assets::flows::normal_payment_create as flow1;
 
 
-
   macro_rules! mandatory {
     ($validated:expr, $field:expr) => {
-      || -> Result<(), String> {
-        match $validated {
-          Right(value) => {
-            $field = value;
-            Ok(())
-          },
-          Left(e) => Err(format!("Mandatory field validation failed: {:?}", e)),
-        }
-      }
+        Box::new(|| {
+          match &$validated {
+            Right(value) => {
+              $field = value.clone();
+              Ok(())
+            },
+            Left(e) => Err(format!("Validation failed: {:?}", e)),
+          }
+        })
     };
   }
 
   macro_rules! optional {
     ($validated:expr, $default:expr, $field:expr) => {
-      || -> Result<(), String> {
-        match $validated {
-          Right(value) => {
-            $field = value;
-            Ok(())
-          },
-          Left(ValidationResult::Missing(_)) => {
-            $field = $default;
-            Ok(())
-          },
-          Left(e) => Err(format!("Optional field validation failed: {:?}", e)),
-        }
-      }
+      Box::new(|| {
+          match &$validated {
+            Right(value) => {
+              $field = value.clone();
+              Ok(())
+            },
+            Left(ValidationResult::Missing(_)) => {
+              $field = $default.clone();
+              Ok(())
+            },
+            Left(e) => Err(format!("Validation failed: {:?}", e)),
+          }
+        })
     };
   }
 
@@ -89,7 +93,7 @@ mod tests {
       details: serde_json::to_value(card_details).unwrap(),
     };
 
-    let paypal_payment_processor = GenericPaymentProcessor {
+    let paypal_payment_processor = GenericPaymentProcessorDef {
       code: "paypal".to_string(),
       details: serde_json::to_value(ext_pp_paypal::PayPalProcessorDetails {
         client_id: "123".to_string(),
@@ -144,7 +148,7 @@ mod tests {
 
   pub fn validate_desired_payment_processors(
     factories: &HashMap<String, Box<dyn IPaymentProcessorFactory>>,
-    processors: &Option<Vec<GenericPaymentProcessor>>)
+    processors: &Option<Vec<GenericPaymentProcessorDef>>)
     -> Either<ValidationResult, Vec<Box<dyn IPaymentProcessor>>> {
 
       if let Some(pps) = processors {
@@ -173,8 +177,8 @@ mod tests {
       Right(Vec::new())
   }
 
-  pub fn validate_amount(amount: &Amount) -> Either<ValidationResult, Amount> {
-    if amount.greater(0) {
+  pub fn validate_amount(amount: Amount) -> Either<ValidationResult, Amount> {
+    if amount > 0 {
       Right(amount)
     } else {
       Left(ValidationResult::Invalid("Invalid amount".to_string()))
@@ -183,25 +187,20 @@ mod tests {
 
   pub fn validate_currency(
     currencies: &Vec<Currency>,
-    currency: String) -> Either<ValidationResult, Currency> {
-      for c in currencies.iter() {
-        match c {
-          Currency::Crypto(code) => {
-            if code == &currency {
-              return Right(c.clone());
-            }
-          },
-          _ => {
-            if c.to_string() == currency {
-              return Right(c.clone());
-            }
-          }
-        }
-      }
+    currency_json: &String) -> Either<ValidationResult, Currency> {
 
+    let parsed_currency = serde_json::from_str(&currency_json);
+
+    if let Ok(c) = parsed_currency {
+      if currencies.contains(&c) {
+        Right(c)
+      } else {
+        Left(ValidationResult::Invalid("Unsupported currency".to_string()))
+      }
+    } else {
       Left(ValidationResult::Invalid("Invalid currency".to_string()))
     }
-
+  }
 
   pub fn validate_confirmation(confirmation: &Option<String>) ->
   Either<ValidationResult, Confirmation> {
@@ -214,7 +213,7 @@ mod tests {
         Left(ValidationResult::Invalid("Invalid confirmation".to_string()))
       }
     } else {
-      Right(Confirmation::Manuals)
+      Right(Confirmation::Manual)
     }
   }
 
@@ -321,7 +320,7 @@ mod tests {
       &p_processor_factories,
       &payment_request.connectors);
 
-    let amount = validate_amount(&payment_request.amount);
+    let amount = validate_amount(payment_request.amount);
     let currency = validate_currency(
       &currencies,
       &payment_request.currency);
@@ -334,67 +333,61 @@ mod tests {
     // TODO: introduce a value-level eDSL
     // or reuse the type-level eDSL for flows construction
 
-    let flow_constructor = |
-      logger,
-      customer_manager,
-      merchant_manager| {
+    let flow_constructor = || {
 
       let mut flow1_data = flow1::dummy_normal_flow_payment_data();
-      let mut flow1_merchant_auth;
+      let mut flow1_merchant_auth = dummy_auth();
 
-      let flow1_parameters = vec![
+      let flow1_parameters: Vec<Box<dyn FnMut() -> Result<(), String>>> = vec![
         mandatory!(amount, flow1_data.amount),
         mandatory!(currency, flow1_data.currency),
         // mandatory!(payment_method, flow1_data.payment_method),
-        optional!(description, "", flow1_data.description),
+        optional!(description, "".to_string(), flow1_data.description),
         optional!(confirmation, Confirmation::Manual, flow1_data.confirmation),
         optional!(capture_method, CaptureMethod::Manual, flow1_data.capture_method),
         mandatory!(merchant_auth, flow1_merchant_auth),
-        // todo: payment method should be instant
       ];
 
-      let flow1_decided = true;
-      for param in flow1_parameters {
+      // todo: payment method should be instant
+
+      let mut flow1_decided = true;
+      for mut param in flow1_parameters {
         if let Err(e) = param() {
           flow1_decided = false;
           break;
         }
       }
 
+      let flow1_action: Box<dyn FnMut(
+        Box<dyn ICustomerManager>,
+        Box<dyn IMerchantManager>)
+        -> flow1::NormalPaymentCreateFlowResult> =
       if flow1_decided {
-        || {
-          let flow1 = flow1::NormalPaymentCreateFlow::new(
-            customer_manager,
-            merchant_manager);
-          flow1.execute(flow1_data, flow1_merchant_auth);
-        }
-      }
-      else {
-        || {
-          Err("Flow 1 parameters are not valid".to_string())
-        }
-      }
+          Box::new(move |customer_manager,merchant_manager| {
+              let mut flow1 = flow1::NormalPaymentCreateFlow::new(
+                  customer_manager,
+                  merchant_manager
+              );
+              flow1.execute(&flow1_data.clone(), &flow1_merchant_auth.clone())
+          })
+      } else {
+          Box::new(move |_, _| {
+              Err("Flow 1 parameters are not valid".to_string())
+          })
+      };
+
+      flow1_action
+
     };
-
-
-
 
     let customer_manager = Box::new(DummyCustomerManager::new(1));
     let merchant_manager = Box::new(DummyMerchantManager::new(1));
     let logger = Box::new(DummyLogger::new());
 
-    let flow = flow_constructor(logger, customer_manager, merchant_manager);
-    // let mut logging_flow = Box::new(LoggingPaymentCreateFlow::new(flow, logger));
+    let mut flow_f = flow_constructor();
+    let result = flow_f(customer_manager, merchant_manager);
 
-    // let result = logging_flow.execute(
-    //   Right(customer_data),
-    //   Right(merchant_data),
-    //   order_metadata,
-    //   payment_data);
-
-    // assert!(result.is_ok());
-
-
+    assert!(result.is_ok());
 
   }
 

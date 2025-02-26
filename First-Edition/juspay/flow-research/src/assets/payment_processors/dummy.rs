@@ -52,7 +52,7 @@ impl IPaymentProcessor for DummyPaymentProcessor {
       customer_profile: &CustomerProfile,
       merchant_profile: &MerchantProfile,
       payment_id: &PaymentId,
-      request_builder: &dyn IRequestBuilder,
+      request_builder: &Box<dyn IRequestBuilder>,
       order_metadata: &OrderMetaData,
       // TODO: replace ThirdPartyPayment with an associated type
   ) -> Result<ThirdPartyPayment, String> {
@@ -67,7 +67,7 @@ impl IPaymentProcessor for DummyPaymentProcessor {
 pub struct DummyPaymentProcessorFactory;
 
 impl IPaymentProcessorFactory for DummyPaymentProcessorFactory {
-  fn validate_payment_processor(&self, processor: &GenericPaymentProcessor)
+  fn validate_payment_processor(&self, processor: &GenericPaymentProcessorDef)
     -> Either<ValidationResult, Box<dyn IPaymentProcessor>> {
     if processor.code == code() {
       Right(Box::new(DummyPaymentProcessor::new(

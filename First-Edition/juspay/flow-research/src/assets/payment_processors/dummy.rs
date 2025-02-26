@@ -3,7 +3,6 @@ use crate::domain::types::*;
 use crate::domain::extensibility::payment_processor::*;
 use crate::domain::extensibility::request_builder::*;
 
-use serde_json::Value;
 use serde::{Serialize, Deserialize};
 use either::Either;
 use either::Either::{Left, Right};
@@ -14,19 +13,24 @@ use either::Either::{Left, Right};
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DummyPaymentProcessorDetails;
 
+#[derive(Clone)]
 pub struct DummyPaymentProcessor {
+  generic_def: GenericPaymentProcessorDef,
   details: DummyPaymentProcessorDetails,
 }
 
 impl DummyPaymentProcessor {
-  pub fn new(details: DummyPaymentProcessorDetails) -> Self {
+  pub fn new(
+    generic_def: GenericPaymentProcessorDef,
+    details: DummyPaymentProcessorDetails) -> Self {
     DummyPaymentProcessor {
+      generic_def,
       details,
     }
   }
 }
 
-pub fn code() -> String {
+pub fn code() -> PaymentProcessorCode {
   "dummy".to_string()
 }
 
@@ -39,8 +43,12 @@ impl IPaymentProcessor for DummyPaymentProcessor {
     name()
   }
 
-  fn code(&self) -> String {
+  fn code(&self) -> PaymentProcessorCode {
     code()
+  }
+
+  fn generic_def(&self) -> GenericPaymentProcessorDef {
+    self.generic_def.clone()
   }
 
   fn get_request_builder(&self) -> Box<dyn IRequestBuilder> {
@@ -49,12 +57,8 @@ impl IPaymentProcessor for DummyPaymentProcessor {
 
   fn process_payment(
       &self,
-      customer_profile: &CustomerProfile,
-      merchant_profile: &MerchantProfile,
       payment_id: &PaymentId,
-      request_builder: &Box<dyn IRequestBuilder>,
-      order_metadata: &OrderMetaData,
-      // TODO: replace ThirdPartyPayment with an associated type
+      _request_builder: &Box<dyn IRequestBuilder>,
   ) -> Result<ThirdPartyPayment, String> {
     // Dummy implementation
     Ok(ThirdPartyPayment {
@@ -62,6 +66,10 @@ impl IPaymentProcessor for DummyPaymentProcessor {
     })
   }
 
+  fn clone_boxed(&self) -> Box<dyn IPaymentProcessor> {
+    let cloned: Self = self.clone();
+    Box::new(cloned)
+  }
 }
 
 pub struct DummyPaymentProcessorFactory;
@@ -71,6 +79,7 @@ impl IPaymentProcessorFactory for DummyPaymentProcessorFactory {
     -> Either<ValidationResult, Box<dyn IPaymentProcessor>> {
     if processor.code == code() {
       Right(Box::new(DummyPaymentProcessor::new(
+        processor.clone(),
         serde_json::from_value(processor.details.clone()).unwrap()
       )))
     } else {
@@ -78,3 +87,5 @@ impl IPaymentProcessorFactory for DummyPaymentProcessorFactory {
     }
   }
 }
+
+

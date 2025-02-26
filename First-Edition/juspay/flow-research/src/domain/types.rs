@@ -1,4 +1,3 @@
-use either::Either;
 use serde_json::Value;
 use serde::{Serialize, Deserialize};
 use strum_macros::EnumString;

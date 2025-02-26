@@ -19,15 +19,19 @@ pub struct Auth {
   pub api_key: ApiKey,
 }
 
+type PaymentMethodCode = String;
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct GenericPaymentMethod {
-  pub code: String,
+  pub code: PaymentMethodCode,
   pub details: Value,
 }
 
+pub type PaymentProcessorCode = String;
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct GenericPaymentProcessorDef {
-  pub code: String,
+  pub code: PaymentProcessorCode,
   pub details: Value,
 }
 

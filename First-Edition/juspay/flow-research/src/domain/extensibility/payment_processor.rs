@@ -3,29 +3,27 @@ use crate::domain::types::*;
 use crate::domain::extensibility::request_builder::*;
 
 use either::Either;
-use serde_json::Value;
-use serde::{Serialize, Deserialize};
+use std::collections::HashMap;
 
 
 // Extensible payment processors infrastructure
 
 // Simplified version of a payment processor API.
 // In real code base, this interface will be more complex.
-pub trait IPaymentProcessor {
+pub trait IPaymentProcessor: Send + Sync {
   fn name(&self) -> String;
-  fn code(&self) -> String;
+  fn code(&self) -> PaymentProcessorCode;
+  fn generic_def(&self) -> GenericPaymentProcessorDef;
 
   fn get_request_builder(&self) -> Box<dyn IRequestBuilder>;
 
   fn process_payment(
       &self,
-      customer_profile: &CustomerProfile,
-      merchant_profile: &MerchantProfile,
       payment_id: &PaymentId,
-      request_builder: &Box<dyn IRequestBuilder>,
-      order_metadata: &OrderMetaData,
-      // TODO: replace ThirdPartyPayment with an associated type
+      request_builder: &Box<dyn IRequestBuilder>
   ) -> Result<ThirdPartyPayment, String>;
+
+  fn clone_boxed(&self) -> Box<dyn IPaymentProcessor>;
 }
 
 pub trait IPaymentProcessorFactory {
@@ -33,3 +31,12 @@ pub trait IPaymentProcessorFactory {
     -> Either<ValidationResult, Box<dyn IPaymentProcessor>>;
 }
 
+pub type PaymentProcessors = HashMap<PaymentProcessorCode, Box<dyn IPaymentProcessor>>;
+
+
+
+impl Clone for Box<dyn IPaymentProcessor> {
+    fn clone(&self) -> Box<dyn IPaymentProcessor> {
+        self.clone_boxed()
+    }
+}

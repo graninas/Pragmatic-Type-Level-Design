@@ -3,7 +3,6 @@ use crate::domain::types::*;
 use crate::domain::extensibility::payment_processor::*;
 use crate::domain::extensibility::request_builder::*;
 
-use serde_json::Value;
 use serde::{Serialize, Deserialize};
 use either::Either;
 use either::Either::{Left, Right};
@@ -15,7 +14,7 @@ pub struct PayPalProcessorDetails {
   pub client_secret: String,
 }
 
-pub fn code() -> String {
+pub fn code() -> PaymentProcessorCode {
   "paypal".to_string()
 }
 
@@ -23,13 +22,18 @@ pub fn name() -> String {
   "PayPal".to_string()
 }
 
+#[derive(Clone)]
 pub struct PayPalProcessor {
+  generic_def: GenericPaymentProcessorDef,
   details: PayPalProcessorDetails,
 }
 
 impl PayPalProcessor {
-  pub fn new(details: PayPalProcessorDetails) -> Self {
+  pub fn new(
+    generic_def: GenericPaymentProcessorDef,
+    details: PayPalProcessorDetails) -> Self {
     PayPalProcessor {
+      generic_def,
       details,
     }
   }
@@ -39,12 +43,16 @@ impl IPaymentProcessor for PayPalProcessor {
   // TODO: replace with actual PayPal payment request type
   // type PaymentRequest = Value;
 
-  fn code(&self) -> String {
+  fn code(&self) -> PaymentProcessorCode {
     code()
   }
 
   fn name(&self) -> String {
     name()
+  }
+
+  fn generic_def(&self) -> GenericPaymentProcessorDef {
+    self.generic_def.clone()
   }
 
   fn get_request_builder(&self) -> Box<dyn IRequestBuilder> {
@@ -53,18 +61,18 @@ impl IPaymentProcessor for PayPalProcessor {
 
   fn process_payment(
       &self,
-      _customer_profile: &CustomerProfile,
-      _merchant_profile: &MerchantProfile,
       payment_id: &PaymentId,
       _request_builder: &Box<dyn IRequestBuilder>,
-      _order_metadata: &OrderMetaData,
   ) -> Result<ThirdPartyPayment, String> {
-
     // Dummy implementation
     Ok(ThirdPartyPayment {
       third_party_payment_id: Some(payment_id.clone())
     })
+  }
 
+  fn clone_boxed(&self) -> Box<dyn IPaymentProcessor> {
+    let cloned: Self = self.clone();
+    Box::new(cloned)
   }
 }
 
@@ -99,7 +107,9 @@ impl IPaymentProcessorFactory for PayPalProcessorFactory {
             return Left(ValidationResult::ValidationError(errors));
           }
 
-          Right(Box::new(PayPalProcessor::new(processor_details)))
+          Right(Box::new(PayPalProcessor::new(
+            processor.clone(),
+            processor_details)))
         },
         Err(e) => {
           Left(ValidationResult::ParseError(e.to_string()))

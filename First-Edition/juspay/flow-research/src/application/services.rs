@@ -1,8 +1,4 @@
-use either::Either;
-use serde_json::Value;
-use serde::{Serialize, Deserialize};
-
-// Infrastructure
+// Application-level infrastructure
 
 pub trait ILogger {
     fn log(&self, message: String);

@@ -1,6 +1,4 @@
 use either::Either;
-use serde_json::Value;
-use serde::{Serialize, Deserialize};
 
 use crate::common_types::*;
 use crate::domain::types::*;
@@ -13,7 +11,11 @@ pub trait SimplePaymentCreateFlowTemplate {
 
   type PaymentData;
   type PaymentResult;
+  type FlowConfig;
 
+  // These are actually dependencies,
+  // but we can move them to the implementations
+  // and hide from the interface.
   fn customer_manager(&mut self) -> &mut dyn ICustomerManager;
   fn merchant_manager(&mut self) -> &mut dyn IMerchantManager;
 

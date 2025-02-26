@@ -1,6 +1,4 @@
 use either::Either;
-use either::Either::{Left, Right};
-use serde_json::Value;
 use serde_json::json;
 use serde::{Serialize, Deserialize};
 
@@ -10,7 +8,6 @@ use crate::domain::extensibility::payment_processor::*;
 use crate::domain::extensibility::request_builder::*;
 use crate::domain::services::*;
 use crate::assets::flow_templates::simple_payment_create::*;
-use crate::assets::payment_processors::dummy::*;
 use crate::application::services::ILogger;
 
 
@@ -22,8 +19,6 @@ pub struct SimplePaymentData {
     pub currency: Currency,
     pub payment_method: String,
     pub description: Option<String>,
-    pub confirmation: Option<Confirmation>,
-    pub capture_method: Option<CaptureMethod>,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
@@ -33,18 +28,32 @@ pub struct SimplePaymentResult {
     pub payment_data: SimplePaymentData,
 }
 
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+pub struct SimpleConfig {
+  pub confirmation: Option<Confirmation>,
+  pub capture_method: Option<CaptureMethod>,
+}
 
 pub struct SimplePaymentCreateFlow {
+  payment_processors: PaymentProcessors,
   customer_manager: Box<dyn ICustomerManager>,
   merchant_manager: Box<dyn IMerchantManager>,
 }
 
 impl SimplePaymentCreateFlow {
   pub fn new(
+    payment_processors: PaymentProcessors,
     customer_manager: Box<dyn ICustomerManager>,
     merchant_manager: Box<dyn IMerchantManager>,
   ) -> Self {
-    Self { customer_manager, merchant_manager }
+    if payment_processors.is_empty() {
+      panic!("No payment processors provided");
+    }
+
+    Self {
+      payment_processors,
+      customer_manager,
+      merchant_manager }
   }
 }
 
@@ -53,6 +62,7 @@ impl SimplePaymentCreateFlowTemplate for SimplePaymentCreateFlow {
 
   type PaymentData = SimplePaymentData;
   type PaymentResult = SimplePaymentResult;
+  type FlowConfig = SimpleConfig;
 
   fn customer_manager(&mut self) -> &mut dyn ICustomerManager {
     &mut *self.customer_manager
@@ -114,31 +124,37 @@ impl SimplePaymentCreateFlowTemplate for SimplePaymentCreateFlow {
 
   fn register_order_metadata(
     &mut self,
-    payment_id: &PaymentId,
-    customer_id: &CustomerId,
-    merchant_id: &MerchantId,
-    order_metadata: &OrderMetaData,
+    _payment_id: &PaymentId,
+    _customer_id: &CustomerId,
+    _merchant_id: &MerchantId,
+    _order_metadata: &OrderMetaData,
   ) -> Result<(), String> {
     Ok(())
   }
 
   fn decide_payment_processor(
     &mut self,
-    merchant_profile: &MerchantProfile,
-    payment_data: &Self::PaymentData,
-    order_metadata: &OrderMetaData,
+    _merchant_profile: &MerchantProfile,
+    _payment_data: &Self::PaymentData,
+    _order_metadata: &OrderMetaData,
   ) -> Result<Box<dyn IPaymentProcessor>, String> {
-    Ok(Box::new(DummyPaymentProcessor::new(DummyPaymentProcessorDetails)))
+    let payment_processors = &self.payment_processors;
+
+    if let Some((_, processor)) = payment_processors.iter().next() {
+      Ok(processor.clone_boxed())
+    } else {
+      Err("No payment processors available".to_string())
+    }
   }
 
   fn make_payment_with_payment_processor(
     &mut self,
     payment_processor: &Box<dyn IPaymentProcessor>,
-    customer_profile: &CustomerProfile,
-    merchant_profile: &MerchantProfile,
+    _customer_profile: &CustomerProfile,
+    _merchant_profile: &MerchantProfile,
     payment_id: &PaymentId,
     payment_data: &Self::PaymentData,
-    order_metadata: &OrderMetaData,
+    _order_metadata: &OrderMetaData,
   ) -> Result<Self::PaymentResult, String> {
 
     let mut request_builder = payment_processor.get_request_builder();
@@ -147,11 +163,8 @@ impl SimplePaymentCreateFlowTemplate for SimplePaymentCreateFlow {
     // todo: add more values
 
     let third_party_payment = payment_processor.process_payment(
-      customer_profile,
-      merchant_profile,
       payment_id,
-      &request_builder,
-      order_metadata)?;
+      &request_builder)?;
 
     Ok(SimplePaymentResult {
       payment_id: payment_id.clone(),
@@ -160,7 +173,8 @@ impl SimplePaymentCreateFlowTemplate for SimplePaymentCreateFlow {
     })
   }
 
-  fn register_payment(&mut self, payment: &Self::PaymentResult) -> Result<(), String> {
+  fn register_payment(&mut self,
+    _payment: &Self::PaymentResult) -> Result<(), String> {
     Ok(())
   }
 }
@@ -169,13 +183,18 @@ impl SimplePaymentCreateFlowTemplate for SimplePaymentCreateFlow {
 // Flow implementation with logging
 pub struct LoggingPaymentCreateFlow {
   inner: Box<dyn SimplePaymentCreateFlowTemplate
-    <PaymentData=SimplePaymentData, PaymentResult=SimplePaymentResult>>,
+    <PaymentData=SimplePaymentData,
+    PaymentResult=SimplePaymentResult,
+    FlowConfig=SimpleConfig>>,
   logger: Box<dyn ILogger>,
 }
 
 impl LoggingPaymentCreateFlow {
   pub fn new(inner: Box<dyn SimplePaymentCreateFlowTemplate
-                        <PaymentData=SimplePaymentData, PaymentResult=SimplePaymentResult>>,
+                        <PaymentData=SimplePaymentData,
+                        PaymentResult=SimplePaymentResult,
+                        FlowConfig=SimpleConfig>,
+              >,
             logger: Box<dyn ILogger>) -> Self {
     Self { inner, logger }
   }
@@ -185,6 +204,7 @@ impl SimplePaymentCreateFlowTemplate for LoggingPaymentCreateFlow {
 
   type PaymentData = SimplePaymentData;
   type PaymentResult = SimplePaymentResult;
+  type FlowConfig = SimpleConfig;
 
   fn customer_manager(&mut self) -> &mut dyn ICustomerManager {
     self.inner.customer_manager()
@@ -249,7 +269,7 @@ impl SimplePaymentCreateFlowTemplate for LoggingPaymentCreateFlow {
       payment_data,
       order_metadata)?;
     self.logger.log(format!("Payment processor selected: {:?}", processor.code()));
-    Ok(processor)
+    Ok(processor.clone_boxed())
   }
 
   fn make_payment_with_payment_processor(

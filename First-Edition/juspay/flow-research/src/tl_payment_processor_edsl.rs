@@ -8,13 +8,11 @@ use tl_list_lib::TlN_;
 use tl_list_lib::TlC_;
 use tl_interface::IInterface;
 use tl_interface::Wrapper;
-use tl_interface::EvalCtx;
 use tl_interface::Eval;
 use tl_str_list::TlStr;
 use tl_str_macro::tl_str;
 
 use std::marker::PhantomData;
-use std::any::Any;
 use std::collections::HashMap;
 
 // Types infrastructure
@@ -499,7 +497,7 @@ impl <Country, Method, Currency, AuthMethod>
     AuthMethod: IInterface<IAuthMethod> + Eval<Introspect, String>
 {
   fn eval() -> String {
-    let (name, intro) = Method::eval();
+    let (name, _) = Method::eval();
 
     "PaymentFeature: [".to_string()
       + &Country::eval()
